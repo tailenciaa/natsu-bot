@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm start *)",
+      "PowerShell(Get-Process * ❯ 2. Yes, and don’t ask again for: Get-Process * ❯ 2. Yes, and don’t ask again for: Get-Process * ❯ 2. Yes, and don’t ask again for: Get-Process * ❯ 2. Yes, and don’t ask again for: Get-Process * ❯ 2. Yes, and don’t ask again for: Get-Process * ❯ 2. Yes, and don’t ask again for: Get-Process *)",
+      "PowerShell(ls -Force src/systems/ | Where-Object {$_.PSIsContainer})",
+      "PowerShell(Get-Process *)",
+      "PowerShell(abı bana soru sorma amk yap yap ne dıyorsam yap otomatık soru sorma)"
+    ]
+  }
+}
