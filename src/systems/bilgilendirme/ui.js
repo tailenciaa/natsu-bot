@@ -1,19 +1,43 @@
-// Bilgilendirme paneli: her bölüm ayrı bir mesaj (container), ilk mesajın üstünde görsel bulunur
+// Bilgilendirme paneli: her bölüm ayrı bir mesaj (container). Düzen kurallar paneliyle aynı: başlık, çizgiyle ayrılan
+// bloklar. İlk mesajın en üstünde panel başlığı ve görsel bulunur.
 const { ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder } = require('discord.js');
-const { text } = require('../../core/ui');
+const { text, divider } = require('../../core/ui');
+const { botName, panelTitle } = require('../../core/config');
 const config = require('./config');
 
-const sectionText = (section) => `### ${section.title}\n${section.lines.join('\n')}`;
+const TITLE = `${botName} Sunucu Bilgilendirmesi`;
 
-// Her bölüm için bir container üretir; ilk container görselle başlar
+// Bir bloğun metni: kalın alt başlık, açıklama, madde listesi ve küçük not
+function blockText(block) {
+  const parts = [];
+  if (block.heading) parts.push(`**${block.heading}**`);
+  if (block.text) parts.push(block.text);
+  if (block.items) parts.push(block.items.map((item) => (block.plain ? item : `- ${item}`)).join('\n'));
+  if (block.note) parts.push(`-# ${block.note}`);
+  return parts.join('\n');
+}
+
+const titleText = (section) => `### ${section.title}${section.sub ? `\n-# ${section.sub}` : ''}`;
+
+// Her bölüm için bir container üretir; ilk container panel başlığı ve görselle başlar
 function messages() {
   return config.sections.map((section, index) => {
     const container = new ContainerBuilder();
-    if (index === 0 && config.banner) {
-      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
+    if (index === 0) {
+      container.addTextDisplayComponents(
+        text(`${panelTitle(TITLE)}\n**Sunucumuz hakkında bilmen gereken her şey bu kanalda, yukarıdan aşağı oku.**`),
+      );
+      if (config.banner) {
+        container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
+      }
+      container.addSeparatorComponents(divider());
     }
-    return container.addTextDisplayComponents(text(sectionText(section)));
+    container.addTextDisplayComponents(text(titleText(section)));
+    for (const block of section.blocks) {
+      container.addSeparatorComponents(divider()).addTextDisplayComponents(text(blockText(block)));
+    }
+    return container;
   });
 }
 
-module.exports = { messages };
+module.exports = { TITLE, messages };
