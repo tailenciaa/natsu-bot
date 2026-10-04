@@ -4,10 +4,10 @@ module.exports = {
   // Duyurunun gönderileceği kanal
   channel: '1538538279627132999',
 
-  // Kategori başına verilecek rol; Discord'da oluşturulup ID'si buraya eklenene kadar rol verilmez, sadece duyurulur
+  // Kategori başına verilecek rol
   roles: {
-    ses: null,
-    mesaj: null,
-    yayin: null,
+    ses: '1554240785644396704', // Haftanın ses aktifleri
+    mesaj: '1555890043560792094', // Haftanın yazılı aktifleri
+    yayin: '1554240786034594042', // Haftanın en iyi yayıncıları
   },
 };
