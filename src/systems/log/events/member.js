@@ -4,6 +4,7 @@ const { AuditLogEvent } = require('discord.js');
 const { unix } = require('../../../core/ui');
 const audit = require('../audit');
 const engine = require('../engine');
+const invites = require('./invite');
 const ui = require('../ui');
 const moderationEvents = require('./moderation');
 const boostEvents = require('./boost');
@@ -11,6 +12,16 @@ const boostEvents = require('./boost');
 async function findKickExecutor(guild, userId) {
   const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberKick, limit: 5 }).catch(() => null);
   return logs?.entries.find((e) => e.target?.id === userId && Date.now() - e.createdTimestamp < 10_000) ?? null;
+}
+
+// Katılanın hangi davetle geldiği (botlar davetle değil, bir yetkili tarafından eklenir)
+async function joinSource(member) {
+  if (member.user.bot) return await audit.by(member.guild, AuditLogEvent.BotAdd, member.id);
+  const used = await invites.findUsed(member.guild);
+  if (used) {
+    return `**Davet:** \`${used.code}\`${used.inviterId ? ` · davet eden <@${used.inviterId}>` : ''} · ${used.uses}. kullanım`;
+  }
+  return member.guild.vanityURLCode ? `**Davet:** özel bağlantı ya da bulunamadı` : '**Davet:** tespit edilemedi';
 }
 
 async function handleMemberAdd(member) {
@@ -22,6 +33,7 @@ async function handleMemberAdd(member) {
       `**Kullanıcı:** <@${member.id}> (${member.user.tag})`,
       `**Hesap oluşturma:** <t:${unix(member.user.createdTimestamp)}:R>${newAccount ? ' • ⚠️ yeni hesap' : ''}`,
       `**Üye sayısı:** ${member.guild.memberCount}`,
+      await joinSource(member),
     ]),
   );
 }

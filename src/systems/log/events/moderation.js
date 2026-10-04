@@ -3,6 +3,7 @@
 // numarası) doğrudan sicil sisteminden (systems/sicil/moderation.js) loglanır; o yüzden burada sadece dedupe'den
 // geçemeyen (yani bot üzerinden yapılmamış) işlemler ele alınır.
 const { AuditLogEvent } = require('discord.js');
+const audit = require('../audit');
 const engine = require('../engine');
 const ui = require('../ui');
 const dedupe = require('../dedupe');
@@ -63,4 +64,61 @@ async function checkManualTimeout(oldMember, newMember) {
   }
 }
 
-module.exports = { handleBanAdd, handleBanRemove, checkManualTimeout };
+// ── AutoMod ──────────────────────────────────────────────────────────────────
+
+const ACTIONS = { 1: 'mesaj engellendi', 2: 'uyarı mesajı gönderildi', 3: 'susturuldu', 4: 'üye etkileşimi engellendi' };
+
+// AutoMod bir mesajı engelleyince / işlem uygulayınca: kim, nerede, hangi kural, ne yazmıştı
+async function handleAutoModExecution(execution) {
+  const rule = execution.guild.autoModerationRules.cache.get(execution.ruleId);
+  await engine.send(
+    execution.guild.client,
+    'moderasyon',
+    ui.entry('danger', 'AutoMod İşlem Yaptı', [
+      `**Kullanıcı:** <@${execution.userId}>`,
+      execution.channelId ? `**Kanal:** <#${execution.channelId}>` : null,
+      `**Kural:** ${rule?.name ?? execution.ruleId}`,
+      `**İşlem:** ${ACTIONS[execution.action.type] ?? 'bilinmiyor'}`,
+      execution.matchedKeyword ? `**Eşleşen:** ${execution.matchedKeyword}` : null,
+      execution.content ? `**Mesaj:**\n> ${execution.content.slice(0, 300)}` : null,
+    ]),
+  );
+}
+
+async function handleAutoModRuleCreate(rule) {
+  await engine.send(
+    rule.guild.client,
+    'moderasyon',
+    ui.entry('success', 'AutoMod Kuralı Oluşturuldu', [`**Kural:** ${rule.name}`, await audit.by(rule.guild, AuditLogEvent.AutoModerationRuleCreate, rule.id)]),
+  );
+}
+
+async function handleAutoModRuleDelete(rule) {
+  await engine.send(
+    rule.guild.client,
+    'moderasyon',
+    ui.entry('danger', 'AutoMod Kuralı Silindi', [`**Kural:** ${rule.name}`, await audit.by(rule.guild, AuditLogEvent.AutoModerationRuleDelete, rule.id)]),
+  );
+}
+
+async function handleAutoModRuleUpdate(oldRule, newRule) {
+  const changes = [];
+  if (oldRule?.name !== newRule.name) changes.push(`**Ad:** ${oldRule?.name ?? '?'} → ${newRule.name}`);
+  if (oldRule && oldRule.enabled !== newRule.enabled) changes.push(`**Durum:** ${newRule.enabled ? 'açıldı' : 'kapatıldı'}`);
+  if (!changes.length) return;
+  await engine.send(
+    newRule.guild.client,
+    'moderasyon',
+    ui.entry('warning', 'AutoMod Kuralı Güncellendi', [`**Kural:** ${newRule.name}`, ...changes, await audit.by(newRule.guild, AuditLogEvent.AutoModerationRuleUpdate, newRule.id)]),
+  );
+}
+
+module.exports = {
+  handleBanAdd,
+  handleBanRemove,
+  checkManualTimeout,
+  handleAutoModExecution,
+  handleAutoModRuleCreate,
+  handleAutoModRuleDelete,
+  handleAutoModRuleUpdate,
+};

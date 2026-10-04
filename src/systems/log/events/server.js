@@ -4,6 +4,7 @@ const { AuditLogEvent, ChannelType } = require('discord.js');
 const audit = require('../audit');
 const engine = require('../engine');
 const ui = require('../ui');
+const invites = require('./invite');
 
 const TYPE_NAMES = {
   [ChannelType.GuildText]: 'Yazı kanalı',
@@ -223,6 +224,7 @@ async function handleStickerDelete(sticker) {
 }
 
 async function handleInviteCreate(invite) {
+  invites.add(invite);
   await engine.send(
     invite.client,
     'sunucu',

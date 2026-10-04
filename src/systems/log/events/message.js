@@ -1,5 +1,7 @@
 // Mesaj logları: silinen, toplu silinen ve düzenlenen mesajlar.
+const { AuditLogEvent } = require('discord.js');
 const core = require('../../../core/ui');
+const audit = require('../audit');
 const config = require('../config');
 const engine = require('../engine');
 const ui = require('../ui');
@@ -10,8 +12,21 @@ const trim = (value) => (value && value.length > MAX_LEN ? `${value.slice(0, MAX
 // Botun kendi log/panel mesajlarını loglamaya çalışıp döngüye girmesin
 const ignorable = (channel) => channel?.id === config.channels.main || channel?.id === config.channels.panel;
 
+// Mesajı yazan dışında biri sildiyse (yetkili) denetim kaydından bulunur; kendi mesajını silenin kaydı tutulmaz
+async function deletedBy(message) {
+  if (!message.author) return null;
+  const line = await audit.by(
+    message.guild,
+    AuditLogEvent.MessageDelete,
+    message.author.id,
+    (e) => e.extra?.channel?.id === message.channelId,
+  );
+  return line ? line.replace('**Yetkili:**', '**Silen yetkili:**') : null;
+}
+
 async function handleMessageDelete(message) {
   if (!message.guild || ignorable(message.channel)) return;
+  if (message.author?.id === message.client.user.id) return; // botun kendi mesajları (panel yenileme vb.) loglanmaz
 
   const content = message.partial ? null : message.content;
   await engine.send(
@@ -22,6 +37,7 @@ async function handleMessageDelete(message) {
       `**Kanal:** <#${message.channelId}>`,
       content ? `**İçerik:**\n${core.quote(trim(content))}` : '-# İçerik önbellekte yoktu, gösterilemiyor.',
       message.attachments?.size ? `**Ekler:** ${message.attachments.map((a) => a.name).join(', ')}` : null,
+      await deletedBy(message),
     ]),
   );
 }

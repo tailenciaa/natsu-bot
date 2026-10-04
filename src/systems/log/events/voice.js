@@ -1,4 +1,6 @@
 // Ses logları: ses kanalına giriş/çıkış/taşınma, kendi/sunucu susturması ve sağırlaştırması, yayın ve kamera.
+const { AuditLogEvent } = require('discord.js');
+const audit = require('../audit');
 const engine = require('../engine');
 const ui = require('../ui');
 
@@ -49,11 +51,18 @@ async function handleVoiceStateUpdate(oldState, newState) {
     flagChange('Kamera', oldState.selfVideo, newState.selfVideo),
   ].filter(Boolean);
 
+  const serverSide = oldState.serverMute !== newState.serverMute || oldState.serverDeaf !== newState.serverDeaf;
+
   if (changes.length) {
     await engine.send(
       newState.client,
       'ses',
-      ui.entry('primary', 'Ses Durumu Değişti', [`**Kullanıcı:** <@${member.id}>`, `**Kanal:** <#${newState.channelId}>`, ...changes]),
+      ui.entry('primary', 'Ses Durumu Değişti', [
+        `**Kullanıcı:** <@${member.id}>`,
+        `**Kanal:** <#${newState.channelId}>`,
+        ...changes,
+        serverSide ? await audit.by(newState.guild, AuditLogEvent.MemberUpdate, member.id) : null,
+      ]),
     );
   }
 }

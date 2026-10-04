@@ -37,6 +37,9 @@ const client = new Client({
     GatewayIntentBits.GuildModeration,
     GatewayIntentBits.GuildExpressions,
     GatewayIntentBits.GuildInvites,
+    // AutoMod engellemeleri ve kural değişiklikleri için
+    GatewayIntentBits.AutoModerationExecution,
+    GatewayIntentBits.AutoModerationConfiguration,
   ],
 });
 // Her sistem kendi olay dinleyicisini eklediği için varsayılan 10 sınırı sistem sayısı arttıkça aşılıyor

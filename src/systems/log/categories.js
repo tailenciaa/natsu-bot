@@ -21,7 +21,7 @@ module.exports = [
     label: 'Üye Logları',
     emoji: '👤',
     threadName: 'uye-loglari',
-    description: 'Sunucuya katılma, ayrılma ve takma ad değişiklikleri',
+    description: 'Katılma (hangi davetle geldiği), ayrılma ve takma ad değişiklikleri',
   },
   {
     key: 'rol',
@@ -42,7 +42,7 @@ module.exports = [
     label: 'Moderasyon Logları',
     emoji: '🛡️',
     threadName: 'moderasyon-loglari',
-    description: 'Uyarı, susturma, jail, yasaklama, kaldırılma ve atılmalar',
+    description: 'Uyarı, susturma, jail, yasaklama, atılma ve AutoMod engellemeleri',
   },
   {
     key: 'sunucu',

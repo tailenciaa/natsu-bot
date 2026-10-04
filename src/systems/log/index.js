@@ -18,6 +18,7 @@ const member = require('./events/member');
 const moderation = require('./events/moderation');
 const server = require('./events/server');
 const bot = require('./events/bot');
+const invites = require('./events/invite');
 
 // Paneli log paneli kanalına gönderir (değişmediyse dokunmaz); force ile eskisi kaldırılıp yenisi gönderilir
 function syncLogPanel(client, force = false) {
@@ -132,7 +133,10 @@ module.exports = {
     [ui.IDS.setup, handleSetupButton],
   ],
   events: {
-    [Events.ClientReady]: sendPanel,
+    [Events.ClientReady]: async (client) => {
+      await invites.init(client);
+      await sendPanel(client);
+    },
     [Events.MessageDelete]: message.handleMessageDelete,
     [Events.MessageBulkDelete]: message.handleBulkDelete,
     [Events.MessageUpdate]: message.handleMessageUpdate,
@@ -142,6 +146,10 @@ module.exports = {
     [Events.GuildMemberUpdate]: member.handleMemberUpdate,
     [Events.GuildBanAdd]: moderation.handleBanAdd,
     [Events.GuildBanRemove]: moderation.handleBanRemove,
+    [Events.AutoModerationActionExecution]: moderation.handleAutoModExecution,
+    [Events.AutoModerationRuleCreate]: moderation.handleAutoModRuleCreate,
+    [Events.AutoModerationRuleDelete]: moderation.handleAutoModRuleDelete,
+    [Events.AutoModerationRuleUpdate]: moderation.handleAutoModRuleUpdate,
     [Events.ChannelCreate]: server.handleChannelCreate,
     [Events.ChannelDelete]: server.handleChannelDelete,
     [Events.ChannelUpdate]: server.handleChannelUpdate,

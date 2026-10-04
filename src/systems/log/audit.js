@@ -5,15 +5,15 @@ const MAX_AGE = 15_000;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function entryOf(guild, type, targetId) {
+async function entryOf(guild, type, targetId, filter) {
   await sleep(WAIT);
   const logs = await guild.fetchAuditLogs({ type, limit: 8 }).catch(() => null);
-  return logs?.entries.find((e) => (!targetId || e.targetId === targetId) && Date.now() - e.createdTimestamp < MAX_AGE) ?? null;
+  return logs?.entries.find((e) => (!targetId || e.targetId === targetId) && (!filter || filter(e)) && Date.now() - e.createdTimestamp < MAX_AGE) ?? null;
 }
 
 // Log satırı olarak yetkili: "**Yetkili:** <@id>" (bulunamazsa null, satır eklenmez)
-async function by(guild, type, targetId) {
-  const entry = await entryOf(guild, type, targetId);
+async function by(guild, type, targetId, filter) {
+  const entry = await entryOf(guild, type, targetId, filter);
   return entry?.executor ? `**Yetkili:** <@${entry.executor.id}>` : null;
 }
 
