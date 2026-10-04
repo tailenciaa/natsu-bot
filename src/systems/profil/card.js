@@ -1,17 +1,14 @@
 // Profil kartı: kapak (tema gradyanı ya da kullanıcının görseli), avatar, ad, unvan, biyografi, mesaj/ses seviye kartları
 // ve alt bilgi kutuları içeren görsel (PNG, Buffer döner). Yazılar assets/fonts altındaki Poppins ile çizilir.
-const { FONT, canvasLib, fitText, wrapLines, roundRect, hexAlpha, drawAvatar, drawBar } = require('../../core/canvas');
+const { FONT, canvasLib, fitText, wrapLines, roundRect, hexAlpha, mix, makeScheme, drawAvatar, drawBar } = require('../../core/canvas');
 const levelConfig = require('../seviye/config');
 const { levelFromXp } = require('../seviye/level');
-const { THEMES, DEFAULT_THEME } = require('./themes');
+const { resolveTheme } = require('./themes');
 
 const WIDTH = 1000;
 const HEIGHT = 676;
 const PAD = 48;
 const HEADER = 215;
-const BASE = '#0c0810';
-const PANEL = '#17101a';
-const MUTED = '#a89aa4';
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 const number = (n) => n.toLocaleString('tr-TR');
@@ -24,7 +21,7 @@ function duration(seconds) {
 }
 
 // Kapak: görsel varsa alanı kaplayacak şekilde ortalanıp çizilir (yüklenemezse tema gradyanına dönülür)
-async function drawHeader(ctx, theme, bannerUrl) {
+async function drawHeader(ctx, theme, bannerUrl, base) {
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, WIDTH, HEADER);
@@ -61,7 +58,7 @@ async function drawHeader(ctx, theme, bannerUrl) {
   // Kapağın altı zemine doğru yumuşakça kararır
   const fade = ctx.createLinearGradient(0, HEADER - 90, 0, HEADER);
   fade.addColorStop(0, 'rgba(12,8,16,0)');
-  fade.addColorStop(1, BASE);
+  fade.addColorStop(1, base);
   ctx.fillStyle = fade;
   ctx.fillRect(0, HEADER - 90, WIDTH, 90);
   ctx.restore();
@@ -82,17 +79,18 @@ function pill(ctx, text, right, y, color, textColor = '#ffffff') {
 }
 
 // Seviye kutusu: başlık, büyük seviye numarası, XP ve ilerleme çubuğu
-function levelCard(ctx, x, y, w, h, title, xp, accent) {
+function levelCard(ctx, x, y, w, h, title, xp, c) {
+  const accent = c.accent;
   const level = levelFromXp(xp);
   const current = level > 0 ? levelConfig.xpForLevel(level) : 0;
   const next = levelConfig.xpForLevel(level + 1);
 
-  ctx.fillStyle = PANEL;
+  ctx.fillStyle = c.panel;
   roundRect(ctx, x, y, w, h, 20);
   ctx.fill();
 
   ctx.textAlign = 'left';
-  ctx.fillStyle = MUTED;
+  ctx.fillStyle = c.muted;
   ctx.font = font(500, 16);
   ctx.fillText(title, x + 24, y + 34);
 
@@ -104,20 +102,20 @@ function levelCard(ctx, x, y, w, h, title, xp, accent) {
   ctx.fillStyle = accent;
   ctx.font = font(700, 46);
   ctx.fillText(String(level), x + w - 24, y + 70);
-  ctx.fillStyle = MUTED;
+  ctx.fillStyle = c.muted;
   ctx.font = font(500, 13);
   ctx.fillText('SEVİYE', x + w - 24, y + 22);
 
-  drawBar(ctx, x + 24, y + h - 30, w - 48, 14, (xp - current) / (next - current), accent);
+  drawBar(ctx, x + 24, y + h - 30, w - 48, 14, (xp - current) / (next - current), accent, c.track);
 }
 
 // Alt bilgi kutusu: sol üstte küçük başlık, altında değer
-function infoBox(ctx, x, y, w, label, value) {
-  ctx.fillStyle = PANEL;
+function infoBox(ctx, x, y, w, label, value, c) {
+  ctx.fillStyle = c.panel;
   roundRect(ctx, x, y, w, 56, 16);
   ctx.fill();
   ctx.textAlign = 'left';
-  ctx.fillStyle = MUTED;
+  ctx.fillStyle = c.muted;
   ctx.font = font(500, 12);
   ctx.fillText(label.toUpperCase(), x + 18, y + 21);
   ctx.fillStyle = '#ffffff';
@@ -125,21 +123,23 @@ function infoBox(ctx, x, y, w, label, value) {
   ctx.fillText(fitText(ctx, value, w - 36), x + 18, y + 43);
 }
 
-// view: { custom: { bio, title, color, theme, banner }, mesajXp, sesXp, mesajRank, sesRank, joinedAt, messageCount, voiceSeconds }
+// view: { custom: { bio, title, color, theme, banner }, roleColor, mesajXp, sesXp, mesajRank, sesRank, joinedAt, messageCount, voiceSeconds }
 async function buildProfileCard(user, view) {
   const canvas = canvasLib().createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
   const custom = view.custom;
-  const theme = THEMES[custom.theme] ?? THEMES[DEFAULT_THEME];
-  const accent = custom.color ? `#${custom.color.toString(16).padStart(6, '0')}` : theme.accent;
+  const theme = resolveTheme(custom, view.roleColor);
+  const scheme = makeScheme(theme);
+  const accent = scheme.accent;
+  const c = { accent, muted: scheme.muted, track: scheme.track, base: mix(theme.from, '#000000', 0.86), panel: mix(theme.from, '#000000', 0.7) };
 
   // Kartın tamamı yuvarlak köşeli; her şey bu şeklin içine çizilir
   ctx.save();
   roundRect(ctx, 0, 0, WIDTH, HEIGHT, 32);
   ctx.clip();
-  ctx.fillStyle = BASE;
+  ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  await drawHeader(ctx, theme, custom.banner);
+  await drawHeader(ctx, theme, custom.banner, c.base);
 
   // Sağ üst: sıralama etiketleri
   const rankColor = 'rgba(12,8,16,0.55)';
@@ -153,7 +153,7 @@ async function buildProfileCard(user, view) {
   const avatarY = HEADER - 70;
   ctx.beginPath();
   ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 10, 0, Math.PI * 2);
-  ctx.fillStyle = BASE;
+  ctx.fillStyle = c.base;
   ctx.fill();
   await drawAvatar(ctx, user, avatarX, avatarY, avatarSize, accent);
 
@@ -164,7 +164,7 @@ async function buildProfileCard(user, view) {
   ctx.fillStyle = '#ffffff';
   ctx.font = font(700, 36);
   ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER + 40);
-  ctx.fillStyle = MUTED;
+  ctx.fillStyle = c.muted;
   ctx.font = font(400, 17);
   ctx.fillText(`@${user.username}`, textX, HEADER + 68);
   if (custom.title) {
@@ -179,7 +179,7 @@ async function buildProfileCard(user, view) {
 
   // Biyografi kutusu
   const bioY = HEADER + 128;
-  ctx.fillStyle = PANEL;
+  ctx.fillStyle = c.panel;
   roundRect(ctx, PAD, bioY, WIDTH - PAD * 2, 90, 20);
   ctx.fill();
   ctx.fillStyle = accent;
@@ -191,7 +191,7 @@ async function buildProfileCard(user, view) {
     ctx.font = font(400, 19);
     wrapLines(ctx, custom.bio, WIDTH - PAD * 2 - 60, 2).forEach((line, i) => ctx.fillText(line, PAD + 28, bioY + 42 + i * 30));
   } else {
-    ctx.fillStyle = MUTED;
+    ctx.fillStyle = c.muted;
     ctx.font = font(400, 18);
     ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 28, bioY + 52);
   }
@@ -200,15 +200,15 @@ async function buildProfileCard(user, view) {
   const gap = 20;
   const cardW = (WIDTH - PAD * 2 - gap) / 2;
   const cardY = bioY + 90 + 20;
-  levelCard(ctx, PAD, cardY, cardW, 108, 'Mesaj Seviyesi', view.mesajXp, accent);
-  levelCard(ctx, PAD + cardW + gap, cardY, cardW, 108, 'Ses Seviyesi', view.sesXp, accent);
+  levelCard(ctx, PAD, cardY, cardW, 108, 'Mesaj Seviyesi', view.mesajXp, c);
+  levelCard(ctx, PAD + cardW + gap, cardY, cardW, 108, 'Ses Seviyesi', view.sesXp, c);
 
   // Alt bilgiler
   const infoY = cardY + 108 + 20;
   const infoW = (WIDTH - PAD * 2 - gap * 2) / 3;
-  infoBox(ctx, PAD, infoY, infoW, 'Sunucuya katılım', view.joinedAt ? date(view.joinedAt) : '-');
-  infoBox(ctx, PAD + infoW + gap, infoY, infoW, 'Toplam mesaj', number(view.messageCount));
-  infoBox(ctx, PAD + (infoW + gap) * 2, infoY, infoW, 'Toplam ses süresi', duration(view.voiceSeconds));
+  infoBox(ctx, PAD, infoY, infoW, 'Sunucuya katılım', view.joinedAt ? date(view.joinedAt) : '-', c);
+  infoBox(ctx, PAD + infoW + gap, infoY, infoW, 'Toplam mesaj', number(view.messageCount), c);
+  infoBox(ctx, PAD + (infoW + gap) * 2, infoY, infoW, 'Toplam ses süresi', duration(view.voiceSeconds), c);
 
   ctx.restore();
   return canvas.toBuffer('image/png');

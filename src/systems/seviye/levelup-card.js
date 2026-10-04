@@ -1,6 +1,7 @@
 // Seviye atlama duyuru görseli: avatar, kullanıcı adı, eski -> yeni seviye ve kazanılan rol (PNG, Buffer döner).
 // Kart, kullanıcının profilinde seçtiği renkte çizilir (seçmediyse varsayılan vurgu rengi).
-const { FONT, canvasLib, fitText, roundRect, hexColor, hexAlpha, truncate, drawBackground, drawAvatar } = require('../../core/canvas');
+const { FONT, canvasLib, fitText, roundRect, hexColor, mix, makeScheme, truncate, drawBackground, drawAvatar } = require('../../core/canvas');
+const { resolveTheme } = require('../profil/themes');
 
 const WIDTH = 900;
 const HEIGHT = 310;
@@ -23,20 +24,21 @@ function panel(ctx, x, y, w, h) {
   ctx.stroke();
 }
 
-function label(ctx, text, x, y, color = '#b8a4ac') {
+function label(ctx, text, x, y, color) {
   ctx.textAlign = 'left';
   ctx.fillStyle = color;
   ctx.font = `700 14px ${FONT}`;
   ctx.fillText(text, x, y);
 }
 
-// view: { kind, from, to, color, roleName, roleColor, nextMilestone }
+// view: { kind, from, to, custom (profil kaydı), roleColor (üyenin rol rengi), roleName, roleDotColor, roleColor, nextMilestone }
 async function buildLevelUpCard(user, view) {
   const canvas = canvasLib().createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
-  const accent = hexColor(view.color);
+  const scheme = makeScheme(resolveTheme(view.custom, view.roleColor));
+  const { accent, muted } = scheme;
 
-  drawBackground(ctx, WIDTH, HEIGHT, accent, 150, 155);
+  drawBackground(ctx, WIDTH, HEIGHT, scheme, 150, 155);
   await drawAvatar(ctx, user, 52, 80, 150, accent);
 
   const x = 244;
@@ -50,7 +52,7 @@ async function buildLevelUpCard(user, view) {
   // Eski -> yeni seviye
   const levelW = 330;
   panel(ctx, x, 150, levelW, 108);
-  label(ctx, 'ESKİ SEVİYE', x + 26, 182);
+  label(ctx, 'ESKİ SEVİYE', x + 26, 182, muted);
   label(ctx, 'YENİ SEVİYE', x + 196, 182, accent);
   ctx.fillStyle = '#ffffff';
   ctx.font = `700 32px ${FONT}`;
@@ -58,7 +60,7 @@ async function buildLevelUpCard(user, view) {
   ctx.fillStyle = accent;
   ctx.fillText(`LVL ${view.to}`, x + 196, 230);
   // Ok işareti yazı tipinde yok; çizgiyle çizilir
-  ctx.strokeStyle = '#b8a4ac';
+  ctx.strokeStyle = muted;
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -75,8 +77,8 @@ async function buildLevelUpCard(user, view) {
   const roleW = WIDTH - roleX - 40;
   panel(ctx, roleX, 150, roleW, 108);
   if (view.roleName) {
-    label(ctx, 'KAZANILAN ROL', roleX + 26, 182, '#f0c75e');
-    const dot = view.roleColor ? hexColor(view.roleColor) : accent;
+    label(ctx, 'KAZANILAN ROL', roleX + 26, 182, mix(accent, '#ffffff', 0.45));
+    const dot = view.roleDotColor ? hexColor(view.roleDotColor) : accent;
     ctx.fillStyle = dot;
     ctx.beginPath();
     ctx.arc(roleX + 38, 224, 9, 0, Math.PI * 2);
@@ -89,7 +91,7 @@ async function buildLevelUpCard(user, view) {
     while (size > 16 && ctx.measureText(roleText).width > roleW - 84) ctx.font = `700 ${--size}px ${FONT}`;
     ctx.fillText(fitText(ctx, roleText, roleW - 84), roleX + 58, 233);
   } else {
-    label(ctx, 'SIRADAKİ ROL', roleX + 26, 182);
+    label(ctx, 'SIRADAKİ ROL', roleX + 26, 182, muted);
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
     ctx.font = `700 24px ${FONT}`;

@@ -1,5 +1,7 @@
 // Profil kartı temaları: kapak (üst alan) gradyanı ve varsayılan vurgu rengi. Kullanıcı renk seçtiyse vurgu o renk olur,
 // kapak görseli eklediyse görsel temanın yerine geçer.
+const { mix, luminance } = require('../../core/canvas');
+
 const THEMES = {
   sakura: { label: 'Sakura', description: 'Pembe tonlar', from: '#3a1020', to: '#9a3560', accent: '#ff6b9a' },
   gece: { label: 'Gece', description: 'Lacivert ve indigo', from: '#0d1022', to: '#33388a', accent: '#7c8cff' },
@@ -11,4 +13,25 @@ const THEMES = {
 
 const DEFAULT_THEME = 'sakura';
 
-module.exports = { THEMES, DEFAULT_THEME };
+const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
+
+// Tek renkten tema üretir; çok koyu renkler okunabilsin diye vurguda biraz açılır
+function themeFromColor(color) {
+  let accent = hex(color);
+  if (luminance(accent) < 0.28) accent = mix(accent, '#ffffff', 0.45);
+  return { from: mix(accent, '#000000', 0.78), to: mix(accent, '#000000', 0.35), accent };
+}
+
+// Kartların rengi: profilde seçilen tema/renk; yoksa üyenin rol rengi; o da yoksa varsayılan tema.
+// custom: profil kaydı ({ theme, color, ... }), roleColor: üyenin görünen rol rengi (0 = renksiz)
+function resolveTheme(custom = {}, roleColor = 0) {
+  if (custom.theme && THEMES[custom.theme]) {
+    const theme = THEMES[custom.theme];
+    return custom.color ? { ...theme, accent: hex(custom.color) } : theme;
+  }
+  if (custom.color) return themeFromColor(custom.color);
+  if (roleColor) return themeFromColor(roleColor);
+  return THEMES[DEFAULT_THEME];
+}
+
+module.exports = { THEMES, DEFAULT_THEME, resolveTheme };

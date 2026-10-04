@@ -73,18 +73,46 @@ function wrapLines(ctx, value, maxWidth, maxLines) {
   return lines.map((l, i) => (i === lines.length - 1 ? fitText(ctx, l, maxWidth) : l));
 }
 
-// Koyu bordo -> siyah zemin ve (glowX, glowY) etrafında vurgu renginde yumuşak parıltı
-function drawBackground(ctx, width, height, accent, glowX, glowY) {
+// Renk işlemleri: "#rrggbb" iki rengi karıştırır (t=0 ilk renk, t=1 ikinci renk)
+const toRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const mix = (a, b, t) => {
+  const [ar, ag, ab] = toRgb(a);
+  const [br, bg, bb] = toRgb(b);
+  const c = (x, y) => Math.round(x + (y - x) * t).toString(16).padStart(2, '0');
+  return `#${c(ar, br)}${c(ag, bg)}${c(ab, bb)}`;
+};
+const luminance = (hex) => {
+  const [r, g, b] = toRgb(hex);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+};
+
+// Kart renk düzeni: tema ({ from, to, accent }) üzerinden zemin, vurgu, soluk yazı ve çubuk rengi üretilir; böylece
+// bütün kart (zemin, parıltı, yazılar, çubuklar) tek renkten türer.
+function makeScheme(theme) {
+  const accent = theme.accent;
+  return {
+    accent,
+    from: theme.from,
+    to: theme.to,
+    base: mix(theme.from, '#000000', 0.62),
+    baseEnd: mix(theme.from, '#000000', 0.88),
+    muted: mix('#d4d4de', accent, 0.28),
+    track: mix(theme.from, '#000000', 0.35),
+  };
+}
+
+// Koyu (temaya göre tonlanmış) zemin ve (glowX, glowY) etrafında vurgu renginde yumuşak parıltı
+function drawBackground(ctx, width, height, scheme, glowX, glowY) {
   const bg = ctx.createLinearGradient(0, 0, width, height);
-  bg.addColorStop(0, '#1a0812');
-  bg.addColorStop(1, '#05030a');
+  bg.addColorStop(0, scheme.base);
+  bg.addColorStop(1, scheme.baseEnd);
   ctx.fillStyle = bg;
   roundRect(ctx, 0, 0, width, height, 28);
   ctx.fill();
 
   const glow = ctx.createRadialGradient(glowX, glowY, 10, glowX, glowY, 260);
-  glow.addColorStop(0, hexAlpha(accent, 0.35));
-  glow.addColorStop(1, hexAlpha(accent, 0));
+  glow.addColorStop(0, hexAlpha(scheme.accent, 0.35));
+  glow.addColorStop(1, hexAlpha(scheme.accent, 0));
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, width, height);
 }
@@ -112,8 +140,8 @@ async function drawAvatar(ctx, user, x, y, size, accent) {
 }
 
 // İlerleme çubuğu: koyu zemin üstünde oran kadar vurgu renginde dolgu
-function drawBar(ctx, x, y, width, height, ratio, accent) {
-  ctx.fillStyle = '#2a1620';
+function drawBar(ctx, x, y, width, height, ratio, accent, track = '#2a1620') {
+  ctx.fillStyle = track;
   roundRect(ctx, x, y, width, height, height / 2);
   ctx.fill();
   ctx.fillStyle = accent;
@@ -121,4 +149,4 @@ function drawBar(ctx, x, y, width, height, ratio, accent) {
   ctx.fill();
 }
 
-module.exports = { FONT, canvasLib, fitText, wrapLines, roundRect, hexColor, hexAlpha, truncate, drawBackground, drawAvatar, drawBar };
+module.exports = { FONT, canvasLib, fitText, wrapLines, roundRect, hexColor, hexAlpha, mix, luminance, makeScheme, truncate, drawBackground, drawAvatar, drawBar };

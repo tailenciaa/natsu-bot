@@ -62,14 +62,15 @@ async function syncAllRoles(guild) {
 // Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider)
 async function sendLevelUp(channel, user, kind, level, role) {
   try {
-    const color = profileStore.get(user.id)?.color ?? null;
+    const member = await channel.guild.members.fetch(user.id).catch(() => null);
     const image = await buildLevelUpCard(user, {
       kind,
       from: level - 1,
       to: level,
-      color,
+      custom: profileStore.get(user.id),
+      roleColor: member?.displayColor ?? 0,
       roleName: role?.name ?? null,
-      roleColor: role?.color ?? 0,
+      roleDotColor: role?.color ?? 0,
       nextMilestone: config.milestones.find((m) => m > level) ?? null,
     });
     await channel.send({
@@ -197,8 +198,10 @@ async function handleCommand(interaction) {
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
   if (user.bot) return interaction.reply({ components: [core.alert('Botların seviyesi bulunmaz.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
   await interaction.deferReply();
+  const member = await interaction.guild.members.fetch(user.id).catch(() => null);
   const buffer = await buildLevelCard(user, {
-    color: profileStore.get(user.id).color,
+    custom: profileStore.get(user.id),
+    roleColor: member?.displayColor ?? 0,
     mesajXp: store.xpOf('mesaj', user.id),
     sesXp: store.xpOf('ses', user.id),
     mesajRank: rankOf('messages', user.id),

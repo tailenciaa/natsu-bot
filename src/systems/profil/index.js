@@ -32,6 +32,7 @@ async function viewDataOf(guild, userId) {
   const member = await guild.members.fetch(userId).catch(() => null);
   return {
     custom: store.get(userId),
+    roleColor: member?.displayColor ?? 0,
     mesajXp: seviyeStore.xpOf('mesaj', userId),
     sesXp: seviyeStore.xpOf('ses', userId),
     mesajRank: rankOf(messages, userId),
