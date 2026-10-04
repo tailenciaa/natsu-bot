@@ -6,8 +6,8 @@ module.exports = {
   // Kısıtlı üyelerin görebileceği tek kanal
   channel: '1538944428063068181',
 
-  // Kısıtlama rolünün adı; rol yoksa bot ilk açılışta kendisi oluşturup ID'sini kalıcı olarak kaydeder
-  roleName: 'Şüpheli Hesap',
+  // Kısıtlama rolü: Discord'da zaten var olan sabit rol, bot kendisi rol oluşturmaz
+  roleId: '1556274144042164234',
 
   // Üyelerin hesap yaşı kaç saniyede bir yeniden kontrol edilir (süresi dolanların rolü otomatik alınır)
   sweepSeconds: 60 * 60,

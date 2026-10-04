@@ -1,34 +1,21 @@
 // Yeni/şüpheli hesap sistemi: Discord hesabı ayarlı süreden (varsayılan 7 gün) daha yeni olan üyeler, ayarlı tek
 // kanal dışında sunucudaki hiçbir kanalı göremez (jail'deki kanal görünürlük mantığıyla aynı). Hesap yeterince
-// eskiyince kısıtlama otomatik kalkar. Kısıtlama rolü Discord'da yoksa bot ilk açılışta kendisi oluşturup
-// ID'sini kalıcı olarak kaydeder.
+// eskiyince kısıtlama otomatik kalkar. Kısıtlama rolü sabittir (config.roleId); bot kendisi rol oluşturmaz.
 const { Events } = require('discord.js');
 const { guildId } = require('../../core/config');
 const { respond } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const config = require('./config');
-const store = require('./store');
 const ui = require('./ui');
 
 const DAY = 24 * 60 * 60 * 1000;
 const isNewAccount = (user) => Date.now() - user.createdTimestamp < config.thresholdDays * DAY;
 
-// Kayıtlı rol yoksa ya da artık mevcut değilse yeniden oluşturur
-async function ensureRole(guild) {
-  const saved = store.roleId(guild.id);
-  const existing = saved && (guild.roles.cache.get(saved) ?? (await guild.roles.fetch(saved).catch(() => null)));
-  if (existing) return existing;
-
-  const role = await guild.roles
-    .create({ name: config.roleName, permissions: [], reason: 'Yeni hesap kısıtlama rolü' })
-    .catch((err) => {
-      console.error('[yenihesap] Rol oluşturulamadı:', err.message);
-      return null;
-    });
-  if (role) {
-    store.setRoleId(guild.id, role.id);
-    console.log(`[yenihesap] "${config.roleName}" rolü oluşturuldu (${role.id}).`);
-  }
+// Sabit kısıtlama rolünü sunucudan bulur; yoksa/bulunamazsa null döner ve hata loglanır
+async function fetchRole(guild) {
+  if (!config.roleId) return null;
+  const role = guild.roles.cache.get(config.roleId) ?? (await guild.roles.fetch(config.roleId).catch(() => null));
+  if (!role) console.error(`[yenihesap] Sabit rol bulunamadı (${config.roleId}).`);
   return role;
 }
 
@@ -82,7 +69,7 @@ function sendPanel(client) {
 async function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
-  const role = await ensureRole(guild);
+  const role = await fetchRole(guild);
   if (!role) return;
 
   await syncVisibility(guild, role.id);
@@ -96,17 +83,16 @@ async function handleReady(client) {
 
 function handleMemberAdd(member) {
   if (member.guild.id !== guildId) return;
-  return syncMember(member, store.roleId(member.guild.id));
+  return syncMember(member, config.roleId);
 }
 
 function handleChannelCreate(channel) {
   if (channel.guild?.id !== guildId) return;
-  return syncVisibilityFor(channel, store.roleId(guildId));
+  return syncVisibilityFor(channel, config.roleId);
 }
 
 function handleSure(interaction) {
-  const roleId = store.roleId(interaction.guildId);
-  const hasRestriction = Boolean(roleId && interaction.member?.roles.cache.has(roleId));
+  const hasRestriction = Boolean(config.roleId && interaction.member?.roles.cache.has(config.roleId));
   return respond(interaction, ui.sureView(interaction.user, hasRestriction));
 }
 
