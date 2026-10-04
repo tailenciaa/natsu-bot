@@ -104,6 +104,7 @@ function splitNote(component) {
   if (cut === lines.length || cut < 2) return [component];
   return [{ ...component, content: lines.slice(0, cut).join('\n') }, SEP, { ...component, content: lines.slice(cut).join('\n') }];
 }
+const countAll = (list) => list.reduce((n, c) => n + 1 + countAll(c.components ?? []) + (c.accessory ? 1 : 0), 0);
 function tidy(components) {
   const out = [];
   const push = (c) => out.push(c);
@@ -135,7 +136,8 @@ function tidy(components) {
     }
     out.splice(k + 1, 0, SEP, note);
   }
-  return out.length <= 38 ? out : components;
+  // Discord bir mesajda iç içe en fazla 40 bileşene izin verir; düzenleme bunu aşıyorsa mesaj olduğu gibi bırakılır
+  return countAll(out) + 1 <= 40 ? out : components;
 }
 const originalToJSON = ContainerBuilder.prototype.toJSON;
 ContainerBuilder.prototype.toJSON = function toJSON(...args) {
