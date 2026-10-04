@@ -17,6 +17,10 @@ module.exports = {
     return next;
   },
 
+  allXp(kind) {
+    return data.levelXp[kind];
+  },
+
   announcedLevel(kind, userId) {
     return data.levelAnnounced[kind][userId] ?? 0;
   },

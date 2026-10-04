@@ -1,5 +1,7 @@
 // Seviye sistemi: mesaj ve ses aktivitesiyle ayrı ayrı XP kazanılır, sadece ana seviyelerde (5'in katları, 100'e
-// kadar) rol verilir, kanala duyurulur ve üye etiketlenir; ara seviyeler sessizce geçilir. XP kalıcıdır; sıralama
+// kadar) rol verilir, kanala duyurulur ve üye etiketlenir; ara seviyeler sessizce geçilir. Üyede her türden (mesaj/ses)
+// sadece ulaştığı en yüksek ana seviyenin rolü durur (düşük olanlar alınır); bot açılırken ve üye sunucuya (tekrar)
+// girince roller XP'ye göre otomatik eşitlenir. XP kalıcıdır; sıralama
 // sistemindeki günlük istatistiklerden bağımsızdır ama ses süresi aynı yöntemle sayılır: botlar ve AFK kanalı
 // sayılmaz, dakikada bir kredi verilir.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
@@ -19,7 +21,40 @@ const commands = [
     .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesi görüntülenecek kullanıcı (boş bırakırsan kendi seviyen)')),
 ];
 
-// XP ekler; her seviye atlandığında kanala duyurur ama sadece ana seviyelerde (5, 10, 15...) rol verir ve üyeyi etiketler
+// Üyenin XP'sine göre o türdeki (mesaj/ses) seviye rolünü eşitler: ulaştığı en yüksek ana seviyenin rolü verilir,
+// aynı türdeki diğer seviye rolleri alınır. Döndürdüğü değer: verilen rol ID'si (yoksa null).
+async function syncKindRole(member, kind) {
+  const level = levelFromXp(store.xpOf(kind, member.id));
+  const reached = config.milestones.filter((m) => m <= level && config.roles[kind][m]);
+  const targetId = reached.length ? config.roles[kind][reached[reached.length - 1]] : null;
+  const allIds = Object.values(config.roles[kind]);
+
+  const stale = member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== targetId);
+  if (stale.size) await member.roles.remove([...stale.keys()], `Seviye rolü eşitlendi (${kind})`).catch(() => {});
+  if (targetId && !member.roles.cache.has(targetId)) await member.roles.add(targetId, `Seviye rolü eşitlendi (${kind})`).catch(() => {});
+  return targetId;
+}
+
+const syncMemberRoles = async (member) => {
+  if (member.user.bot) return;
+  for (const kind of ['mesaj', 'ses']) await syncKindRole(member, kind);
+};
+
+// Bot açılırken XP'si olan herkesin rolleri eşitlenir (roller sonradan tanımlanmış ya da kaçmış olabilir)
+async function syncAllRoles(guild) {
+  const ids = new Set([...Object.keys(store.allXp('mesaj')), ...Object.keys(store.allXp('ses'))]);
+  let done = 0;
+  for (const id of ids) {
+    const member = await guild.members.fetch(id).catch(() => null);
+    if (!member) continue;
+    await syncMemberRoles(member).catch((err) => console.error('[seviye] Rol eşitlenemedi:', err.message));
+    done++;
+    await new Promise((resolve) => setTimeout(resolve, 250)); // Discord istek sınırına takılmamak için
+  }
+  console.log(`[seviye] Seviye rolleri eşitlendi (${done} üye).`);
+}
+
+// XP ekler; her seviye atlandığında kayıt tutulur ama sadece ana seviyelerde (5, 10, 15...) rol verilir, kanala duyurulur ve üye etiketlenir
 async function grantXp(guild, userId, kind, amount) {
   const before = levelFromXp(store.xpOf(kind, userId));
   const after = levelFromXp(store.addXp(kind, userId, amount));
@@ -31,25 +66,16 @@ async function grantXp(guild, userId, kind, amount) {
   for (let level = before + 1; level <= after; level++) {
     if (level <= store.announcedLevel(kind, userId)) continue;
     store.markAnnounced(kind, userId, level);
+    if (!config.milestones.includes(level)) continue; // ara seviyeler sessizce geçilir
 
-    const isMilestone = config.milestones.includes(level);
-    let role = null;
-    if (isMilestone) {
-      const roleId = config.roles[kind][level];
-      if (roleId) {
-        const member = await guild.members.fetch(userId).catch(() => null);
-        await member?.roles.add(roleId, `Seviye ${level} (${kind})`).catch(() => {});
-        role = guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null));
-      }
-    }
+    const roleId = config.roles[kind][level];
+    const member = roleId ? await guild.members.fetch(userId).catch(() => null) : null;
+    if (member) await syncKindRole(member, kind);
+    const role = roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
 
     if (user && channel) {
       await channel
-        .send({
-          components: [ui.levelUpAnnounce(user, kind, level, role)],
-          flags: core.CV2,
-          allowedMentions: isMilestone ? { users: [userId] } : { parse: [] },
-        })
+        .send({ components: [ui.levelUpAnnounce(user, kind, level, role)], flags: core.CV2, allowedMentions: { users: [userId] } })
         .catch(() => {});
     }
   }
@@ -84,6 +110,7 @@ function tickVoice(guild) {
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
+  syncAllRoles(guild).catch((err) => console.error('[seviye] Roller eşitlenemedi:', err.message));
   for (const state of guild.voiceStates.cache.values()) if (countsVoice(state)) voiceSince.set(state.id, Date.now());
   setInterval(() => tickVoice(guild), TICK).unref();
 }
@@ -128,6 +155,7 @@ module.exports = {
   slash: { seviye: handleCommand },
   events: {
     [Events.ClientReady]: handleReady,
+    [Events.GuildMemberAdd]: (member) => (member.guild.id === guildId ? syncMemberRoles(member).catch(() => {}) : undefined),
     [Events.VoiceStateUpdate]: handleVoiceUpdate,
     [Events.MessageCreate]: handleMessage,
   },
