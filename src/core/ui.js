@@ -120,6 +120,21 @@ function tidy(components) {
       prev = c;
     }
   }
+  // Menü/butonların hemen üstündeki tek başına küçük not (-#), düzen için en alta, butonların altına taşınır
+  const isNote = (c) => c?.type === 10 && c.content.startsWith('-# ') && c.content.split('\n').every((l) => l.startsWith('-#'));
+  for (let i = 1; i < out.length - 2; i++) {
+    if (!isNote(out[i]) || !isSep(out[i + 1]) || out[i + 2].type !== 1) continue;
+    const note = out[i];
+    let k = i + 2;
+    while (out[k + 1]?.type === 1) k++;
+    out.splice(i, 2); // not ve ardındaki çizgi çıkar
+    k -= 2;
+    if (!isSep(out[i - 1])) {
+      out.splice(i, 0, SEP);
+      k++;
+    }
+    out.splice(k + 1, 0, SEP, note);
+  }
   return out.length <= 38 ? out : components;
 }
 const originalToJSON = ContainerBuilder.prototype.toJSON;
