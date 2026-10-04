@@ -156,7 +156,7 @@ function itirazModal(p) {
 }
 
 // Form gönderilince destek talebinin konusu olacak metin
-const itirazTicketReason = (p, sebep) => `Ceza İtirazı・${TYPES[p.type].label} #${pad(p.number)}: ${sebep}`;
+const itirazTicketReason = (p, sebep) => `Ceza İtirazı (${TYPES[p.type].label} #${pad(p.number)}): ${sebep}`;
 
 // İtiraz talebi açılınca alt başlığa giden, cezanın bilgisini gösteren ve yetkiliye onay/red butonu sunan kart.
 // Karar verilmişse butonlar yerine sonucu gösterir.

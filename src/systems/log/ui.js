@@ -86,10 +86,10 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
   const blocks = [
     `**Kurulum Durumu**\n**${ready}/${rows.length} log alt başlığı kurulu${panelUrl ? '' : ', panel gönderilmemiş'}.**`,
     '**Kanallar**\n' +
-      `- Ana log kanalı・<#${mainId}>\n` +
-      `- Log paneli kanalı・<#${panelId}>\n` +
-      `- Panel・${panelUrl ? `✅ [mesaja git](${panelUrl})` : '❌ gönderilmemiş'}`,
-    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `- ${category.emoji} ${category.label}・${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')}`,
+      `- **Ana log kanalı:** <#${mainId}>\n` +
+      `- **Log paneli kanalı:** <#${panelId}>\n` +
+      `- **Panel:** ${panelUrl ? `✅ [mesaja git](${panelUrl})` : '❌ gönderilmemiş'}`,
+    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `- ${category.emoji} **${category.label}:** ${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')}`,
   ];
   if (note) blocks.push(`**Son İşlem**\n${note}`);
 

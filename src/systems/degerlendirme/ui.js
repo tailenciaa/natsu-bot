@@ -142,9 +142,9 @@ function ratingNotice(rating, staffUser) {
     status,
     [
       '**Değerlendirme Detayları**',
-      `- Puan・${removed ? `~~${score}~~` : score}`,
-      `- Değerlendiren・<@${rating.userId}>`,
-      `- Kaynak・${refText(rating)}`,
+      `- **Puan:** ${removed ? `~~${score}~~` : score}`,
+      `- **Değerlendiren:** <@${rating.userId}>`,
+      `- **Kaynak:** ${refText(rating)}`,
     ].join('\n'),
     rating.comment ? `**Yorum**\n${quote(rating.comment)}` : '**Yorum**\n-# Yorum bırakılmadı.',
   ];
@@ -301,7 +301,7 @@ function ratingComplaint(rating) {
       '**İtiraz Bilgileri**\n' +
         `${rating.leaderRoleId ? `<@&${rating.leaderRoleId}>, ` : ''}<@${rating.staffId}> aldığı bir değerlendirmeye itiraz etti.\n` +
         `-# <@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
-      `**Değerlendirme**\n- Kaynak・${refText(rating)}\n- Puan・${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : '-# Yorum bırakılmadı.'}`,
+      `**Değerlendirme**\n- **Kaynak:** ${refText(rating)}\n- **Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : '-# Yorum bırakılmadı.'}`,
       `**İtiraz Sebebi**\n${quote(rating.reportReason)}`,
       status,
     ],
@@ -355,8 +355,8 @@ function ratingRequestDm(rating) {
       accent: colors.primary,
       blocks: [
         oryantasyon
-          ? `**Başvuru Bilgileri**\n- Başvuru・#${pad(rating.applicationNumber)}`
-          : `**Görüşme Bilgileri**\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n- Başvuru・#${pad(rating.applicationNumber)}`,
+          ? `**Başvuru Bilgileri**\n- **Başvuru:** #${pad(rating.applicationNumber)}`
+          : `**Görüşme Bilgileri**\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n- **Başvuru:** #${pad(rating.applicationNumber)}`,
       ],
     }),
     rating,

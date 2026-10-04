@@ -201,7 +201,7 @@ function reviewCard(request, decided) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**Talep Bilgileri**\n- Gönderen・<@${request.requesterId}>\n- Sunucu ID・\`${request.serverId}\`${decided ? '' : `\n-# <@&${config.roles.staff}>, yeni bir partner talebi var.`}`),
+      text(`**Talep Bilgileri**\n- **Gönderen:** <@${request.requesterId}>\n- **Sunucu ID:** \`${request.serverId}\`${decided ? '' : `\n-# <@&${config.roles.staff}>, yeni bir partner talebi var.`}`),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(request.text, 1000))}`));
@@ -249,7 +249,7 @@ function postCard(request, trusted, banned) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Tanıtım Metni**\n${sanitize(request.text)}\n-# @everyone ve @here bu kanalda bildirim göndermez.`))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Paylaşım**\n- Paylaşan・<@${request.requesterId}>\n- Tarih・<t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
+    .addTextDisplayComponents(text(`**Paylaşım**\n- **Paylaşan:** <@${request.requesterId}>\n- **Tarih:** <t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -305,7 +305,7 @@ function trustedList(entries) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Liste Durumu**\n- Toplam・${entries.length} sunucu\n-# Detay ve işlemler için aşağıdan bir partner seç.`))
+    .addTextDisplayComponents(text(`**Liste Durumu**\n- **Toplam:** ${entries.length} sunucu\n-# Detay ve işlemler için aşağıdan bir partner seç.`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -402,9 +402,10 @@ function trustedListPanel(entries) {
   entries.forEach((entry, index) => {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(
       text(
-        `**Sunucu・\`${entry.serverId ?? 'bilinmiyor'}\`**\n` +
-          `- Partner Yetkilisi・${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
-          `-# Eklenme: <t:${unix(entry.addedAt)}:D>・Ekleyen: <@${entry.addedBy}>`,
+        `**Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
+          `- **Partner Yetkilisi:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
+          `- **Eklenme:** <t:${unix(entry.addedAt)}:D>\n` +
+          `- **Ekleyen:** <@${entry.addedBy}>`,
       ),
     );
 
@@ -436,9 +437,9 @@ function trustedDetail(entry) {
     .addTextDisplayComponents(
       text(
         '**Kayıt Bilgileri**\n' +
-          `- Eklenme・<t:${unix(entry.addedAt)}:F>\n` +
-          `- Ekleyen・<@${entry.addedBy}>\n` +
-          `- İletişim・${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}`,
+          `- **Eklenme:** <t:${unix(entry.addedAt)}:F>\n` +
+          `- **Ekleyen:** <@${entry.addedBy}>\n` +
+          `- **İletişim:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -515,8 +516,8 @@ function assignedOfferDm(entry, guildName) {
     .addTextDisplayComponents(
       text(
         '**Teklif Bilgileri**\n' +
-          `- Teklif eden sunucu・**${guildName}**\n` +
-          `- Sizin sunucunuz・\`${entry.serverId ?? 'bilinmiyor'}\`\n` +
+          `- **Teklif eden sunucu:** **${guildName}**\n` +
+          `- **Sizin sunucunuz:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
           '-# Kabul edersen mevcut partner metnini inceleyip onaylayacak ya da düzenleyeceksin.',
       ),
     )
@@ -608,7 +609,7 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   if (entry?.serverId) {
     container
       .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`**Onların Sunucusu・\`${entry.serverId}\`**\n${quote(shorten(entry.content, 1000))}`));
+      .addTextDisplayComponents(text(`**Onların Sunucusu:** \`${entry.serverId}\`\n${quote(shorten(entry.content, 1000))}`));
 
     if (partnerJumpUrl) {
       container.addActionRowComponents(
