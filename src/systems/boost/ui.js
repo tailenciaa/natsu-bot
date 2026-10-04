@@ -104,7 +104,7 @@ function panel(guild) {
   return container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe]) => `**${title}:** ${describe()}`).join('\n')}`),
+      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe]) => `- **${title}:** ${describe()}`).join('\n')}`),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
