@@ -5,11 +5,12 @@
 const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { data, save } = require('../../core/db');
-const { respond, replyError, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const categories = require('./categories');
 const config = require('./config');
 const engine = require('./engine');
+const store = require('./store');
 const ui = require('./ui');
 const message = require('./events/message');
 const voice = require('./events/voice');
@@ -18,9 +19,13 @@ const moderation = require('./events/moderation');
 const server = require('./events/server');
 const bot = require('./events/bot');
 
-// Bot açılınca alt başlıkları hazırlar ve paneli log paneli kanalına gönderir (değişmediyse dokunmaz)
-async function sendPanel(client) {
-  await engine.ensureAllThreads(client);
+// Paneli log paneli kanalına gönderir (değişmediyse dokunmaz); force ile eskisi kaldırılıp yenisi gönderilir
+function syncLogPanel(client, force = false) {
+  // Kayıtlı özet silinir: panel kanalda yerinde olsa bile eskisi kaldırılıp yenisi gönderilir
+  if (force && data.panels.log) {
+    data.panels.log.hash = '';
+    save();
+  }
   return syncPanel(client, {
     key: 'log',
     label: 'Log',
@@ -31,63 +36,73 @@ async function sendPanel(client) {
   });
 }
 
-// ── Komutlar ─────────────────────────────────────────────────────────────────
+// Bot açılınca alt başlıkları hazırlar ve paneli gönderir
+async function sendPanel(client) {
+  await engine.ensureAllThreads(client);
+  return syncLogPanel(client);
+}
+
+// ── /log kur menüsü ──────────────────────────────────────────────────────────
 
 const commands = [
   new SlashCommandBuilder()
     .setName('log')
-    .setDescription('Log sistemini kurar ve yönetir.')
+    .setDescription('Log sistemini yönetir.')
     .setContexts(InteractionContextType.Guild)
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((s) =>
-      s
-        .setName('kur')
-        .setDescription('Log kategorilerinin alt başlıklarını kurar (eksik olanları açar).')
-        .addBooleanOption((o) =>
-          o.setName('sifirla').setDescription('Mevcut alt başlıkları eski loglarıyla birlikte silip hepsini yeniden açar.'),
-        ),
-    )
-    .addSubcommand((s) => s.setName('panel').setDescription('Log panelini log paneli kanalına gönderir (varsa yeniler).')),
+    .addSubcommand((s) => s.setName('kur').setDescription('Log kurulum menüsünü açar: durumu gösterir, kurar, sıfırlar.')),
 ];
 
-// /log kur: eksik alt başlıkları açar, hepsinin listesini gösterir
-async function handleKur(interaction) {
-  await interaction.deferReply({ flags: core.EPHEMERAL });
-  const reset = interaction.options.getBoolean('sifirla') ?? false;
-  const lines = [];
+// Menünün gösterdiği güncel durum: her kategorinin alt başlığı var mı, panel mesajı yerinde mi
+async function setupView(guild, note) {
+  const rows = [];
   for (const category of categories) {
-    const open = reset ? engine.resetThread : engine.ensureThread;
-    const thread = await open(interaction.client, category.key).catch(() => null);
-    lines.push(`${category.emoji} **${category.label}:** ${thread ? `<#${thread.id}>` : '❌ açılamadı'}`);
+    const id = store.getThreadId(category.key);
+    const thread = id ? await guild.channels.fetch(id).catch(() => null) : null;
+    rows.push({ category, thread });
   }
-  const failed = lines.some((l) => l.includes('❌'));
-  return respond(
-    interaction,
-    core.notice(
-      [failed ? '**Bazı alt başlıklar açılamadı.**' : reset ? '**Log alt başlıkları silinip yeniden açıldı.**' : '**Log alt başlıkları hazır.**', lines.join('\n')],
-      failed ? 'danger' : 'success',
-    ),
-  );
+  const saved = data.panels.log;
+  const channel = saved ? await fetchTextChannel(guild, saved.channelId) : null;
+  const message = channel ? await channel.messages.fetch(saved.messageId).catch(() => null) : null;
+
+  return ui.setupView({
+    mainId: config.channels.main,
+    panelId: config.channels.panel,
+    rows,
+    panelUrl: message ? core.messageUrl(guild.id, channel.id, message.id) : null,
+    note,
+  });
 }
 
-// /log panel: paneli yeniden gönderir (mesaj silindiyse ya da bozulduysa yenisini kurar)
-async function handlePanel(interaction) {
+async function handleLog(interaction) {
   await interaction.deferReply({ flags: core.EPHEMERAL });
-  const channel = await fetchTextChannel(interaction.guild, config.channels.panel);
-  if (!channel) return replyError(interaction, 'Log paneli kanalı bulunamadı.', `Kanal ID'sini kontrol et (${config.channels.panel}).`);
-
-  await engine.ensureAllThreads(interaction.client);
-  // Kayıtlı özet silinir: panel kanalda yerinde olsa bile eskisi kaldırılıp yenisi gönderilir
-  if (data.panels.log) {
-    data.panels.log.hash = '';
-    save();
-  }
-  await sendPanel(interaction.client);
-  return respond(interaction, core.alert(`Log paneli <#${channel.id}> kanalına gönderildi.`, null, 'success'));
+  return respond(interaction, await setupView(interaction.guild));
 }
 
-const handleLog = (interaction) =>
-  interaction.options.getSubcommand() === 'kur' ? handleKur(interaction) : handlePanel(interaction);
+// Menü butonları: logkur:<eylem> (setup, panel, reset, resetyes, refresh)
+async function handleSetupButton(interaction) {
+  if (!isStaff(interaction)) return replyError(interaction, 'Bu menüyü sadece yöneticiler kullanabilir.');
+
+  const action = interaction.customId.split(':')[1];
+  if (action === 'reset') return interaction.update({ components: [ui.resetConfirm()] });
+
+  await interaction.deferUpdate();
+  const { client, guild } = interaction;
+  let note = null;
+
+  if (action === 'setup') {
+    await engine.ensureAllThreads(client);
+    note = '✅ Eksik alt başlıklar kuruldu.';
+  } else if (action === 'resetyes') {
+    for (const { key } of categories) await engine.resetThread(client, key).catch((err) => console.error(`[log] "${key}" sıfırlanamadı:`, err.message));
+    note = '✅ Tüm alt başlıklar silinip yeniden açıldı.';
+  } else if (action === 'panel') {
+    await syncLogPanel(client, true);
+    note = '✅ Panel log paneli kanalına gönderildi.';
+  }
+
+  return interaction.editReply({ components: [await setupView(guild, note)], flags: core.CV2 });
+}
 
 // Panelden kategori seçilince o kategorinin alt başlığına giden bağlantı gönderilir
 async function handleSelect(interaction) {
@@ -108,11 +123,14 @@ async function handleSelect(interaction) {
 module.exports = {
   name: 'log',
   commands,
-  help: { category: ['log', 'Log'], access: { 'log kur': 'Yöneticiler', 'log panel': 'Yöneticiler' } },
+  help: { category: ['log', 'Log'], access: { 'log kur': 'Yöneticiler' } },
   slash: { log: handleLog },
   // Diğer sistemlerin (ör. sicil) zengin detaylı moderasyon logu göndermesi için
   logModeration: (client, { color, title, lines }) => engine.send(client, 'moderasyon', ui.entry(color, title, lines)),
-  prefixed: [[ui.IDS.select, handleSelect]],
+  prefixed: [
+    [ui.IDS.select, handleSelect],
+    [ui.IDS.setup, handleSetupButton],
+  ],
   events: {
     [Events.ClientReady]: sendPanel,
     [Events.MessageDelete]: message.handleMessageDelete,

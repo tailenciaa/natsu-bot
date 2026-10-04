@@ -77,6 +77,22 @@ async function ensureThread(client, key) {
   }
 }
 
+// Kategorinin alt başlığını (içindeki eski loglarla birlikte) siler ve yenisini açar
+async function resetThread(client, key) {
+  const category = categoryOf(key);
+  const guild = client.guilds.cache.get(guildId);
+  const parent = await fetchTextChannel(guild, config.channels.main);
+  if (!parent) return null;
+
+  const savedId = store.getThreadId(key);
+  const saved = savedId ? await guild.channels.fetch(savedId).catch(() => null) : null;
+  // Kayıtlı alt başlığa ek olarak aynı adlı eski alt başlık da silinir (kayıt kaybolmuş olabilir)
+  const same = await findExistingThread(parent, category.threadName);
+  for (const thread of new Set([saved, same].filter(Boolean))) await thread.delete('Log alt başlığı sıfırlandı').catch(() => {});
+  store.setThreadId(key, null);
+  return ensureThread(client, key);
+}
+
 // Bot açılırken tüm kategorilerin alt başlıklarını önceden açar; böylece log paneli ilk andan itibaren kullanılabilir.
 async function ensureAllThreads(client) {
   for (const { key } of categories) {
@@ -93,4 +109,4 @@ async function send(client, key, container) {
   });
 }
 
-module.exports = { ensureThread, ensureAllThreads, send, categoryOf };
+module.exports = { ensureThread, resetThread, ensureAllThreads, send, categoryOf };
