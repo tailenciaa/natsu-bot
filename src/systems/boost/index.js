@@ -53,7 +53,7 @@ function sendPanel(client) {
     label: 'Booster İşlemleri',
     channelId: config.panelChannel,
     buttonId: ui.IDS.emoji,
-    build: ui.panel,
+    build: () => ui.panel(client.guilds.cache.get(guildId)),
     image: '',
   });
 }
@@ -165,6 +165,7 @@ async function handleRoleForm(interaction) {
 async function handleColorRole(interaction) {
   if (!isBooster(interaction)) return replyError(interaction, 'Bu işlem sadece takviye eden üyeler içindir.');
   const roleId = interaction.values[0];
+  if (roleId === ui.NO_COLOR_ROLE) return respond(interaction, core.alert('Renk rolleri henüz hazır değil.', 'Çok yakında buradan seçebileceksin.', 'primary'));
   const allIds = config.colorRoles.map((c) => c.roleId);
 
   const toRemove = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId);
