@@ -90,6 +90,45 @@ function page({ title, sub, thumbnail, blocks = [], accent }) {
   return container;
 }
 
+// OTOMATİK DÜZENLEME: bütün container'lar gönderilirken (toJSON) tek yerden düzeltilir, böylece her mesaj aynı düzende olur:
+//  1) görsel/banner (media gallery) üstünde ve altında çizgi, 2) butonların/menülerin üstünde çizgi,
+//  3) bir bloğun sonundaki küçük açıklama (-#) kalın/normal satırlardan çizgiyle ayrılır (başlık satırı "#" ile başlayanlara dokunulmaz).
+const SEP = { type: 14, divider: true, spacing: 1 };
+const isSep = (c) => c?.type === 14;
+function splitNote(component) {
+  const content = component?.type === 10 ? component.content : null;
+  if (!content || content.startsWith('#') || content.startsWith('-#')) return [component];
+  const lines = content.split('\n');
+  let cut = lines.length;
+  while (cut > 0 && lines[cut - 1].startsWith('-# ')) cut--;
+  if (cut === lines.length || cut < 2) return [component];
+  return [{ ...component, content: lines.slice(0, cut).join('\n') }, SEP, { ...component, content: lines.slice(cut).join('\n') }];
+}
+function tidy(components) {
+  const out = [];
+  const push = (c) => out.push(c);
+  const sepBefore = () => {
+    if (out.length && !isSep(out[out.length - 1])) push(SEP);
+  };
+  let prev = null;
+  for (const raw of components) {
+    for (const c of splitNote(raw)) {
+      if (c.type === 12) sepBefore();
+      else if (c.type === 1 && prev?.type !== 1) sepBefore();
+      else if (prev?.type === 12 && !isSep(c)) push(SEP);
+      push(c);
+      prev = c;
+    }
+  }
+  return out.length <= 38 ? out : components;
+}
+const originalToJSON = ContainerBuilder.prototype.toJSON;
+ContainerBuilder.prototype.toJSON = function toJSON(...args) {
+  const json = originalToJSON.apply(this, args);
+  if (Array.isArray(json.components)) json.components = tidy(json.components);
+  return json;
+};
+
 module.exports = {
   CV2,
   EPHEMERAL,
