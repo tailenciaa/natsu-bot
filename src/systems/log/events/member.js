@@ -1,8 +1,8 @@
-// Üye logları: katılma, ayrılma/atılma, takma ad ve rol değişiklikleri, kullanıcı adı/profil fotoğrafı değişiklikleri.
+// Üye logları: sunucuya katılma, ayrılma/atılma, takma ad ve üye rolü değişiklikleri (rol logları rol kategorisine gider).
 // Aynı GuildMemberUpdate olayının susturma ve boost kısımları moderation.js ve boost.js'e devredilir.
 const { AuditLogEvent } = require('discord.js');
-const { guildId } = require('../../../core/config');
 const { unix } = require('../../../core/ui');
+const audit = require('../audit');
 const engine = require('../engine');
 const ui = require('../ui');
 const moderationEvents = require('./moderation');
@@ -58,6 +58,7 @@ async function handleMemberUpdate(oldMember, newMember) {
       'uye',
       ui.entry('warning', 'Takma Ad Değişti', [
         `**Kullanıcı:** <@${newMember.id}>`,
+        await audit.by(newMember.guild, AuditLogEvent.MemberUpdate, newMember.id),
         `**Önceki:** ${oldMember.nickname ?? '(yoktu)'}`,
         `**Yeni:** ${newMember.nickname ?? '(kaldırıldı)'}`,
       ]),
@@ -69,9 +70,10 @@ async function handleMemberUpdate(oldMember, newMember) {
   if (added.size || removed.size) {
     await engine.send(
       newMember.client,
-      'uye',
+      'rol',
       ui.entry('primary', 'Üye Rolleri Değişti', [
         `**Kullanıcı:** <@${newMember.id}>`,
+        await audit.by(newMember.guild, AuditLogEvent.MemberRoleUpdate, newMember.id),
         added.size ? `**Eklenen:** ${added.map((r) => `<@&${r.id}>`).join(', ')}` : null,
         removed.size ? `**Alınan:** ${removed.map((r) => `<@&${r.id}>`).join(', ')}` : null,
       ]),
@@ -82,20 +84,4 @@ async function handleMemberUpdate(oldMember, newMember) {
   await boostEvents.checkBoost(oldMember, newMember);
 }
 
-async function handleUserUpdate(oldUser, newUser) {
-  const guild = newUser.client.guilds.cache.get(guildId);
-  if (!guild?.members.cache.has(newUser.id)) return; // sadece sunucu üyeleri için
-
-  if (oldUser.tag !== newUser.tag) {
-    await engine.send(
-      newUser.client,
-      'uye',
-      ui.entry('warning', 'Kullanıcı Adı Değişti', [`**Kullanıcı:** <@${newUser.id}>`, `**Önceki:** ${oldUser.tag}`, `**Yeni:** ${newUser.tag}`]),
-    );
-  }
-  if (oldUser.avatar !== newUser.avatar) {
-    await engine.send(newUser.client, 'uye', ui.entry('primary', 'Profil Fotoğrafı Değişti', [`**Kullanıcı:** <@${newUser.id}>`]));
-  }
-}
-
-module.exports = { handleMemberAdd, handleMemberRemove, handleMemberUpdate, handleUserUpdate };
+module.exports = { handleMemberAdd, handleMemberRemove, handleMemberUpdate };

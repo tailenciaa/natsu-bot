@@ -21,7 +21,21 @@ module.exports = [
     label: 'Üye Logları',
     emoji: '👤',
     threadName: 'uye-loglari',
-    description: 'Katılma, ayrılma, takma ad, rol, kullanıcı adı ve profil fotoğrafı değişiklikleri',
+    description: 'Sunucuya katılma, ayrılma ve takma ad değişiklikleri',
+  },
+  {
+    key: 'rol',
+    label: 'Rol Logları',
+    emoji: '🏷️',
+    threadName: 'rol-loglari',
+    description: 'Rol oluşturma, silme, düzenleme ve üyelere rol verilip alınması',
+  },
+  {
+    key: 'kanal',
+    label: 'Kanal Logları',
+    emoji: '📂',
+    threadName: 'kanal-loglari',
+    description: 'Kanal ve alt başlık oluşturma, silme, düzenleme ve izin değişiklikleri',
   },
   {
     key: 'moderasyon',
@@ -35,7 +49,7 @@ module.exports = [
     label: 'Sunucu Logları',
     emoji: '⚙️',
     threadName: 'sunucu-loglari',
-    description: 'Kanal, rol, sunucu ayarı, emoji ve davet değişiklikleri',
+    description: 'Sunucu ayarları, emoji, çıkartma ve davet değişiklikleri',
   },
   {
     key: 'boost',
@@ -43,5 +57,12 @@ module.exports = [
     emoji: '💎',
     threadName: 'boost-loglari',
     description: 'Sunucu takviyesi başlama ve bitme',
+  },
+  {
+    key: 'bot',
+    label: 'Bot Logları',
+    emoji: '🤖',
+    threadName: 'bot-loglari',
+    description: 'Botun komutlarının kullanımı',
   },
 ];

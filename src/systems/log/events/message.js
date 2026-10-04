@@ -21,7 +21,7 @@ async function handleMessageDelete(message) {
       `**Kullanıcı:** ${message.author ? `<@${message.author.id}>` : 'bilinmiyor'}`,
       `**Kanal:** <#${message.channelId}>`,
       content ? `**İçerik:**\n${core.quote(trim(content))}` : '-# İçerik önbellekte yoktu, gösterilemiyor.',
-      message.attachments?.size ? `**Ekler:** ${message.attachments.size} dosya` : null,
+      message.attachments?.size ? `**Ekler:** ${message.attachments.map((a) => a.name).join(', ')}` : null,
     ]),
   );
 }
