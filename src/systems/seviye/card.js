@@ -1,10 +1,6 @@
 // /seviye kartı: avatar, kullanıcı adı ve mesaj/ses seviyelerinin ayrı ayrı gösterildiği görsel (PNG, Buffer döner).
 // Kart, kullanıcının profilinde seçtiği renkte çizilir (seçmediyse varsayılan vurgu rengi).
-let createCanvas;
-function initCanvas() {
-  if (!createCanvas) ({ createCanvas } = require('canvas'));
-}
-const { hexColor, truncate, drawBackground, drawAvatar, drawBar } = require('../../core/canvas');
+const { FONT, canvasLib, hexColor, truncate, drawBackground, drawAvatar, drawBar } = require('../../core/canvas');
 const config = require('./config');
 const { levelFromXp } = require('./level');
 
@@ -22,29 +18,28 @@ function drawRow(ctx, x, y, width, title, xp, rank, accent) {
 
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px sans-serif';
+  ctx.font = `700 24px ${FONT}`;
   ctx.fillText(title, x, y);
 
   ctx.textAlign = 'right';
   ctx.fillStyle = accent;
-  ctx.font = 'bold 28px sans-serif';
+  ctx.font = `700 28px ${FONT}`;
   ctx.fillText(`Seviye ${level}`, x + width, y);
 
   drawBar(ctx, x, y + 14, width, 18, (xp - current) / (next - current), accent);
 
   ctx.textAlign = 'left';
   ctx.fillStyle = '#b8a4ac';
-  ctx.font = '17px sans-serif';
+  ctx.font = `400 17px ${FONT}`;
   ctx.fillText(`${xp - current} / ${next - current} XP`, x, y + 58);
 
   ctx.textAlign = 'right';
-  ctx.fillText(`Sıralama #${rank ?? '-'}   Sonraki rol: ${milestone ? `Seviye ${milestone}` : 'tamamlandı'}`, x + width, y + 58);
+  ctx.fillText(`Sıralama ${rank ? `#${rank}` : '-'}   Sonraki rol: ${milestone ? `Seviye ${milestone}` : 'tamamlandı'}`, x + width, y + 58);
 }
 
 // view: { color, mesajXp, sesXp, mesajRank, sesRank }
 async function buildLevelCard(user, view) {
-  initCanvas();
-  const canvas = createCanvas(WIDTH, HEIGHT);
+  const canvas = canvasLib().createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
   const accent = hexColor(view.color);
 
@@ -54,7 +49,7 @@ async function buildLevelCard(user, view) {
   const textX = 260;
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 40px sans-serif';
+  ctx.font = `700 40px ${FONT}`;
   ctx.fillText(truncate(user.username, 22), textX, 75);
 
   const barWidth = WIDTH - textX - 60;
