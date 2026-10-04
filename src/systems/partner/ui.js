@@ -70,6 +70,7 @@ function startPromptBase(button) {
       text(
         '**Oto Partner Nasıl Çalışır?**\n' +
           '- Sunucu ID\'ni ve partner metnini gönderirsin.\n' +
+          '- Yetkili onaylayınca metnin otomatik paylaşılır.\n' +
           '-# İstersen butona basmadan bir yetkilinin seninle ilgilenmesini de bekleyebilirsin.',
       ),
     )
@@ -96,6 +97,8 @@ function startPromptSuccess() {
         'Partner talebin yetkililere iletildi; devam edebilmek için sana gönderilen şartlar mesajını DM kutunda açıp şartları kabul etmen gerekiyor, DM\'lerin kapalıysa önce açmalısın.',
       ),
     )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('**Sıradaki Adım**\n- Şartlarını kabul etmek için DM\'ini kontrol et.'))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -172,7 +175,8 @@ function termsDm(acceptCustomId) {
           '1. Reklam metni Discord kurallarına aykırı içerik barındıramaz.\n' +
           '2. Sunucular karşılıklı olarak aynı gün içinde birbirini paylaşır.\n' +
           '3. Onaylanan reklam metni değiştirilemez, değişiklik için yeni talep açılması gerekir.\n' +
-          '4. Kurallara uymayan partnerlikler yetkililerce tek taraflı sonlandırılabilir.',
+          '4. Kurallara uymayan partnerlikler yetkililerce tek taraflı sonlandırılabilir.\n' +
+          '-# Devam edersen bu şartları kabul etmiş sayılırsın.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -268,8 +272,8 @@ function postCard(request, trusted, banned) {
     );
 }
 
-function requesterResult(sonuc, hint) {
-  const container = new ContainerBuilder()
+const requesterResult = (sonuc, hint) =>
+  new ContainerBuilder()
     .setAccentColor(sonuc === 'onayla' ? colors.success : colors.danger)
     .addTextDisplayComponents(
       head(
@@ -278,11 +282,15 @@ function requesterResult(sonuc, hint) {
           ? 'Gönderdiğin oto partner talebi yetkililer tarafından incelendi ve olumlu sonuçlandı; sunucunun tanıtım metni ilgili paylaşım kanalına gönderilerek partnerlik başlatıldı.'
           : 'Gönderdiğin oto partner talebi yetkililer tarafından incelendi ve olumsuz sonuçlandı; talebin paylaşım kanalına gönderilmedi, ayrıntılar için yetkililerle iletişime geçebilirsin.',
       ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        sonuc === 'onayla'
+          ? '**Sonuç**\n- ✅ Partner talebin onaylandı, metnin paylaşım kanalına gönderildi!'
+          : `**Sonuç**\n- ❌ Partner talebin reddedildi.${hint ? `\n-# ${hint}` : ''}`,
+      ),
     );
-  // Sonuç başlıkta ve açıklamada zaten yazıyor, sadece ek not varsa blok eklenir
-  if (sonuc === 'reddet' && hint) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${hint}`));
-  return container;
-}
 
 // /guvenilir-partnerler listesi
 function trustedList(entries) {
@@ -297,7 +305,7 @@ function trustedList(entries) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Liste Durumu**\n- Toplam・${entries.length} sunucu`))
+    .addTextDisplayComponents(text(`**Liste Durumu**\n- Toplam・${entries.length} sunucu\n-# Detay ve işlemler için aşağıdan bir partner seç.`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -472,6 +480,8 @@ function staffSelect(trustedId, members, statusOf) {
       ),
     )
     .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('**Yetkili Seçimi**\n- Bu teklifle hangi partner yetkilisi ilgilensin?'))
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -506,7 +516,8 @@ function assignedOfferDm(entry, guildName) {
       text(
         '**Teklif Bilgileri**\n' +
           `- Teklif eden sunucu・**${guildName}**\n` +
-          `- Sizin sunucunuz・\`${entry.serverId ?? 'bilinmiyor'}\``,
+          `- Sizin sunucunuz・\`${entry.serverId ?? 'bilinmiyor'}\`\n` +
+          '-# Kabul edersen mevcut partner metnini inceleyip onaylayacak ya da düzenleyeceksin.',
       ),
     )
     .addSeparatorComponents(divider())

@@ -59,7 +59,7 @@ function panel() {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '**Nasıl İşler?**\n' +
+        '**Bir sorunla mı karşılaştın?**\n' +
           '- Butona basıp sorununu kısaca anlatırsın.\n' +
           '- Sana özel bir alt başlık açılır, destek ekibi haberdar edilir.\n' +
           '- Bir yetkili talebini üstlenip seninle ilgilenir.',
@@ -117,7 +117,7 @@ function ticketPanel(ticket) {
     sub: 'Talebin destek ekibimize ulaştı; bir yetkili talebini üstlenene kadar sorununu ayrıntılı şekilde yazabilir, varsa ekran görüntüsü ekleyebilir ve gerekirse aşağıdaki butonlardan faydalanabilirsin.',
     accent: color,
     blocks: [
-      `**Hoş Geldin**\n<@${ticket.ownerId}>`,
+      `**Hoş Geldin**\n<@${ticket.ownerId}>, talebin ekibimize ulaştı.\n-# Beklerken sorununu ayrıntılı şekilde yazabilir, varsa ekran görüntüsü ekleyebilirsin.`,
       `**Talep Durumu**\n${status}`,
     ],
   });
@@ -147,7 +147,7 @@ function claimedNotice(ticket) {
     title: 'Yetkilin Geldi',
     sub: 'Talebini üstlenen yetkili artık seninle ilgileniyor; sorununu anlatmaya başlayabilir, işin bitince aşağıdaki butonla yetkiliyi bir kez selamlayabilirsin.',
     accent: colors.success,
-    blocks: [`**Talep Sahibi**\n<@${ticket.ownerId}>`],
+    blocks: [`**Bilgilendirme**\n<@${ticket.ownerId}>, yetkilin geldi!\n-# Sorununu anlatmaya başlayabilirsin.`],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -216,7 +216,7 @@ function claimRequest(ticket) {
         `- Talep Sahibi・<@${ticket.ownerId}>`,
         `- Açılış・<t:${unix(ticket.createdAt)}:R>`,
         status ? `- Durum・${status}` : null,
-        waiting ? `-# <@&${ticket.staffRoleId}>` : null,
+        waiting ? `-# <@&${ticket.staffRoleId}>, bekleyen yeni bir talep var. Talebi ilk üstlenen yetkili ilgilenir.` : null,
       ]
         .filter(Boolean)
         .join('\n'),
@@ -234,7 +234,7 @@ function claimReminder(ticket) {
     title: `Hatırlatma・Talep #${pad(ticket.number)}`,
     sub: 'Talep sahibi üstlenilmeyi beklediği için ekibe hatırlatma gönderdi; butonla talebin üstlenme mesajına gidip talebi üstlenebilir ve üyeyle ilgilenmeye başlayabilirsiniz.',
     accent: colors.warning,
-    blocks: [`**Hatırlatma**\n<@&${ticket.staffRoleId}>, <@${ticket.ownerId}> hâlâ bir yetkili bekliyor!`],
+    blocks: [`**Hatırlatma**\n<@&${ticket.staffRoleId}>, <@${ticket.ownerId}> hâlâ bir yetkili bekliyor!\n-# Butonla talebin üstlenme mesajına gidebilirsin.`],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -254,7 +254,7 @@ function ticketCreated(channel) {
     title: 'Talebin Açıldı',
     sub: 'Destek talebin başarıyla oluşturuldu ve ekibe haber verildi; bir yetkili talebini üstlendiğinde sana bildirim gelir, aşağıdaki butonla talebine doğrudan gidebilirsin.',
     accent: colors.success,
-    blocks: [`**Talep Bilgileri**\n- Talep・<#${channel.id}>`],
+    blocks: [`**Talep Bilgileri**\n- Talep・<#${channel.id}>\n-# Ekibe haber verildi, bir yetkili talebini üstlendiğinde bildirim alacaksın.`],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -349,7 +349,7 @@ function closeDm(ticketNumber, guildName, rating) {
     sub: 'Destek talebin ekibimiz tarafından sonlandırıldı; başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin, iyi günler dileriz.',
     accent: colors.danger,
     blocks: [
-      `**Talep Bilgileri**\n**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı talebin kapatıldı.`,
+      `**Talep Bilgileri**\n**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı talebin kapatıldı.\n-# Başka bir konuda yardıma ihtiyacın olursa panelden yeni bir talep açabilirsin.`,
     ],
   });
   if (rating) ratingUi.ratingSection(container, rating);

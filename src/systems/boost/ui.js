@@ -58,7 +58,7 @@ function channelThanks(user) {
     sub: 'Sunucumuzu takviye ederek bize destek olan üyelerimize buradan teşekkür ediyoruz; takviye edenler özel rol ve panel avantajlarından faydalanabilir ve topluluğumuzu büyütür.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: 0xf47fff,
-    blocks: [`**Takviye Eden**\n<@${user.id}>`],
+    blocks: [`**Takviye Eden**\n<@${user.id}> sunucuyu takviye etti, çok teşekkür ederiz!`],
   });
 }
 
@@ -67,6 +67,9 @@ function channelThanks(user) {
 const PERKS = [
   'Çekiliş ve etkinliklerde **önceliklisin**.',
   '**Özel rolünle** diğer üyelerden üstte, ayrı bir grupta görünürsün.',
+  '**Kendine özel bir rol** oluşturabilirsin (adını, rengini ve emojisini sen seçersin).',
+  'Sunucuya **kendi emojini** ekleyebilirsin.',
+  '**Takma adını** değiştirebilirsin.',
   'Sesli kanallarda **ses panelini (soundboard)** kullanabilirsin.',
   'Metin kanallarına **dosya ve bağlantı** gönderebilirsin.',
   '**Harici emoji ve çıkartma** kullanabilirsin (başka sunuculara ait olanlar dahil).',
@@ -84,7 +87,7 @@ function panel() {
   const container = new ContainerBuilder().addTextDisplayComponents(
     text(
       `${panelTitle(`${botName} Booster İşlemleri`)}\n` +
-        '-# Bu panel sadece sunucuyu takviye eden (boost basan) üyeler içindir; isim ve rol ayrıcalıkları takviyen sürdüğü sürece geçerlidir, bitince otomatik geri alınır.',
+        '-# Bu panel sadece sunucuyu takviye eden (boost basan) üyeler içindir; isim ve rol ayrıcalıkları takviyen sürdüğü sürece geçerlidir, takviyen bitince otomatik geri alınır.',
     ),
   );
 
@@ -99,6 +102,13 @@ function panel() {
     .addTextDisplayComponents(
       text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe]) => `- **${title}:** ${describe()}`).join('\n')}`),
     );
+
+  // Hazır renk rolleri henüz tanımlanmadıysa (config.colorRoles boş) bu bölüm hiç gösterilmez
+  if (config.colorRoles.length) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(text('**Renk Rolü**\nAşağıdan almak istediğin renk rolünü seç.'));
+  }
 
   container
     .addSeparatorComponents(divider())
@@ -129,7 +139,7 @@ const notBoosterView = () => notice('❌ Bu işlem sadece sunucuyu takviye eden 
 const stickerInfoView = () =>
   notice(
     '**Çıkartma eklemek dosya yüklemesi gerektiriyor, bu yüzden panelden değil komutla yapılır.**\n' +
-      '-# `/cikartma-ekle`',
+      '-# `/cikartma-ekle` komutunu kullanabilirsin.',
     'primary',
   );
 

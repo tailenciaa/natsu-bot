@@ -19,7 +19,7 @@ function thanks(user) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**Etiket Bilgisi**\n<@${user.id}>・\`${user.primaryGuild.tag}\`\n-# <t:${unix(Date.now())}:F>`),
+      text(`**Etiket Bilgisi**\n<@${user.id}> artık profilinde \`${user.primaryGuild.tag}\` etiketini taşıyor.\n-# <t:${unix(Date.now())}:F>`),
     );
 }
 
