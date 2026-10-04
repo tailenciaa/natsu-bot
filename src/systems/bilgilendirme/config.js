@@ -38,11 +38,12 @@ module.exports = {
         {
           "text": "**Davet linki:** https://discord.gg/kazuki"
         }
-      ]
+      ],
+      "sub": "Sunucumuzun kim tarafından, ne zaman, neden ve hangi amaçla kurulduğunu; burada seni neler beklediğini ve neleri hedeflediğimizi kısaca öğrenebilirsin."
     },
     {
       "title": "Anime ve Manga Nedir?",
-      "sub": "Yeni gelenler için kısa bir açıklama",
+      "sub": "Anime ya da manga ilk kez karşına çıkıyorsa merak etme; bu kelimelerin ne anlama geldiğini ve burada anime izlemeden de nasıl eğlenebileceğini anlatıyoruz.",
       "blocks": [
         {
           "heading": "Anime",
@@ -64,7 +65,7 @@ module.exports = {
     },
     {
       "title": "Yeni Katıldıysan",
-      "sub": "3 adımda sunucuya başla",
+      "sub": "Sunucuya yeni katıldıysan ne yapman gerektiğini adım adım anlatıyoruz; kuralları okuyup sohbete katılman ve gerekirse destek alman çok kısa sürüyor.",
       "blocks": [
         {
           "items": [
@@ -132,7 +133,8 @@ module.exports = {
             "<@&1555890045599223868> ・ Yeni gelen üyeleri karşılar."
           ]
         }
-      ]
+      ],
+      "sub": "Sunucuyu yöneten ve düzeni sağlayan ekibin kimlerden oluştuğunu, hangi rolün ne işe yaradığını ve hangi görevlerin kimler tarafından üstlenildiğini buradan öğrenebilirsin."
     },
     {
       "title": "Diğer Roller",
@@ -176,7 +178,8 @@ module.exports = {
         {
           "note": "Haftalık roller her pazartesi yenilenir, yeni birinci rolü bir öncekinden alır."
         }
-      ]
+      ],
+      "sub": "Üyelere verilen genel, ödül, bildirim ve ceza rollerinin neler olduğunu, her rolün nasıl kazanıldığını ve ne işe yaradığını buradan görebilirsin."
     },
     {
       "title": "Seviye Sistemi",
@@ -206,11 +209,12 @@ module.exports = {
           "heading": "Haftanın aktifleri",
           "text": "Her pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
         }
-      ]
+      ],
+      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını, hangi komutların olduğunu ve haftalık ödüllerin nasıl kazanıldığını anlatıyoruz."
     },
     {
       "title": "Metin Seviye Rolleri",
-      "sub": "Mesaj yazarak kazanılır",
+      "sub": "Sohbet ederek seviye atladıkça kazanacağın Metin Seviyesi rolleri ve bu rollerin sana sağladığı ayrıcalıkların tam listesi aşağıda yer alıyor.",
       "blocks": [
         {
           "items": [
@@ -236,7 +240,7 @@ module.exports = {
     },
     {
       "title": "Ses Seviye Rolleri",
-      "sub": "Sesli kanallarda vakit geçirerek kazanılır",
+      "sub": "Sesli kanallarda vakit geçirdikçe kazanacağın Ses Seviyesi rolleri ve bu rollerin sana sağladığı ayrıcalıkların tam listesi aşağıda yer alıyor.",
       "blocks": [
         {
           "items": [
@@ -262,7 +266,7 @@ module.exports = {
     },
     {
       "title": "Booster Ayrıcalıkları",
-      "sub": "Sunucuyu takviye (boost) edenler için",
+      "sub": "Sunucuyu takviye (boost) ederek bize destek olan üyelerin kazandığı ayrıcalıkları, bunları nasıl kullanabileceklerini ve sunucu etiketinin ne işe yaradığını anlatıyoruz.",
       "blocks": [
         {
           "heading": "Ayrıcalıklar",
@@ -315,7 +319,8 @@ module.exports = {
         {
           "note": "Sesli kanallarda da sunucu kuralları geçerlidir."
         }
-      ]
+      ],
+      "sub": "Kendi özel sesli odanı nasıl açabileceğini, oda sahibi olarak neler yapabileceğini ve sesli kanallarla ilgili daha fazla bilgiyi nereden bulabileceğini öğrenebilirsin."
     },
     {
       "title": "Destek ve Ceza Sistemi",
@@ -342,7 +347,8 @@ module.exports = {
           "heading": "Jail nedir?",
           "text": "Rollerin geçici olarak alınır, sadece jail kanalını görürsün. Süre bitince geri verilir. Cezanın ne zaman biteceğini <#1538535566172229672> kanalındaki panelden görebilirsin."
         }
-      ]
+      ],
+      "sub": "Bir sorunla karşılaştığında destek talebini nasıl açacağını, cezaların nasıl işlediğini, ceza puanlarının nasıl hesaplandığını ve jail'in ne anlama geldiğini anlatıyoruz."
     },
     {
       "title": "Partnerlik",
@@ -364,11 +370,12 @@ module.exports = {
             "<#1538943785344704562> ・ Dost partnerler"
           ]
         }
-      ]
+      ],
+      "sub": "Sunucunla partner olmak istiyorsan izlemen gereken adımları, partner teklifinin nasıl onaylandığını ve partner kanallarına nasıl erişebileceğini buradan öğrenebilirsin."
     },
     {
       "title": "Kanallar",
-      "sub": "Hangi kanal ne işe yarar",
+      "sub": "Sunucudaki önemli kanalların hangi kategoride yer aldığını ve her birinin ne işe yaradığını kısaca özetledik; bir kanalı bulamazsan buraya bakabilirsin.",
       "blocks": [
         {
           "heading": "Başlangıç",
@@ -446,7 +453,8 @@ module.exports = {
         {
           "note": "Reddedilirsen 7 gün sonra tekrar başvurabilirsin."
         }
-      ]
+      ],
+      "sub": "Yetkili ekibine katılmak istiyorsan başvurunun nasıl yapıldığını, görüşme ve oryantasyon sürecinin nasıl işlediğini ve hangi görev alanlarını seçebileceğini anlatıyoruz."
     },
     {
       "title": "Sık Sorulan Sorular",
@@ -467,7 +475,8 @@ module.exports = {
           "heading": "Sunucuda yapılanlar kayıt altında mı?",
           "text": "Evet. Silinen ve düzenlenen mesajlar, ses kanalı hareketleri, giriş-çıkışlar ve yetkili işlemleri yönetim ekibi tarafından log olarak tutulur. Bu, kural ihlallerinde adil karar verilebilmesi içindir."
         }
-      ]
+      ],
+      "sub": "Yeni gelen üyelerin en çok merak ettiği soruları ve cevaplarını burada topladık; aklına takılan bir şey olursa önce buraya göz atmanı öneririz."
     },
     {
       "title": "Yönetim Ekibinden Bir Mesaj",
@@ -478,7 +487,8 @@ module.exports = {
         {
           "note": "Bir sorun yaşarsan hiçbir zorluk çekmeden <#1538535372588326973> kanalıyla bize ulaşabilirsin. Ekibe katılmak istersen <#1538544076910104636> kanalından başvurabilirsin. İyi eğlenceler!"
         }
-      ]
+      ],
+      "sub": "Yönetim ekibi olarak seni sunucumuzda görmekten mutluluk duyuyoruz; yaşayabileceğin her türlü durumda sana nasıl yardımcı olabileceğimizi anlatıyoruz."
     }
   ],
 };

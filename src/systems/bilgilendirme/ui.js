@@ -17,10 +17,9 @@ function blockText(block) {
   return parts.join('\n');
 }
 
-// Her mesajın genişliği en uzun satıra göre belirlendiği için başlığın altındaki küçük satırın sonuna görünmez
-// boşluk (Braille boşluk karakteri) eklenir; böylece bütün mesajlar aynı ve en geniş boyutta görünür
-const WIDTH_PAD = '\u2800'.repeat(150);
-const titleText = (section) => `### ${section.title}\n-# ${section.sub ?? ''}${WIDTH_PAD}`;
+// Her bölümün başlığının altındaki açıklama bilerek uzun yazılır (iki satıra yayılır): mesajın genişliği en uzun
+// satıra göre belirlendiği için böylece bütün mesajlar aynı ve en geniş boyutta görünür, boşluk bırakmaya gerek kalmaz
+const titleText = (section) => `### ${section.title}\n-# ${section.sub}`;
 
 // Her bölüm için bir container üretir; ilk container panel başlığı ve görselle başlar
 function messages() {
