@@ -59,8 +59,7 @@ function controlPanel(room, channel) {
     sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini bu panelden yönetebilir; odadaki üyeleri atabilir, yasaklayabilir ya da odanın sahipliğini başka birine devredebilirsin.',
     accent: locked ? colors.danger : colors.primary,
     blocks: [
-      `**Oda Sahibi**\n<@${room.ownerId}>`,
-      `**Oda Durumu**\n${locked ? 'Kilitli' : 'Açık'}・${hidden ? 'Gizli' : 'Görünür'}・Limit: ${channel.userLimit || 'Sınırsız'}\n-# Paneli sadece oda sahibi kullanabilir.`,
+      `**Oda Bilgisi**\n**Sahip:** <@${room.ownerId}>\n**Durum:** ${locked ? 'Kilitli' : 'Açık'}・${hidden ? 'Gizli' : 'Görünür'}・${channel.userLimit ? `${channel.userLimit} kişilik` : 'Sınırsız'}\n-# Paneli sadece oda sahibi kullanabilir.`,
     ],
   })
     .addSeparatorComponents(divider())
