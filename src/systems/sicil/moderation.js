@@ -119,7 +119,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
     extensions: [],
     savedRoles: null,
   };
-  const auditReason = `${ui.TYPES[type].label} #${core.pad(number)} ・ ${actor.user.username}: ${reason}`.slice(0, 500);
+  const auditReason = `${ui.TYPES[type].label} #${core.pad(number)}・${actor.user.username}: ${reason}`.slice(0, 500);
 
   try {
     if (type === 'mute') {
@@ -151,7 +151,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
   logSystem
     .logModeration(guild.client, {
       color: 'danger',
-      title: `${ui.TYPES[type].label} Verildi ・ #${core.pad(number)}`,
+      title: `${ui.TYPES[type].label} Verildi・#${core.pad(number)}`,
       lines: [
         `**Kullanıcı:** <@${targetUser.id}> (${targetUser.username})`,
         `**Yetkili:** <@${actor.id}>`,
@@ -195,7 +195,7 @@ async function lift(guild, punishment, actorId, reason) {
   logSystem
     .logModeration(guild.client, {
       color: 'success',
-      title: `${ui.TYPES[punishment.type].label} Kaldırıldı ・ #${core.pad(punishment.number)}`,
+      title: `${ui.TYPES[punishment.type].label} Kaldırıldı・#${core.pad(punishment.number)}`,
       lines: [
         `**Kullanıcı:** <@${punishment.userId}>`,
         actorId ? `**Yetkili:** <@${actorId}>` : '**Otomatik:** süre doldu',
@@ -232,7 +232,7 @@ async function extend(guild, punishment, actor, extra) {
   logSystem
     .logModeration(guild.client, {
       color: 'warning',
-      title: `${ui.TYPES[punishment.type].label} Süresi Uzatıldı ・ #${core.pad(punishment.number)}`,
+      title: `${ui.TYPES[punishment.type].label} Süresi Uzatıldı・#${core.pad(punishment.number)}`,
       lines: [
         `**Kullanıcı:** <@${punishment.userId}>`,
         `**Yetkili:** <@${actor.id}>`,
@@ -254,7 +254,7 @@ async function remove(guild, punishment, actorId, reason) {
   logSystem
     .logModeration(guild.client, {
       color: 'danger',
-      title: `Sicil Kaydı Silindi ・ #${core.pad(punishment.number)}`,
+      title: `Sicil Kaydı Silindi・#${core.pad(punishment.number)}`,
       lines: [`**Kullanıcı:** <@${punishment.userId}>`, `**Yetkili:** <@${actorId}>`, reason ? `**Sebep:** ${reason}` : null],
     })
     .catch(() => {});

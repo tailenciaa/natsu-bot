@@ -227,13 +227,13 @@ function postCard(request, trusted, banned) {
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
       text(
-        `### Partner ・ \`${request.serverId ?? 'bilinmiyor'}\`\n` +
+        `### Partner・\`${request.serverId ?? 'bilinmiyor'}\`\n` +
           `${sanitize(request.text)}\n` +
           '-# @everyone ve @here bu kanalda bildirim göndermez.',
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# Paylaşan: <@${request.requesterId}> ・ <t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
+    .addTextDisplayComponents(text(`-# Paylaşan: <@${request.requesterId}>・<t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -365,7 +365,7 @@ function trustedListPanel(entries) {
       text(
         `**Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
           `**Partner Yetkilisi:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
-          `-# Eklenme: <t:${unix(entry.addedAt)}:D> ・ Ekleyen: <@${entry.addedBy}>`,
+          `-# Eklenme: <t:${unix(entry.addedAt)}:D>・Ekleyen: <@${entry.addedBy}>`,
       ),
     );
 
@@ -533,7 +533,7 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   // Karşı tarafın metni (bizim gözüklediğimiz şekilde)
   if (entry?.serverId) {
     container.addTextDisplayComponents(
-      text(`### Onların Sunucusu ・ \`${entry.serverId}\`\n${quote(shorten(entry.content, 1000))}`)
+      text(`### Onların Sunucusu・\`${entry.serverId}\`\n${quote(shorten(entry.content, 1000))}`)
     );
 
     if (partnerJumpUrl) {
