@@ -28,6 +28,7 @@ module.exports = [
   require('./siralama'),
   require('./seviye'),
   require('./aktif'),
+  require('./saygi'),
   require('./profil'),
   require('./emoji'),
   require('./ses'),

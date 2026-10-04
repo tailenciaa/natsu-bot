@@ -9,6 +9,7 @@ const systems = require('./systems');
 // kaybolmasın diye kapanışta hemen diske yazılır
 const siralamaStore = require('./systems/siralama/store');
 const aktifStore = require('./systems/aktif/store');
+const saygiStore = require('./systems/saygi/store');
 
 const UNKNOWN_INTERACTION = 10062;
 
@@ -123,6 +124,7 @@ async function shutdown(signal) {
   console.log(`[bot] ${signal} alındı, kapanmadan önce bekleyen veriler kaydediliyor...`);
   siralamaStore.flush();
   aktifStore.flush();
+  saygiStore.flush();
   await require('./core/db').close();
   process.exit(0);
 }
