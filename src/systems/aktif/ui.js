@@ -25,10 +25,8 @@ function section(kind, entries) {
 }
 
 // results: { ses, mesaj, yayin } -> [{ userId, value }] (en fazla 5, sıralı)
-// live: /haftalik-onizleme'den çağrıldıysa true, bu hafta henüz bitmemiştir ve rol/duyuru içermez
-function weeklyAnnounce(guild, results, live = false) {
-  const subtitle = live ? 'Bu haftanın şu anki durumu (önizleme)' : 'Geçen haftanın en aktif üyeleri';
-  const headerText = text(`## Haftanın Aktifleri\n-# ${subtitle}`);
+function weeklyAnnounce(guild, results) {
+  const headerText = text('## Haftanın Aktifleri\n-# Geçen haftanın en aktif üyeleri');
   const icon = guild?.iconURL({ size: 256 });
   const container = new ContainerBuilder();
   if (icon) {

@@ -1,7 +1,7 @@
 // Saygınlık sistemi: üyeler birbirine günde bir kez +1 saygınlık verebilir (/saygi-ver ya da bir mesajda "+rep
 // @kullanıcı" yazarak), tüm zamanların toplam tablosu /saygi-siralama ile görülebilir. Her hafta pazartesi, geçen
 // haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve ayarlı rol verilir (önceki haftanın sahibinden
-// geri alınır). /saygi-onizleme bu haftanın şu anki durumunu gösterir, rol vermez, duyuru atmaz.
+// geri alınır).
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -20,10 +20,6 @@ const commands = [
   new SlashCommandBuilder()
     .setName('saygi-siralama')
     .setDescription('Tüm zamanların saygınlık tablosunu gösterir.')
-    .setContexts(InteractionContextType.Guild),
-  new SlashCommandBuilder()
-    .setName('saygi-onizleme')
-    .setDescription('Bu haftanın şu anki saygınlık sıralamasını önizler (test amaçlı, rol vermez, duyuru atmaz).')
     .setContexts(InteractionContextType.Guild),
 ];
 
@@ -151,12 +147,6 @@ async function handleTable(interaction) {
   return respond(interaction, ui.table(interaction.guild, ranking), { ephemeral: false });
 }
 
-// /saygi-onizleme: bu haftanın şimdiye kadarki durumunu gösterir, rol vermez, duyuru atmaz, kimseyi etiketlemez
-async function handlePreview(interaction) {
-  const results = topUsers(store.weekTotals(weekKey()));
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId, true), { ephemeral: true });
-}
-
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
@@ -167,8 +157,8 @@ function handleReady(client) {
 module.exports = {
   name: 'saygi',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { 'saygi-ver': 'Herkes', 'saygi-siralama': 'Herkes', 'saygi-onizleme': 'Herkes' } },
-  slash: { 'saygi-ver': handleGive, 'saygi-siralama': handleTable, 'saygi-onizleme': handlePreview },
+  help: { category: ['siralama', 'Sıralama'], access: { 'saygi-ver': 'Herkes', 'saygi-siralama': 'Herkes' } },
+  slash: { 'saygi-ver': handleGive, 'saygi-siralama': handleTable },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.MessageCreate]: handleMessage,

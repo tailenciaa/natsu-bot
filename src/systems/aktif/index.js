@@ -1,21 +1,14 @@
 // Haftanın aktifleri: mesaj, ses ve yayın (ekran paylaşımı) süresi haftalık olarak ayrı ayrı sayılır. Her hafta
 // pazartesi, geçen haftanın üç kategorisinin de birincisi #haftalık kanalına duyurulur ve kategorisine özel rol
 // verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi verilir.
-const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, fetchTextChannel } = require('../../core/helpers');
+const { fetchTextChannel } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
 const { weekKey, previousWeekKey, isMonday } = require('./week');
-
-const commands = [
-  new SlashCommandBuilder()
-    .setName('haftalik-onizleme')
-    .setDescription('Bu haftanın şu anki ses/mesaj/yayın sıralamasını önizler (test amaçlı, rol vermez, duyuru atmaz).')
-    .setContexts(InteractionContextType.Guild),
-];
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
 const TICK = 60 * 1000;
@@ -121,17 +114,6 @@ async function checkWeeklyAnnounce(guild) {
   store.setLastRun(target);
 }
 
-// /haftalik-onizleme: bu haftanın şimdiye kadarki durumunu gösterir, rol vermez, duyuru atmaz, kimseyi etiketlemez
-async function handlePreview(interaction) {
-  const target = weekKey();
-  const results = {
-    ses: topUsers(store.totals('ses', target)),
-    mesaj: topUsers(store.totals('mesaj', target)),
-    yayin: topUsers(store.totals('yayin', target)),
-  };
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, true), { ephemeral: true });
-}
-
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
@@ -147,9 +129,8 @@ function handleReady(client) {
 
 module.exports = {
   name: 'aktif',
-  commands,
-  help: { category: ['siralama', 'Sıralama'], access: { 'haftalik-onizleme': 'Herkes' } },
-  slash: { 'haftalik-onizleme': handlePreview },
+  commands: [],
+  help: { category: ['siralama', 'Sıralama'], access: {} },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.VoiceStateUpdate]: handleVoiceUpdate,

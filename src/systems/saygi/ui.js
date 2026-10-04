@@ -36,11 +36,9 @@ function table(guild, ranking) {
   return container;
 }
 
-// results: [{ userId, value }] bu/geçen haftanın ilk 5'i, büyükten küçüğe sıralı
-// live: /saygi-onizleme'den çağrıldıysa true, bu hafta henüz bitmemiştir, ödül bölümü gösterilmez
-function weeklyAnnounce(guild, results, roleId, live = false) {
-  const subtitle = live ? 'Bu haftanın şu anki durumu (önizleme)' : 'Geçen haftanın en saygın üyeleri';
-  const headerText = text(`## Haftanın Saygın Üyesi\n-# ${subtitle}`);
+// results: [{ userId, value }] geçen haftanın ilk 5'i, büyükten küçüğe sıralı
+function weeklyAnnounce(guild, results, roleId) {
+  const headerText = text('## Haftanın Saygın Üyesi\n-# Geçen haftanın en saygın üyeleri');
   const icon = guild?.iconURL({ size: 256 });
   const container = new ContainerBuilder();
   if (icon) {
@@ -56,7 +54,7 @@ function weeklyAnnounce(guild, results, roleId, live = false) {
     : ['-# Bu hafta için henüz veri yok.'];
   container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**En Çok Saygınlık Kazananlar**\n${lines.join('\n')}`));
 
-  if (!live && results[0]) {
+  if (results[0]) {
     container
       .addSeparatorComponents(divider())
       .addTextDisplayComponents(
