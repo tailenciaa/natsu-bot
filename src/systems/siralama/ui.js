@@ -84,11 +84,10 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     thumbnail: guild.iconURL({ size: 256 }),
   });
 
-  // Sıra: başlık, dönem butonları, tür ve rol menüleri, liste (başlıktan ayrı bir metin: listedeki küçük satırlar
+  // Sıra: dönem butonları, rol ve tür menüleri, liste başlığı + liste (başlıktan ayrı bir metin: listedeki küçük satırlar
   // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi, en altta sayfa butonları
   container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**${TYPES[type]} (${periodLabel(period, days)})**`))
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         ...['genel', 'haftalik'].map((key) =>
@@ -114,7 +113,7 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(listBlock));
+    .addTextDisplayComponents(text(`**${TYPES[type]} (${periodLabel(period, days)})**`), text(listBlock));
   if (infoBlock) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(infoBlock));
 
   // Sayfalar
