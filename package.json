@@ -1,19 +1,20 @@
 {
-  "name": "natsu-bot",
+  "name": "kazuki",
   "version": "1.0.0",
   "description": "Kazuki sunucu yönetim botu",
-  "main": "src/index.js",
+  "main": "src/start.js",
   "scripts": {
-    "start": "node --env-file=.env src/index.js",
-    "dev": "node --watch --env-file=.env src/index.js"
+    "start": "node src/start.js",
+    "dev": "node --watch src/start.js"
   },
   "private": true,
   "type": "commonjs",
   "engines": {
-    "node": ">=20.6"
+    "node": ">=20.12"
   },
   "dependencies": {
     "canvas": "^3.2.3",
-    "discord.js": "^14.27.0"
+    "discord.js": "^14.27.0",
+    "mongodb": "^6.10.0"
   }
 }

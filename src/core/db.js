@@ -23,30 +23,133 @@
 //   partnerStaffStatus             : partner yetkililerinin aktif/meşgul durumu (kullanıcı ID'si ile)
 //   partnerRenewalOffers           : sürmekte olan "Teklifte Bulun" süreçleri (güvenilir kayıt ID'si ile)
 //   partnerBans                    : partner sisteminden yasaklanan kullanıcılar (kullanıcı ID'si ile)
+// Kalıcı kayıt: MONGODB_URI tanımlıysa veriler MongoDB'de (kazuki veritabanı, "state" koleksiyonu) tutulur,
+// her üst düzey alan (tickets, history, guilds...) ayrı bir belge olarak: { _id: alan adı, value: veri }. Yerel data/db.json da yedek olarak yazılmaya devam eder.
+// MONGODB_URI yoksa bot eskisi gibi sadece data/db.json ile çalışır.
+// Önemli: init() sistemler yüklenmeden ÖNCE çağrılmalı (src/start.js bunu yapar), çünkü bazı store.js dosyaları
+// açılışta data üzerinde alan oluşturuyor.
 const fs = require('node:fs');
 const path = require('node:path');
 
 const FILE = path.join(__dirname, '..', '..', 'data', 'db.json');
 const EMPTY = { guilds: {}, tickets: {}, history: {}, ratings: {}, applications: {}, panels: {} };
+const MONGO_URI = process.env.MONGODB_URI?.trim();
+const MONGO_DB = process.env.MONGODB_DB?.trim() || 'kazuki';
+const FLUSH_DELAY = 2000; // ms; art arda gelen kayıtlar tek seferde gönderilir
 
 const data = { ...EMPTY };
 
-if (fs.existsSync(FILE)) {
+let collection = null; // MongoDB koleksiyonu (bağlıysa)
+let mongoClient = null;
+const lastSaved = new Map(); // alan adı -> MongoDB'ye en son yazılan JSON (sadece değişenleri göndermek için)
+let flushTimer = null;
+let flushing = Promise.resolve();
+
+function readLocalFile() {
+  if (!fs.existsSync(FILE)) return null;
   try {
-    Object.assign(data, JSON.parse(fs.readFileSync(FILE, 'utf8')));
+    return JSON.parse(fs.readFileSync(FILE, 'utf8'));
   } catch (err) {
-    console.error('[db] db.json okunamadı, boş veritabanı ile başlanıyor:', err.message);
+    console.error('[db] db.json okunamadı:', err.message);
+    return null;
   }
 }
 
+function writeLocalFile() {
+  try {
+    fs.mkdirSync(path.dirname(FILE), { recursive: true });
+    const tmp = `${FILE}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+    fs.renameSync(tmp, FILE);
+  } catch (err) {
+    console.error('[db] db.json yazılamadı:', err.message);
+  }
+}
+
+async function init() {
+  if (!MONGO_URI) {
+    const local = readLocalFile();
+    if (local) Object.assign(data, local);
+    console.log('[db] MONGODB_URI yok, veriler data/db.json dosyasında tutuluyor.');
+    return;
+  }
+
+  const { MongoClient } = require('mongodb');
+  mongoClient = new MongoClient(MONGO_URI, { serverSelectionTimeoutMS: 15000 });
+  await mongoClient.connect();
+  collection = mongoClient.db(MONGO_DB).collection('state');
+
+  const docs = await collection.find({}).toArray();
+  if (docs.length > 0) {
+    for (const doc of docs) {
+      try {
+        const value = doc.value !== undefined ? doc.value : JSON.parse(doc.json ?? 'null');
+        data[doc._id] = value;
+        lastSaved.set(doc._id, JSON.stringify(value ?? null));
+      } catch (err) {
+        console.error(`[db] "${doc._id}" alanı okunamadı:`, err.message);
+      }
+    }
+    console.log(`[db] MongoDB'ye bağlanıldı, ${docs.length} veri bölümü yüklendi.`);
+  } else {
+    // Veritabanı boşsa yerel db.json varsa onu içeri aktar (ilk geçiş)
+    const local = readLocalFile();
+    if (local) Object.assign(data, local);
+    await flushRemote();
+    console.log(
+      `[db] MongoDB'ye bağlanıldı (boştu). ${local ? 'Yerel db.json içeri aktarıldı.' : 'Boş veritabanı ile başlanıyor.'}`,
+    );
+  }
+}
+
+// Değişen alanları MongoDB'ye yazar
+function flushRemote() {
+  if (!collection) return Promise.resolve();
+  clearTimeout(flushTimer);
+  flushTimer = null;
+  flushing = flushing.then(async () => {
+    const ops = [];
+    for (const [key, value] of Object.entries(data)) {
+      const json = JSON.stringify(value ?? null);
+      if (lastSaved.get(key) === json) continue;
+      ops.push({ key, json, value });
+    }
+    for (const key of lastSaved.keys()) {
+      if (!(key in data)) ops.push({ key, json: null });
+    }
+    if (ops.length === 0) return;
+    try {
+      await collection.bulkWrite(
+        ops.map(({ key, json, value }) =>
+          json === null
+            ? { deleteOne: { filter: { _id: key } } }
+            : { replaceOne: { filter: { _id: key }, replacement: { value: value ?? null }, upsert: true } },
+        ),
+        { ordered: false },
+      );
+      for (const { key, json } of ops) {
+        if (json === null) lastSaved.delete(key);
+        else lastSaved.set(key, json);
+      }
+    } catch (err) {
+      console.error('[db] MongoDB\'ye yazılamadı, bir sonraki kayıtta tekrar denenecek:', err.message);
+    }
+  });
+  return flushing;
+}
+
 function save() {
-  fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  const tmp = `${FILE}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  fs.renameSync(tmp, FILE);
+  writeLocalFile();
+  if (collection && !flushTimer) flushTimer = setTimeout(flushRemote, FLUSH_DELAY);
+}
+
+// Kapanışta bekleyen kayıtları gönderip bağlantıyı kapatır
+async function close() {
+  await flushRemote();
+  await mongoClient?.close().catch(() => {});
 }
 
 // Sunucu kaydı yoksa oluşturur (sayaçlar için)
 const guildData = (guildId) => (data.guilds[guildId] ??= {});
 
-module.exports = { data, save, guildData };
+module.exports = { data, save, guildData, init, flushRemote, close };

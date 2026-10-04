@@ -119,10 +119,11 @@ process.on('unhandledRejection', (err) => console.error('[hata]', err));
 process.on('uncaughtException', (err) => console.error('[hata] Yakalanmamış hata:', err));
 
 // Bot kapanırken (Ctrl+C, servis yeniden başlatma vb.) bekleyen birikmiş kayıtları diske yazar
-function shutdown(signal) {
+async function shutdown(signal) {
   console.log(`[bot] ${signal} alındı, kapanmadan önce bekleyen veriler kaydediliyor...`);
   siralamaStore.flush();
   aktifStore.flush();
+  await require('./core/db').close();
   process.exit(0);
 }
 process.on('SIGINT', () => shutdown('SIGINT'));
