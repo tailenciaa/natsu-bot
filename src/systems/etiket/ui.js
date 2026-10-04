@@ -6,7 +6,6 @@ const config = require('./config');
 // Etiketi takan üyeye kanalda teşekkür: sağ üstte üyenin fotoğrafı
 function thanks(user) {
   return new ContainerBuilder()
-    .setAccentColor(config.color)
     .addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(

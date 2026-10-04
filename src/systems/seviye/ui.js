@@ -15,7 +15,6 @@ function levelUpAnnounce(user, kind, level, role) {
   return page({
     title: '🎉 Seviye Atladı!',
     sub: 'Sohbette ve sesli kanallarda aktif oldukça deneyim puanı kazanırsın; yeni bir seviyeye ulaştığında bu duyuru gönderilir, ana seviyelerde ise sana özel bir rol de verilir.',
-    accent: colors.success,
     blocks,
   });
 }

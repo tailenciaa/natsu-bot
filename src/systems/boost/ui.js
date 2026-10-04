@@ -42,7 +42,6 @@ function thanksDm(guildName, panelChannelId, perks) {
   return page({
     title: '💜 Takviyen İçin Teşekkürler!',
     sub: `${guildName} sunucusunu takviye ettiğin için çok teşekkür ederiz; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir, aşağıdaki bilgilerle bunları kullanabilirsin.`,
-    accent: colors.success,
     blocks: [
       `**Panelden Yapabileceklerin**\nTakviyen sürdüğü sürece ${panelLine} kendi emojini ekleyebilir, adını değiştirebilir ve kendi renginde/emojinde bir rol oluşturabilirsin.`,
       `**Çıkartma ve Haklar**\n-# Çıkartma eklemek dosya yüklemesi gerektirdiği için \`/cikartma-ekle\` komutuyla yapılır.\n` +
@@ -57,7 +56,6 @@ function channelThanks(user) {
     title: '💜 Takviye Etti!',
     sub: 'Sunucumuzu takviye ederek bize destek olan üyelerimize buradan teşekkür ediyoruz; takviye edenler özel rol ve panel avantajlarından faydalanabilir ve topluluğumuzu büyütür.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
-    accent: 0xf47fff,
     blocks: [`**Takviye Eden**\n<@${user.id}> sunucuyu takviye etti, çok teşekkür ederiz!`],
   });
 }

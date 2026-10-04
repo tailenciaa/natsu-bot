@@ -143,6 +143,8 @@ const originalToJSON = ContainerBuilder.prototype.toJSON;
 ContainerBuilder.prototype.toJSON = function toJSON(...args) {
   const json = originalToJSON.apply(this, args);
   if (Array.isArray(json.components)) json.components = tidy(json.components);
+  // Mavi (primary) "nötr bilgi" rengi gösterilmez: renk sadece durum bildirdiğinde (yeşil/sarı/kırmızı) kullanılır
+  if (json.accent_color === config.colors.primary) delete json.accent_color;
   return json;
 };
 
