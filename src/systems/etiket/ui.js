@@ -13,7 +13,7 @@ function thanks(user) {
           text(
             '### Etiketimizi Taktı!\n' +
               `**<@${user.id}> artık profilinde \`${user.primaryGuild.tag}\` etiketini taşıyor.**\n` +
-              `-# Sunucumuzu temsil ettiğin için teşekkürler, <@&${config.roles.tag}> rolü verildi.`,
+              `-# Sunucumuzu profilinde temsil ettiğin için çok teşekkür ederiz, sana özel etiket rolü de verildi; etiketi profilinde taşıdığın sürece bu rol sende kalır.`,
           ),
         )
         .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 }))),

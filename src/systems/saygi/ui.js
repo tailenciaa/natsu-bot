@@ -1,6 +1,5 @@
 // Saygınlık mesajları: verme onayı, tüm zamanların tablosu ve haftalık kazanan duyurusu (ödül bölümüyle birlikte)
-const { ContainerBuilder, SectionBuilder, ThumbnailBuilder } = require('discord.js');
-const { text, divider } = require('../../core/ui');
+const { text, page } = require('../../core/ui');
 
 const PODIUM = ['# ', '## ', '### '];
 const PAGE_SIZE = 15;
@@ -15,56 +14,34 @@ function given(giverId, targetId, newTotal) {
 
 // ranking: [{ userId, value }] büyükten küçüğe sıralı, tüm zamanlar toplamı
 function table(guild, ranking) {
-  const headerText = text(`## ${guild.name} Saygınlık Tablosu\n-# Tüm zamanların toplam saygınlık sıralaması`);
-  const icon = guild.iconURL({ size: 256 });
-  const container = new ContainerBuilder();
-  if (icon) {
-    container.addSectionComponents(
-      new SectionBuilder().addTextDisplayComponents(headerText).setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)),
-    );
-  } else {
-    container.addTextDisplayComponents(headerText);
-  }
-
-  container.addSeparatorComponents(divider());
-  const page = ranking.slice(0, PAGE_SIZE);
-  const lines = page.length
-    ? page.map(({ userId, value }, i) => `${i < 3 ? PODIUM[i] : '-# '}${i + 1}. <@${userId}> » \`${value} saygınlık\``)
-    : ['-# Henüz kimse saygınlık kazanmadı.'];
-  container.addTextDisplayComponents(text(lines.join('\n')));
-
-  return container;
+  const lines = ranking
+    .slice(0, PAGE_SIZE)
+    .map(({ userId, value }, i) => `${i < 3 ? PODIUM[i] : '-# '}${i + 1}. <@${userId}> » \`${value} saygınlık\``);
+  return page({
+    title: `${guild.name} Saygınlık Tablosu`,
+    sub: 'Sunucuda bugüne kadar en çok saygınlık kazanan üyeleri tüm zamanların toplamına göre sıraladık; sen de /saygi-ver ile sevdiğin üyelere +1 saygınlık verebilirsin.',
+    thumbnail: guild.iconURL({ size: 256 }),
+    blocks: [lines.length ? lines.join('\n') : '-# Henüz kimse saygınlık kazanmadı.'],
+  });
 }
 
 // results: [{ userId, value }] geçen haftanın ilk 5'i, büyükten küçüğe sıralı
 function weeklyAnnounce(guild, results, roleId) {
-  const headerText = text('## Haftanın Saygın Üyesi\n-# Geçen haftanın en saygın üyeleri');
-  const icon = guild?.iconURL({ size: 256 });
-  const container = new ContainerBuilder();
-  if (icon) {
-    container.addSectionComponents(
-      new SectionBuilder().addTextDisplayComponents(headerText).setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)),
-    );
-  } else {
-    container.addTextDisplayComponents(headerText);
-  }
-
   const lines = results.length
     ? results.map(({ userId, value }, i) => `${i + 1}. <@${userId}> » \`${value} saygınlık\``)
     : ['-# Bu hafta için henüz veri yok.'];
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**En Çok Saygınlık Kazananlar**\n${lines.join('\n')}`));
-
+  const blocks = [`**En Çok Saygınlık Kazananlar**\n${lines.join('\n')}`];
   if (results[0]) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(
-        text(
-          `**🏆 Kazanılan Ödül**\n<@${results[0].userId}> bu haftanın en saygın üyesi oldu ve ${roleId ? `<@&${roleId}>` : 'Haftanın Saygın Üyesi'} rolünü kazandı!`,
-        ),
-      );
+    blocks.push(
+      `**🏆 Kazanılan Ödül**\n<@${results[0].userId}> bu haftanın en saygın üyesi oldu ve ${roleId ? `<@&${roleId}>` : 'Haftanın Saygın Üyesi'} rolünü kazandı!`,
+    );
   }
-
-  return container;
+  return page({
+    title: 'Haftanın Saygın Üyesi',
+    sub: 'Geçen hafta en çok saygınlık kazanan üyeleri listeliyoruz; birinci olan üye haftanın en saygın üyesi rolünü kazanır ve bu rol her pazartesi yenilenir.',
+    thumbnail: guild?.iconURL({ size: 256 }),
+    blocks,
+  });
 }
 
 module.exports = { given, table, weeklyAnnounce };

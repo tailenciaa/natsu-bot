@@ -1,6 +1,5 @@
 // VIP mesajları: verme onayı ve VIP listesi (olma sırasına göre)
-const { ContainerBuilder, SectionBuilder, ThumbnailBuilder } = require('discord.js');
-const { text, divider } = require('../../core/ui');
+const { text, page } = require('../../core/ui');
 
 const PODIUM = ['# ', '## ', '### '];
 
@@ -10,25 +9,14 @@ function given(giverId, targetId, roleId) {
 }
 
 // ranking: [{ userId }] VIP olma sırasına göre (en eski ilk)
-function table(guild, ranking, roleId) {
-  const headerText = text(`## ${guild.name} VIP Listesi\n-# <@&${roleId}> rolündeki üyeler, VIP olma sırasına göre`);
-  const icon = guild.iconURL({ size: 256 });
-  const container = new ContainerBuilder();
-  if (icon) {
-    container.addSectionComponents(
-      new SectionBuilder().addTextDisplayComponents(headerText).setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)),
-    );
-  } else {
-    container.addTextDisplayComponents(headerText);
-  }
-
-  container.addSeparatorComponents(divider());
-  const lines = ranking.length
-    ? ranking.map(({ userId }, i) => `${i < 3 ? PODIUM[i] : '-# '}${i + 1}. <@${userId}>`)
-    : ['-# Henüz VIP üye yok.'];
-  container.addTextDisplayComponents(text(lines.join('\n')));
-
-  return container;
+function table(guild, ranking) {
+  const lines = ranking.map(({ userId }, i) => `${i < 3 ? PODIUM[i] : '-# '}${i + 1}. <@${userId}>`);
+  return page({
+    title: `${guild.name} VIP Listesi`,
+    sub: 'VIP rolüne sahip üyeleri VIP olma sırasına göre listeliyoruz; VIP rolü yetkililer tarafından özel üyelere verilen kalıcı bir roldür ve sunucuya katkısı olanlara tanınır.',
+    thumbnail: guild.iconURL({ size: 256 }),
+    blocks: [lines.length ? lines.join('\n') : '-# Henüz VIP üye yok.'],
+  });
 }
 
 module.exports = { given, table };

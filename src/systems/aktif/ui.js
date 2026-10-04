@@ -1,6 +1,5 @@
 // Haftanın aktifleri duyurusu: ses, mesaj ve yayın kategorilerinde ilk 5'i gösteren liste, sıralama panelinin düzeninde
-const { ContainerBuilder, SectionBuilder, ThumbnailBuilder } = require('discord.js');
-const { text, divider } = require('../../core/ui');
+const { page } = require('../../core/ui');
 
 const formatDuration = (seconds) => {
   const totalMinutes = Math.round(seconds / 60);
@@ -26,20 +25,12 @@ function section(kind, entries) {
 
 // results: { ses, mesaj, yayin } -> [{ userId, value }] (en fazla 5, sıralı)
 function weeklyAnnounce(guild, results) {
-  const headerText = text('## Haftanın Aktifleri\n-# Geçen haftanın en aktif üyeleri');
-  const icon = guild?.iconURL({ size: 256 });
-  const container = new ContainerBuilder();
-  if (icon) {
-    container.addSectionComponents(new SectionBuilder().addTextDisplayComponents(headerText).setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)));
-  } else {
-    container.addTextDisplayComponents(headerText);
-  }
-
-  for (const kind of ['ses', 'mesaj', 'yayin']) {
-    container.addSeparatorComponents(divider()).addTextDisplayComponents(text(section(kind, results[kind])));
-  }
-
-  return container;
+  return page({
+    title: 'Haftanın Aktifleri',
+    sub: 'Geçen hafta ses kanallarında en çok vakit geçiren, en çok mesaj yazan ve en çok yayın açan üyeleri listeliyoruz; birinci olanlar kendi haftalık rollerini kazanır.',
+    thumbnail: guild?.iconURL({ size: 256 }),
+    blocks: ['ses', 'mesaj', 'yayin'].map((kind) => section(kind, results[kind])),
+  });
 }
 
 module.exports = { weeklyAnnounce };
