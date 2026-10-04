@@ -33,6 +33,10 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates,
     // Konuşma kayıtlarında mesaj içeriklerini okuyabilmek için gerekli
     GatewayIntentBits.MessageContent,
+    // Log sistemi için: yasaklama olayları, emoji değişiklikleri ve davet olayları (üçü de ayrıcalıklı intent değil)
+    GatewayIntentBits.GuildModeration,
+    GatewayIntentBits.GuildExpressions,
+    GatewayIntentBits.GuildInvites,
   ],
 });
 // Her sistem kendi olay dinleyicisini eklediği için varsayılan 10 sınırı sistem sayısı arttıkça aşılıyor

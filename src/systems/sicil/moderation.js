@@ -5,6 +5,8 @@ const { PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
 const config = require('./config');
 const store = require('./store');
+const logSystem = require('../log');
+const dedupe = require('../log/dedupe');
 const ui = require('./ui');
 
 const MINUTE = 60 * 1000;
@@ -120,7 +122,10 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
   const auditReason = `${ui.TYPES[type].label} #${core.pad(number)} · ${actor.user.username}: ${reason}`.slice(0, 500);
 
   try {
-    if (type === 'mute') await target.timeout(duration, auditReason);
+    if (type === 'mute') {
+      dedupe.markHandled(guild.id, targetUser.id, 'mute');
+      await target.timeout(duration, auditReason);
+    }
     if (type === 'jail') {
       // Yönetilemeyen roller (sunucu takviyesi, bot rolleri) üyede kalır, diğerleri saklanıp jail rolüyle değiştirilir
       const keep = target.roles.cache.filter((r) => r.managed).map((r) => r.id);
@@ -132,6 +137,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
     // Yasaklanan kişiye sunucudan çıkmadan önce haber verilir
     if (type === 'ban') {
       await dm(guild, targetUser.id, ui.punishDm(punishment, guild.name));
+      dedupe.markHandled(guild.id, targetUser.id, 'ban');
       await guild.members.ban(targetUser.id, { reason: auditReason });
     }
   } catch (err) {
@@ -142,6 +148,18 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
   store.create(punishment);
   if (type !== 'ban') await dm(guild, targetUser.id, ui.punishDm(punishment, guild.name));
   await syncRestrictions(guild, targetUser.id);
+  logSystem
+    .logModeration(guild.client, {
+      color: 'danger',
+      title: `${ui.TYPES[type].label} Verildi · #${core.pad(number)}`,
+      lines: [
+        `**Kullanıcı:** <@${targetUser.id}> (${targetUser.username})`,
+        `**Yetkili:** <@${actor.id}>`,
+        `**Sebep:** ${reason}`,
+        `**Süre:** ${punishment.expiresAt ? `<t:${Math.floor(punishment.expiresAt / 1000)}:R> sona erer` : 'Kalıcı'}`,
+      ],
+    })
+    .catch(() => {});
   return { punishment };
 }
 
@@ -149,13 +167,19 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
 async function lift(guild, punishment, actorId, reason) {
   const target = await fetchMember(guild, punishment.userId);
   try {
-    if (punishment.type === 'mute' && target?.isCommunicationDisabled()) await target.timeout(null, reason);
+    if (punishment.type === 'mute' && target?.isCommunicationDisabled()) {
+      dedupe.markHandled(guild.id, punishment.userId, 'mute');
+      await target.timeout(null, reason);
+    }
     if (punishment.type === 'jail' && target) {
       const keep = target.roles.cache.filter((r) => r.managed).map((r) => r.id);
       const restore = (punishment.savedRoles ?? []).filter((id) => guild.roles.cache.has(id));
       await target.roles.set([...new Set([...keep, ...restore])], reason);
     }
-    if (punishment.type === 'ban') await guild.members.unban(punishment.userId, reason).catch(() => {});
+    if (punishment.type === 'ban') {
+      dedupe.markHandled(guild.id, punishment.userId, 'ban');
+      await guild.members.unban(punishment.userId, reason).catch(() => {});
+    }
   } catch (err) {
     console.error(`[sicil] ${ui.TYPES[punishment.type].label} kaldırılamadı:`, err.message);
     return { error: 'Ceza Discord üzerinde kaldırılamadı.', hint: 'Botun yetkilerini ve rol sırasını kontrol et.' };
@@ -168,6 +192,17 @@ async function lift(guild, punishment, actorId, reason) {
     liftReason: actorId ? reason : null,
   });
   if (punishment.type !== 'uyari' || punishment.expiresAt) await dm(guild, punishment.userId, ui.liftDm(punishment, guild.name));
+  logSystem
+    .logModeration(guild.client, {
+      color: 'success',
+      title: `${ui.TYPES[punishment.type].label} Kaldırıldı · #${core.pad(punishment.number)}`,
+      lines: [
+        `**Kullanıcı:** <@${punishment.userId}>`,
+        actorId ? `**Yetkili:** <@${actorId}>` : '**Otomatik:** süre doldu',
+        actorId && reason ? `**Sebep:** ${reason}` : null,
+      ],
+    })
+    .catch(() => {});
   return { punishment };
 }
 
@@ -180,6 +215,7 @@ async function extend(guild, punishment, actor, extra) {
     if (expiresAt - Date.now() > MAX_TIMEOUT) return { error: 'Susturma en fazla 28 gün olabilir.' };
     const target = await fetchMember(guild, punishment.userId);
     if (!target?.moderatable) return { error: 'Kişi sunucuda değil ya da botun rolü yetmiyor.' };
+    dedupe.markHandled(guild.id, punishment.userId, 'mute');
     const ok = await target
       .timeout(expiresAt - Date.now(), `Susturma #${core.pad(punishment.number)} uzatıldı (${actor.user.username})`)
       .then(() => true)
@@ -193,6 +229,17 @@ async function extend(guild, punishment, actor, extra) {
     extensions: [...punishment.extensions, { by: actor.id, at: Date.now(), added: extra }],
   });
   await dm(guild, punishment.userId, ui.extendDm(punishment, extra, guild.name));
+  logSystem
+    .logModeration(guild.client, {
+      color: 'warning',
+      title: `${ui.TYPES[punishment.type].label} Süresi Uzatıldı · #${core.pad(punishment.number)}`,
+      lines: [
+        `**Kullanıcı:** <@${punishment.userId}>`,
+        `**Yetkili:** <@${actor.id}>`,
+        `**Eklenen süre:** ${Math.round(extra / MINUTE)} dakika`,
+      ],
+    })
+    .catch(() => {});
   return { punishment };
 }
 
@@ -204,6 +251,13 @@ async function remove(guild, punishment, actorId, reason) {
   }
   store.update(punishment.id, { status: 'deleted', deletedBy: actorId, deletedAt: Date.now(), deleteReason: reason });
   await syncRestrictions(guild, punishment.userId);
+  logSystem
+    .logModeration(guild.client, {
+      color: 'danger',
+      title: `Sicil Kaydı Silindi · #${core.pad(punishment.number)}`,
+      lines: [`**Kullanıcı:** <@${punishment.userId}>`, `**Yetkili:** <@${actorId}>`, reason ? `**Sebep:** ${reason}` : null],
+    })
+    .catch(() => {});
   return { punishment };
 }
 
