@@ -5,7 +5,7 @@ const config = require('./config');
 const { levelFromXp } = require('./level');
 
 const WIDTH = 900;
-const HEIGHT = 340;
+const HEIGHT = 362;
 
 // Bir sonraki rol seviyesi (5'in katları); 100'den sonrası yok
 const nextMilestone = (level) => config.milestones.find((m) => m > level) ?? null;
@@ -30,11 +30,11 @@ function drawRow(ctx, x, y, width, title, xp, rank, accent) {
 
   ctx.textAlign = 'left';
   ctx.fillStyle = '#b8a4ac';
-  ctx.font = `400 17px ${FONT}`;
-  ctx.fillText(`${xp - current} / ${next - current} XP`, x, y + 58);
+  ctx.font = `500 20px ${FONT}`;
+  ctx.fillText(`${xp - current} / ${next - current} XP`, x, y + 62);
 
   ctx.textAlign = 'right';
-  ctx.fillText(`Sıralama ${rank ? `#${rank}` : '-'}   Sonraki rol: ${milestone ? `Seviye ${milestone}` : 'tamamlandı'}`, x + width, y + 58);
+  ctx.fillText(`Sıralama ${rank ? `#${rank}` : '-'}   Sonraki rol: ${milestone ? `Seviye ${milestone}` : 'tamamlandı'}`, x + width, y + 62);
 }
 
 // view: { color, mesajXp, sesXp, mesajRank, sesRank }
@@ -54,7 +54,7 @@ async function buildLevelCard(user, view) {
 
   const barWidth = WIDTH - textX - 60;
   drawRow(ctx, textX, 150, barWidth, 'Mesaj Seviyesi', view.mesajXp, view.mesajRank, accent);
-  drawRow(ctx, textX, 250, barWidth, 'Ses Seviyesi', view.sesXp, view.sesRank, accent);
+  drawRow(ctx, textX, 262, barWidth, 'Ses Seviyesi', view.sesXp, view.sesRank, accent);
 
   return canvas.toBuffer('image/png');
 }
