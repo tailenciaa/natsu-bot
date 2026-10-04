@@ -39,23 +39,32 @@ const commands = [
     .setDescription('Log sistemini kurar ve yönetir.')
     .setContexts(InteractionContextType.Guild)
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((s) => s.setName('kur').setDescription('Log kategorilerinin alt başlıklarını kurar (eksik olanları açar).'))
+    .addSubcommand((s) =>
+      s
+        .setName('kur')
+        .setDescription('Log kategorilerinin alt başlıklarını kurar (eksik olanları açar).')
+        .addBooleanOption((o) =>
+          o.setName('sifirla').setDescription('Mevcut alt başlıkları eski loglarıyla birlikte silip hepsini yeniden açar.'),
+        ),
+    )
     .addSubcommand((s) => s.setName('panel').setDescription('Log panelini log paneli kanalına gönderir (varsa yeniler).')),
 ];
 
 // /log kur: eksik alt başlıkları açar, hepsinin listesini gösterir
 async function handleKur(interaction) {
   await interaction.deferReply({ flags: core.EPHEMERAL });
+  const reset = interaction.options.getBoolean('sifirla') ?? false;
   const lines = [];
   for (const category of categories) {
-    const thread = await engine.ensureThread(interaction.client, category.key).catch(() => null);
+    const open = reset ? engine.resetThread : engine.ensureThread;
+    const thread = await open(interaction.client, category.key).catch(() => null);
     lines.push(`${category.emoji} **${category.label}:** ${thread ? `<#${thread.id}>` : '❌ açılamadı'}`);
   }
   const failed = lines.some((l) => l.includes('❌'));
   return respond(
     interaction,
     core.notice(
-      [failed ? '**Bazı alt başlıklar açılamadı.**' : '**Log alt başlıkları hazır.**', lines.join('\n')],
+      [failed ? '**Bazı alt başlıklar açılamadı.**' : reset ? '**Log alt başlıkları silinip yeniden açıldı.**' : '**Log alt başlıkları hazır.**', lines.join('\n')],
       failed ? 'danger' : 'success',
     ),
   );
