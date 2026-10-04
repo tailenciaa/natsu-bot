@@ -1,5 +1,6 @@
 // /seviye komutunun sonucu ve kanaldaki seviye atlama duyurusu
-const { page, colors } = require('../../core/ui');
+const { MediaGalleryBuilder, MediaGalleryItemBuilder, ContainerBuilder } = require('discord.js');
+const { page } = require('../../core/ui');
 const config = require('./config');
 const { levelFromXp } = require('./level');
 
@@ -36,4 +37,10 @@ function levelCard(user, mesajXp, sesXp) {
   });
 }
 
-module.exports = { levelCard, levelUpAnnounce };
+// /seviye cevabı: sadece kart görseli
+const levelImage = (imageName) =>
+  new ContainerBuilder().addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)),
+  );
+
+module.exports = { levelCard, levelUpAnnounce, levelImage };

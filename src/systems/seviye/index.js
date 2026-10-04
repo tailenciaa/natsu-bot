@@ -4,14 +4,17 @@
 // girince roller XP'ye göre otomatik eşitlenir. XP kalıcıdır; sıralama
 // sistemindeki günlük istatistiklerden bağımsızdır ama ses süresi aynı yöntemle sayılır: botlar ve AFK kanalı
 // sayılmaz, dakikada bir kredi verilir.
-const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, fetchTextChannel } = require('../../core/helpers');
+const { fetchTextChannel } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const { levelFromXp } = require('./level');
 const ui = require('./ui');
+const { buildLevelCard } = require('./card');
+const profileStore = require('../profil/store');
+const rankingStore = require('../siralama/store');
 
 const commands = [
   new SlashCommandBuilder()
@@ -142,10 +145,31 @@ function handleMessage(message) {
   grantXp(message.guild, message.author.id, 'mesaj', amount).catch((err) => console.error('[seviye] Mesaj XP verilemedi:', err.message));
 }
 
-// /seviye [kullanici]
+// Genel sıralamadaki yer (sıralama sistemindeki tüm zamanlar toplamına göre); /profil ile aynı yöntem
+function rankOf(kind, userId) {
+  const sorted = [...rankingStore.totals(kind, null).entries()].sort((a, b) => b[1] - a[1]);
+  const index = sorted.findIndex(([id]) => id === userId);
+  return index === -1 ? null : index + 1;
+}
+
+// /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta
 async function handleCommand(interaction) {
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
-  return respond(interaction, ui.levelCard(user, store.xpOf('mesaj', user.id), store.xpOf('ses', user.id)), { ephemeral: false });
+  if (user.bot) return interaction.reply({ components: [core.alert('Botların seviyesi bulunmaz.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
+  await interaction.deferReply();
+  const buffer = await buildLevelCard(user, {
+    color: profileStore.get(user.id).color,
+    mesajXp: store.xpOf('mesaj', user.id),
+    sesXp: store.xpOf('ses', user.id),
+    mesajRank: rankOf('messages', user.id),
+    sesRank: rankOf('voice', user.id),
+  });
+  return interaction.editReply({
+    components: [ui.levelImage('seviye.png')],
+    files: [new AttachmentBuilder(buffer, { name: 'seviye.png' })],
+    flags: core.CV2,
+    allowedMentions: { parse: [] },
+  });
 }
 
 module.exports = {
