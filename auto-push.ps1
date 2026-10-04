@@ -1,5 +1,5 @@
 # Kazuki bot - otomatik GitHub yedekleme
-# Her 60 saniyede bir degisiklik var mi bakar, varsa GitHub'a gonderir.
+# Her 10 saniyede bir degisiklik var mi bakar, varsa GitHub'a gonderir.
 # Durdurmak icin bu pencereyi kapat.
 
 Set-Location -Path $PSScriptRoot
@@ -18,5 +18,5 @@ while ($true) {
             Write-Host "[$time] Push basarisiz, bir sonraki turda tekrar denenecek." -ForegroundColor Yellow
         }
     }
-    Start-Sleep -Seconds 60
+    Start-Sleep -Seconds 10
 }
