@@ -75,12 +75,13 @@ const PERKS = [
   '**Harici emoji ve çıkartma** kullanabilirsin (başka sunuculara ait olanlar dahil).',
 ];
 
-// İşlem seçenekleri: butonlar sadece emojili (yazısız), hangi emojinin ne yaptığı "İşlem Seçenekleri" bloğunda yazar
+// İşlem seçenekleri: butonların hepsi aynı emojiyle durur; hangisinin ne yaptığı numarayla "İşlem Seçenekleri" bloğunda yazar
+const BUTTON_EMOJI = '💎';
 const ACTIONS = [
-  ['😀', 'Emoji Ekle', () => `Sunucuya kendi emojini ekle (**${config.perks.emoji} hak**).`, IDS.emoji, ButtonStyle.Success],
-  ['🖼️', 'Çıkartma Ekle', () => `Sunucuya kendi çıkartmanı ekle (**${config.perks.sticker} hak**).`, IDS.sticker, ButtonStyle.Success],
-  ['✏️', 'İsim Değiştir', () => 'Sunucudaki takma adını değiştir.', IDS.nick, ButtonStyle.Primary],
-  ['🎨', 'Özel Rol', () => 'Kendi adında, renginde ve emojinde bir rol oluştur ya da düzenle.', IDS.role, ButtonStyle.Primary],
+  ['Emoji Ekle', () => `Sunucuya kendi emojini ekle (**${config.perks.emoji} hak**).`, IDS.emoji],
+  ['Çıkartma Ekle', () => `Sunucuya kendi çıkartmanı ekle (**${config.perks.sticker} hak**).`, IDS.sticker],
+  ['İsim Değiştir', () => 'Sunucudaki takma adını değiştir.', IDS.nick],
+  ['Özel Rol', () => 'Kendi adında, renginde ve emojinde bir rol oluştur ya da düzenle.', IDS.role],
 ];
 
 // Renk rolü tanımlanmadıysa menü yine görünür, tek seçenekle "yakında" der ve rol vermez (handleColorRole'da karşılanır)
@@ -92,7 +93,6 @@ function panel(guild) {
     title: `${botName} Booster İşlemleri`,
     sub: 'Bu panel sadece sunucuyu takviye eden (boost basan) üyeler içindir; isim ve rol ayrıcalıkları takviyen sürdüğü sürece geçerlidir, takviyen bitince otomatik geri alınır.',
     thumbnail: guild?.iconURL({ size: 256 }),
-    accent: colors.primary,
     blocks: [`**Booster Olmanın Avantajları**\n${PERKS.map((p) => `- ${p}`).join('\n')}`],
   });
 
@@ -107,12 +107,12 @@ function panel(guild) {
   return container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([emoji, title, describe]) => `${emoji} **${title}:** ${describe()}`).join('\n')}`),
+      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe], i) => `${i + 1}. **${title}:** ${describe()}`).join('\n')}`),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        ACTIONS.map(([emoji, , , buttonId, style]) => new ButtonBuilder().setCustomId(buttonId).setEmoji(emoji).setStyle(style)),
+        ACTIONS.map(([, , buttonId], i) => new ButtonBuilder().setCustomId(buttonId).setEmoji(BUTTON_EMOJI).setLabel(String(i + 1)).setStyle(ButtonStyle.Secondary)),
       ),
     )
     .addActionRowComponents(
