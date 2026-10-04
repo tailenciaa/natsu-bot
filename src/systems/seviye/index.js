@@ -22,7 +22,8 @@ const commands = [
     .setName('seviye')
     .setDescription('Mesaj ve ses seviyeni gösterir.')
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesi görüntülenecek kullanıcı (boş bırakırsan kendi seviyen)')),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesi görüntülenecek kullanıcı (boş bırakırsan kendi seviyen)'))
+    .addBooleanOption((o) => o.setName('test').setDescription('Yöneticiler için: seviye atlama duyurusunun örneğini duyuru kanalına gönderir')),
 ];
 
 // Üyenin XP'sine göre o türdeki (mesaj/ses) seviye rolünü eşitler: ulaştığı en yüksek ana seviyenin rolü verilir,
@@ -177,8 +178,22 @@ function rankOf(kind, userId) {
   return index === -1 ? null : index + 1;
 }
 
+// /seviye test:True (sadece yöneticiler): komutu kullanan üye için örnek duyuruyu gerçek duyuru kanalına gönderir
+async function sendTestAnnounce(interaction) {
+  if (!interaction.memberPermissions?.has('Administrator')) {
+    return interaction.reply({ components: [core.alert('Test duyurusunu sadece yöneticiler gönderebilir.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
+  }
+  const channel = await fetchTextChannel(interaction.guild, config.channel);
+  if (!channel) return interaction.reply({ components: [core.alert('Duyuru kanalı bulunamadı.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
+  const roleId = config.roles.mesaj[15];
+  const role = roleId ? (interaction.guild.roles.cache.get(roleId) ?? null) : null;
+  await sendLevelUp(channel, interaction.user, 'mesaj', 15, role);
+  return interaction.reply({ components: [core.alert(`Örnek duyuru <#${channel.id}> kanalına gönderildi.`)], flags: core.EPHEMERAL_CV2 });
+}
+
 // /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta
 async function handleCommand(interaction) {
+  if (interaction.options.getBoolean('test')) return sendTestAnnounce(interaction);
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
   if (user.bot) return interaction.reply({ components: [core.alert('Botların seviyesi bulunmaz.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
   await interaction.deferReply();

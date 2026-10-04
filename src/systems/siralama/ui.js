@@ -12,7 +12,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { divider, page: pageLayout } = require('../../core/ui');
+const { divider, text, page: pageLayout } = require('../../core/ui');
 
 const IDS = {
   navigate: 'siralama', // siralama:<tür>:<dönem>:<gün>:<rol>:<sayfa>:<buton yeri>
@@ -69,16 +69,12 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     lines.push(`-# ${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Sen)**`);
   }
 
-  const blocks = [
-    `**${TYPES[type]} (${periodLabel(period, days)})**\n${lines.length ? lines.join('\n') : '-# Bu dönem için henüz veri yok.'}`,
-  ];
-  if (ranking.length) {
-    blocks.push(
-      `**Sayfa Bilgisi**\n` +
-        `-# Toplam **${number(ranking.length)}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
-        `-# Sayfa: \`${current + 1} / ${pageCount}\``,
-    );
-  }
+  const listBlock = lines.length ? lines.join('\n') : '-# Bu dönem için henüz veri yok.';
+  const infoBlock = ranking.length
+    ? `**Sayfa Bilgisi**\n` +
+      `-# Toplam **${number(ranking.length)}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
+      `-# Sayfa: \`${current + 1} / ${pageCount}\``
+    : null;
 
   const container = pageLayout({
     title: `${guild.name} Sıralamaları`,
@@ -86,22 +82,14 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
       (role ? `<@&${role}> rolündeki üyelerin verileri listeleniyor; ` : 'Sunucu genelindeki tüm veriler listeleniyor; ') +
       'aşağıdaki menülerden rol, sıralama türü ve dönem seçerek listeyi istediğin gibi filtreleyebilir, butonlarla sayfalar arasında gezebilirsin.',
     thumbnail: guild.iconURL({ size: 256 }),
-    blocks,
   });
 
+  // Sıra: başlık, dönem butonları, tür ve rol menüleri, liste (başlıktan ayrı bir metin: listedeki küçük satırlar
+  // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi, en altta sayfa butonları
   container
     .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**${TYPES[type]} (${periodLabel(period, days)})**`))
     .addActionRowComponents(
-      new ActionRowBuilder().addComponents(roleSelect),
-      new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId(`${IDS.type}:${period}:${days}:${roleId}`)
-          .addOptions(
-            Object.entries(TYPES).map(([key, label]) =>
-              new StringSelectMenuOptionBuilder().setValue(key).setLabel(label).setDefault(key === type),
-            ),
-          ),
-      ),
       new ActionRowBuilder().addComponents(
         ...['genel', 'haftalik'].map((key) =>
           new ButtonBuilder()
@@ -114,7 +102,20 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
           .setLabel(period === 'ozel' ? periodLabel(period, days) : PERIODS.ozel)
           .setStyle(period === 'ozel' ? ButtonStyle.Success : ButtonStyle.Secondary),
       ),
-    );
+      new ActionRowBuilder().addComponents(roleSelect),
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.type}:${period}:${days}:${roleId}`)
+          .addOptions(
+            Object.entries(TYPES).map(([key, label]) =>
+              new StringSelectMenuOptionBuilder().setValue(key).setLabel(label).setDefault(key === type),
+            ),
+          ),
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(listBlock));
+  if (infoBlock) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(infoBlock));
 
   // Sayfalar
   if (ranking.length) {
