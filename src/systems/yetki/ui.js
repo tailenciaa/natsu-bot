@@ -35,7 +35,7 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
       ? 'Seçtiğin seviye ve yetkiler üyeye başarıyla tanımlandı; verilen seviye ile yetkilerin özeti aşağıda yer alıyor, bu mesaj yetkilendirme işleminin kaydı olarak kanalda kalır.'
-      : 'Seviye seçtiğinde o seviyenin yetkileri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilir, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
+      : 'Seviye seçtiğinde o seviyenin yetkileri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilirsin, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,
     blocks: [intro, summary],

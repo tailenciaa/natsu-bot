@@ -26,7 +26,7 @@ async function sendPanel(client) {
   if (config.jailChannel) {
     await syncPanel(client, {
       key: 'cezalarim-jail',
-      label: "Jail bilgilendirme",
+      label: "Jail Bilgilendirme",
       channelId: config.jailChannel,
       buttonId: ui.IDS.sure,
       build: ui.jailPanel,

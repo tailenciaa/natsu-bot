@@ -158,7 +158,7 @@ function applicationNotice(app, applicantUser) {
     `**Kullanıcı Adı:** \`${app.username}\``,
     `**Hesap Oluşturma:** <t:${unix(app.accountCreatedAt)}:R>`,
     `**Sunucuya Katılma:** ${app.joinedAt ? `<t:${unix(app.joinedAt)}:R>` : 'Bilinmiyor'}`,
-    `**Önceki Başvuruları:** ${previous}`,
+    `**Önceki Başvurular:** ${previous}`,
   ].join('\n');
 
   const container = card(
@@ -292,7 +292,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
   return withFooter(
     card(
       'Başvuran Seni Bekliyor',
-      'Başvuranın görüşme kanalına girdi ve seni bekliyor; aşağıdaki butonla kanala geçerek görüşmeyi ya da oryantasyonu hemen başlatabilirsin, başvuru ayrıntıları başvurular kanalında yer alıyor.',
+      'Başvuran görüşme kanalına girdi ve seni bekliyor; aşağıdaki butonla kanala geçerek görüşmeyi ya da oryantasyonu hemen başlatabilirsin, başvuru ayrıntıları başvurular kanalında yer alıyor.',
       [
         `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n` +
           `-# #${pad(app.number)} numaralı başvuru` +

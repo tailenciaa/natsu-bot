@@ -76,14 +76,14 @@ function jailPanel() {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text("**Jail Durumun**\nJail'desin, bu kanal dışında sunucudaki hiçbir kanalı göremezsin.\n-# Kurallara uygun davrandığını gösterirsen ve süresi dolunca jail kendiliğinden kalkar, tekrar tüm kanallara erişebilirsin."))
+    .addTextDisplayComponents(text("**Jail Durumun**\nJail'desin, bu kanal dışında sunucudaki hiçbir kanalı göremezsin.\n-# Kurallara uygun davrandığını gösterirsen süresi dolunca jail kendiliğinden kalkar, tekrar tüm kanallara erişebilirsin."))
     .addSeparatorComponents(divider())
     .addSectionComponents(
       row("Ne Zaman Çıkacağım?", "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
     );
 }
 
-const NO_ACTIVE = '✅ Şu an sunucuda aktif bir cezanız bulunmuyor.';
+const NO_ACTIVE = '✅ Şu an sunucuda aktif bir cezan bulunmuyor.';
 
 // "Cezam Ne Zaman Bitecek?": aktif cezaların kalan süresi
 function sureView(active) {

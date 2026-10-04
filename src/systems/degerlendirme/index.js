@@ -72,7 +72,7 @@ async function handleRateButton(interaction) {
   const [, id, score] = interaction.customId.split(':');
   const rating = store.getRating(id);
   if (!rating) return replyError(interaction, 'Bu değerlendirme artık geçerli değil.');
-  if (interaction.user.id !== rating.userId) return replyError(interaction, 'Bu değerlendirmeyi sadece sana gönderildiği kişi yapabilir.');
+  if (interaction.user.id !== rating.userId) return replyError(interaction, 'Bu değerlendirmeyi sadece kendisine gönderilen kişi yapabilir.');
   if (rating.score) return replyError(interaction, 'Bunun için zaten değerlendirme yaptın.');
 
   return interaction.showModal(ui.ratingModal(rating, Number(score)));

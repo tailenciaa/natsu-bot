@@ -42,7 +42,7 @@ module.exports = {
   panel: {
     title: panelTitle(`${botName} Yetkili Alımı`),
     description:
-      '**Ekibimizin bir parçası olmak ister misin?** Sağdaki butondan başvuru formunu doldur. Başvurun dikkatle incelenecek, sonucu sana DM üzerinden iletilecek.',
+      '**Ekibimizin bir parçası olmak ister misin?** Sağdaki butondan başvuru formunu doldur. Başvurun dikkatle incelenecek, sonuç sana DM üzerinden iletilecek.',
     buttonLabel: 'Başvur',
     footer: '-# Formu doğru ve eksiksiz doldur; yanlış bilgi başvurunun reddedilmesine yol açar.',
   },
