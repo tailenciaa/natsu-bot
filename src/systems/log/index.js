@@ -128,6 +128,8 @@ module.exports = {
   slash: { log: handleLog },
   // Diğer sistemlerin (ör. sicil) zengin detaylı moderasyon logu göndermesi için
   logModeration: (client, { color, title, lines }) => engine.send(client, 'moderasyon', ui.entry(color, title, lines)),
+  // Herhangi bir kategoriye log yazar: write(client, 'bot', { color, title, lines }); yeni sistemler logları buradan atar
+  write: (client, key, { color, title, lines }) => engine.send(client, key, ui.entry(color, title, lines)),
   prefixed: [
     [ui.IDS.select, handleSelect],
     [ui.IDS.setup, handleSetupButton],

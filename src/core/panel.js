@@ -60,4 +60,7 @@ async function syncPanel(client, { key, label, channelId, buttonId, build, image
   console.log(`[panel] ${label} paneli #${channel.name} kanalına gönderildi.`);
 }
 
-module.exports = { syncPanel };
+// Panel mesajı bot tarafından sonradan düzenlenirse (ör. butondaki sayı) kayıtlı özeti güncellemek için
+const panelHash = (container) => hashOf(JSON.stringify(container.toJSON()), '');
+
+module.exports = { syncPanel, panelHash };
