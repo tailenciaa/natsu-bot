@@ -66,7 +66,7 @@ function panel() {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Önemli Not**\n${config.panel.footer}`));
+    .addTextDisplayComponents(text(`-# Önemli: ${config.panel.footer.replace(/^-# /, '')}`));
 }
 
 function ticketModal() {

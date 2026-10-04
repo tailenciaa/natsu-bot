@@ -31,7 +31,7 @@ function panel() {
   });
   return container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Önemli Not**\n${config.note}`))
+    .addTextDisplayComponents(text(config.note))
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()

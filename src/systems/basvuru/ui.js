@@ -52,7 +52,7 @@ function panel() {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Başvuru Hakkında**\n${description}`))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Dikkat**\n${footer}`));
+    .addTextDisplayComponents(text(`-# Dikkat: ${footer.replace(/^-# /, '')}`));
 }
 
 // "Başvuru Yap" ile açılan form; sorular config.js'ten gelir
