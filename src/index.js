@@ -89,16 +89,6 @@ client.once(Events.ClientReady, async (c) => {
   const guild = c.guilds.cache.get(guildId);
   if (!guild) return console.error(`[hata] Bot .env dosyasındaki GUILD_ID (${guildId}) sunucusunda değil.`);
   registerCommands(guild).catch((err) => console.error('[komut]', err));
-  // GEÇİCİ_DUMP_BAŞLA
-  try {
-    console.log('[dump] guild ' + JSON.stringify({ name: guild.name, id: guild.id, created: guild.createdAt.toISOString(), owner: guild.ownerId, members: guild.memberCount, boosts: guild.premiumSubscriptionCount, tier: guild.premiumTier, desc: guild.description, vanity: guild.vanityURLCode }));
-    const chans = [...guild.channels.cache.values()].sort((a, b) => a.rawPosition - b.rawPosition);
-    for (const ch of chans) console.log('[dump] ch ' + JSON.stringify([ch.id, ch.type, ch.parentId, ch.name, (ch.topic || '').slice(0, 120)]));
-    const roles = [...guild.roles.cache.values()].sort((a, b) => b.position - a.position);
-    for (const r of roles) console.log('[dump] role ' + JSON.stringify([r.id, r.name, r.position, r.hexColor, r.managed, r.members.size]));
-    console.log('[dump] bitti');
-  } catch (e) { console.log('[dump] hata ' + e.message); }
-  // GEÇİCİ_DUMP_BİTTİ
 });
 
 // Sistemlerin dinlediği Discord olayları
