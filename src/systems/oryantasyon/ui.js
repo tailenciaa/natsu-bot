@@ -117,7 +117,7 @@ function summaryLines(app, endedAt) {
   const told = topics.filter((s) => !o.skipped.includes(s.id)).length;
   return [
     `**${areas.length > 1 ? 'Görev Alanları' : 'Görev Alanı'}:** ${areaLabels(app) || 'Seçilmedi'}`,
-    `**Anlatılan Konular:** ${told}/${topics.length}${o.skipped.length ? ` · Bildiği için geçilen: ${skippedTitles(app)}` : ''}`,
+    `**Anlatılan Konular:** ${told}/${topics.length}${o.skipped.length ? ` ・ Bildiği için geçilen: ${skippedTitles(app)}` : ''}`,
     `**Oryantasyon Süresi:** ${minutes(o.startedAt, endedAt)} dakika`,
   ];
 }
@@ -176,7 +176,7 @@ function panel(app, applicantUser) {
   const { steps } = config;
   const step = steps[o.step];
   const header = text(
-    `## Oryantasyon · Başvuru #${pad(app.number)}\n` +
+    `## Oryantasyon ・ Başvuru #${pad(app.number)}\n` +
       `**<@${o.staffId}>, <@${app.userId}> için oryantasyon veriyor.**\n` +
       // Adımın adı hemen alttaki başlıkta
       `-# Adım ${o.step + 1}/${steps.length}\n` +
@@ -230,7 +230,7 @@ function panel(app, applicantUser) {
     .addTextDisplayComponents(
       text(
         // Alan seçimini kimin yapacağı o adımın metninde yazıyor
-        `-# Adımları <@${o.staffId}> ilerletir · Başlangıç <t:${unix(o.startedAt)}:R>`,
+        `-# Adımları <@${o.staffId}> ilerletir ・ Başlangıç <t:${unix(o.startedAt)}:R>`,
       ),
     );
 }
@@ -277,7 +277,7 @@ function presenceText(app) {
   if (o.applicantAwaySince) {
     lines.push(
       `**<@${app.userId}> kanaldan ayrıldı.** <t:${unix(o.applicantAwaySince + p.applicantGraceMinutes * MINUTE)}:R> dönmezse oryantasyon iptal edilecek.\n` +
-        `-# Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves} · ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
+        `-# Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves} ・ ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
     );
   }
   if (o.staffNeeded) {
@@ -301,7 +301,7 @@ function orientationLog(app) {
   const o = app.orientation;
   const { steps } = config;
 
-  const lines = [`**Adım:** ${o.step + 1}/${steps.length} · ${steps[o.step].title}\n${progress(o.step, steps.length)}`];
+  const lines = [`**Adım:** ${o.step + 1}/${steps.length} ・ ${steps[o.step].title}\n${progress(o.step, steps.length)}`];
   if (o.areas.length) lines.push(`**${o.areas.length > 1 ? 'Görev Alanları' : 'Görev Alanı'}:** ${areaLabels(app)}`);
   if (o.skipped.length) lines.push(`**Bildiği için geçilen:** ${skippedTitles(app)}`);
   if (o.transfers.length) lines.push(`**Aktarımlar:** ${o.transfers.map((t) => `<@${t.from}> → <@${t.to}>`).join(', ')}`);
@@ -309,9 +309,9 @@ function orientationLog(app) {
 
   const presence = presenceText(app);
   const sections = [
-    `### Oryantasyon Sürüyor · Başvuru #${pad(app.number)}\n` +
+    `### Oryantasyon Sürüyor ・ Başvuru #${pad(app.number)}\n` +
       `**<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.**\n` +
-      `-# Başlangıç <t:${unix(o.startedAt)}:t> · Adımlar ilerledikçe bu mesaj güncellenir.`,
+      `-# Başlangıç <t:${unix(o.startedAt)}:t> ・ Adımlar ilerledikçe bu mesaj güncellenir.`,
   ];
   if (presence) sections.push(presence);
   sections.push(lines.join('\n'));
@@ -333,7 +333,7 @@ function orientationResult(app) {
   if (o.status === 'cancelled') {
     return notice(
       [
-        `### Oryantasyon İptal Edildi · Başvuru #${pad(app.number)}\n` +
+        `### Oryantasyon İptal Edildi ・ Başvuru #${pad(app.number)}\n` +
           `**${cancelHeadline(app)}**\n` +
           '-# Görüşme kanalları başvurana kilitlendi.',
         `**Sebep:**\n${quote(o.cancelReason)}${penaltyText(app)}`,
@@ -344,7 +344,7 @@ function orientationResult(app) {
   }
   return notice(
     [
-      `### Oryantasyon Tamamlandı · Başvuru #${pad(app.number)}\n` +
+      `### Oryantasyon Tamamlandı ・ Başvuru #${pad(app.number)}\n` +
         `**<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı!**\n` +
         `-# Oryantasyonu <@${o.staffId}> verdi, görüşme kanalları başvurana kilitlendi.`,
       [`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n'),
@@ -375,7 +375,7 @@ function approvedDm(app, guildName, channelId) {
   return notice(sections, 'success')
     .addActionRowComponents(voiceButtons(app.guildId, channelId))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName} · <t:${unix(app.reviewedAt)}:F>`));
+    .addTextDisplayComponents(text(`-# ${guildName} ・ <t:${unix(app.reviewedAt)}:F>`));
 }
 
 // Oryantasyonu verecek yetkiliye giden DM (onaylayınca, oryantasyon kendisine aktarılınca ya da devralınca).
@@ -407,7 +407,7 @@ function staffDm(app, guildName, channelId, transferredBy, tookOver) {
   )
     .addActionRowComponents(voiceButtons(app.guildId, target))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName} · <t:${unix(Date.now())}:F>`));
+    .addTextDisplayComponents(text(`-# ${guildName} ・ <t:${unix(Date.now())}:F>`));
 }
 
 // Oryantasyonu tamamlayan yeni yetkiliye giden tebrik DM'i
@@ -426,7 +426,7 @@ function completedDm(app, guildName) {
         'Başvurudan oryantasyona kadar gösterdiğin ilgi için teşekkürler. İlk günlerde takıldığın her şeyi ' +
         `<@${o.staffId}> ya da diğer yetkililere sorabilirsin, kimse her şeyi ilk günden bilmez.\n` +
         '-# Unutma: yetkili olmak bir ayrıcalık değil, bir sorumluluk. Yeni görevinde başarılar!',
-      `-# ${guildName} · <t:${unix(o.finishedAt)}:F>`,
+      `-# ${guildName} ・ <t:${unix(o.finishedAt)}:F>`,
     ],
     'success',
   );
@@ -442,7 +442,7 @@ function cancelledDm(app, guildName) {
         (o.cancelledBy ? `-# <@${o.cancelledBy}> oryantasyonu sonlandırdı.` : '-# Oryantasyon otomatik olarak sonlandırıldı.'),
       `**Sebep:**\n${quote(o.cancelReason)}` +
         (app.penaltyUntil ? `\n-# Bu yüzden <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamazsın.` : ''),
-      `-# ${guildName} · <t:${unix(o.finishedAt)}:F>`,
+      `-# ${guildName} ・ <t:${unix(o.finishedAt)}:F>`,
     ],
     'danger',
   );
@@ -456,10 +456,10 @@ function takeoverNotice(app, state) {
   if (state === 'open') {
     const step = config.steps[o.step];
     return notice(
-      `### Oryantasyon İçin Yetkili Bekleniyor · ${title}\n` +
+      `### Oryantasyon İçin Yetkili Bekleniyor ・ ${title}\n` +
         `**${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> oryantasyonun ortasında <#${o.channelId}> kanalında bekliyor.**\n` +
         `-# <@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
-        `Oryantasyon ${o.step + 1}/${config.steps.length} · ${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
+        `Oryantasyon ${o.step + 1}/${config.steps.length} ・ ${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
       'warning',
     ).addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -470,19 +470,19 @@ function takeoverNotice(app, state) {
   }
   if (state === 'returned') {
     return notice(
-      `### Yetkili Geri Döndü · ${title}\n**<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.**\n-# Artık yetkili beklenmiyor.`,
+      `### Yetkili Geri Döndü ・ ${title}\n**<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.**\n-# Artık yetkili beklenmiyor.`,
       'success',
     );
   }
   if (state === 'taken') {
     const from = o.transfers.at(-1)?.from;
     return notice(
-      `### Oryantasyon Devralındı · ${title}\n**<@${o.staffId}> oryantasyonu devraldı.**\n` +
+      `### Oryantasyon Devralındı ・ ${title}\n**<@${o.staffId}> oryantasyonu devraldı.**\n` +
         `-# ${from ? `<@${from}> ayrıldıktan sonra ` : ''}kalınan adımdan devam edilecek.`,
       'success',
     );
   }
-  return notice(`### Oryantasyon Sona Erdi · ${title}\n-# Artık yetkili beklenmiyor.`);
+  return notice(`### Oryantasyon Sona Erdi ・ ${title}\n-# Artık yetkili beklenmiyor.`);
 }
 
 // Panel başka kanala taşınınca eski kanaldaki panelin yerine kalan not
@@ -548,7 +548,7 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
       ),
     );
   }
-  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${guildName} · Başvuru #${pad(app.number)}`));
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${guildName} ・ Başvuru #${pad(app.number)}`));
 }
 
 // "Başka Yetkiliye Aktar" ile açılan, sadece butona basanın gördüğü seçim menüsü

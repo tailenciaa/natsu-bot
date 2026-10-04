@@ -125,7 +125,7 @@ function applicationNotice(app, applicantUser) {
   if (app.note) status += `\n${quote(app.note)}`;
 
   const previous = app.previous?.total
-    ? `${app.previous.total} başvuru${app.previous.rejected ? ` · ${app.previous.rejected} reddedildi` : ''}`
+    ? `${app.previous.total} başvuru${app.previous.rejected ? ` ・ ${app.previous.rejected} reddedildi` : ''}`
     : 'Yok';
 
   const header = text(
@@ -257,7 +257,7 @@ function resultDm(app, guildName, reapplyAt) {
 
   return notice(sections, 'danger')
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName} · <t:${unix(app.reviewedAt)}:F>`));
+    .addTextDisplayComponents(text(`-# ${guildName} ・ <t:${unix(app.reviewedAt)}:F>`));
 }
 
 // "Görüşmeye Çağır" ile başvurana giden DM: yetkili bir ses kanalındaysa "seni X kanalında bekliyor",
@@ -270,7 +270,7 @@ function meetingDm(app, guildName, voice) {
     'warning',
   );
   if (voice) voiceSection(container, app, voice);
-  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${guildName} · <t:${unix(app.meetingAt)}:F>`));
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${guildName} ・ <t:${unix(app.meetingAt)}:F>`));
 }
 
 // Başvuran bir görüşme kanalına girince başvuruyla ilgilenen yetkiliye giden DM (görüşme ya da oryantasyon için)
@@ -292,7 +292,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName} · <t:${unix(Date.now())}:F>`));
+    .addTextDisplayComponents(text(`-# ${guildName} ・ <t:${unix(Date.now())}:F>`));
 }
 
 // Kayıt kanalındaki görüşme mesajı: görüşme başlayınca gönderilir, bitince güncellenir
@@ -302,12 +302,12 @@ function meetingLog(app) {
   const duration = ended ? Math.max(1, Math.round((m.endedAt - m.startedAt) / 60000)) : 0;
   return notice(
     ended
-      ? `### Görüşme Tamamlandı · Başvuru #${pad(app.number)}\n` +
+      ? `### Görüşme Tamamlandı ・ Başvuru #${pad(app.number)}\n` +
           `**<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.**\n` +
           `-# <#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
-      : `### Görüşme Başladı · Başvuru #${pad(app.number)}\n` +
+      : `### Görüşme Başladı ・ Başvuru #${pad(app.number)}\n` +
           `**<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.**\n` +
-          `-# Başlangıç <t:${unix(m.startedAt)}:t> · Görüşme bitince bu mesaj güncellenir.`,
+          `-# Başlangıç <t:${unix(m.startedAt)}:t> ・ Görüşme bitince bu mesaj güncellenir.`,
     ended ? 'success' : 'primary',
   );
 }

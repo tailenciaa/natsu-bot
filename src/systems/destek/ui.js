@@ -207,7 +207,7 @@ function claimReminder(ticket) {
     .setAccentColor(colors.warning)
     .addTextDisplayComponents(
       text(
-        `### Hatırlatma · Talep #${pad(ticket.number)}\n` +
+        `### Hatırlatma ・ Talep #${pad(ticket.number)}\n` +
           `**<@&${ticket.staffRoleId}>, <@${ticket.ownerId}> hâlâ bir yetkili bekliyor!**\n` +
           '-# Butonla talebin üstlenme mesajına gidebilirsin.',
       ),

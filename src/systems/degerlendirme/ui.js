@@ -117,7 +117,7 @@ function ratingModal(rating, score) {
 function ratingNotice(rating, staffUser) {
   const removed = rating.reportStatus === 'approved' || Boolean(rating.removedAt);
   const disputed = !removed && Boolean(rating.reportedAt) && (rating.reportStatus ?? 'pending') === 'pending';
-  const score = `${stars(rating.score)} · ${SCORE_LABELS[rating.score]}`;
+  const score = `${stars(rating.score)} ・ ${SCORE_LABELS[rating.score]}`;
 
   let header;
   if (removed) {
@@ -249,7 +249,7 @@ function replyDm(rating, guildName) {
         `**<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.**\n` +
         `-# ${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
       `**Yetkilinin Yorumu:**\n${quote(rating.staffReply)}`,
-      `-# ${guildName} · <t:${unix(rating.repliedAt)}:F>`,
+      `-# ${guildName} ・ <t:${unix(rating.repliedAt)}:F>`,
     ],
     'success',
   );
@@ -355,7 +355,7 @@ function meetingDm(rating, guildName) {
     )
     .addActionRowComponents(new ActionRowBuilder().addComponents(buttons))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName} · <t:${unix(rating.meetingAt)}:F>`));
+    .addTextDisplayComponents(text(`-# ${guildName} ・ <t:${unix(rating.meetingAt)}:F>`));
 }
 
 // Görüşme ya da oryantasyon bitince başvurana giden puanlama DM'i (destek talepleri kapanış DM'inin altında puanlanır)
@@ -364,10 +364,10 @@ function ratingRequestDm(rating) {
   const header =
     rating.category === 'oryantasyon'
       ? '### Oryantasyonunu Değerlendir\n' +
-        `-# Başvuru #${pad(rating.applicationNumber)} · Geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.`
+        `-# Başvuru #${pad(rating.applicationNumber)} ・ Geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.`
       : '### Görüşmeni Değerlendir\n' +
         `**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n` +
-        `-# Başvuru #${pad(rating.applicationNumber)} · Başvurunun sonucundan bağımsız olarak puanlayabilirsin.`;
+        `-# Başvuru #${pad(rating.applicationNumber)} ・ Başvurunun sonucundan bağımsız olarak puanlayabilirsin.`;
   return ratingSection(notice(header, 'primary'), rating);
 }
 
@@ -383,7 +383,7 @@ function reviewDm(rating, guildName) {
         : '### İtirazın Reddedildi\n' +
           '**Değerlendirme sicilinde kalmaya devam ediyor.**\n' +
           `-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
-      `-# ${guildName} · <t:${unix(rating.reviewedAt)}:F>`,
+      `-# ${guildName} ・ <t:${unix(rating.reviewedAt)}:F>`,
     ],
     approved ? 'success' : 'danger',
   );

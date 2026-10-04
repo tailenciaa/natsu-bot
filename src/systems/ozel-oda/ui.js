@@ -61,8 +61,8 @@ function controlPanel(room, channel) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        `**${locked ? 'Kilitli' : 'Açık'}** · ` +
-          `**${hidden ? 'Gizli' : 'Görünür'}** · ` +
+        `**${locked ? 'Kilitli' : 'Açık'}** ・ ` +
+          `**${hidden ? 'Gizli' : 'Görünür'}** ・ ` +
           `**Limit:** ${channel.userLimit || 'Sınırsız'}`,
       ),
     )
