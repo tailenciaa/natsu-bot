@@ -34,7 +34,7 @@ const withFooter = (container, footer) => container.addSeparatorComponents(divid
 
 // Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, çizgiyle ayrılmış bloklar
 function panel() {
-  const { title, description, buttonLabel } = config.panel;
+  const { title, buttonLabel } = config.panel;
   const container = new ContainerBuilder().addSectionComponents(
     new SectionBuilder()
       .addTextDisplayComponents(
@@ -48,9 +48,7 @@ function panel() {
     const url = /^https?:\/\//.test(config.banner) ? config.banner : `attachment://${config.banner}`;
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
   }
-  return container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(description));
+  return container;
 }
 
 // "Başvuru Yap" ile açılan form; sorular config.js'ten gelir
