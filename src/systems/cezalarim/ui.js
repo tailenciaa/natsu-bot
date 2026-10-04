@@ -15,7 +15,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, pad, notice } = require('../../core/ui');
+const { text, divider, colors, unix, quote, shorten, pad, notice, page: pageBlocks } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 const { TYPES, formatDuration } = require('../sicil/ui');
 const config = require('./config');
@@ -41,7 +41,7 @@ function panel() {
     .addTextDisplayComponents(
       text(
         `${panelTitle(`${botName} Ceza Bilgilendirme Paneli`)}\n` +
-          '**Aşağıdaki butonları kullanarak sunucu üzerindeki aktif cezaların hakkında detaylı bilgi alabilirsin.**',
+          '-# Aşağıdaki butonları kullanarak sunucu üzerindeki aktif cezaların hakkında detaylı bilgi alabilir, cezanın ne zaman biteceğini ve sebebini öğrenebilir, haksız bulursan itiraz edebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -72,10 +72,11 @@ function jailPanel() {
     .addTextDisplayComponents(
       text(
         `${panelTitle(`${botName} Jail Bilgilendirme`)}\n` +
-          "**Jail'desin, bu kanal dışında sunucudaki hiçbir kanalı göremezsin.**\n" +
-          "-# Kurallara uygun davrandığını gösterirsen ve süresi dolunca jail kendiliğinden kalkar, tekrar tüm kanallara erişebilirsin.",
+          "-# Jail'deyken bu kanal dışında sunucudaki hiçbir kanalı göremezsin; süresi dolunca jail kendiliğinden kalkar ve tekrar tüm kanallara erişebilirsin, kalan süreni aşağıdan öğrenebilirsin.",
       ),
     )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text("**Jail Durumun**\nJail'desin, bu kanal dışında sunucudaki hiçbir kanalı göremezsin.\n-# Kurallara uygun davrandığını gösterirsen ve süresi dolunca jail kendiliğinden kalkar, tekrar tüm kanallara erişebilirsin."))
     .addSeparatorComponents(divider())
     .addSectionComponents(
       row("Ne Zaman Çıkacağım?", "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
@@ -87,19 +88,23 @@ const NO_ACTIVE = '✅ Şu an sunucuda aktif bir cezanız bulunmuyor.';
 // "Cezam Ne Zaman Bitecek?": aktif cezaların kalan süresi
 function sureView(active) {
   if (!active.length) return notice(NO_ACTIVE, 'success');
-  return notice(
-    active.map((p) => `**${TYPES[p.type].label} #${p.number}**\n-# ${p.expiresAt ? `<t:${unix(p.expiresAt)}:R> sona erecek` : 'Süresiz'}`),
-    'warning',
-  );
+  return pageBlocks({
+    title: 'Ceza Sürelerin',
+    sub: 'Sunucuda şu an aktif olan cezalarının ne zaman sona ereceğini aşağıda görebilirsin; süresiz olarak verilen cezalar yetkililer tarafından kaldırılana kadar devam eder.',
+    accent: colors.warning,
+    blocks: active.map((p) => `**${TYPES[p.type].label} #${p.number}**\n-# ${p.expiresAt ? `<t:${unix(p.expiresAt)}:R> sona erecek` : 'Süresiz'}`),
+  });
 }
 
 // "Ceza Sebebim Ne?": aktif cezaların sebebi
 function sebepView(active) {
   if (!active.length) return notice(NO_ACTIVE, 'success');
-  return notice(
-    active.map((p) => `**${TYPES[p.type].label} #${p.number}**\n${quote(p.reason)}`),
-    'warning',
-  );
+  return pageBlocks({
+    title: 'Ceza Sebeplerin',
+    sub: 'Sunucuda şu an aktif olan cezalarının hangi sebeple verildiğini aşağıda görebilirsin; cezayı haksız buluyorsan #cezalarım panelindeki itiraz butonunu kullanabilirsin.',
+    accent: colors.warning,
+    blocks: active.map((p) => `**${TYPES[p.type].label} #${p.number}**\n${quote(p.reason)}`),
+  });
 }
 
 const itirazNoneView = () => notice('✅ İtiraz edebileceğin aktif bir cezan yok.', 'success');
@@ -107,7 +112,14 @@ const itirazNoneView = () => notice('✅ İtiraz edebileceğin aktif bir cezan y
 // "Cezaya İtiraz Et": aktif cezalardan birini seçme menüsü
 function itirazPicker(active) {
   return new ContainerBuilder()
+    .addTextDisplayComponents(
+      text(
+        '## Cezaya İtiraz Et\n-# Aşağıdaki menüden itiraz etmek istediğin aktif cezayı seç; ardından açılan formda itiraz sebebini yazdığında yetkililer için özel bir destek talebi oluşturulur.',
+      ),
+    )
+    .addSeparatorComponents(divider())
     .addTextDisplayComponents(text('**İtiraz etmek istediğin cezayı seç.**'))
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -157,23 +169,29 @@ function itirazCard(p, sebep, karar) {
     .setAccentColor(karar ? (karar.sonuc === 'onayla' ? colors.success : colors.danger) : colors.warning)
     .addTextDisplayComponents(
       text(
-        '### İtiraz Edilen Ceza\n' +
+        '## İtiraz Edilen Ceza\n-# Üye aşağıdaki cezaya itiraz etti; cezanın bilgilerini, ceza sebebini ve üyenin itiraz sebebini inceleyip alttaki butonlarla itirazı onaylayabilir ya da reddedebilirsin.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        '**Ceza Bilgileri**\n' +
           [
-            `**Tür:** ${TYPES[p.type].label}`,
-            `**Numara:** #${pad(p.number)}`,
-            `**Veren:** <@${p.by}>`,
-            `**Verilme:** <t:${unix(p.createdAt)}:F>`,
-            p.duration ? `**Süre:** ${formatDuration(p.duration)}` : null,
-            durum ? `**Durum:** ${durum}` : null,
+            `- **Tür:** ${TYPES[p.type].label}`,
+            `- **Numara:** #${pad(p.number)}`,
+            `- **Veren:** <@${p.by}>`,
+            `- **Verilme:** <t:${unix(p.createdAt)}:F>`,
+            p.duration ? `- **Süre:** ${formatDuration(p.duration)}` : null,
+            durum ? `- **Durum:** ${durum}` : null,
           ]
             .filter(Boolean)
             .join('\n'),
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Ceza Sebebi:**\n${quote(p.reason)}`))
+    .addTextDisplayComponents(text(`**Ceza Sebebi**\n${quote(p.reason)}`))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**İtiraz Sebebi:**\n${quote(sebep)}`));
+    .addTextDisplayComponents(text(`**İtiraz Sebebi**\n${quote(sebep)}`));
 
   if (karar) {
     container

@@ -4,18 +4,15 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   LabelBuilder,
   ModalBuilder,
   RoleSelectMenuBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ThumbnailBuilder,
 } = require('discord.js');
-const { text, divider } = require('../../core/ui');
+const { divider, page: pageLayout } = require('../../core/ui');
 
 const IDS = {
   navigate: 'siralama', // siralama:<tür>:<dönem>:<gün>:<rol>:<sayfa>:<buton yeri>
@@ -32,7 +29,6 @@ const PERIODS = { genel: 'Genel', haftalik: 'Haftalık', ozel: 'Özel Süre' };
 // Sayfa 1'deki ilk üç sıra büyük yazılır
 const PODIUM = ['# ', '## ', '### '];
 
-const box = (lines) => lines.filter(Boolean).map((line) => `> ${line}`).join('\n');
 const number = (value) => value.toLocaleString('tr-TR');
 
 function formatValue(type, value) {
@@ -53,19 +49,6 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
   const pageItems = ranking.slice(start, start + PAGE_SIZE);
   const state = (t, p, d, r) => `${t}:${p}:${d}:${r}`;
 
-  // Başlık: sunucu adı ve ikonu, altında neyin listelendiği
-  const headerText = text(
-    `## ${guild.name} Sıralamaları\n` +
-      box([role ? `<@&${role}> rolündeki üyelerin verileri listeleniyor.` : 'Sunucu genelindeki tüm veriler listeleniyor.']),
-  );
-  const icon = guild.iconURL({ size: 256 });
-  const container = new ContainerBuilder();
-  if (icon) {
-    container.addSectionComponents(new SectionBuilder().addTextDisplayComponents(headerText).setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)));
-  } else {
-    container.addTextDisplayComponents(headerText);
-  }
-
   // Filtreler: rol, sıralama türü ve dönem
   const roleSelect = new RoleSelectMenuBuilder()
     .setCustomId(`${IDS.role}:${type}:${period}:${days}`)
@@ -73,6 +56,38 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     .setMinValues(0)
     .setMaxValues(1);
   if (role) roleSelect.setDefaultRoles(role);
+
+  // Liste
+  const lines = pageItems.map(({ userId, value }, i) => {
+    const rank = start + i + 1;
+    const size = current === 0 && rank <= 3 ? PODIUM[rank - 1] : '-# ';
+    return `${size}${rank}. <@${userId}> » \`${formatValue(type, value)}\`${userId === viewerId ? ' **(Siz)**' : ''}`;
+  });
+  // Komutu kullanan bu sayfada yoksa sırası en altta gösterilir
+  const viewerRank = ranking.findIndex((r) => r.userId === viewerId);
+  if (viewerRank !== -1 && (viewerRank < start || viewerRank >= start + PAGE_SIZE)) {
+    lines.push(`-# ${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Siz)**`);
+  }
+
+  const blocks = [
+    `**${TYPES[type]} (${periodLabel(period, days)})**\n${lines.length ? lines.join('\n') : '-# Bu dönem için henüz veri yok.'}`,
+  ];
+  if (ranking.length) {
+    blocks.push(
+      `**Sayfa Bilgisi**\n` +
+        `-# Toplam **${number(ranking.length)}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
+        `-# Sayfa: \`${current + 1} / ${pageCount}\``,
+    );
+  }
+
+  const container = pageLayout({
+    title: `${guild.name} Sıralamaları`,
+    sub:
+      (role ? `<@&${role}> rolündeki üyelerin verileri listeleniyor; ` : 'Sunucu genelindeki tüm veriler listeleniyor; ') +
+      'aşağıdaki menülerden rol, sıralama türü ve dönem seçerek listeyi istediğin gibi filtreleyebilir, butonlarla sayfalar arasında gezebilirsin.',
+    thumbnail: guild.iconURL({ size: 256 }),
+    blocks,
+  });
 
   container
     .addSeparatorComponents(divider())
@@ -101,41 +116,15 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
       ),
     );
 
-  // Liste
-  container.addSeparatorComponents(divider());
-  const lines = pageItems.map(({ userId, value }, i) => {
-    const rank = start + i + 1;
-    const size = current === 0 && rank <= 3 ? PODIUM[rank - 1] : '-# ';
-    return `${size}${rank}. <@${userId}> » \`${formatValue(type, value)}\`${userId === viewerId ? ' **(Siz)**' : ''}`;
-  });
-  // Komutu kullanan bu sayfada yoksa sırası en altta gösterilir
-  const viewerRank = ranking.findIndex((r) => r.userId === viewerId);
-  if (viewerRank !== -1 && (viewerRank < start || viewerRank >= start + PAGE_SIZE)) {
-    lines.push('', `-# ${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Siz)**`);
-  }
-  container.addTextDisplayComponents(
-    text(`**ℹ️ ${TYPES[type]} (${periodLabel(period, days)})**\n${lines.length ? lines.join('\n') : box(['Bu dönem için henüz veri yok.'])}`),
-  );
-
   // Sayfalar
   if (ranking.length) {
     const nav = (target, slot) => `${IDS.navigate}:${state(type, period, days, roleId)}:${target}:${slot}`;
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(
-        text(
-          box([
-            `Toplam **${number(ranking.length)}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.`,
-            `Sayfa: \`${current + 1} / ${pageCount}\``,
-          ]),
-        ),
-      )
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId(nav(current - 1, 'prev')).setLabel('«').setStyle(ButtonStyle.Primary).setDisabled(current === 0),
-          new ButtonBuilder().setCustomId(nav(current + 1, 'next')).setLabel('»').setStyle(ButtonStyle.Primary).setDisabled(current >= pageCount - 1),
-        ),
-      );
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(nav(current - 1, 'prev')).setLabel('«').setStyle(ButtonStyle.Primary).setDisabled(current === 0),
+        new ButtonBuilder().setCustomId(nav(current + 1, 'next')).setLabel('»').setStyle(ButtonStyle.Primary).setDisabled(current >= pageCount - 1),
+      ),
+    );
   }
   return container;
 }

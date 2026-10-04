@@ -13,12 +13,16 @@ function panel() {
     .addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
-          text(`${panelTitle(`${botName} Partner Görme`)}\n` + '**Partner kanallarını görmek için yandaki butona bas.**'),
+          text(
+            `${panelTitle(`${botName} Partner Görme`)}\n` +
+              '-# Partner sunucuların duyurularının ve paylaşımlarının bulunduğu kanalları görmek istiyorsan yandaki butona basman yeterli, rolün anında sana verilir.',
+          ),
         )
         .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.ver).setLabel('Partner Görme').setStyle(ButtonStyle.Success)),
     )
+    .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)))
     .addSeparatorComponents(divider())
-    .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
+    .addTextDisplayComponents(text('**Partner Kanalları**\nButona bastığında partner kanallarını görme rolü sana verilir.'));
 }
 
 module.exports = { IDS, panel };

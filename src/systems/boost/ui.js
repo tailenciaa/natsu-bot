@@ -10,14 +10,12 @@ const {
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   ModalBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ThumbnailBuilder,
 } = require('discord.js');
-const { text, divider, notice } = require('../../core/ui');
+const { colors, text, divider, notice, page } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 const config = require('./config');
 
@@ -41,27 +39,27 @@ const IDS = {
 // Takviye edene giden DM: teşekkür + panelin ve çıkartma komutunun nasıl kullanılacağı
 function thanksDm(guildName, panelChannelId, perks) {
   const panelLine = panelChannelId ? `<#${panelChannelId}> kanalındaki panelden` : 'Booster İşlemleri panelinden';
-  return notice(
-    [
-      `### 💜 Takviyen İçin Teşekkürler!\n**${guildName} sunucusunu takviye ettiğin için çok teşekkür ederiz!**`,
-      `Takviyen sürdüğü sürece ${panelLine} kendi emojini ekleyebilir, adını değiştirebilir ve kendi renginde/emojinde ` +
-        `bir rol oluşturabilirsin.\n` +
-        `-# Çıkartma eklemek dosya yüklemesi gerektirdiği için \`/cikartma-ekle\` komutuyla yapılır.`,
-      `-# Emoji ve çıkartma hakkın takviye başına ${perks.emoji} emoji, ${perks.sticker} çıkartma; isim ve rol takviyen bitince geri alınır.`,
+  return page({
+    title: '💜 Takviyen İçin Teşekkürler!',
+    sub: `${guildName} sunucusunu takviye ettiğin için çok teşekkür ederiz; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir, aşağıdaki bilgilerle bunları kullanabilirsin.`,
+    accent: colors.success,
+    blocks: [
+      `**Panelden Yapabileceklerin**\nTakviyen sürdüğü sürece ${panelLine} kendi emojini ekleyebilir, adını değiştirebilir ve kendi renginde/emojinde bir rol oluşturabilirsin.`,
+      `**Çıkartma ve Haklar**\n-# Çıkartma eklemek dosya yüklemesi gerektirdiği için \`/cikartma-ekle\` komutuyla yapılır.\n` +
+        `-# Emoji ve çıkartma hakkın takviye başına ${perks.emoji} emoji, ${perks.sticker} çıkartma; isim ve rol takviyen bitince geri alınır.`,
     ],
-    'success',
-  );
+  });
 }
 
 // Teşekkür kanalına düşen kısa bildirim: sağ üstte üyenin fotoğrafı
 function channelThanks(user) {
-  return new ContainerBuilder()
-    .setAccentColor(0xf47fff)
-    .addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(text(`### 💜 Takviye Etti!\n**<@${user.id}> sunucuyu takviye etti, çok teşekkür ederiz!**`))
-        .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 }))),
-    );
+  return page({
+    title: '💜 Takviye Etti!',
+    sub: 'Sunucumuzu takviye ederek bize destek olan üyelerimize buradan teşekkür ediyoruz; takviye edenler özel rol ve panel avantajlarından faydalanabilir ve topluluğumuzu büyütür.',
+    thumbnail: user.displayAvatarURL({ size: 256 }),
+    accent: 0xf47fff,
+    blocks: [`**Takviye Eden**\n<@${user.id}> sunucuyu takviye etti, çok teşekkür ederiz!`],
+  });
 }
 
 // Bot tarafından yapılan (panelden erişilebilen) avantajlar butonlarla eşleşir; geri kalanı booster rolünün
@@ -86,28 +84,33 @@ const ACTIONS = [
 ];
 
 function panel() {
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(
-      text(
-        `${panelTitle(`${botName} Booster İşlemleri`)}\n` +
-          '**Bu panel sadece sunucuyu takviye eden (boost basan) üyeler içindir.**\n' +
-          '-# İsim ve rol ayrıcalıkları takviyen sürdüğü sürece geçerlidir, takviyen bitince otomatik geri alınır.',
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`### Booster Olmanın Avantajları\n${PERKS.map((p) => `- ${p}`).join('\n')}`));
+  const container = new ContainerBuilder().addTextDisplayComponents(
+    text(
+      `${panelTitle(`${botName} Booster İşlemleri`)}\n` +
+        '-# Bu panel sadece sunucuyu takviye eden (boost basan) üyeler içindir; isim ve rol ayrıcalıkları takviyen sürdüğü sürece geçerlidir, takviyen bitince otomatik geri alınır.',
+    ),
+  );
 
   if (config.banner) {
-    container
-      .addSeparatorComponents(divider())
-      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
+    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
   }
 
   container
     .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Booster Olmanın Avantajları**\n${PERKS.map((p) => `- ${p}`).join('\n')}`))
+    .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`### İşlem Seçenekleri\n${ACTIONS.map(([title, describe]) => `**${title}:** ${describe()}`).join('\n')}`),
-    )
+      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe]) => `- **${title}:** ${describe()}`).join('\n')}`),
+    );
+
+  // Hazır renk rolleri henüz tanımlanmadıysa (config.colorRoles boş) bu bölüm hiç gösterilmez
+  if (config.colorRoles.length) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(text('**Renk Rolü**\nAşağıdan almak istediğin renk rolünü seç.'));
+  }
+
+  container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -115,20 +118,15 @@ function panel() {
       ),
     );
 
-  // Hazır renk rolleri henüz tanımlanmadıysa (config.colorRoles boş) bu bölüm hiç gösterilmez
   if (config.colorRoles.length) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text('### Renk Rolü\nAşağıdan almak istediğin renk rolünü seç.'))
-      .addSeparatorComponents(divider())
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(`${IDS.colorRole}:0`)
-            .setPlaceholder('Almak istediğin renk rolünü seç')
-            .addOptions(config.colorRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
-        ),
-      );
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.colorRole}:0`)
+          .setPlaceholder('Almak istediğin renk rolünü seç')
+          .addOptions(config.colorRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
+      ),
+    );
   }
 
   return container;

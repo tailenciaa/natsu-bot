@@ -10,13 +10,18 @@ const IDS = {
 
 function panel() {
   return new ContainerBuilder()
-    .addTextDisplayComponents(text(panelTitle(`${botName} Hesap Doğrulama`)))
+    .addTextDisplayComponents(
+      text(
+        `${panelTitle(`${botName} Hesap Doğrulama`)}\n-# Yeni açılan hesaplar güvenlik amacıyla bir süre kısıtlı kanalda bekletilir; aşağıdaki butonla kısıtlamanın ne zaman kalkacağını kendi hesabın için öğrenebilirsin.`,
+      ),
+    )
     .addSeparatorComponents(divider())
     .addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
           text(
-            `**Discord hesabın ${config.thresholdDays} günden yeni olduğu için şu an sadece bu kanalı görebiliyorsun.**\n` +
+            '**Kısıtlama Durumu**\n' +
+              `Discord hesabın ${config.thresholdDays} günden yeni olduğu için şu an sadece bu kanalı görebiliyorsun.\n` +
               '-# Hesabın yeterince eskiyince kısıtlama kendiliğinden kalkar, tüm kanallara erişebilirsin.',
           ),
         )

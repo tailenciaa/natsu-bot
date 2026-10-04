@@ -1,13 +1,12 @@
 // Emoji ekleme mesajları: sağ tık ile açılan seçim paneli ve eklemenin sonucu
 const {
   ActionRowBuilder,
-  ContainerBuilder,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
-const { text, divider } = require('../../core/ui');
+const { divider, page } = require('../../core/ui');
 
 const IDS = { pick: 'emoji-sec' }; // emoji-sec:0, seçenek değeri: <hareketli 1/0>:<isim>:<id>
 
@@ -17,20 +16,22 @@ const cdnUrl = (emoji) => `https://cdn.discordapp.com/emojis/${emoji.id}.${emoji
 // Sağ tık > "Emojileri Sunucuya Ekle": mesajdaki emojilerin önizlemesi ve eklenecekleri seçme menüsü
 function pickPanel(emojis) {
   const shown = emojis.slice(0, MAX_PICK);
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      text(
-        `### Emojileri Sunucuya Ekle\n**Mesajda ${emojis.length} emoji bulundu.**\n` +
-          '-# Eklemek istediklerini aşağıdaki menüden seç, seçtiğin anda sunucuya eklenir.' +
-          (emojis.length > MAX_PICK ? `\n-# Bir seferde en fazla ${MAX_PICK} emoji gösterilebilir.` : ''),
-      ),
-    )
+  const container = page({
+    title: 'Emojileri Sunucuya Ekle',
+    sub: 'Seçtiğin mesajdaki özel emojileri sunucuna ekleyebilirsin; eklemek istediklerini aşağıdaki menüden seç, seçtiğin anda emojiler sunucuya eklenir ve hemen kullanılabilir.',
+    blocks: [
+      `**Bulunan Emojiler**\nMesajda ${emojis.length} emoji bulundu.` +
+        (emojis.length > MAX_PICK ? `\n-# Bir seferde en fazla ${MAX_PICK} emoji gösterilebilir.` : ''),
+    ],
+  });
+  return container
     .addSeparatorComponents(divider())
     .addMediaGalleryComponents(
       new MediaGalleryBuilder().addItems(
         shown.slice(0, 10).map((e) => new MediaGalleryItemBuilder().setURL(cdnUrl(e)).setDescription(`:${e.name}:`)),
       ),
     )
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -61,15 +62,14 @@ function result(added, failed) {
       ? `Emojiler Eklendi (${added.length}/${total})`
       : 'Emoji Eklenemedi';
 
-  const container = new ContainerBuilder().addTextDisplayComponents(
-    text(`### ${title}${added.length ? `\n${added.map((e) => `${e} \`:${e.name}:\``).join('\n')}` : ''}`),
-  );
-  if (failed.length) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(failed.map((f) => `-# \`${f.name}\`: ${f.reason}`).join('\n')));
-  }
-  return container;
+  const blocks = [];
+  if (added.length) blocks.push(`**Eklenen Emojiler**\n${added.map((e) => `${e} \`:${e.name}:\``).join('\n')}`);
+  if (failed.length) blocks.push(`**Eklenemeyenler**\n${failed.map((f) => `-# \`${f.name}\`: ${f.reason}`).join('\n')}`);
+  return page({
+    title,
+    sub: 'Seçtiğin emojilerin sunucuya eklenme sonucunu aşağıda görebilirsin; başarıyla eklenenler hemen kullanıma hazırdır, eklenemeyenlerin nedeni ise altlarında ayrıca belirtilir.',
+    blocks,
+  });
 }
 
 module.exports = { IDS, pickPanel, result };

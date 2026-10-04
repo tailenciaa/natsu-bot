@@ -52,40 +52,39 @@ const IDS = {
 // çift güvence; bot zaten her mesajı mention'ları kapalı gönderir)
 const sanitize = (value) => value.replace(/@everyone/gi, '@​everyone').replace(/@here/gi, '@​here');
 
+// Standart başlık: büyük başlık ve iki satıra yayılan uzun gri açıklama (bütün mesajlar aynı genişlikte görünsün)
+const head = (title, sub) => text(`## ${title}\n-# ${sub}`);
+
 // Talep kanalında "partner" / "dm" geçen ya da rol etiketlenen mesaja yanıt olarak gider
-function startPrompt(authorId) {
+function startPromptBase(button) {
   return new ContainerBuilder()
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
-      text(
-        '### Partner Olmak mı İstiyorsun?\n' +
-          '**Oto partner yapmak ister misin?** Sunucu ID\'ni ve partner metnini gönderirsin, yetkili onaylayınca otomatik paylaşılır.\n' +
-          '-# İstersen de butona basmadan bir yetkilinin seninle ilgilenmesini bekleyebilirsin.',
+      head(
+        'Partner Olmak mı İstiyorsun?',
+        'Sunucunla bizimle karşılıklı partner olmak istiyorsan aşağıdaki butondan oto partner talebi oluşturabilir, yetkili onayından sonra metninin otomatik paylaşılmasını sağlayabilirsin.',
       ),
     )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.start}:${authorId}`).setLabel('Oto Partner Yap').setStyle(ButtonStyle.Success),
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        '**Oto Partner Nasıl Çalışır?**\n' +
+          '- Sunucu ID\'ni ve partner metnini gönderirsin.\n' +
+          '- Yetkili onaylayınca metnin otomatik paylaşılır.\n' +
+          '-# İstersen butona basmadan bir yetkilinin seninle ilgilenmesini de bekleyebilirsin.',
       ),
-    );
+    )
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(new ActionRowBuilder().addComponents(button));
+}
+
+function startPrompt(authorId) {
+  return startPromptBase(new ButtonBuilder().setCustomId(`${IDS.start}:${authorId}`).setLabel('Oto Partner Yap').setStyle(ButtonStyle.Success));
 }
 
 // Buton tıklandıktan sonra: buton devre dışı, loading state
 function startPromptDisabled() {
-  return new ContainerBuilder()
-    .setAccentColor(colors.primary)
-    .addTextDisplayComponents(
-      text(
-        '### Partner Olmak mı İstiyorsun?\n' +
-          '**Oto partner yapmak ister misin?** Sunucu ID\'ni ve partner metnini gönderirsin, yetkili onaylayınca otomatik paylaşılır.\n' +
-          '-# İstersen de butona basmadan bir yetkilinin seninle ilgilenmesini bekleyebilirsin.',
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('disabled').setLabel('Gönderiliyor...').setStyle(ButtonStyle.Secondary).setDisabled(true),
-      ),
-    );
+  return startPromptBase(new ButtonBuilder().setCustomId('disabled').setLabel('Gönderiliyor...').setStyle(ButtonStyle.Secondary).setDisabled(true));
 }
 
 // Form gönderildikten sonra: success state
@@ -93,8 +92,14 @@ function startPromptSuccess() {
   return new ContainerBuilder()
     .setAccentColor(colors.success)
     .addTextDisplayComponents(
-      text('### ✓ Partner Talebin Gönderildi!\n**Şartlarını kabul etmek için DM\'ini kontrol et.**'),
+      head(
+        'Partner Talebin Gönderildi',
+        'Partner talebin yetkililere iletildi; devam edebilmek için sana gönderilen şartlar mesajını DM kutunda açıp şartları kabul etmen gerekiyor, DM\'lerin kapalıysa önce açmalısın.',
+      ),
     )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('**Sıradaki Adım**\n- Şartlarını kabul etmek için DM\'ini kontrol et.'))
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId('disabled').setLabel('Gönderildi').setStyle(ButtonStyle.Success).setDisabled(true),
@@ -158,8 +163,15 @@ function termsDm(acceptCustomId) {
   return new ContainerBuilder()
     .setAccentColor(colors.warning)
     .addTextDisplayComponents(
+      head(
+        'Partner Şartları',
+        'Partnerliğin düzenli ve karşılıklı olarak yürüyebilmesi için aşağıdaki şartların hepsini okuyup kabul etmen gerekiyor; kabul etmeden partner metnin paylaşılmayacak.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
       text(
-        '### Partner Şartları\n' +
+        '**Şartlar**\n' +
           '1. Reklam metni Discord kurallarına aykırı içerik barındıramaz.\n' +
           '2. Sunucular karşılıklı olarak aynı gün içinde birbirini paylaşır.\n' +
           '3. Onaylanan reklam metni değiştirilemez, değişiklik için yeni talep açılması gerekir.\n' +
@@ -167,6 +179,7 @@ function termsDm(acceptCustomId) {
           '-# Devam edersen bu şartları kabul etmiş sayılırsın.',
       ),
     )
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(acceptCustomId).setLabel('Şartları Kabul Ediyorum').setStyle(ButtonStyle.Success),
@@ -179,27 +192,29 @@ function reviewCard(request, decided) {
   const container = new ContainerBuilder()
     .setAccentColor(decided ? (decided.sonuc === 'onayla' ? colors.success : colors.danger) : colors.warning)
     .addTextDisplayComponents(
-      text(
+      head(
+        `Oto Partner Talebi #${request.number}`,
         decided
-          ? `### Oto Partner Talebi #${request.number}`
-          : `### Oto Partner Talebi #${request.number}\n<@&${config.roles.staff}>, yeni bir partner talebi var.`,
+          ? 'Bu oto partner talebi bir yetkili tarafından değerlendirildi; talebin ayrıntıları ve verilen karar aşağıda kayıt olarak durmaya devam ediyor, işlem yapmana gerek yok.'
+          : 'Bir üye oto partner talebi gönderdi; sunucu bilgilerini ve partner metnini inceleyip aşağıdaki butonlarla talebi onaylayabilir, reddedebilir ya da sunucuyu yasaklı listesine alabilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**Gönderen:** <@${request.requesterId}>\n**Sunucu ID:** \`${request.serverId}\``),
+      text(`**Talep Bilgileri**\n- Gönderen・<@${request.requesterId}>\n- Sunucu ID・\`${request.serverId}\`${decided ? '' : `\n-# <@&${config.roles.staff}>, yeni bir partner talebi var.`}`),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Partner Metni:**\n${quote(shorten(request.text, 1000))}`));
+    .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(request.text, 1000))}`));
 
   if (decided) {
     return container
       .addSeparatorComponents(divider())
       .addTextDisplayComponents(
         text(
-          decided.sonuc === 'onayla'
-            ? `✅ **<@${decided.by}> onayladı, paylaşım kanalına gönderildi.**`
-            : `❌ **<@${decided.by}> reddetti.**`,
+          '**Karar**\n' +
+            (decided.sonuc === 'onayla'
+              ? `✅ <@${decided.by}> onayladı, paylaşım kanalına gönderildi.`
+              : `❌ <@${decided.by}> reddetti.`),
         ),
       );
   }
@@ -226,14 +241,16 @@ function postCard(request, trusted, banned) {
   return new ContainerBuilder()
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
-      text(
-        `### Partner・\`${request.serverId ?? 'bilinmiyor'}\`\n` +
-          `${sanitize(request.text)}\n` +
-          '-# @everyone ve @here bu kanalda bildirim göndermez.',
+      head(
+        `Partner・\`${request.serverId ?? 'bilinmiyor'}\``,
+        'Aşağıda partner olduğumuz sunucunun tanıtım metni yer alıyor; ilgini çekerse sunucuya katılabilirsin. Yetkililer bu karttaki butonlarla partneri güvenilir listeye alabilir veya yönetebilir.',
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# Paylaşan: <@${request.requesterId}>・<t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
+    .addTextDisplayComponents(text(`**Tanıtım Metni**\n${sanitize(request.text)}\n-# @everyone ve @here bu kanalda bildirim göndermez.`))
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Paylaşım**\n- Paylaşan・<@${request.requesterId}>\n- Tarih・<t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -256,12 +273,24 @@ function postCard(request, trusted, banned) {
 }
 
 const requesterResult = (sonuc, hint) =>
-  notice(
-    sonuc === 'onayla'
-      ? '✅ **Partner talebin onaylandı, metnin paylaşım kanalına gönderildi!**'
-      : `❌ **Partner talebin reddedildi.**${hint ? `\n-# ${hint}` : ''}`,
-    sonuc === 'onayla' ? 'success' : 'danger',
-  );
+  new ContainerBuilder()
+    .setAccentColor(sonuc === 'onayla' ? colors.success : colors.danger)
+    .addTextDisplayComponents(
+      head(
+        sonuc === 'onayla' ? 'Partner Talebin Onaylandı' : 'Partner Talebin Reddedildi',
+        sonuc === 'onayla'
+          ? 'Gönderdiğin oto partner talebi yetkililer tarafından incelendi ve olumlu sonuçlandı; sunucunun tanıtım metni ilgili paylaşım kanalına gönderilerek partnerlik başlatıldı.'
+          : 'Gönderdiğin oto partner talebi yetkililer tarafından incelendi ve olumsuz sonuçlandı; talebin paylaşım kanalına gönderilmedi, ayrıntılar için yetkililerle iletişime geçebilirsin.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        sonuc === 'onayla'
+          ? '**Sonuç**\n- ✅ Partner talebin onaylandı, metnin paylaşım kanalına gönderildi!'
+          : `**Sonuç**\n- ❌ Partner talebin reddedildi.${hint ? `\n-# ${hint}` : ''}`,
+      ),
+    );
 
 // /guvenilir-partnerler listesi
 function trustedList(entries) {
@@ -269,7 +298,14 @@ function trustedList(entries) {
 
   const container = new ContainerBuilder()
     .setAccentColor(colors.primary)
-    .addTextDisplayComponents(text(`### Güvenilir Partnerler\n-# Toplam ${entries.length} sunucu. Detay ve işlemler için aşağıdan seç.`))
+    .addTextDisplayComponents(
+      head(
+        'Güvenilir Partnerler',
+        'Sürekli partner olduğumuz güvenilir sunucuların listesi; aşağıdaki menüden bir sunucu seçerek ekleme tarihini, partner yetkililerini, metnini ve yapabileceğin işlemleri görebilirsin.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Liste Durumu**\n- Toplam・${entries.length} sunucu\n-# Detay ve işlemler için aşağıdan bir partner seç.`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -353,18 +389,21 @@ function trustedListPanel(entries) {
   const container = new ContainerBuilder()
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
-      text(`### Güvenilir Partnerler\n-# Bu kanaldan sürekli partner olduğumuz sunucular ve partner yetkilileri listelenir.`),
+      head(
+        'Güvenilir Partnerler',
+        'Bu kanalda sürekli partner olduğumuz sunucular ve o sunucuların partner yetkilileri listelenir; liste her ekleme veya çıkarmada bu mesaj düzenlenerek otomatik güncel tutulur.',
+      ),
     );
 
   if (!entries.length) {
-    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text('-# Henüz güvenilir listeye eklenmiş bir partner yok.'));
+    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text('**Liste Durumu**\n-# Henüz güvenilir listeye eklenmiş bir partner yok.'));
   }
 
   entries.forEach((entry, index) => {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(
       text(
-        `**Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
-          `**Partner Yetkilisi:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
+        `**Sunucu・\`${entry.serverId ?? 'bilinmiyor'}\`**\n` +
+          `- Partner Yetkilisi・${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
           `-# Eklenme: <t:${unix(entry.addedAt)}:D>・Ekleyen: <@${entry.addedBy}>`,
       ),
     );
@@ -388,15 +427,22 @@ function trustedDetail(entry) {
   const container = new ContainerBuilder()
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
-      text(
-        `### Sunucu ${entry.serverId ?? 'bilinmiyor'}\n` +
-          `**Eklenme:** <t:${unix(entry.addedAt)}:F>\n` +
-          `**Ekleyen:** <@${entry.addedBy}>\n` +
-          (entry.contactIds?.length ? `**İletişim:** ${entry.contactIds.map((id) => `<@${id}>`).join(', ')}` : '**İletişim:** Bilinmiyor'),
+      head(
+        `Sunucu ${entry.serverId ?? 'bilinmiyor'}`,
+        'Seçtiğin güvenilir partner sunucusunun kayıt bilgileri ve paylaşılan tanıtım metni aşağıda yer alıyor; yetkiliysen alttaki butonlarla bu kayıt üzerinde işlem yapabilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(quote(shorten(entry.content, 1000))))
+    .addTextDisplayComponents(
+      text(
+        '**Kayıt Bilgileri**\n' +
+          `- Eklenme・<t:${unix(entry.addedAt)}:F>\n` +
+          `- Ekleyen・<@${entry.addedBy}>\n` +
+          `- İletişim・${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}`,
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(entry.content, 1000))}`))
     .addSeparatorComponents(divider());
 
   return container.addActionRowComponents(...trustedActionRow(entry));
@@ -427,7 +473,15 @@ function contactModal(trustedId, currentIds) {
 function staffSelect(trustedId, members, statusOf) {
   return new ContainerBuilder()
     .setAccentColor(colors.primary)
-    .addTextDisplayComponents(text('### Yetkili Seç\nBu teklifle hangi partner yetkilisi ilgilensin?'))
+    .addTextDisplayComponents(
+      head(
+        'Yetkili Seç',
+        'Teklifte bulunma sürecini yürütecek partner yetkilisini aşağıdaki menüden seçebilirsin; seçtiğin yetkiliye bir DM gider ve partner metnini inceleyip onaylaması ya da düzenlemesi istenir.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('**Yetkili Seçimi**\n- Bu teklifle hangi partner yetkilisi ilgilensin?'))
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -452,12 +506,21 @@ function assignedOfferDm(entry, guildName) {
   return new ContainerBuilder()
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
+      head(
+        'Partner Yenileme Teklifi',
+        'Bir sunucu seninle partner olmak ya da mevcut partnerliği yenilemek istiyor; teklifi kabul edersen partner metnini inceleyip onaylayabilir, düzenleyebilir veya iptal edebilirsin.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
       text(
-        `### Partner Yenileme Teklifi\n` +
-          `**${guildName}** sunucusundan size (\`${entry.serverId ?? 'bilinmiyor'}\`) partner yapmak ya da yenilemek için talep geldi.\n` +
+        '**Teklif Bilgileri**\n' +
+          `- Teklif eden sunucu・**${guildName}**\n` +
+          `- Sizin sunucunuz・\`${entry.serverId ?? 'bilinmiyor'}\`\n` +
           '-# Kabul edersen mevcut partner metnini inceleyip onaylayacak ya da düzenleyeceksin.',
       ),
     )
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`${IDS.renewalAssignedAccept}:${entry.id}`).setLabel('Kabul Ediyorum').setStyle(ButtonStyle.Success),
@@ -470,9 +533,14 @@ function assignedOfferDm(entry, guildName) {
 function renewalReviewDm(entry) {
   return new ContainerBuilder()
     .setAccentColor(colors.primary)
-    .addTextDisplayComponents(text(`### Sunucu \`${entry.serverId ?? 'bilinmiyor'}\``))
+    .addTextDisplayComponents(
+      head(
+        `Sunucu \`${entry.serverId ?? 'bilinmiyor'}\``,
+        'Teklifi kabul ettin; aşağıdaki partner metnini inceleyip olduğu gibi onaylayabilir, istersen metni düzenleyebilir ya da teklifi bir sebep belirterek iptal edebilirsin.',
+      ),
+    )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(quote(shorten(entry.content, 1000))))
+    .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(entry.content, 1000))}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -528,13 +596,19 @@ function renewalCancelModal(trustedId) {
 // her bölümün altında kendi paylaşılan mesajına giden buton
 function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   const container = new ContainerBuilder()
-    .setAccentColor(colors.primary);
-
-  // Karşı tarafın metni (bizim gözüklediğimiz şekilde)
-  if (entry?.serverId) {
-    container.addTextDisplayComponents(
-      text(`### Onların Sunucusu・\`${entry.serverId}\`\n${quote(shorten(entry.content, 1000))}`)
+    .setAccentColor(colors.primary)
+    .addTextDisplayComponents(
+      head(
+        'Partner Metinleri',
+        'Teklif onaylandı; karşı sunucunun paylaşılan metni ile bizim sunucumuzu tanıtan metin aşağıda yer alıyor, ilgili butonlarla paylaşılan mesajlara doğrudan gidebilirsin.',
+      ),
     );
+
+  // Karşı tarafın metni (bizim gözüktüğümüz şekilde)
+  if (entry?.serverId) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(text(`**Onların Sunucusu・\`${entry.serverId}\`**\n${quote(shorten(entry.content, 1000))}`));
 
     if (partnerJumpUrl) {
       container.addActionRowComponents(
@@ -543,12 +617,10 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
         ),
       );
     }
-
-    container.addSeparatorComponents(divider());
   }
 
   // Bizim metni
-  container.addTextDisplayComponents(text(`### Bizim Sunucumuz\n${config.ourAdText}`));
+  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Bizim Sunucumuz**\n${config.ourAdText}`));
 
   if (ourJumpUrl) {
     container.addActionRowComponents(

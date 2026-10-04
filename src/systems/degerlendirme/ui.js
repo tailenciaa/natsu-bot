@@ -3,15 +3,12 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   LabelBuilder,
   ModalBuilder,
-  SectionBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ThumbnailBuilder,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, stars, messageUrl, notice } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, stars, messageUrl, page } = require('../../core/ui');
 const config = require('./config');
 
 // Hepsinin sonuna veri eklenir (değerlendirme ID'si, puan, karar)
@@ -119,69 +116,65 @@ function ratingNotice(rating, staffUser) {
   const disputed = !removed && Boolean(rating.reportedAt) && (rating.reportStatus ?? 'pending') === 'pending';
   const score = `${stars(rating.score)}・${SCORE_LABELS[rating.score]}`;
 
-  let header;
+  let title;
+  let sub;
+  let status;
   if (removed) {
-    header =
-      '### Değerlendirme Kaldırıldı\n' +
-      `**<@${rating.staffId}> yetkilisinin aldığı değerlendirme geçersiz sayıldı.**\n` +
+    title = 'Değerlendirme Kaldırıldı';
+    sub = 'Bu değerlendirme geçersiz sayılarak yetkilinin sicilinden çıkarıldı; kayıt bilgi amaçlı olarak burada duruyor ve artık yetkilinin puan ortalamasına hiçbir etkisi bulunmuyor.';
+    status =
+      `**Durum**\n<@${rating.staffId}> yetkilisinin aldığı değerlendirme geçersiz sayıldı.\n` +
       (rating.removedAt
         ? `-# <@${rating.removedBy}> değerlendirmeyi sicilden kaldırdı.`
         : `-# <@${rating.reviewedBy}> itirazı onayladı, değerlendirme sicilden çıkarıldı.`);
   } else if (disputed) {
-    header =
-      '### İtiraz Edilen Değerlendirme\n' +
-      `**<@${rating.staffId}> bu değerlendirmeye itiraz etti.**\n` +
-      '-# İtiraz liderler tarafından inceleniyor.';
+    title = 'İtiraz Edilen Değerlendirme';
+    sub = 'Değerlendirilen yetkili bu puana itiraz etti ve itiraz liderlere iletildi; inceleme sonuçlanana kadar değerlendirme sicilde bekler, karar verildiğinde bu mesaj güncellenir.';
+    status = `**Durum**\n<@${rating.staffId}> bu değerlendirmeye itiraz etti.\n-# İtiraz liderler tarafından inceleniyor.`;
   } else {
     // Değerlendirmenin nereden geldiği aşağıdaki "Kaynak" satırında
-    header = '### Yeni Değerlendirme\n' + `**<@${rating.staffId}> yeni bir değerlendirme aldı.**`;
-  }
-  header = text(header);
-
-  const container = new ContainerBuilder().setAccentColor(removed || disputed ? colors.danger : colors.warning);
-  if (staffUser) {
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(header)
-        .setThumbnailAccessory(new ThumbnailBuilder().setURL(staffUser.displayAvatarURL({ size: 256 }))),
-    );
-  } else {
-    container.addTextDisplayComponents(header);
+    title = 'Yeni Değerlendirme';
+    sub = 'Bir üye aldığı hizmeti puanlayıp yorumunu bıraktı; puan ve yorum yetkilinin sicilinde tutulur, yetkili haksız bulursa aşağıdaki butondan itiraz edebilir ya da yorum ekleyebilir.';
+    status = `**Durum**\n<@${rating.staffId}> yeni bir değerlendirme aldı.`;
   }
 
-  container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        [
-          `**Puan:** ${removed ? `~~${score}~~` : score}`,
-          `**Değerlendiren:** <@${rating.userId}>`,
-          `**Kaynak:** ${refText(rating)}`,
-        ].join('\n'),
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(rating.comment ? `**Yorum:**\n${quote(rating.comment)}` : '**Yorum:** Yorum bırakılmadı'));
+  const blocks = [
+    status,
+    [
+      '**Değerlendirme Detayları**',
+      `- Puan・${removed ? `~~${score}~~` : score}`,
+      `- Değerlendiren・<@${rating.userId}>`,
+      `- Kaynak・${refText(rating)}`,
+    ].join('\n'),
+    rating.comment ? `**Yorum**\n${quote(rating.comment)}` : '**Yorum**\n-# Yorum bırakılmadı.',
+  ];
+  if (rating.staffReply) blocks.push(`**Yetkili Yorumu**\n${quote(rating.staffReply)}`);
 
-  if (rating.staffReply) {
-    container.addTextDisplayComponents(text(`**Yetkili Yorumu:**\n${quote(rating.staffReply)}`));
-  }
+  const container = page({
+    title,
+    sub,
+    thumbnail: staffUser ? staffUser.displayAvatarURL({ size: 256 }) : undefined,
+    accent: removed || disputed ? colors.danger : colors.warning,
+    blocks,
+  });
 
   if (!removed) {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`${IDS.reply}:${rating.id}`)
-          .setStyle(ButtonStyle.Primary)
-          .setLabel(rating.repliedAt ? 'Yorum Eklendi' : 'Yorum Ekle')
-          .setDisabled(Boolean(rating.repliedAt)),
-        new ButtonBuilder()
-          .setCustomId(`${IDS.report}:${rating.id}`)
-          .setStyle(ButtonStyle.Secondary)
-          .setLabel(rating.reportedAt ? REPORT_LABELS[rating.reportStatus ?? 'pending'] : 'İtiraz Et')
-          .setDisabled(Boolean(rating.reportedAt)),
-      ),
-    );
+    container
+      .addSeparatorComponents(divider())
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`${IDS.reply}:${rating.id}`)
+            .setStyle(ButtonStyle.Primary)
+            .setLabel(rating.repliedAt ? 'Yorum Eklendi' : 'Yorum Ekle')
+            .setDisabled(Boolean(rating.repliedAt)),
+          new ButtonBuilder()
+            .setCustomId(`${IDS.report}:${rating.id}`)
+            .setStyle(ButtonStyle.Secondary)
+            .setLabel(rating.reportedAt ? REPORT_LABELS[rating.reportStatus ?? 'pending'] : 'İtiraz Et')
+            .setDisabled(Boolean(rating.reportedAt)),
+        ),
+      );
   }
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# <t:${unix(rating.ratedAt)}:F>`));
@@ -243,16 +236,16 @@ function replyModal(rating) {
 
 // Yetkili yorum ekleyince değerlendirmeyi yapan üyeye giden DM
 function replyDm(rating, guildName) {
-  return notice(
-    [
-      '### Değerlendirmene Yorum Geldi\n' +
-        `**<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.**\n` +
-        `-# ${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
-      `**Yetkilinin Yorumu:**\n${quote(rating.staffReply)}`,
+  return page({
+    title: 'Değerlendirmene Yorum Geldi',
+    sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye bir yorum ekledi; yetkilinin yazdığı yorumu ve hangi hizmet için verdiğin puanı aşağıda görebilirsin.',
+    accent: colors.success,
+    blocks: [
+      `**Yorum Bilgileri**\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n-# ${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
+      `**Yetkilinin Yorumu**\n${quote(rating.staffReply)}`,
       `-# ${guildName}・<t:${unix(rating.repliedAt)}:F>`,
     ],
-    'success',
-  );
+  });
 }
 
 // Şikayet kanalına giden itiraz: lider rolü etiketlenir, karar butonları sonuçlanana kadar durur
@@ -300,32 +293,23 @@ function ratingComplaint(rating) {
     );
   }
 
-  const container = new ContainerBuilder()
-    .setAccentColor(color)
-    .addTextDisplayComponents(
-      text(
-        '### Değerlendirme İtirazı\n' +
-          `**${rating.leaderRoleId ? `<@&${rating.leaderRoleId}>, ` : ''}<@${rating.staffId}> aldığı bir değerlendirmeye itiraz etti.**\n` +
-          `-# <@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        `**Kaynak:** ${refText(rating)}\n` +
-          `**Değerlendirme:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : '-# Yorum bırakılmadı.'}`,
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**İtiraz Sebebi:**\n${quote(rating.reportReason)}`))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(status));
+  const container = page({
+    title: 'Değerlendirme İtirazı',
+    sub: 'Bir yetkili aldığı değerlendirmenin haksız olduğunu düşünerek itiraz etti; liderler itiraz sebebini ve değerlendirmeyi inceleyip onaylayabilir, reddedebilir ya da yetkiliyi görüşmeye çağırabilir.',
+    accent: color,
+    blocks: [
+      '**İtiraz Bilgileri**\n' +
+        `${rating.leaderRoleId ? `<@&${rating.leaderRoleId}>, ` : ''}<@${rating.staffId}> aldığı bir değerlendirmeye itiraz etti.\n` +
+        `-# <@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
+      `**Değerlendirme**\n- Kaynak・${refText(rating)}\n- Puan・${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : '-# Yorum bırakılmadı.'}`,
+      `**İtiraz Sebebi**\n${quote(rating.reportReason)}`,
+      status,
+    ],
+  });
 
+  if (decisionRow.components.length || linkRow.components.length) container.addSeparatorComponents(divider());
   if (decisionRow.components.length) container.addActionRowComponents(decisionRow);
-  if (linkRow.components.length) {
-    if (decisionRow.components.length) container.addSeparatorComponents(divider());
-    container.addActionRowComponents(linkRow);
-  }
+  if (linkRow.components.length) container.addActionRowComponents(linkRow);
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# <t:${unix(rating.reportedAt)}:F>`));
 }
@@ -339,20 +323,20 @@ function meetingDm(rating, guildName) {
     ? [new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(waitingIn))]
     : config.voiceChannels.map((c) => new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel(c.label).setURL(channelUrl(c.id)));
 
-  return notice(
-    '### Görüşmeye Çağrıldın\n' +
-      `**<@${rating.meetingBy}> itirazın hakkında seninle sesli bir görüşme yapmak istiyor.**\n` +
-      `-# ${refText(rating)} için aldığın değerlendirmeye yaptığın itiraz için görüşme yapılacak.`,
-    'primary',
-  )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        waitingIn
-          ? `**<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor!**`
-          : '**Görüşme için aşağıdaki ses kanallarından birine geç.**',
-      ),
-    )
+  return page({
+    title: 'Görüşmeye Çağrıldın',
+    sub: 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve seninle sesli bir görüşme yapılmasına karar verildi; nereye geçmen gerektiği aşağıda belirtiliyor.',
+    accent: colors.primary,
+    blocks: [
+      '**Görüşme Bilgileri**\n' +
+        `<@${rating.meetingBy}> itirazın hakkında seninle sesli bir görüşme yapmak istiyor.\n` +
+        `-# ${refText(rating)} için aldığın değerlendirmeye yaptığın itiraz için görüşme yapılacak.`,
+      '**Nereye Geçmelisin?**\n' +
+        (waitingIn
+          ? `<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor!`
+          : 'Görüşme için aşağıdaki ses kanallarından birine geç.'),
+    ],
+  })
     .addActionRowComponents(new ActionRowBuilder().addComponents(buttons))
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(rating.meetingAt)}:F>`));
@@ -361,32 +345,40 @@ function meetingDm(rating, guildName) {
 // Görüşme ya da oryantasyon bitince başvurana giden puanlama DM'i (destek talepleri kapanış DM'inin altında puanlanır)
 function ratingRequestDm(rating) {
   // Soru alttaki puanlama bölümünde sorulur; oryantasyonun tebriği ayrı DM'de olduğu için burada tekrar edilmez
-  const header =
-    rating.category === 'oryantasyon'
-      ? '### Oryantasyonunu Değerlendir\n' +
-        `-# Başvuru #${pad(rating.applicationNumber)}・Geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.`
-      : '### Görüşmeni Değerlendir\n' +
-        `**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n` +
-        `-# Başvuru #${pad(rating.applicationNumber)}・Başvurunun sonucundan bağımsız olarak puanlayabilirsin.`;
-  return ratingSection(notice(header, 'primary'), rating);
+  const oryantasyon = rating.category === 'oryantasyon';
+  return ratingSection(
+    page({
+      title: oryantasyon ? 'Oryantasyonunu Değerlendir' : 'Görüşmeni Değerlendir',
+      sub: oryantasyon
+        ? 'Oryantasyonun tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.'
+        : 'Yetkili alım görüşmen tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, başvurunun sonucundan bağımsız olarak vereceğin geri bildirim bizim için değerli.',
+      accent: colors.primary,
+      blocks: [
+        oryantasyon
+          ? `**Başvuru Bilgileri**\n- Başvuru・#${pad(rating.applicationNumber)}`
+          : `**Görüşme Bilgileri**\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n- Başvuru・#${pad(rating.applicationNumber)}`,
+      ],
+    }),
+    rating,
+  );
 }
 
 // İtiraz sonuçlanınca itiraz eden yetkiliye giden DM
 function reviewDm(rating, guildName) {
   const approved = rating.reportStatus === 'approved';
-  return notice(
-    [
+  return page({
+    title: approved ? 'İtirazın Kabul Edildi' : 'İtirazın Reddedildi',
+    sub: approved
+      ? 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve haklı bulundu; ilgili değerlendirme artık sicilinde yer almıyor ve puan ortalamanı etkilemiyor.'
+      : 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve reddedildi; ilgili değerlendirme sicilinde yer almaya devam ediyor ve puan ortalamana dahil ediliyor.',
+    accent: approved ? colors.success : colors.danger,
+    blocks: [
       approved
-        ? '### İtirazın Kabul Edildi\n' +
-          '**Değerlendirme sicilinden kaldırıldı.**\n' +
-          `-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
-        : '### İtirazın Reddedildi\n' +
-          '**Değerlendirme sicilinde kalmaya devam ediyor.**\n' +
-          `-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
+        ? `**Sonuç**\nDeğerlendirme sicilinden kaldırıldı.\n-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
+        : `**Sonuç**\nDeğerlendirme sicilinde kalmaya devam ediyor.\n-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
       `-# ${guildName}・<t:${unix(rating.reviewedAt)}:F>`,
     ],
-    approved ? 'success' : 'danger',
-  );
+  });
 }
 
 module.exports = {

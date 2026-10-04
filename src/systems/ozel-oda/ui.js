@@ -4,7 +4,6 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   LabelBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
@@ -12,7 +11,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors } = require('../../core/ui');
+const { divider, colors, page } = require('../../core/ui');
 
 const IDS = {
   lock: 'oda-kilit',
@@ -55,17 +54,15 @@ function controlPanel(room, channel) {
   const locked = isLocked(channel);
   const hidden = isHidden(channel);
 
-  return new ContainerBuilder()
-    .setAccentColor(locked ? colors.danger : colors.primary)
-    .addTextDisplayComponents(text(`### Oda Kontrol Paneli\n-# Sahip\n**<@${room.ownerId}>**`))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        `**${locked ? 'Kilitli' : 'Açık'}**・` +
-          `**${hidden ? 'Gizli' : 'Görünür'}**・` +
-          `**Limit:** ${channel.userLimit || 'Sınırsız'}`,
-      ),
-    )
+  return page({
+    title: 'Oda Kontrol Paneli',
+    sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini bu panelden yönetebilir; odadaki üyeleri atabilir, yasaklayabilir ya da odanın sahipliğini başka birine devredebilirsin.',
+    accent: locked ? colors.danger : colors.primary,
+    blocks: [
+      `**Oda Sahibi**\n<@${room.ownerId}>`,
+      `**Oda Durumu**\n${locked ? 'Kilitli' : 'Açık'}・${hidden ? 'Gizli' : 'Görünür'}・Limit: ${channel.userLimit || 'Sınırsız'}\n-# Paneli sadece oda sahibi kullanabilir.`,
+    ],
+  })
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(

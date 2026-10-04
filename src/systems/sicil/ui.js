@@ -18,7 +18,7 @@ const {
   TextInputStyle,
   ThumbnailBuilder,
 } = require('discord.js');
-const { text, divider, unix, quote, shorten, notice, pad } = require('../../core/ui');
+const { text, divider, unix, quote, shorten, pad, page: pageBlocks, colors } = require('../../core/ui');
 const { statusLabel: applicationStatus } = require('../basvuru/ui');
 const { CATEGORIES, categoryOf, refText } = require('../degerlendirme/ui');
 const config = require('./config');
@@ -137,7 +137,11 @@ const HEADINGS = {
 
 function header(user, tab) {
   return new SectionBuilder()
-    .addTextDisplayComponents(text(`### <@${user.id}> kullanıcısının ${HEADINGS[tab]} bu panelden ulaşabilirsin.`))
+    .addTextDisplayComponents(
+      text(
+        `## Kullanıcı Sicili\n-# <@${user.id}> kullanıcısının ${HEADINGS[tab]} bu panelden ulaşabilirsin; üstteki butonlarla bölümler arasında geçiş yapabilir, alttaki menüden bir kaydın ayrıntılarını açabilirsin.`,
+      ),
+    )
     .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 })));
 }
 
@@ -160,7 +164,7 @@ function statsPanel({ punishments, claimedCount, ratings, showRatings, givenCoun
   if (showRatings) {
     lines.push(stat('Yetkili Puanı', code(ratings.length ? `${formatAverage(ratings)} / 5` : '-'), `Değerlendirme: ${code(ratings.length)}`));
   }
-  return `### İstatistik Paneli\n${lines.join('\n')}`;
+  return `**İstatistik Paneli**\n${lines.join('\n')}`;
 }
 
 // Bölüm butonları: açık olan bölüm yeşil (sıralama mesajındaki dönem butonları gibi)
@@ -197,12 +201,12 @@ function sicil(view) {
   const multipleCategories = new Set(ratings.map((r) => r.category ?? 'destek')).size > 1;
   const intro =
     tab === 'puan' && ratings.length
-      ? `${stat('Ortalama Puan', code(`${formatAverage(ratings)} / 5`), `Değerlendirme: ${code(ratings.length)}`)}\n` +
+      ? `**Değerlendirme Özeti**\n${stat('Ortalama Puan', code(`${formatAverage(ratings)} / 5`), `Değerlendirme: ${code(ratings.length)}`)}\n` +
         (multipleCategories ? `-# ${categoryAverages(ratings)}` : '')
       : '';
   // Genel'de listenin başlığı var (istatistiklerden ayrılsın diye); diğer bölümlerde bölümün adı zaten üstteki başlıkta.
   // Yardım menüsündekiyle aynı düzen: her kayıt kendi metin bloğu, aralarında ince çizgi.
-  if (tab === 'genel') container.addTextDisplayComponents(text(`### ${list.title}`));
+  if (tab === 'genel') container.addTextDisplayComponents(text(`**${list.title}**`));
   if (intro) container.addTextDisplayComponents(text(intro));
   if (!items.length) {
     container.addTextDisplayComponents(text(box([list.empty])));
@@ -215,7 +219,7 @@ function sicil(view) {
 
   // Tablodaki kaydın detayı
   if (pageItems.length) {
-    container.addActionRowComponents(
+    container.addSeparatorComponents(divider()).addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.detail}:${user.id}:${tab}:${page}`)
@@ -241,10 +245,9 @@ function sicil(view) {
       .addSeparatorComponents(divider())
       .addTextDisplayComponents(
         text(
-          box([
-            `Toplam **${items.length}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.`,
-            `Sayfa: ${code(`${page + 1} / ${pageCount}`)}`,
-          ]),
+          '**Sayfa Bilgisi**\n' +
+            `- Toplam **${items.length}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
+            `- Sayfa: ${code(`${page + 1} / ${pageCount}`)}`,
         ),
       )
       .addActionRowComponents(
@@ -312,10 +315,16 @@ function punishmentDetail(p, messageId, canEdit, banner) {
   const container = new ContainerBuilder();
   if (banner) container.addTextDisplayComponents(text(banner)).addSeparatorComponents(divider());
   container
-    .addTextDisplayComponents(text(`### Ceza #${p.number}・${TYPES[p.type].label}\n${lines.join('\n')}`))
+    .addTextDisplayComponents(
+      text(
+        `## Ceza #${p.number}・${TYPES[p.type].label}\n-# Bu cezanın kimin tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu aşağıdan inceleyebilir, yetkin varsa işlem yapabilirsin.`,
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Ceza Bilgileri**\n${lines.join('\n')}`))
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**Sebep:**\n${quote(p.reason)}` + (p.liftReason ? `\n**Kaldırma Sebebi:**\n${quote(p.liftReason)}` : '')),
+      text(`**Sebep**\n${quote(p.reason)}` + (p.liftReason ? `\n**Kaldırma Sebebi**\n${quote(p.liftReason)}` : '')),
     );
 
   const actions = [];
@@ -333,7 +342,14 @@ const ratingRemoveButton = (userId, rating, messageId) =>
 // "Ceza Ver" ile açılan, sadece yetkilinin gördüğü tür seçimi. messageId: güncellenecek sicil mesajı
 function typePicker(user, messageId, allowedTypes) {
   return new ContainerBuilder()
+    .addTextDisplayComponents(
+      text(
+        '## Ceza Ver\n-# Aşağıdaki menüden vermek istediğin ceza türünü seç; sonraki adımda sebep ve gerekiyorsa süre bilgisini bir form üzerinden girerek cezayı kişinin siciline işleyebilirsin.',
+      ),
+    )
+    .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**<@${user.id}> kullanıcısına hangi cezayı vereceksin?**`))
+    .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -446,37 +462,41 @@ function punishDm(p, guildName) {
     : p.type === 'uyari'
       ? 'Uyarılar sicilinde tutulur, tekrarlanması ceza almana neden olabilir.'
       : 'Süre: Süresiz.';
-  return notice(
-    [
-      `### ${t.title}\n**${guildName} sunucusunda ${t.verb}.**\n-# ${detail}`,
-      `**Sebep:**\n${quote(p.reason)}`,
+  return pageBlocks({
+    title: t.title,
+    sub: 'Sunucudaki davranışların nedeniyle hakkında bir işlem uygulandı; cezanın türü, süresi ve sebebi aşağıda yer alıyor. Tekrarlanmaması için bu mesajı dikkatle okuman önemlidir.',
+    accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
+    blocks: [
+      `**Ceza Bilgisi**\n**${guildName} sunucusunda ${t.verb}.**\n-# ${detail}`,
+      `**Sebep**\n${quote(p.reason)}`,
       `-# Ceza #${p.number}・<t:${unix(p.createdAt)}:F>`,
     ],
-    p.type === 'uyari' ? 'warning' : 'danger',
-  );
+  });
 }
 
 function liftDm(p, guildName) {
-  return notice(
-    [
-      '### Cezan Sona Erdi\n' +
-        `**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
+  return pageBlocks({
+    title: 'Cezan Sona Erdi',
+    sub: 'Sunucudaki cezan sona erdiği için artık kısıtlaman bulunmuyor; aşağıda hangi cezanın neden bittiğini görebilirsin. Kurallara uymaya devam etmeni rica ederiz, iyi eğlenceler.',
+    accent: colors.success,
+    blocks: [
+      `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
       `-# Ceza #${p.number}・<t:${unix(Date.now())}:F>`,
     ],
-    'success',
-  );
+  });
 }
 
 function extendDm(p, extra, guildName) {
-  return notice(
-    [
-      '### Cezanın Süresi Uzatıldı\n' +
-        `**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezana ${formatDuration(extra)} eklendi.**\n` +
+  return pageBlocks({
+    title: 'Cezanın Süresi Uzatıldı',
+    sub: 'Sunucudaki aktif cezanın süresine ekleme yapıldı; eklenen süreyi ve cezanın yeni bitiş zamanını aşağıda görebilirsin. Tekrarlanmaması için kurallara dikkat etmeni rica ederiz.',
+    accent: colors.warning,
+    blocks: [
+      `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezana ${formatDuration(extra)} eklendi.**\n` +
         `-# Yeni bitiş: <t:${unix(p.expiresAt)}:F> (<t:${unix(p.expiresAt)}:R>)`,
       `-# Ceza #${p.number}`,
     ],
-    'warning',
-  );
+  });
 }
 
 // Hızlı ceza komutlarının (/ban, /jail, /mute, /uyari...) herkese açık sonuç mesajları; düz metin (Components V2 değil)

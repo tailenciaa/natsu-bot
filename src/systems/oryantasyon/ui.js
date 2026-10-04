@@ -4,18 +4,15 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   LabelBuilder,
   ModalBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ThumbnailBuilder,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, notice, messageUrl } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, messageUrl, page } = require('../../core/ui');
 const basvuruConfig = require('../basvuru/config');
 const yetkiConfig = require('../yetki/config');
 const config = require('./config');
@@ -64,14 +61,11 @@ function voiceButtons(guildId, channelId) {
   return new ActionRowBuilder().addComponents(buttons);
 }
 
-function withThumbnail(container, header, user) {
-  if (!user) return container.addTextDisplayComponents(header);
-  return container.addSectionComponents(
-    new SectionBuilder()
-      .addTextDisplayComponents(header)
-      .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 }))),
-  );
-}
+// Standart sayfa düzeni: renk adı (primary, success...) ile page() kurar; thumbnail sağ üstteki küçük görsel
+const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks, accent: color ? colors[color] : undefined, thumbnail });
+// Altta çizgiden sonra butonlar / menüler, ardından isteğe bağlı küçük alt yazı
+const withRow = (container, row) => container.addSeparatorComponents(divider()).addActionRowComponents(row);
+const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
 
 // Hem panelde hem başvurular kanalındaki mesajda duran yönetim butonları
 function manageButtons(app) {
@@ -100,12 +94,12 @@ function stepBody(step, app) {
   const body = fill(step.body, app);
   const o = app.orientation;
 
-  if (step.type === 'areas') return `${body}\n\n**Seçilen Alanlar:** ${areaLabels(app) || 'Henüz seçilmedi'}`;
+  if (step.type === 'areas') return `${body}\n**Seçilen Alanlar:** ${areaLabels(app) || 'Henüz seçilmedi'}`;
   if (step.type === 'areaInfo') {
     const areas = areasOf(app);
-    return `${body}\n\n${areas.length ? areas.map((a) => `**${a.label}**\n${a.info}`).join('\n\n') : 'Henüz alan seçilmedi.'}`;
+    return `${body}\n${areas.length ? areas.map((a) => `**${a.label}**\n${a.info}`).join('\n') : 'Henüz alan seçilmedi.'}`;
   }
-  if (step.type === 'final') return `${body}\n\n${summaryLines(app, Date.now()).join('\n')}`;
+  if (step.type === 'final') return `${body}\n${summaryLines(app, Date.now()).join('\n')}`;
   return body;
 }
 
@@ -175,24 +169,22 @@ function panel(app, applicantUser) {
 
   const { steps } = config;
   const step = steps[o.step];
-  const header = text(
-    `## Oryantasyon・Başvuru #${pad(app.number)}\n` +
-      `**<@${o.staffId}>, <@${app.userId}> için oryantasyon veriyor.**\n` +
-      // Adımın adı hemen alttaki başlıkta
-      `-# Adım ${o.step + 1}/${steps.length}\n` +
-      progress(o.step, steps.length),
-  );
-
   const presence = presenceText(app);
-  const container = withThumbnail(
-    new ContainerBuilder().setAccentColor(presence ? colors.warning : colors.primary),
-    header,
-    applicantUser,
-  );
-  if (presence) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(presence));
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### ${step.title}\n${stepBody(step, app)}`));
+  const blocks = [
+    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için oryantasyon veriyor.\n-# Adım ${o.step + 1}/${steps.length}\n${progress(o.step, steps.length)}`,
+  ];
+  if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
+  blocks.push(`**${step.title}**\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);
 
-  if (step.type === 'areas') container.addActionRowComponents(areaMenu(app));
+  const container = card(
+    `Oryantasyon・Başvuru #${pad(app.number)}`,
+    'Görüşme kanalının sohbetinde adım adım ilerleyen oryantasyon paneli; adımları oryantasyonu veren yetkili ilerletir, alan seçimini başvuran da yapabilir ve süreç buradan yönetilir.',
+    blocks,
+    presence ? 'warning' : 'primary',
+    applicantUser?.displayAvatarURL({ size: 256 }),
+  );
+
+  if (step.type === 'areas') withRow(container, areaMenu(app));
   if (step.type === 'final') {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(text(levelText(app))).addActionRowComponents(levelMenu(app));
     const note = missingRolesText(app);
@@ -237,16 +229,17 @@ function panel(app, applicantUser) {
 
 function completedPanel(app, applicantUser) {
   const o = app.orientation;
-  const header = text(
-    '## Oryantasyon Tamamlandı\n' +
-      `**<@${app.userId}> artık yetkili ekibinin bir parçası!**\n` +
-      `-# Oryantasyonu <@${o.staffId}> verdi, #${pad(app.number)} numaralı başvuru sonuçlandı.`,
+  return card(
+    'Oryantasyon Tamamlandı',
+    'Oryantasyon başarıyla tamamlandı ve başvuru sonuçlandı; yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti aşağıda yer alıyor, hepsine buradan ulaşabilirsin.',
+    [
+      `**Yeni Yetkili**\n<@${app.userId}> artık yetkili ekibinin bir parçası!\n-# Oryantasyonu <@${o.staffId}> verdi, #${pad(app.number)} numaralı başvuru sonuçlandı.`,
+      `**Özet**\n${[`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')}`,
+      `-# <t:${unix(o.finishedAt)}:F>`,
+    ],
+    'success',
+    applicantUser?.displayAvatarURL({ size: 256 }),
   );
-  return withThumbnail(new ContainerBuilder().setAccentColor(colors.success), header, applicantUser)
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text([`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# <t:${unix(o.finishedAt)}:F>`));
 }
 
 // İptal edenin yazısı: yetkili iptal ettiyse o, başvuran ayrıldığı için bot iptal ettiyse otomatik
@@ -259,12 +252,10 @@ const penaltyText = (app) =>
 
 function cancelledPanel(app) {
   const o = app.orientation;
-  return notice(
-    [
-      '## Oryantasyon İptal Edildi\n' + `**${cancelHeadline(app)}**\n` + '-# Görüşme kanalları başvurana tekrar kilitlendi.',
-      `**Sebep:**\n${quote(o.cancelReason)}${penaltyText(app)}`,
-      `-# <t:${unix(o.finishedAt)}:F>`,
-    ],
+  return card(
+    'Oryantasyon İptal Edildi',
+    'Bu oryantasyon sonlandırıldı ve görüşme kanalları başvurana tekrar kilitlendi; iptalin kim tarafından ve hangi sebeple yapıldığı aşağıda, varsa başvuru cezasıyla birlikte yer alıyor.',
+    [`**İptal**\n${cancelHeadline(app)}`, `**Sebep**\n${quote(o.cancelReason)}${penaltyText(app)}`, `-# <t:${unix(o.finishedAt)}:F>`],
     'danger',
   );
 }
@@ -292,7 +283,7 @@ function presenceText(app) {
       `**<@${o.staffId}> kanaldan ayrıldı.** <t:${unix(o.staffAwaySince + p.staffGraceMinutes * MINUTE)}:R> dönmezse başka bir yetkili çağrılacak.`,
     );
   }
-  return lines.length ? lines.join('\n\n') : null;
+  return lines.length ? lines.join('\n') : null;
 }
 
 // Kayıt kanalındaki canlı oryantasyon mesajı: oryantasyon başlayınca gönderilir, adımlar ilerledikçe güncellenir,
@@ -308,17 +299,21 @@ function orientationLog(app) {
   if (o.applicantLeaves) lines.push(`**Başvuranın Ayrılması:** ${o.applicantLeaves}/${config.presence.maxApplicantLeaves}`);
 
   const presence = presenceText(app);
-  const sections = [
-    `### Oryantasyon Sürüyor・Başvuru #${pad(app.number)}\n` +
-      `**<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.**\n` +
-      `-# Başlangıç <t:${unix(o.startedAt)}:t>・Adımlar ilerledikçe bu mesaj güncellenir.`,
+  const blocks = [
+    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.\n-# Başlangıç <t:${unix(o.startedAt)}:t>・Adımlar ilerledikçe bu mesaj güncellenir.`,
   ];
-  if (presence) sections.push(presence);
-  sections.push(lines.join('\n'));
+  if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
+  blocks.push(lines.join('\n'));
 
-  const container = notice(sections, presence ? 'warning' : 'primary');
+  const container = card(
+    `Oryantasyon Sürüyor・Başvuru #${pad(app.number)}`,
+    'Oryantasyonun kayıt kanalındaki canlı özeti; adımlar ilerledikçe bu mesaj kendiliğinden güncellenir ve oryantasyon bitince sonuç mesajına dönüşür, süreci buradan takip edebilirsin.',
+    blocks,
+    presence ? 'warning' : 'primary',
+  );
   if (o.messageId) {
-    container.addActionRowComponents(
+    withRow(
+      container,
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Panele Git').setURL(messageUrl(app.guildId, o.channelId, o.messageId)),
       ),
@@ -331,23 +326,19 @@ function orientationLog(app) {
 function orientationResult(app) {
   const o = app.orientation;
   if (o.status === 'cancelled') {
-    return notice(
-      [
-        `### Oryantasyon İptal Edildi・Başvuru #${pad(app.number)}\n` +
-          `**${cancelHeadline(app)}**\n` +
-          '-# Görüşme kanalları başvurana kilitlendi.',
-        `**Sebep:**\n${quote(o.cancelReason)}${penaltyText(app)}`,
-        `-# <t:${unix(o.finishedAt)}:F>`,
-      ],
+    return card(
+      `Oryantasyon İptal Edildi・Başvuru #${pad(app.number)}`,
+      'Bu başvurunun oryantasyonu sonlandırıldı ve görüşme kanalları başvurana kilitlendi; iptalin kim tarafından ve hangi sebeple yapıldığı aşağıda, varsa başvuru cezasıyla birlikte yer alıyor.',
+      [`**İptal**\n${cancelHeadline(app)}`, `**Sebep**\n${quote(o.cancelReason)}${penaltyText(app)}`, `-# <t:${unix(o.finishedAt)}:F>`],
       'danger',
     );
   }
-  return notice(
+  return card(
+    `Oryantasyon Tamamlandı・Başvuru #${pad(app.number)}`,
+    'Bu başvurunun oryantasyonu başarıyla tamamlandı ve görüşme kanalları başvurana kilitlendi; yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti aşağıda yer alıyor.',
     [
-      `### Oryantasyon Tamamlandı・Başvuru #${pad(app.number)}\n` +
-        `**<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı!**\n` +
-        `-# Oryantasyonu <@${o.staffId}> verdi, görüşme kanalları başvurana kilitlendi.`,
-      [`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n'),
+      `**Yeni Yetkili**\n<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı!\n-# Oryantasyonu <@${o.staffId}> verdi.`,
+      `**Özet**\n${[`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
     'success',
@@ -357,25 +348,32 @@ function orientationResult(app) {
 // Onaylanan başvurana giden DM: oryantasyon için hangi kanala geçeceği
 function approvedDm(app, guildName, channelId) {
   const o = app.orientation;
-  const sections = [
-    '### Başvurun Onaylandı\n' +
-      '**Tebrikler, son aşamaya geçtin: oryantasyon!**\n' +
-      `-# #${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> onayladı. Oryantasyonunu <@${o.staffId}> verecek.`,
+  const blocks = [
+    `**Başvuru Durumu**\nTebrikler, son aşamaya geçtin: oryantasyon!\n-# #${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> onayladı. Oryantasyonunu <@${o.staffId}> verecek.`,
   ];
-  if (app.note) sections.push(`**Not:**\n${quote(app.note)}`);
-  sections.push(
+  if (app.note) blocks.push(`**Not**\n${quote(app.note)}`);
+  blocks.push(
     o.status === 'active'
-      ? `**Oryantasyonun <#${o.channelId}> kanalında başladı!**\n-# Adımlar kanalın sohbetindeki panelden ilerliyor.`
-      : (channelId
-          ? `**Oryantasyon için <#${channelId}> kanalına geç.**\n`
-          : '**Oryantasyon için aşağıdaki görüşme kanallarından boş olanına geç.**\n') +
+      ? `**Oryantasyon**\nOryantasyonun <#${o.channelId}> kanalında başladı!\n-# Adımlar kanalın sohbetindeki panelden ilerliyor.`
+      : '**Oryantasyon**\n' +
+          (channelId
+            ? `Oryantasyon için <#${channelId}> kanalına geç.\n`
+            : 'Oryantasyon için aşağıdaki görüşme kanallarından boş olanına geç.\n') +
           `-# <@${o.staffId}> ile aynı kanala girdiğinde oryantasyon kendiliğinden başlar, bot kanalın sohbetine adım adım ilerleyen bir panel atar. Kanallar senin için açıldı.`,
   );
 
-  return notice(sections, 'success')
-    .addActionRowComponents(voiceButtons(app.guildId, channelId))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(app.reviewedAt)}:F>`));
+  return withFooter(
+    withRow(
+      card(
+        'Başvurun Onaylandı',
+        'Yetkili başvurun onaylandı ve oryantasyon aşamasına geçildi; oryantasyon için hangi görüşme kanalına geçeceğin, kimin sana eşlik edeceği ve sonraki adımlar aşağıda anlatılıyor.',
+        blocks,
+        'success',
+      ),
+      voiceButtons(app.guildId, channelId),
+    ),
+    `-# ${guildName}・<t:${unix(app.reviewedAt)}:F>`,
+  );
 }
 
 // Oryantasyonu verecek yetkiliye giden DM (onaylayınca, oryantasyon kendisine aktarılınca ya da devralınca).
@@ -386,39 +384,42 @@ function staffDm(app, guildName, channelId, transferredBy, tookOver) {
   const target = active ? o.channelId : channelId;
 
   const voice = active
-    ? `**Oryantasyon <#${o.channelId}> kanalında sürüyor, kanala geç.**\n` +
+    ? `Oryantasyon <#${o.channelId}> kanalında sürüyor, kanala geç.\n` +
       `-# Paneldeki butonları artık sen kullanabilirsin, kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edersin.`
-    : (channelId ? `**<#${channelId}> kanalına geç.**\n` : '**Görüşme kanallarından boş olanına geç.**\n') +
+    : (channelId ? `<#${channelId}> kanalına geç.\n` : 'Görüşme kanallarından boş olanına geç.\n') +
       '-# Başvuranla aynı kanala girdiğinde oryantasyon kendiliğinden başlar, panel kanalın sohbetine gelir. ' +
       'Adımları sen ilerletirsin; başvuranın bildiği konuları **Biliyor, Atla** ile geçebilirsin.';
 
-  return notice(
-    [
-      '### Oryantasyon Görevi\n' +
-        `**<@${app.userId}> için oryantasyonu sen vereceksin.**\n` +
-        (tookOver
-          ? `-# <@${transferredBy}> kanaldan ayrıldığı için #${pad(app.number)} numaralı başvurunun oryantasyonunu devraldın.`
-          : transferredBy
-            ? `-# <@${transferredBy}>, #${pad(app.number)} numaralı başvurunun oryantasyonunu sana aktardı.`
-            : `-# #${pad(app.number)} numaralı başvuruyu onayladın, başvurana da DM ile haber verildi.`),
-      voice,
-    ],
-    'primary',
-  )
-    .addActionRowComponents(voiceButtons(app.guildId, target))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(Date.now())}:F>`));
+  const reason = tookOver
+    ? `-# <@${transferredBy}> kanaldan ayrıldığı için #${pad(app.number)} numaralı başvurunun oryantasyonunu devraldın.`
+    : transferredBy
+      ? `-# <@${transferredBy}>, #${pad(app.number)} numaralı başvurunun oryantasyonunu sana aktardı.`
+      : `-# #${pad(app.number)} numaralı başvuruyu onayladın, başvurana da DM ile haber verildi.`;
+
+  return withFooter(
+    withRow(
+      card(
+        'Oryantasyon Görevi',
+        'Bir başvurunun oryantasyonunu vermek üzere görevlendirildin; başvuranın kim olduğu, oryantasyona hangi kanaldan başlayacağın ve süreç boyunca neler yapacağın aşağıda özetleniyor.',
+        [`**Görev**\n<@${app.userId}> için oryantasyonu sen vereceksin.\n${reason}`, `**Kanal**\n${voice}`],
+        'primary',
+      ),
+      voiceButtons(app.guildId, target),
+    ),
+    `-# ${guildName}・<t:${unix(Date.now())}:F>`,
+  );
 }
 
 // Oryantasyonu tamamlayan yeni yetkiliye giden tebrik DM'i
 function completedDm(app, guildName) {
   const o = app.orientation;
-  return notice(
+  return card(
+    'Ekibe Hoş Geldin!',
+    'Oryantasyonu başarıyla tamamladın ve yetkili ekibine katıldın; başlangıç yetkin, görev alanların ve ilk günler için birkaç not aşağıda seni bekliyor, yeni görevinde başarılar dileriz.',
     [
-      '### Ekibe Hoş Geldin!\n' +
-        `**Tebrikler, oryantasyonu başarıyla tamamladın ve artık ${guildName} yetkili ekibinin bir parçasısın!**\n` +
-        `-# Oryantasyonunu <@${o.staffId}> verdi.`,
+      `**Tebrikler**\nOryantasyonu başarıyla tamamladın ve artık ${guildName} yetkili ekibinin bir parçasısın!\n-# Oryantasyonunu <@${o.staffId}> verdi.`,
       [
+        '**Yetki Bilgilerin**',
         `**Başlangıç Yetkin:** ${o.levelLabel}`,
         `**${o.areaLabels.length > 1 ? 'Görev Alanların' : 'Görev Alanın'}:** ${o.areaLabels.join(', ')}`,
       ].join('\n'),
@@ -435,12 +436,13 @@ function completedDm(app, guildName) {
 // Oryantasyonu iptal edilen başvurana giden DM
 function cancelledDm(app, guildName) {
   const o = app.orientation;
-  return notice(
+  return card(
+    'Oryantasyon İptal Edildi',
+    'Başvurunun oryantasyonu sonlandırıldı; iptalin kim tarafından ve hangi sebeple yapıldığı, varsa yeniden başvuru yapabileceğin tarih aşağıda belirtiliyor, sorularında yetkililere ulaşabilirsin.',
     [
-      '### Oryantasyon İptal Edildi\n' +
-        `**#${pad(app.number)} numaralı başvurunun oryantasyonu iptal edildi.**\n` +
+      `**Başvuru Durumu**\n#${pad(app.number)} numaralı başvurunun oryantasyonu iptal edildi.\n` +
         (o.cancelledBy ? `-# <@${o.cancelledBy}> oryantasyonu sonlandırdı.` : '-# Oryantasyon otomatik olarak sonlandırıldı.'),
-      `**Sebep:**\n${quote(o.cancelReason)}` +
+      `**Sebep**\n${quote(o.cancelReason)}` +
         (app.penaltyUntil ? `\n-# Bu yüzden <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamazsın.` : ''),
       `-# ${guildName}・<t:${unix(o.finishedAt)}:F>`,
     ],
@@ -453,15 +455,21 @@ function cancelledDm(app, guildName) {
 function takeoverNotice(app, state) {
   const o = app.orientation;
   const title = `Başvuru #${pad(app.number)}`;
+  const sub =
+    'Oryantasyon sırasında yetkilinin kanaldan ayrılması durumunda bu mesaj başvurular kanalına düşer ve duruma göre güncellenir; oryantasyonu başka bir yetkili buradan devralabilir.';
   if (state === 'open') {
     const step = config.steps[o.step];
-    return notice(
-      `### Oryantasyon İçin Yetkili Bekleniyor・${title}\n` +
-        `**${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> oryantasyonun ortasında <#${o.channelId}> kanalında bekliyor.**\n` +
-        `-# <@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
-        `Oryantasyon ${o.step + 1}/${config.steps.length}・${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
-      'warning',
-    ).addActionRowComponents(
+    return withRow(
+      card(
+        `Oryantasyon İçin Yetkili Bekleniyor・${title}`,
+        sub,
+        [
+          `**Durum**\n${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> oryantasyonun ortasında <#${o.channelId}> kanalında bekliyor.\n` +
+            `-# <@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
+            `Oryantasyon ${o.step + 1}/${config.steps.length}・${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
+        ],
+        'warning',
+      ),
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(actionId(app, 'devral')).setStyle(ButtonStyle.Success).setLabel('Oryantasyonu Devral'),
         new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, o.channelId)),
@@ -469,29 +477,35 @@ function takeoverNotice(app, state) {
     );
   }
   if (state === 'returned') {
-    return notice(
-      `### Yetkili Geri Döndü・${title}\n**<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.**\n-# Artık yetkili beklenmiyor.`,
+    return card(
+      `Yetkili Geri Döndü・${title}`,
+      sub,
+      [`**Durum**\n<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.\n-# Artık yetkili beklenmiyor.`],
       'success',
     );
   }
   if (state === 'taken') {
     const from = o.transfers.at(-1)?.from;
-    return notice(
-      `### Oryantasyon Devralındı・${title}\n**<@${o.staffId}> oryantasyonu devraldı.**\n` +
-        `-# ${from ? `<@${from}> ayrıldıktan sonra ` : ''}kalınan adımdan devam edilecek.`,
+    return card(
+      `Oryantasyon Devralındı・${title}`,
+      sub,
+      [`**Durum**\n<@${o.staffId}> oryantasyonu devraldı.\n-# ${from ? `<@${from}> ayrıldıktan sonra ` : ''}kalınan adımdan devam edilecek.`],
       'success',
     );
   }
-  return notice(`### Oryantasyon Sona Erdi・${title}\n-# Artık yetkili beklenmiyor.`);
+  return card(`Oryantasyon Sona Erdi・${title}`, sub, ['**Durum**\n-# Artık yetkili beklenmiyor.']);
 }
 
 // Panel başka kanala taşınınca eski kanaldaki panelin yerine kalan not
 function panelMoved(app) {
   const o = app.orientation;
-  return notice(
-    `**Oryantasyon paneli <#${o.channelId}> kanalına taşındı.**\n-# Yetkili ve başvuran kanal değiştirdiği için panel de onlarla birlikte taşındı.`,
-    'primary',
-  ).addActionRowComponents(
+  return withRow(
+    card(
+      'Oryantasyon Paneli Taşındı',
+      'Yetkili ve başvuran görüşme kanalını değiştirdiği için oryantasyon paneli de onlarla birlikte yeni kanala taşındı; oryantasyon kaldığı yerden devam ediyor, panele aşağıdaki butonla gidebilirsin.',
+      [`**Yeni Konum**\nOryantasyon paneli <#${o.channelId}> kanalına taşındı.\n-# Yetkili ve başvuran kanal değiştirdiği için panel de onlarla birlikte taşındı.`],
+      'primary',
+    ),
     new ActionRowBuilder().addComponents(
       new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Panele Git').setURL(messageUrl(app.guildId, o.channelId, o.messageId)),
     ),
@@ -537,9 +551,15 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
   const entry = texts[kind];
   if (!entry) return null;
   const [title, body, color, buttonChannelId] = entry;
-  const container = notice(`### ${title}\n${body}`, color);
+  const container = card(
+    title,
+    'Oryantasyon sırasında görüşme kanalındaki giriş çıkışlar takip edilir; bu mesaj kanaldaki son durumu ve varsa yapman gereken adımı sana bildirmek için gönderildi, ayrıntılar aşağıda.',
+    [`**Durum**\n${body}`],
+    color,
+  );
   if (buttonChannelId) {
-    container.addActionRowComponents(
+    withRow(
+      container,
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
@@ -548,33 +568,37 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
       ),
     );
   }
-  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${guildName}・Başvuru #${pad(app.number)}`));
+  return withFooter(container, `-# ${guildName}・Başvuru #${pad(app.number)}`);
 }
 
 // "Başka Yetkiliye Aktar" ile açılan, sadece butona basanın gördüğü seçim menüsü
 function transferPicker(app) {
-  return new ContainerBuilder()
-    .setAccentColor(colors.primary)
-    .addTextDisplayComponents(
-      text(
-        '**Oryantasyonu kime aktarmak istiyorsun?**\n' +
-          `-# Sadece ${app.reviewerRoleId ? `<@&${app.reviewerRoleId}> rolündekiler` : 'yöneticiler'} seçilebilir. ` +
+  return withRow(
+    card(
+      'Oryantasyonu Aktar',
+      'Oryantasyonu başka bir yetkiliye devretmek için aşağıdaki menüden birini seç; yeni yetkiliye DM ile haber verilir ve oryantasyon kalınan adımdan kesintisiz devam eder.',
+      [
+        `**Yeni Yetkili**\nOryantasyonu kime aktarmak istiyorsun?\n-# Sadece ${app.reviewerRoleId ? `<@&${app.reviewerRoleId}> rolündekiler` : 'yöneticiler'} seçilebilir. ` +
           'Yeni yetkiliye DM ile haber verilir, oryantasyon kalınan adımdan devam eder.',
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new UserSelectMenuBuilder().setCustomId(actionId(app, 'aktar-sec')).setPlaceholder('Yetkili seç').setMinValues(1).setMaxValues(1),
-      ),
-    );
+      ],
+      'primary',
+    ),
+    new ActionRowBuilder().addComponents(
+      new UserSelectMenuBuilder().setCustomId(actionId(app, 'aktar-sec')).setPlaceholder('Yetkili seç').setMinValues(1).setMaxValues(1),
+    ),
+  );
 }
 
 // Oryantasyon sürerken aktarılınca görüşme kanalının sohbetine giden bildirim, yeni yetkili etiketlenir
 function transferNotice(app, fromId) {
   const o = app.orientation;
-  return notice(
-    `**<@${o.staffId}>, oryantasyon sana aktarıldı.**\n` +
-      `-# <@${fromId}> aktardı. Paneldeki butonları artık sen kullanabilirsin, kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edebilirsin.`,
+  return card(
+    'Oryantasyon Aktarıldı',
+    'Oryantasyonu veren yetkili değişti; yeni yetkili paneldeki butonları kullanarak oryantasyonu kalınan adımdan sürdürür, başvuran kanalda beklemeye devam edebilir.',
+    [
+      `**Yeni Yetkili**\n<@${o.staffId}>, oryantasyon sana aktarıldı.\n` +
+        `-# <@${fromId}> aktardı. Paneldeki butonları artık sen kullanabilirsin, kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edebilirsin.`,
+    ],
     'primary',
   );
 }

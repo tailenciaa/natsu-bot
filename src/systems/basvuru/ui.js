@@ -5,13 +5,14 @@ const {
   ButtonStyle,
   ContainerBuilder,
   LabelBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ModalBuilder,
   SectionBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ThumbnailBuilder,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, notice, panelMessage } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, page } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -25,10 +26,33 @@ const IDS = {
 };
 
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
-const answersText = (answers) => answers.map(({ title, answer }) => `**${title}:**\n${quote(answer)}`).join('\n\n');
+const answersText = (answers) => answers.map(({ title, answer }) => `**${title}:**\n${quote(answer)}`).join('\n');
 
+// Standart sayfa düzeni: renk adı (primary, success...) ile page() kurar
+const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks, accent: color ? colors[color] : undefined, thumbnail });
+const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
+
+// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, çizgiyle ayrılmış bloklar
 function panel() {
-  return panelMessage(config.panel, IDS.apply, config.banner);
+  const { title, description, buttonLabel, footer } = config.panel;
+  const container = new ContainerBuilder().addSectionComponents(
+    new SectionBuilder()
+      .addTextDisplayComponents(
+        text(
+          `${title}\n-# Yetkili ekibine katılmak için sağdaki butondan başvuru formunu doldur; başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.`,
+        ),
+      )
+      .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.apply).setLabel(buttonLabel).setStyle(ButtonStyle.Primary)),
+  );
+  if (config.banner) {
+    const url = /^https?:\/\//.test(config.banner) ? config.banner : `attachment://${config.banner}`;
+    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
+  }
+  return container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Başvuru Hakkında**\n${description}`))
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**Dikkat**\n${footer}`));
 }
 
 // "Başvuru Yap" ile açılan form; sorular config.js'ten gelir
@@ -128,47 +152,33 @@ function applicationNotice(app, applicantUser) {
     ? `${app.previous.total} başvuru${app.previous.rejected ? `・${app.previous.rejected} reddedildi` : ''}`
     : 'Yok';
 
-  const header = text(
+  const role = app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : '';
+  const info = [
+    // Başvuran başlıkta etiketli, burada sadece kullanıcı adı
+    `**Kullanıcı Adı:** \`${app.username}\``,
+    `**Hesap Oluşturma:** <t:${unix(app.accountCreatedAt)}:R>`,
+    `**Sunucuya Katılma:** ${app.joinedAt ? `<t:${unix(app.joinedAt)}:R>` : 'Bilinmiyor'}`,
+    `**Önceki Başvuruları:** ${previous}`,
+  ].join('\n');
+
+  const container = card(
+    pending ? `Yeni Başvuru #${pad(app.number)}` : `Başvuru #${pad(app.number)}`,
     pending
-      ? `### Yeni Başvuru #${pad(app.number)}\n` +
-          `**${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> ekibe katılmak için başvurdu.**\n` +
-          '-# Cevapları inceleyip başvuruyu onaylayabilir, reddedebilir ya da mülakata çağırabilirsin.'
-      : // Başvurunun nerede olduğu aşağıdaki "Durum" bölümünde
-        `### Başvuru #${pad(app.number)}\n**<@${app.userId}> ekibe katılmak için başvurdu.**`,
+      ? 'Başvuranın bilgileri ve cevapları aşağıda; cevapları inceleyip başvuruyu onaylayabilir, reddedebilir ya da başvuranı sesli mülakata çağırabilirsin, karar başvurana DM ile iletilir.'
+      : 'Bu başvurunun bilgileri, cevapları ve güncel durumu aşağıda listeleniyor; başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenerek son durumu gösterir.',
+    [
+      `**Başvuran**\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
+      `**Cevaplar**\n${answersText(app.answers)}`,
+      status,
+    ],
+    null,
+    applicantUser?.displayAvatarURL({ size: 256 }),
   );
-
-  const container = new ContainerBuilder().setAccentColor(color);
-  if (applicantUser) {
-    container.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(header)
-        .setThumbnailAccessory(new ThumbnailBuilder().setURL(applicantUser.displayAvatarURL({ size: 256 }))),
-    );
-  } else {
-    container.addTextDisplayComponents(header);
-  }
-
-  container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        [
-          // Başvuran başlıkta etiketli, burada sadece kullanıcı adı
-          `**Kullanıcı Adı:** \`${app.username}\``,
-          `**Hesap Oluşturma:** <t:${unix(app.accountCreatedAt)}:R>`,
-          `**Sunucuya Katılma:** ${app.joinedAt ? `<t:${unix(app.joinedAt)}:R>` : 'Bilinmiyor'}`,
-          `**Önceki Başvuruları:** ${previous}`,
-        ].join('\n'),
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(answersText(app.answers)))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(status));
+  container.setAccentColor(color);
 
   if (pending) {
     const reviewId = (action) => `${IDS.review}:${app.id}:${action}`;
-    container.addActionRowComponents(
+    container.addSeparatorComponents(divider()).addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(reviewId('onay')).setStyle(ButtonStyle.Success).setLabel('Onayla'),
         new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
@@ -183,7 +193,7 @@ function applicationNotice(app, applicantUser) {
   // Oryantasyon yönetimi (Aktar/İptal), başvuru kararından farklı bir iş yaptığı için çizgiyle ayrılır
   if (orienting) container.addSeparatorComponents(divider()).addActionRowComponents(orientationUi.noticeRow(app));
 
-  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# <t:${unix(app.createdAt)}:F>`));
+  return withFooter(container, `-# <t:${unix(app.createdAt)}:F>`);
 }
 
 // Onayla / Reddet ile açılan form: onayda not isteğe bağlı, redde sebep zorunlu. İkisi de başvurana iletilir.
@@ -238,61 +248,68 @@ function voiceSection(container, app, voice) {
     .addTextDisplayComponents(
       text(
         voice.waitingIn
-          ? `**<@${voice.staffId}> mülakat için seni şu an <#${voice.waitingIn}> kanalında bekliyor!**\n-# ${expiry}`
-          : `**Mülakat için aşağıdaki ses kanallarından birine katılabilirsin.**\n-# ${expiry}`,
+          ? `**Görüşme Kanalı**\n<@${voice.staffId}> mülakat için seni şu an <#${voice.waitingIn}> kanalında bekliyor!\n-# ${expiry}`
+          : `**Görüşme Kanalı**\nMülakat için aşağıdaki ses kanallarından birine katılabilirsin.\n-# ${expiry}`,
       ),
     )
+    .addSeparatorComponents(divider())
     .addActionRowComponents(new ActionRowBuilder().addComponents(buttons));
 }
 
 // Reddedilen başvurana giden sonuç DM'si (onaylanana oryantasyon sistemi kendi DM'ini gönderir)
 function resultDm(app, guildName, reapplyAt) {
-  const sections = [
-    '### Başvurun Sonuçlandı\n' +
-      '**Başvurun bu sefer olumlu sonuçlanmadı.**\n' +
+  const blocks = [
+    `**Başvuru Sonucu**\nBaşvurun bu sefer olumlu sonuçlanmadı.\n` +
       `-# #${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> değerlendirdi.` +
       (reapplyAt ? ` <t:${unix(reapplyAt)}:D> tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
   ];
-  if (app.note) sections.push(`**Sebep:**\n${quote(app.note)}`);
+  if (app.note) blocks.push(`**Sebep**\n${quote(app.note)}`);
+  blocks.push(`-# ${guildName}・<t:${unix(app.reviewedAt)}:F>`);
 
-  return notice(sections, 'danger')
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(app.reviewedAt)}:F>`));
+  return card(
+    'Başvurun Sonuçlandı',
+    'Yetkili başvurun incelendi ve sonuçlandı; kararı veren yetkili, varsa belirtilen sebep ve yeniden başvurabileceğin tarih aşağıda yer alıyor, ilgin için teşekkür ederiz.',
+    blocks,
+    'danger',
+  );
 }
 
 // "Görüşmeye Çağır" ile başvurana giden DM: yetkili bir ses kanalındaysa "seni X kanalında bekliyor",
 // değilse "kanallardan birine geç" der. Ses kanalları açılamadıysa (voice yok) sadece görüşme çağrısı gider.
 function meetingDm(app, guildName, voice) {
-  const container = notice(
-    '### Mülakata Davet Edildin\n' +
-      `**<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.**\n` +
-      `-# #${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`,
+  const container = card(
+    'Mülakata Davet Edildin',
+    'Yetkili başvurun hakkında seninle sesli bir görüşme yapmak istiyor; mülakat için hangi ses kanalına katılman gerektiği ve kanal erişiminin ne zaman kapanacağı aşağıda belirtiliyor.',
+    [`**Davet**\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n-# #${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
     'warning',
   );
   if (voice) voiceSection(container, app, voice);
-  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(app.meetingAt)}:F>`));
+  return withFooter(container, `-# ${guildName}・<t:${unix(app.meetingAt)}:F>`);
 }
 
 // Başvuran bir görüşme kanalına girince başvuruyla ilgilenen yetkiliye giden DM (görüşme ya da oryantasyon için)
 function applicantWaitingDm(app, guildName, channelId, orientation) {
-  return notice(
-    [
-      '### Başvuran Seni Bekliyor\n' +
-        `**<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.**\n` +
-        `-# #${pad(app.number)} numaralı başvuru` +
-        (orientation
-          ? '. Kanala girdiğinde oryantasyon kendiliğinden başlayacak.'
-          : ' için seni bekliyor, kanala geçip görüşmeye başlayabilirsin.'),
-    ],
-    'primary',
-  )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
-      ),
+  return withFooter(
+    card(
+      'Başvuran Seni Bekliyor',
+      'Başvuranın görüşme kanalına girdi ve seni bekliyor; aşağıdaki butonla kanala geçerek görüşmeyi ya da oryantasyonu hemen başlatabilirsin, başvuru ayrıntıları başvurular kanalında yer alıyor.',
+      [
+        `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n` +
+          `-# #${pad(app.number)} numaralı başvuru` +
+          (orientation
+            ? '. Kanala girdiğinde oryantasyon kendiliğinden başlayacak.'
+            : ' için seni bekliyor, kanala geçip görüşmeye başlayabilirsin.'),
+      ],
+      'primary',
     )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(Date.now())}:F>`));
+      .addSeparatorComponents(divider())
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
+        ),
+      ),
+    `-# ${guildName}・<t:${unix(Date.now())}:F>`,
+  );
 }
 
 // Kayıt kanalındaki görüşme mesajı: görüşme başlayınca gönderilir, bitince güncellenir
@@ -300,14 +317,16 @@ function meetingLog(app) {
   const m = app.meeting;
   const ended = Boolean(m.endedAt);
   const duration = ended ? Math.max(1, Math.round((m.endedAt - m.startedAt) / 60000)) : 0;
-  return notice(
-    ended
-      ? `### Görüşme Tamamlandı・Başvuru #${pad(app.number)}\n` +
-          `**<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.**\n` +
+  return card(
+    ended ? `Görüşme Tamamlandı・Başvuru #${pad(app.number)}` : `Görüşme Başladı・Başvuru #${pad(app.number)}`,
+    'Başvuranla yapılan sesli görüşmenin kayıt kanalındaki özeti; görüşme başlayınca gönderilir, bitince bu mesaj güncellenir ve görüşmenin süresi ile kanalı burada saklanır.',
+    [
+      ended
+        ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +
           `-# <#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
-      : `### Görüşme Başladı・Başvuru #${pad(app.number)}\n` +
-          `**<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.**\n` +
+        : `**Görüşme**\n<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.\n` +
           `-# Başlangıç <t:${unix(m.startedAt)}:t>・Görüşme bitince bu mesaj güncellenir.`,
+    ],
     ended ? 'success' : 'primary',
   );
 }

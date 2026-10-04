@@ -11,15 +11,16 @@ function thanks(user) {
       new SectionBuilder()
         .addTextDisplayComponents(
           text(
-            '### Etiketimizi Taktı!\n' +
-              `**<@${user.id}> artık profilinde \`${user.primaryGuild.tag}\` etiketini taşıyor.**\n` +
-              `-# Sunucumuzu profilinde temsil ettiğin için çok teşekkür ederiz, sana özel etiket rolü de verildi; etiketi profilinde taşıdığın sürece bu rol sende kalır.`,
+            '## Etiketimizi Taktı!\n' +
+              '-# Sunucumuzu profilinde temsil ettiğin için çok teşekkür ederiz, sana özel etiket rolü de verildi; etiketi profilinde taşıdığın sürece bu rol sende kalır.',
           ),
         )
         .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 }))),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# <t:${unix(Date.now())}:F>`));
+    .addTextDisplayComponents(
+      text(`**Etiket Bilgisi**\n<@${user.id}> artık profilinde \`${user.primaryGuild.tag}\` etiketini taşıyor.\n-# <t:${unix(Date.now())}:F>`),
+    );
 }
 
 module.exports = { thanks };

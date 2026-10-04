@@ -3,13 +3,10 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  ThumbnailBuilder,
 } = require('discord.js');
-const { colors, text, divider, notice } = require('../../core/ui');
+const { colors, divider, page } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -24,26 +21,28 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
   const { levels, perms } = config;
   const level = levels.find((l) => l.id === levelId);
   const permLabels = perms.filter((p) => permIds.includes(p.id)).map((p) => p.label);
-  const header = done
-    ? // Seviye ve yetkiler aşağıda ayrıca yazıyor
-      '## Yetki Verildi\n' +
-      `**<@${user.id}> artık ekipte.**\n` +
-      (missingRoles ? '-# Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : '-# Seçilen yetkilerin rolleri verildi.')
-    : '## Yetki Ver\n' +
-      `**<@${user.id}> için yetki düzenliyorsun.**\n` +
-      '-# Seviye seçtiğinde o seviyenin yetkileri otomatik işaretlenir, istersen ekleme ya da çıkarma yapabilirsin.';
+  const missingNote = missingRoles ? 'Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : 'Seçilen yetkilerin rolleri verildi.';
+  const intro = done
+    ? `**Yetki Durumu**\n<@${user.id}> artık ekipte.\n-# ${missingNote}`
+    : `**Düzenlenen Üye**\n<@${user.id}> için yetki düzenliyorsun.`;
+  const summary = [
+    '**Seçimler**',
+    `Seviye: ${level ? level.label : 'Seçilmedi'}`,
+    `Yetkiler: ${permLabels.length ? permLabels.join(', ') : 'Yok'}`,
+  ].join('\n');
 
-  const container = new ContainerBuilder()
-    .setAccentColor(done ? colors.success : colors.primary)
-    .addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(text(header))
-        .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 }))),
-    )
-    .addSeparatorComponents(divider());
+  const container = page({
+    title: done ? 'Yetki Verildi' : 'Yetki Ver',
+    sub: done
+      ? 'Seçtiğin seviye ve yetkiler üyeye başarıyla tanımlandı; verilen seviye ile yetkilerin özeti aşağıda yer alıyor, bu mesaj yetkilendirme işleminin kaydı olarak kanalda kalır.'
+      : 'Seviye seçtiğinde o seviyenin yetkileri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilir, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
+    thumbnail: user.displayAvatarURL({ size: 256 }),
+    accent: done ? colors.success : colors.primary,
+    blocks: [intro, summary],
+  });
 
   if (!done) {
-    container.addActionRowComponents(
+    container.addSeparatorComponents(divider()).addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.level}:${user.id}`)
@@ -67,21 +66,6 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
             ),
           ),
       ),
-    );
-    container.addSeparatorComponents(divider());
-  }
-
-  container.addTextDisplayComponents(
-    text(
-      [
-        `**Seviye:** ${level ? level.label : 'Seçilmedi'}`,
-        `**Yetkiler:** ${permLabels.length ? permLabels.join(', ') : 'Yok'}`,
-      ].join('\n'),
-    ),
-  );
-
-  if (!done) {
-    container.addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`${IDS.give}:${user.id}:${levelId ?? '0'}:${permIds.join(',')}`)
@@ -98,12 +82,12 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
 
 // Yetki verilen kişiye giden kısa tebrik DM'i
 function grantDm(guildName) {
-  return notice(
-    '### Ekibe Hoş Geldin!\n' +
-      `**${guildName} sunucusunda artık yetkili ekibinin bir parçasısın.**\n` +
-      '-# Yeni görevinde başarılar dileriz!',
-    'success',
-  );
+  return page({
+    title: 'Ekibe Hoş Geldin!',
+    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın; sana tanımlanan yetkileri ve rolleri sunucuda görebilirsin, yeni görevinde başarılar dileriz.`,
+    accent: colors.success,
+    blocks: [`**Yeni Görevin**\n${guildName} sunucusunda artık yetkili ekibinin bir parçasısın.`],
+  });
 }
 
 module.exports = { IDS, staffPanel, grantDm };

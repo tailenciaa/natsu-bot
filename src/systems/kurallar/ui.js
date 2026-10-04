@@ -16,12 +16,12 @@ const TITLE = `${botName} Sunucu Kuralları`;
 const IDS = { accept: 'kurallar-kabul' };
 
 const sectionText = (section, index) =>
-  `### ${section.title}\n${section.rules.map((rule, i) => `\`${index + 1}.${i + 1}\` ${rule}`).join('\n')}`;
+  `**${section.title}**\n${section.rules.map((rule, i) => `\`${index + 1}.${i + 1}\` ${rule}`).join('\n')}`;
 
 // Panelin en altında kuralları kabul eden üye sayısını gösteren buton bulunur
 function panel() {
   const container = new ContainerBuilder().addTextDisplayComponents(
-    text(`${panelTitle(TITLE)}\n**Sunucumuzda herkesin rahat etmesi için aşağıdaki kurallara uymak zorunludur.**`),
+    text(`${panelTitle(TITLE)}\n-# Sunucumuzda herkesin rahat etmesi için aşağıdaki kurallara uymak zorunludur; lütfen hepsini dikkatle oku ve sunucuda bu kurallara uygun davran, okuduktan sonra aşağıdaki butonla kabul et.`),
   );
   if (config.banner) {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
@@ -31,7 +31,7 @@ function panel() {
   });
   return container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(config.note))
+    .addTextDisplayComponents(text(`**Önemli Not**\n${config.note}`))
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
