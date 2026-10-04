@@ -19,12 +19,10 @@ function panel() {
     .addSectionComponents(
       new SectionBuilder()
         .addTextDisplayComponents(
-          text(`**Kısıtlama Durumu**\nDiscord hesabın ${config.thresholdDays} günden yeni olduğu için şu an sadece bu kanalı görebiliyorsun.`),
+          text(`**Ne Zaman Kalkacak?**\n-# Hesabın ${config.thresholdDays} günden yeni olduğu için şu an sadece bu kanalı görebiliyorsun; kalan süreni buradan öğren.`),
         )
-        .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.sure).setLabel('Ne Zaman Kalkacak?').setStyle(ButtonStyle.Success)),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('-# Hesabın yeterince eskiyince kısıtlama kendiliğinden kalkar, tüm kanallara erişebilirsin.'));
+        .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.sure).setLabel('Süreyi Öğren').setStyle(ButtonStyle.Success)),
+    );
 }
 
 // "Ne Zaman Kalkacak?": hesap eşiğe ulaşana kadar kalan süre

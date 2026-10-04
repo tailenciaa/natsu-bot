@@ -34,7 +34,7 @@ const withFooter = (container, footer) => container.addSeparatorComponents(divid
 
 // Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, çizgiyle ayrılmış bloklar
 function panel() {
-  const { title, description, buttonLabel, footer } = config.panel;
+  const { title, buttonLabel, footer } = config.panel;
   const container = new ContainerBuilder().addSectionComponents(
     new SectionBuilder()
       .addTextDisplayComponents(
@@ -49,8 +49,6 @@ function panel() {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
   }
   return container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Başvuru Hakkında**\n${description}`))
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`-# Dikkat: ${footer.replace(/^-# /, '')}`));
 }
@@ -143,7 +141,7 @@ function applicationNotice(app, applicantUser) {
       '-# Başvuruyla o ilgileniyor, kararı da o verecek.';
     color = colors.primary;
   } else {
-    status = '**Durum: İnceleniyor**\n-# Karar verildiğinde sonuç başvurana DM ile iletilir.';
+    status = '**Durum: İnceleniyor**';
     color = colors.warning;
   }
   if (app.note) status += `\n${quote(app.note)}`;
@@ -215,7 +213,7 @@ function reviewModal(app, action) {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel(approve ? 'Not' : 'Red sebebi')
-        .setDescription(approve ? 'İsteğe bağlı, başvurana iletilir.' : 'Başvurana iletilir.')
+        .setDescription(approve ? 'İsteğe bağlı, başvurana iletilir.' : 'Zorunlu.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.reviewNote)
@@ -280,7 +278,7 @@ function meetingDm(app, guildName, voice) {
   const container = card(
     'Mülakata Davet Edildin',
     'Yetkili başvurun hakkında seninle sesli bir görüşme yapmak istiyor; mülakat için hangi ses kanalına katılman gerektiği ve kanal erişiminin ne zaman kapanacağı aşağıda belirtiliyor.',
-    [`**Davet**\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n-# #${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
+    [`**Davet**\n- Çağıran・<@${app.meetingBy}>\n- Başvuru・#${pad(app.number)}`],
     'warning',
   );
   if (voice) voiceSection(container, app, voice);
@@ -295,10 +293,8 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
       'Başvuran görüşme kanalına girdi ve seni bekliyor; aşağıdaki butonla kanala geçerek görüşmeyi ya da oryantasyonu hemen başlatabilirsin, başvuru ayrıntıları başvurular kanalında yer alıyor.',
       [
         `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n` +
-          `-# #${pad(app.number)} numaralı başvuru` +
-          (orientation
-            ? '. Kanala girdiğinde oryantasyon kendiliğinden başlayacak.'
-            : ' için seni bekliyor, kanala geçip görüşmeye başlayabilirsin.'),
+          `-# Başvuru #${pad(app.number)}` +
+          (orientation ? '・Kanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
       ],
       'primary',
     )
@@ -322,10 +318,10 @@ function meetingLog(app) {
     'Başvuranla yapılan sesli görüşmenin kayıt kanalındaki özeti; görüşme başlayınca gönderilir, bitince bu mesaj güncellenir ve görüşmenin süresi ile kanalı burada saklanır.',
     [
       ended
-        ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +
+        ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}>\n` +
           `-# <#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
         : `**Görüşme**\n<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.\n` +
-          `-# Başlangıç <t:${unix(m.startedAt)}:t>・Görüşme bitince bu mesaj güncellenir.`,
+          `-# Başlangıç <t:${unix(m.startedAt)}:t>`,
     ],
     ended ? 'success' : 'primary',
   );

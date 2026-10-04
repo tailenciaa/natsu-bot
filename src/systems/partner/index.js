@@ -243,7 +243,7 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
 
     return respond(
       interaction,
-      core.alert('Partner talebin incelemeye gönderildi!', 'Şartları daha önce kabul ettiğin için hemen yetkili incelemesine düştü.', 'success'),
+      core.alert('Partner talebin incelemeye gönderildi!', 'Şartları daha önce kabul ettiğin için ek bir adım gerekmedi.', 'success'),
     );
   }
 

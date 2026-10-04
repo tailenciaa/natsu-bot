@@ -1,6 +1,6 @@
 // Partner görme sisteminin tek mesajı: butonuna basınca partner kanallarını görme rolünü veren panel.
 const { ButtonBuilder, ButtonStyle, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder } = require('discord.js');
-const { text, divider } = require('../../core/ui');
+const { text } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 const config = require('./config');
 
@@ -20,9 +20,7 @@ function panel() {
         )
         .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.ver).setLabel('Partner Görme').setStyle(ButtonStyle.Success)),
     )
-    .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('**Partner Kanalları**\nButona bastığında partner kanallarını görme rolü sana verilir.'));
+    .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
 }
 
 module.exports = { IDS, panel };

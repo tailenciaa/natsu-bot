@@ -41,11 +41,6 @@ function panel() {
     title: `${botName} Log Paneli`,
     sub: 'Sunucudaki bütün olay kayıtlarına tek yerden ulaşabilirsin; aşağıdaki menüden bir kategori seçtiğinde o logun tutulduğu alt başlığa giden bir bağlantı gönderilir.',
     accent: colors.primary,
-    blocks: [
-      '**Nasıl Kullanılır?**\n' +
-        '- Aradığın logu kanala girip aramak yerine aşağıdan seçebilirsin.\n' +
-        '-# Bir kategori seçince o logun bulunduğu alt başlığa giden bir bağlantı gelir.',
-    ],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(new ActionRowBuilder().addComponents(select));
@@ -116,7 +111,6 @@ function resetConfirm() {
     title: 'Log Alt Başlıkları Sıfırlansın mı?',
     sub: 'Bu işlem bütün log alt başlıklarını silip yeniden açar; alt başlıkların içindeki eski loglar da silineceği için işlem geri alınamaz, devam etmeden önce iyice emin olmalısın.',
     accent: colors.danger,
-    blocks: ['**Uyarı**\nTüm log alt başlıkları silinip yeniden açılsın mı?\n-# Alt başlıkların içindeki eski loglar da silinir, geri alınamaz.'],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(

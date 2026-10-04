@@ -23,8 +23,8 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
   const permLabels = perms.filter((p) => permIds.includes(p.id)).map((p) => p.label);
   const missingNote = missingRoles ? 'Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : 'Seçilen yetkilerin rolleri verildi.';
   const intro = done
-    ? `**Yetki Durumu**\n<@${user.id}> artık ekipte.\n-# ${missingNote}`
-    : `**Düzenlenen Üye**\n<@${user.id}> için yetki düzenliyorsun.`;
+    ? `**Yetki Durumu**\n<@${user.id}>\n-# ${missingNote}`
+    : `**Düzenlenen Üye**\n<@${user.id}>`;
   const summary = [
     '**Seçimler**',
     `Seviye: ${level ? level.label : 'Seçilmedi'}`,
@@ -86,7 +86,6 @@ function grantDm(guildName) {
     title: 'Ekibe Hoş Geldin!',
     sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın; sana tanımlanan yetkileri ve rolleri sunucuda görebilirsin, yeni görevinde başarılar dileriz.`,
     accent: colors.success,
-    blocks: [`**Yeni Görevin**\n${guildName} sunucusunda artık yetkili ekibinin bir parçasısın.`],
   });
 }
 

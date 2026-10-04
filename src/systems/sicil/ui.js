@@ -348,7 +348,7 @@ function typePicker(user, messageId, allowedTypes) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**<@${user.id}> kullanıcısına hangi cezayı vereceksin?**`))
+    .addTextDisplayComponents(text(`**Kullanıcı**\n<@${user.id}>`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(

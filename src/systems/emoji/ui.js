@@ -20,7 +20,7 @@ function pickPanel(emojis) {
     title: 'Emojileri Sunucuya Ekle',
     sub: 'Seçtiğin mesajdaki özel emojileri sunucuna ekleyebilirsin; eklemek istediklerini aşağıdaki menüden seç, seçtiğin anda emojiler sunucuya eklenir ve hemen kullanılabilir.',
     blocks: [
-      `**Bulunan Emojiler**\nMesajda ${emojis.length} emoji bulundu.` +
+      `**Bulunan Emojiler**\n${emojis.length} emoji` +
         (emojis.length > MAX_PICK ? `\n-# Bir seferde en fazla ${MAX_PICK} emoji gösterilebilir.` : ''),
     ],
   });

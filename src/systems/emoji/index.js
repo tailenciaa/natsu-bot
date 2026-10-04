@@ -136,7 +136,7 @@ function access(interaction, kind) {
 
 function accessError(interaction, kind, label) {
   if (isBooster(interaction)) {
-    return replyError(interaction, `${label} ekleme takviye hakkını zaten kullanmışsın.`, 'Bu hak takviye başına bir kez kullanılabilir.');
+    return replyError(interaction, `${label} ekleme takviye hakkını zaten kullanmışsın.`);
   }
   return replyError(
     interaction,

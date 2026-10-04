@@ -76,8 +76,6 @@ function jailPanel() {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text("**Jail Durumun**\nJail'desin, bu kanal dışında sunucudaki hiçbir kanalı göremezsin.\n-# Kurallara uygun davrandığını gösterirsen süresi dolunca jail kendiliğinden kalkar, tekrar tüm kanallara erişebilirsin."))
-    .addSeparatorComponents(divider())
     .addSectionComponents(
       row("Ne Zaman Çıkacağım?", "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
     );

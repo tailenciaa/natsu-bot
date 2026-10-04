@@ -221,8 +221,7 @@ function panel(app, applicantUser) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        // Alan seçimini kimin yapacağı o adımın metninde yazıyor
-        `-# Adımları <@${o.staffId}> ilerletir・Başlangıç <t:${unix(o.startedAt)}:R>`,
+        `-# Başlangıç <t:${unix(o.startedAt)}:R>`,
       ),
     );
 }
@@ -233,7 +232,7 @@ function completedPanel(app, applicantUser) {
     'Oryantasyon Tamamlandı',
     'Oryantasyon başarıyla tamamlandı ve başvuru sonuçlandı; yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti aşağıda yer alıyor, hepsine buradan ulaşabilirsin.',
     [
-      `**Yeni Yetkili**\n<@${app.userId}> artık yetkili ekibinin bir parçası!\n-# Oryantasyonu <@${o.staffId}> verdi, #${pad(app.number)} numaralı başvuru sonuçlandı.`,
+      `**Yeni Yetkili**\n<@${app.userId}> artık yetkili ekibinin bir parçası!\n-# Oryantasyonu <@${o.staffId}> verdi・Başvuru #${pad(app.number)}`,
       `**Özet**\n${[`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
@@ -300,7 +299,7 @@ function orientationLog(app) {
 
   const presence = presenceText(app);
   const blocks = [
-    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.\n-# Başlangıç <t:${unix(o.startedAt)}:t>・Adımlar ilerledikçe bu mesaj güncellenir.`,
+    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.\n-# Başlangıç <t:${unix(o.startedAt)}:t>`,
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
   blocks.push(lines.join('\n'));
@@ -417,7 +416,7 @@ function completedDm(app, guildName) {
     'Ekibe Hoş Geldin!',
     'Oryantasyonu başarıyla tamamladın ve yetkili ekibine katıldın; başlangıç yetkin, görev alanların ve ilk günler için birkaç not aşağıda seni bekliyor, yeni görevinde başarılar dileriz.',
     [
-      `**Tebrikler**\nOryantasyonu başarıyla tamamladın ve artık ${guildName} yetkili ekibinin bir parçasısın!\n-# Oryantasyonunu <@${o.staffId}> verdi.`,
+      `**Tebrikler**\nOryantasyonunu <@${o.staffId}> verdi.`,
       [
         '**Yetki Bilgilerin**',
         `**Başlangıç Yetkin:** ${o.levelLabel}`,
@@ -426,7 +425,7 @@ function completedDm(app, guildName) {
       '**Seni aramızda görmekten çok mutluyuz!**\n' +
         'Başvurudan oryantasyona kadar gösterdiğin ilgi için teşekkürler. İlk günlerde takıldığın her şeyi ' +
         `<@${o.staffId}> ya da diğer yetkililere sorabilirsin, kimse her şeyi ilk günden bilmez.\n` +
-        '-# Unutma: yetkili olmak bir ayrıcalık değil, bir sorumluluk. Yeni görevinde başarılar!',
+        '-# Unutma: yetkili olmak bir ayrıcalık değil, bir sorumluluk.',
       `-# ${guildName}・<t:${unix(o.finishedAt)}:F>`,
     ],
     'success',
@@ -440,8 +439,9 @@ function cancelledDm(app, guildName) {
     'Oryantasyon İptal Edildi',
     'Başvurunun oryantasyonu sonlandırıldı; iptalin kim tarafından ve hangi sebeple yapıldığı, varsa yeniden başvuru yapabileceğin tarih aşağıda belirtiliyor, sorularında yetkililere ulaşabilirsin.',
     [
-      `**Başvuru Durumu**\n#${pad(app.number)} numaralı başvurunun oryantasyonu iptal edildi.\n` +
-        (o.cancelledBy ? `-# <@${o.cancelledBy}> oryantasyonu sonlandırdı.` : '-# Oryantasyon otomatik olarak sonlandırıldı.'),
+      `**İptal**\n` +
+        (o.cancelledBy ? `<@${o.cancelledBy}> oryantasyonu sonlandırdı.` : 'Oryantasyon otomatik olarak sonlandırıldı.') +
+        `\n-# Başvuru #${pad(app.number)}`,
       `**Sebep**\n${quote(o.cancelReason)}` +
         (app.penaltyUntil ? `\n-# Bu yüzden <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamazsın.` : ''),
       `-# ${guildName}・<t:${unix(o.finishedAt)}:F>`,
@@ -466,7 +466,7 @@ function takeoverNotice(app, state) {
         [
           `**Durum**\n${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> oryantasyonun ortasında <#${o.channelId}> kanalında bekliyor.\n` +
             `-# <@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
-            `Oryantasyon ${o.step + 1}/${config.steps.length}・${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
+            `Oryantasyon ${o.step + 1}/${config.steps.length}・${step.title} adımında kaldı.`,
         ],
         'warning',
       ),
@@ -480,7 +480,7 @@ function takeoverNotice(app, state) {
     return card(
       `Yetkili Geri Döndü・${title}`,
       sub,
-      [`**Durum**\n<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.\n-# Artık yetkili beklenmiyor.`],
+      [`**Durum**\n<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.`],
       'success',
     );
   }
@@ -503,7 +503,7 @@ function panelMoved(app) {
     card(
       'Oryantasyon Paneli Taşındı',
       'Yetkili ve başvuran görüşme kanalını değiştirdiği için oryantasyon paneli de onlarla birlikte yeni kanala taşındı; oryantasyon kaldığı yerden devam ediyor, panele aşağıdaki butonla gidebilirsin.',
-      [`**Yeni Konum**\nOryantasyon paneli <#${o.channelId}> kanalına taşındı.\n-# Yetkili ve başvuran kanal değiştirdiği için panel de onlarla birlikte taşındı.`],
+      [`**Yeni Konum**\n<#${o.channelId}>`],
       'primary',
     ),
     new ActionRowBuilder().addComponents(
@@ -578,8 +578,7 @@ function transferPicker(app) {
       'Oryantasyonu Aktar',
       'Oryantasyonu başka bir yetkiliye devretmek için aşağıdaki menüden birini seç; yeni yetkiliye DM ile haber verilir ve oryantasyon kalınan adımdan kesintisiz devam eder.',
       [
-        `**Yeni Yetkili**\nOryantasyonu kime aktarmak istiyorsun?\n-# Sadece ${app.reviewerRoleId ? `<@&${app.reviewerRoleId}> rolündekiler` : 'yöneticiler'} seçilebilir. ` +
-          'Yeni yetkiliye DM ile haber verilir, oryantasyon kalınan adımdan devam eder.',
+        `**Yeni Yetkili**\nSadece ${app.reviewerRoleId ? `<@&${app.reviewerRoleId}> rolündekiler` : 'yöneticiler'} seçilebilir.`,
       ],
       'primary',
     ),
@@ -597,7 +596,7 @@ function transferNotice(app, fromId) {
     'Oryantasyonu veren yetkili değişti; yeni yetkili paneldeki butonları kullanarak oryantasyonu kalınan adımdan sürdürür, başvuran kanalda beklemeye devam edebilir.',
     [
       `**Yeni Yetkili**\n<@${o.staffId}>, oryantasyon sana aktarıldı.\n` +
-        `-# <@${fromId}> aktardı. Paneldeki butonları artık sen kullanabilirsin, kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edebilirsin.`,
+        `-# <@${fromId}> aktardı・Kalınan adım: ${o.step + 1}/${config.steps.length}`,
     ],
     'primary',
   );
@@ -617,7 +616,6 @@ function cancelModal(app) {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('İptal sebebi')
-        .setDescription('Başvurana iletilir.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.cancelReason)
