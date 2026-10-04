@@ -68,7 +68,7 @@ function panel() {
 // Jail kanalına giden bilgilendirme paneli: jail'deki üye diğer kanalları göremediği için #cezalarım paneline
 // ulaşamaz, bu yüzden "ne zaman bitecek" bilgisi burada aynı buton (IDS.sure) ile tekrar sunulur.
 function jailPanel() {
-  const container = new ContainerBuilder()
+  return new ContainerBuilder()
     .addTextDisplayComponents(
       text(
         `${panelTitle(`${botName} Jail Bilgilendirme`)}\n` +
@@ -80,13 +80,6 @@ function jailPanel() {
     .addSectionComponents(
       row("Ne Zaman Çıkacağım?", "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
     );
-
-  if (config.jailBanner) {
-    container
-      .addSeparatorComponents(divider())
-      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.jailBanner)));
-  }
-  return container;
 }
 
 const NO_ACTIVE = '✅ Şu an sunucuda aktif bir cezanız bulunmuyor.';
