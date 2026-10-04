@@ -55,18 +55,7 @@ function panel() {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
   }
 
-  return container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        '**Bir sorunla mı karşılaştın?**\n' +
-          '- Butona basıp sorununu kısaca anlatırsın.\n' +
-          '- Sana özel bir alt başlık açılır, destek ekibi haberdar edilir.\n' +
-          '- Bir yetkili talebini üstlenip seninle ilgilenir.',
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# Önemli: ${config.panel.footer.replace(/^-# /, '')}`));
+  return container;
 }
 
 function ticketModal() {

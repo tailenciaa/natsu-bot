@@ -34,7 +34,7 @@ const withFooter = (container, footer) => container.addSeparatorComponents(divid
 
 // Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, çizgiyle ayrılmış bloklar
 function panel() {
-  const { title, description, buttonLabel, footer } = config.panel;
+  const { title, description, buttonLabel } = config.panel;
   const container = new ContainerBuilder().addSectionComponents(
     new SectionBuilder()
       .addTextDisplayComponents(
@@ -50,9 +50,7 @@ function panel() {
   }
   return container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Başvuru Hakkında**\n${description}`))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# Dikkat: ${footer.replace(/^-# /, '')}`));
+    .addTextDisplayComponents(text(description));
 }
 
 // "Başvuru Yap" ile açılan form; sorular config.js'ten gelir
