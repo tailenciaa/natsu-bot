@@ -13,6 +13,7 @@ const store = require('./store');
 const { levelFromXp } = require('./level');
 const ui = require('./ui');
 const { buildLevelCard } = require('./card');
+const { buildLevelUpCard } = require('./levelup-card');
 const profileStore = require('../profil/store');
 const rankingStore = require('../siralama/store');
 
@@ -57,6 +58,32 @@ async function syncAllRoles(guild) {
   console.log(`[seviye] Seviye rolleri eşitlendi (${done} üye).`);
 }
 
+// Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider)
+async function sendLevelUp(channel, user, kind, level, role) {
+  try {
+    const color = profileStore.get(user.id)?.color ?? null;
+    const image = await buildLevelUpCard(user, {
+      kind,
+      from: level - 1,
+      to: level,
+      color,
+      roleName: role?.name ?? null,
+      roleColor: role?.color ?? 0,
+      nextMilestone: config.milestones.find((m) => m > level) ?? null,
+    });
+    await channel.send({
+      content: `<@${user.id}>`,
+      files: [{ attachment: image, name: 'seviye-atladi.png' }],
+      allowedMentions: { users: [user.id] },
+    });
+  } catch (err) {
+    console.error('[seviye] Duyuru kartı gönderilemedi:', err.message);
+    await channel
+      .send({ components: [ui.levelUpAnnounce(user, kind, level, role)], flags: core.CV2, allowedMentions: { users: [user.id] } })
+      .catch(() => {});
+  }
+}
+
 // XP ekler; her seviye atlandığında kayıt tutulur ama sadece ana seviyelerde (5, 10, 15...) rol verilir, kanala duyurulur ve üye etiketlenir
 async function grantXp(guild, userId, kind, amount) {
   const before = levelFromXp(store.xpOf(kind, userId));
@@ -77,9 +104,7 @@ async function grantXp(guild, userId, kind, amount) {
     const role = roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
 
     if (user && channel) {
-      await channel
-        .send({ components: [ui.levelUpAnnounce(user, kind, level, role)], flags: core.CV2, allowedMentions: { users: [userId] } })
-        .catch(() => {});
+      await sendLevelUp(channel, user, kind, level, role);
     }
   }
 }
