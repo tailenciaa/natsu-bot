@@ -86,8 +86,8 @@ module.exports = {
         {
           "heading": "Yönetim",
           "items": [
-            "<@&1554240784272986132> · Sunucunun kurucusudur, alınamaz.",
-            "<@&1538519594501931109> · Sunucunun en üst düzey yöneticisidir, son kararı verir.",
+            "<@&1554240784272986132> · Sunucunun kurucularını temsil eden roldür, kurucuların kim olduğu bu rolle anlaşılır.",
+            "<@&1538519594501931109> · Sunucunun asıl kurucu rolüdür, alınamaz. En üst düzey yöneticidir, son kararı verir.",
             "<@&1538519682552692856> · Üst yöneticidir, kurucularla birlikte en geniş yetkilere sahiptir.",
             "<@&1538946630370332692> · Kıdemli yöneticidir, yönetim kadrosuna liderlik eder."
           ]
