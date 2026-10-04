@@ -91,7 +91,7 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(rows.map(({ category, thread }) => `${category.emoji} **${category.label}** · ${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')),
+      text(rows.map(({ category, thread }) => `${category.emoji} **${category.label}** ・ ${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')),
     );
 
   if (note) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(note));
