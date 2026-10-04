@@ -20,6 +20,8 @@ const server = require('./events/server');
 const bot = require('./events/bot');
 const invites = require('./events/invite');
 
+const MODERATION_CATEGORY = { ban: 'ban', mute: 'susturma', jail: 'jail', uyari: 'uyari' };
+
 // Paneli log paneli kanalına gönderir (değişmediyse dokunmaz); force ile eskisi kaldırılıp yenisi gönderilir
 function syncLogPanel(client, force = false) {
   // Kayıtlı özet silinir: panel kanalda yerinde olsa bile eskisi kaldırılıp yenisi gönderilir
@@ -127,7 +129,8 @@ module.exports = {
   help: { category: ['log', 'Log'], access: { 'log kur': 'Yöneticiler' } },
   slash: { log: handleLog },
   // Diğer sistemlerin (ör. sicil) zengin detaylı moderasyon logu göndermesi için
-  logModeration: (client, { color, title, lines }) => engine.send(client, 'moderasyon', ui.entry(color, title, lines)),
+  // type: ceza türü (ban, mute, jail, uyari); her tür kendi log alt başlığına gider
+  logModeration: (client, { type, color, title, lines }) => engine.send(client, MODERATION_CATEGORY[type] ?? 'uyari', ui.entry(color, title, lines)),
   // Herhangi bir kategoriye log yazar: write(client, 'bot', { color, title, lines }); yeni sistemler logları buradan atar
   write: (client, key, { color, title, lines }) => engine.send(client, key, ui.entry(color, title, lines)),
   prefixed: [

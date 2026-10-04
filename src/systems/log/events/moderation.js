@@ -18,7 +18,7 @@ async function handleBanAdd(ban) {
   const found = await findExecutor(ban.guild, ban.user.id, AuditLogEvent.MemberBanAdd);
   await engine.send(
     ban.client,
-    'moderasyon',
+    'ban',
     ui.entry('danger', 'Üye Yasaklandı (bot dışından)', [
       `**Kullanıcı:** ${ban.user.tag} (${ban.user.id})`,
       found?.executor ? `**Yetkili:** <@${found.executor.id}>` : '-# Yetkili tespit edilemedi',
@@ -32,7 +32,7 @@ async function handleBanRemove(ban) {
   const found = await findExecutor(ban.guild, ban.user.id, AuditLogEvent.MemberBanRemove);
   await engine.send(
     ban.client,
-    'moderasyon',
+    'ban',
     ui.entry('success', 'Yasak Kaldırıldı (bot dışından)', [
       `**Kullanıcı:** ${ban.user.tag} (${ban.user.id})`,
       found?.executor ? `**Yetkili:** <@${found.executor.id}>` : null,
@@ -49,7 +49,7 @@ async function checkManualTimeout(oldMember, newMember) {
   if (until && until > Date.now()) {
     await engine.send(
       newMember.client,
-      'moderasyon',
+      'susturma',
       ui.entry('danger', 'Üye Susturuldu (bot dışından)', [
         `**Kullanıcı:** <@${newMember.id}>`,
         `**Süre:** <t:${Math.floor(until / 1000)}:R>'a kadar`,
@@ -58,7 +58,7 @@ async function checkManualTimeout(oldMember, newMember) {
   } else if (!until) {
     await engine.send(
       newMember.client,
-      'moderasyon',
+      'susturma',
       ui.entry('success', 'Susturma Kaldırıldı (bot dışından)', [`**Kullanıcı:** <@${newMember.id}>`]),
     );
   }
@@ -73,7 +73,7 @@ async function handleAutoModExecution(execution) {
   const rule = execution.guild.autoModerationRules.cache.get(execution.ruleId);
   await engine.send(
     execution.guild.client,
-    'moderasyon',
+    'automod',
     ui.entry('danger', 'AutoMod İşlem Yaptı', [
       `**Kullanıcı:** <@${execution.userId}>`,
       execution.channelId ? `**Kanal:** <#${execution.channelId}>` : null,
@@ -88,7 +88,7 @@ async function handleAutoModExecution(execution) {
 async function handleAutoModRuleCreate(rule) {
   await engine.send(
     rule.guild.client,
-    'moderasyon',
+    'automod',
     ui.entry('success', 'AutoMod Kuralı Oluşturuldu', [`**Kural:** ${rule.name}`, await audit.by(rule.guild, AuditLogEvent.AutoModerationRuleCreate, rule.id)]),
   );
 }
@@ -96,7 +96,7 @@ async function handleAutoModRuleCreate(rule) {
 async function handleAutoModRuleDelete(rule) {
   await engine.send(
     rule.guild.client,
-    'moderasyon',
+    'automod',
     ui.entry('danger', 'AutoMod Kuralı Silindi', [`**Kural:** ${rule.name}`, await audit.by(rule.guild, AuditLogEvent.AutoModerationRuleDelete, rule.id)]),
   );
 }
@@ -108,7 +108,7 @@ async function handleAutoModRuleUpdate(oldRule, newRule) {
   if (!changes.length) return;
   await engine.send(
     newRule.guild.client,
-    'moderasyon',
+    'automod',
     ui.entry('warning', 'AutoMod Kuralı Güncellendi', [`**Kural:** ${newRule.name}`, ...changes, await audit.by(newRule.guild, AuditLogEvent.AutoModerationRuleUpdate, newRule.id)]),
   );
 }

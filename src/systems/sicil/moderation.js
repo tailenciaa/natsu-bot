@@ -150,6 +150,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
   await syncRestrictions(guild, targetUser.id);
   logSystem
     .logModeration(guild.client, {
+      type: type,
       color: 'danger',
       title: `${ui.TYPES[type].label} Verildi・#${core.pad(number)}`,
       lines: [
@@ -194,6 +195,7 @@ async function lift(guild, punishment, actorId, reason) {
   if (punishment.type !== 'uyari' || punishment.expiresAt) await dm(guild, punishment.userId, ui.liftDm(punishment, guild.name));
   logSystem
     .logModeration(guild.client, {
+      type: punishment.type,
       color: 'success',
       title: `${ui.TYPES[punishment.type].label} Kaldırıldı・#${core.pad(punishment.number)}`,
       lines: [
@@ -231,6 +233,7 @@ async function extend(guild, punishment, actor, extra) {
   await dm(guild, punishment.userId, ui.extendDm(punishment, extra, guild.name));
   logSystem
     .logModeration(guild.client, {
+      type: punishment.type,
       color: 'warning',
       title: `${ui.TYPES[punishment.type].label} Süresi Uzatıldı・#${core.pad(punishment.number)}`,
       lines: [
@@ -253,6 +256,7 @@ async function remove(guild, punishment, actorId, reason) {
   await syncRestrictions(guild, punishment.userId);
   logSystem
     .logModeration(guild.client, {
+      type: punishment.type,
       color: 'danger',
       title: `Sicil Kaydı Silindi・#${core.pad(punishment.number)}`,
       lines: [`**Kullanıcı:** <@${punishment.userId}>`, `**Yetkili:** <@${actorId}>`, reason ? `**Sebep:** ${reason}` : null],

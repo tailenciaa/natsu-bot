@@ -43,6 +43,7 @@ async function ensureThread(client, key) {
     const thread = await guild.channels.fetch(savedId).catch((err) => (err.code === UNKNOWN_CHANNEL ? null : undefined));
     if (thread) {
       if (thread.archived) await thread.setArchived(false).catch(() => {});
+      if (thread.name !== category.threadName) await thread.setName(category.threadName, 'Log alt başlığı yeniden adlandırıldı').catch(() => {});
       return thread;
     }
     if (thread === null) store.setThreadId(key, null);

@@ -43,7 +43,7 @@ async function handleMemberRemove(member) {
   if (kick) {
     await engine.send(
       member.client,
-      'moderasyon',
+      'kick',
       ui.entry('danger', 'Üye Sunucudan Atıldı', [
         `**Kullanıcı:** ${member.user.tag} (${member.id})`,
         kick.executor ? `**Yetkili:** <@${kick.executor.id}>` : null,
@@ -67,7 +67,7 @@ async function handleMemberUpdate(oldMember, newMember) {
   if (oldMember.nickname !== newMember.nickname) {
     await engine.send(
       newMember.client,
-      'uye',
+      'isim',
       ui.entry('warning', 'Takma Ad Değişti', [
         `**Kullanıcı:** <@${newMember.id}>`,
         await audit.by(newMember.guild, AuditLogEvent.MemberUpdate, newMember.id),
