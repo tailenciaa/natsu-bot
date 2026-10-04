@@ -6,6 +6,9 @@ module.exports = {
   // Panelin gönderileceği kanal (#kurallar)
   channel: '1538533642832318517',
 
+  // Panel görseli (doğrudan URL)
+  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1555878836359397506/kurallarkazuki.jpg?backend=b2&ex=6ac37215&is=6ac22095&hm=f34047a435a7a6dc96bfccab26216339d5e5b41fdf8d671d46d522a72e28fa95&',
+
   sections: [
     {
       title: 'Genel & Teknik Kurallar',

@@ -1,7 +1,6 @@
 // Cezalarım paneli: #cezalarım kanalındaki sabit panelden üyeler kendi aktif cezalarının süresini ve sebebini
 // öğrenebilir, haksız bulduğu bir cezaya destek talebi açarak itiraz edebilir. Panel diğer sistemlerdeki gibi
 // bot açılınca kendiliğinden gönderilir (core/panel.js). Sonuçlar sadece butona basana görünür.
-const path = require('node:path');
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
@@ -20,8 +19,8 @@ async function sendPanel(client) {
       label: 'Cezalarım',
       channelId: config.channel,
       buttonId: ui.IDS.sure,
-      build: (imageName) => ui.panel(imageName),
-      image: path.join(__dirname, '..', '..', '..', 'assets', 'cezalarim-banner.jpg'),
+      build: ui.panel,
+      image: '',
     });
   }
   if (config.jailChannel) {

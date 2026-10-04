@@ -3,7 +3,6 @@
 // aynı motor), çıkartma ekleme (dosya gerektirdiği için sadece /cikartma-ekle'ye yönlendirir), isim değiştirme ve
 // kendi renginde/emojinde özel rol oluşturma/düzenleme. İsim ve rol takviye sürdüğü sürece geçerli; takviye
 // bitince (GuildMemberUpdate) otomatik geri alınır.
-const path = require('node:path');
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -54,8 +53,8 @@ function sendPanel(client) {
     label: 'Booster İşlemleri',
     channelId: config.panelChannel,
     buttonId: ui.IDS.emoji,
-    build: (imageName) => ui.panel(imageName),
-    image: path.join(__dirname, '..', '..', '..', 'assets', 'boost-banner.jpg'),
+    build: ui.panel,
+    image: '',
   });
 }
 

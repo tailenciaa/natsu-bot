@@ -85,7 +85,7 @@ const ACTIONS = [
   ['Özel Rol', () => 'Kendi adında, renginde ve emojinde bir rol oluştur ya da düzenle.', IDS.role, ButtonStyle.Primary],
 ];
 
-function panel(imageName) {
+function panel() {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       text(
@@ -97,10 +97,10 @@ function panel(imageName) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`### Booster Olmanın Avantajları\n${PERKS.map((p) => `- ${p}`).join('\n')}`));
 
-  if (imageName) {
+  if (config.banner) {
     container
       .addSeparatorComponents(divider())
-      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)));
+      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
   }
 
   container

@@ -35,8 +35,8 @@ const logEnabled = () => Boolean(config.channels.log);
 // Kapanış mesajı ve logda aynı şekilde görünen kapatma sebebi bölümü
 const reasonText = ({ label, note }) => `**Kapatma Sebebi:** ${label}${note ? `\n${quote(note)}` : ''}`;
 
-function panel(imageName) {
-  return panelMessage(config.panel, IDS.create, imageName);
+function panel() {
+  return panelMessage(config.panel, IDS.create, config.banner);
 }
 
 function ticketModal() {

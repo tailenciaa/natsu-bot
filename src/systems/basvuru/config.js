@@ -3,6 +3,9 @@
 const { botName, panelTitle } = require('../../core/config');
 
 module.exports = {
+  // Panel görseli (doğrudan URL)
+  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1555886026638102549/yetkilialmkazuki.jpg?backend=b2&ex=6ac378c7&is=6ac22747&hm=7dc28ff219fe2ab5cfca8a3252b4599a389b7b5184a2427a99ef898f5633631a&',
+
   channels: {
     // #yetkili-alım-bilgi: başvuru paneli
     panel: '1538544076910104636',

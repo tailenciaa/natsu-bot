@@ -18,6 +18,7 @@ const {
 const { text, divider, colors, unix, quote, shorten, pad, notice } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 const { TYPES, formatDuration } = require('../sicil/ui');
+const config = require('./config');
 
 const IDS = {
   sure: 'cezalarim:sure',
@@ -35,7 +36,7 @@ const row = (title, description, buttonId, buttonLabel, style) =>
     .addTextDisplayComponents(text(`**${title}**\n-# ${description}`))
     .setButtonAccessory(new ButtonBuilder().setCustomId(buttonId).setLabel(buttonLabel).setStyle(style));
 
-function panel(imageName) {
+function panel() {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       text(
@@ -56,10 +57,10 @@ function panel(imageName) {
       row('Cezaya İtiraz Et', 'Cezanın haksız olduğunu düşünüyorsan itiraz için destek talebi aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Danger),
     );
 
-  if (imageName) {
+  if (config.banner) {
     container
       .addSeparatorComponents(divider())
-      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)));
+      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
   }
   return container;
 }
@@ -67,7 +68,7 @@ function panel(imageName) {
 // Jail kanalına giden bilgilendirme paneli: jail'deki üye diğer kanalları göremediği için #cezalarım paneline
 // ulaşamaz, bu yüzden "ne zaman bitecek" bilgisi burada aynı buton (IDS.sure) ile tekrar sunulur.
 function jailPanel() {
-  return new ContainerBuilder()
+  const container = new ContainerBuilder()
     .addTextDisplayComponents(
       text(
         `${panelTitle(`${botName} Jail Bilgilendirme`)}\n` +
@@ -79,6 +80,13 @@ function jailPanel() {
     .addSectionComponents(
       row("Ne Zaman Çıkacağım?", "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
     );
+
+  if (config.jailBanner) {
+    container
+      .addSeparatorComponents(divider())
+      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.jailBanner)));
+  }
+  return container;
 }
 
 const NO_ACTIVE = '✅ Şu an sunucuda aktif bir cezanız bulunmuyor.';

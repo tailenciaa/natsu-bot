@@ -27,8 +27,8 @@ const IDS = {
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
 const answersText = (answers) => answers.map(({ title, answer }) => `**${title}:**\n${quote(answer)}`).join('\n\n');
 
-function panel(imageName) {
-  return panelMessage(config.panel, IDS.apply, imageName);
+function panel() {
+  return panelMessage(config.panel, IDS.apply, config.banner);
 }
 
 // "Başvuru Yap" ile açılan form; sorular config.js'ten gelir

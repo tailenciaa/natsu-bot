@@ -1,5 +1,5 @@
 // Yeni/şüpheli hesap sisteminin mesajları: kısıtlı kanaldaki bilgilendirme paneli ve "ne zaman kalkacak" sonucu.
-const { ButtonBuilder, ButtonStyle, ContainerBuilder, SectionBuilder } = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder } = require('discord.js');
 const { text, divider, unix, notice } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 const config = require('./config');
@@ -9,7 +9,7 @@ const IDS = {
 };
 
 function panel() {
-  return new ContainerBuilder()
+  const container = new ContainerBuilder()
     .addTextDisplayComponents(text(panelTitle(`${botName} Hesap Doğrulama`)))
     .addSeparatorComponents(divider())
     .addSectionComponents(
@@ -22,6 +22,13 @@ function panel() {
         )
         .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.sure).setLabel('Ne Zaman Kalkacak?').setStyle(ButtonStyle.Success)),
     );
+
+  if (config.banner) {
+    container
+      .addSeparatorComponents(divider())
+      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
+  }
+  return container;
 }
 
 // "Ne Zaman Kalkacak?": hesap eşiğe ulaşana kadar kalan süre

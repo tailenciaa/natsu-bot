@@ -4,7 +4,6 @@
 // (ya da yöneticiler) verebilir.
 // Görüşmeye çağrılan başvurana görüşme ses kanallarının kilidi açılır (voice.js), görüşmeden çıkınca tekrar kilitlenir.
 // Onaylanan başvuru oryantasyona geçer (oryantasyon sistemi), reddedilenin kanalları kilitlenir.
-const path = require('node:path');
 const { Events, PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
@@ -86,7 +85,7 @@ function handleReady(client) {
     channelId: config.channels.panel,
     buttonId: ui.IDS.apply,
     build: ui.panel,
-    image: path.join(__dirname, '..', '..', '..', 'assets', 'yetkili-banner.jpg'),
+    image: '',
   });
 }
 

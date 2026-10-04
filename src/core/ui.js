@@ -53,7 +53,8 @@ function alert(message, hint, color) {
 }
 
 // Panel düzeni: başlık ve sağında buton, açıklama, görsel, altta uyarı yazısı
-function panelMessage(texts, buttonId, imageName) {
+// image: tam bir http(s) URL'i ise doğrudan o kullanılır, değilse eklenmiş dosya adı (attachment://) sayılır
+function panelMessage(texts, buttonId, image) {
   const container = new ContainerBuilder()
     .addSectionComponents(
       new SectionBuilder()
@@ -62,10 +63,9 @@ function panelMessage(texts, buttonId, imageName) {
     )
     .addTextDisplayComponents(text(texts.description));
 
-  if (imageName) {
-    container.addMediaGalleryComponents(
-      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)),
-    );
+  if (image) {
+    const url = /^https?:\/\//.test(image) ? image : `attachment://${image}`;
+    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
   }
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(texts.footer));

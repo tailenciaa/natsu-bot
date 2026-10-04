@@ -3,6 +3,9 @@
 const { botName, panelTitle } = require('../../core/config');
 
 module.exports = {
+  // Panel görseli (doğrudan URL)
+  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1555886636770791518/destektalebikazuki.jpg?backend=b2&ex=6ac37959&is=6ac227d9&hm=8996871e0da7a41816f8880985c628970c7e7aed083bdd45ed415fb1bffa96a7&',
+
   channels: {
     // #destek-talebi: destek paneli burada, talepler bu kanalın altında özel alt başlık olarak açılır
     panel: '1538535372588326973',

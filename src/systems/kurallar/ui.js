@@ -9,14 +9,12 @@ const TITLE = `${botName} Sunucu Kuralları`;
 const sectionText = (section, index) =>
   `### ${section.title}\n${section.rules.map((rule, i) => `\`${index + 1}.${i + 1}\` ${rule}`).join('\n')}`;
 
-function panel(imageName) {
+function panel() {
   const container = new ContainerBuilder().addTextDisplayComponents(
     text(`${panelTitle(TITLE)}\n**Sunucumuzda herkesin rahat etmesi için aşağıdaki kurallara uymak zorunludur.**`),
   );
-  if (imageName) {
-    container.addMediaGalleryComponents(
-      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)),
-    );
+  if (config.banner) {
+    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
   }
   config.sections.forEach((section, index) => {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(text(sectionText(section, index)));

@@ -1,7 +1,6 @@
 // Destek sistemi: #destek-talebi kanalındaki panelden talep açılır, talep o kanalın altında özel alt başlık olur.
 // Panel bot açılınca kanala kendiliğinden gönderilir. Yetkililere #destek-talepleri kanalına "Yeni Destek Talebi"
 // mesajı gider, butona ilk basan talebi üstlenir. Talep kapanınca değerlendirme sistemi üyeye DM'den yetkiliyi puanlatır.
-const path = require('node:path');
 const {
   AttachmentBuilder,
   ChannelType,
@@ -124,7 +123,7 @@ function sendPanel(client) {
     channelId: config.channels.panel,
     buttonId: ui.IDS.create,
     build: ui.panel,
-    image: path.join(__dirname, '..', '..', '..', 'assets', 'destek-banner.jpg'),
+    image: '',
   });
 }
 
