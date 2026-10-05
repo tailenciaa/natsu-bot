@@ -16,6 +16,8 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 // Discord zaman aşımı en fazla 28 gün olabilir
 const MAX_TIMEOUT = 28 * DAY;
+// Anlamsız süreler (ör. 99999999g) geçersiz tarih üretmesin
+const MAX_DURATION = 10 * 365 * DAY;
 
 const UNITS = [
   [/^(dk|dakika|m|min)$/, MINUTE],
@@ -29,7 +31,10 @@ const UNITS = [
 function parseDuration(input) {
   const value = (input ?? '').trim().toLocaleLowerCase('tr-TR');
   if (!value || ['kalıcı', 'kalici', 'süresiz', 'suresiz'].includes(value)) return null;
-  if (/^\d+$/.test(value)) return Number(value) * MINUTE || undefined;
+  if (/^\d+$/.test(value)) {
+    const ms = Number(value) * MINUTE;
+    return ms > 0 && ms <= MAX_DURATION ? ms : undefined;
+  }
 
   let total = 0;
   const rest = value.replace(/(\d+)\s*([a-zçğıöşü]+)/g, (_, amount, unit) => {
@@ -37,7 +42,7 @@ function parseDuration(input) {
     total += match ? Number(amount) * match[1] : NaN;
     return '';
   });
-  return rest.trim() || !(total > 0) ? undefined : total;
+  return rest.trim() || !(total > 0) || total > MAX_DURATION ? undefined : total;
 }
 
 const fetchMember = (guild, userId) => guild.members.fetch(userId).catch(() => null);
@@ -101,7 +106,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
     if (!target.moderatable) return { error: 'Botun rolü bu kişiyi susturmaya yetmiyor.' };
   }
   if (type === 'jail') {
-    if (!config.roles.jail) return { error: 'Jail rolü henüz ayarlanmadı.', hint: 'Sicil ayarlarına jail rolünün ID\'si yazılmalı.' };
+    if (!config.roles.jail) return { error: 'Jail rolü henüz ayarlanmadı.', hint: 'Jail rolünün ayarlara eklenmesi gerekiyor.' };
     if (!target) return { error: 'Kişi sunucuda değil, jail\'e atılamaz.' };
     if (!target.manageable) return { error: 'Botun rolü bu kişinin rollerini değiştirmeye yetmiyor.' };
   }
@@ -126,6 +131,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
   };
   const auditReason = `${ui.TYPES[type].label} #${core.pad(number)} - ${actor.user.username}: ${reason}`.slice(0, 500);
 
+  let banDm = null;
   try {
     if (type === 'mute') {
       dedupe.markHandled(guild.id, targetUser.id, 'mute');
@@ -141,12 +147,14 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
     }
     // Yasaklanan kişiye sunucudan çıkmadan önce haber verilir
     if (type === 'ban') {
-      await dm(guild, targetUser.id, ui.punishDm(punishment, guild.name));
+      banDm = await dm(guild, targetUser.id, ui.punishDm(punishment, guild.name));
       dedupe.markHandled(guild.id, targetUser.id, 'ban');
       await guild.members.ban(targetUser.id, { reason: auditReason });
     }
   } catch (err) {
     console.error(`[sicil] ${ui.TYPES[type].label} uygulanamadı:`, err.message);
+    // Yasak uygulanamadıysa kişiye gönderilen "yasaklandın" mesajı geri alınır
+    await banDm?.delete().catch(() => {});
     return { error: 'Ceza Discord üzerinde uygulanamadı.', hint: 'Botun yetkilerini ve rol sırasını kontrol et.' };
   }
 
@@ -162,15 +170,29 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
         `**Kullanıcı:** <@${targetUser.id}> (${targetUser.username})`,
         `**Yetkili:** <@${actor.id}>`,
         `**Sebep:** ${reason}`,
-        `**Süre:** ${punishment.expiresAt ? `<t:${Math.floor(punishment.expiresAt / 1000)}:R> sona erer` : 'Kalıcı'}`,
+        type === 'uyari' ? null : `**Süre:** ${punishment.expiresAt ? `<t:${Math.floor(punishment.expiresAt / 1000)}:R> sona erer` : 'Süresiz'}`,
       ],
     })
     .catch(() => {});
   return { punishment };
 }
 
+// Aynı cezanın aynı anda iki kez kaldırılmasını (süre dolma taraması ile elle kaldırma gibi) engeller
+const lifting = new Set();
+
 // Cezayı Discord'dan kaldırır (süre dolunca ya da bir yetkili kaldırınca). actorId yoksa süre dolmuştur.
 async function lift(guild, punishment, actorId, reason) {
+  if (punishment.status !== 'active') return { error: 'Bu ceza zaten sona ermiş.' };
+  if (lifting.has(punishment.id)) return { error: 'Bu ceza şu an kaldırılıyor.', hint: 'Birkaç saniye sonra sicilden kontrol et.' };
+  lifting.add(punishment.id);
+  try {
+    return await liftNow(guild, punishment, actorId, reason);
+  } finally {
+    lifting.delete(punishment.id);
+  }
+}
+
+async function liftNow(guild, punishment, actorId, reason) {
   const target = await fetchMember(guild, punishment.userId);
   try {
     if (punishment.type === 'mute' && target?.isCommunicationDisabled()) {
@@ -178,13 +200,18 @@ async function lift(guild, punishment, actorId, reason) {
       await target.timeout(null, reason);
     }
     if (punishment.type === 'jail' && target) {
-      const keep = target.roles.cache.filter((r) => r.managed).map((r) => r.id);
+      // Jail sırasında kazanılan roller (ceza puanı kısıtlama rolleri, otomatik rol...) kaybolmasın: jail rolü dışındaki
+      // mevcut roller korunur, jail öncesi saklanan roller geri verilir
+      const current = target.roles.cache.filter((r) => r.id !== guild.id && r.id !== config.roles.jail).map((r) => r.id);
       const restore = (punishment.savedRoles ?? []).filter((id) => guild.roles.cache.has(id));
-      await target.roles.set([...new Set([...keep, ...restore])], reason);
+      await target.roles.set([...new Set([...current, ...restore])], reason);
     }
     if (punishment.type === 'ban') {
       dedupe.markHandled(guild.id, punishment.userId, 'ban');
-      await guild.members.unban(punishment.userId, reason).catch(() => {});
+      // Yasak zaten kalkmışsa (10026) sorun yok; başka hatalar (yetki, hiyerarşi) cezanın kaldırılmış sayılmasına izin vermez
+      await guild.members.unban(punishment.userId, reason).catch((err) => {
+        if (err.code !== 10026) throw err;
+      });
     }
   } catch (err) {
     console.error(`[sicil] ${ui.TYPES[punishment.type].label} kaldırılamadı:`, err.message);
@@ -244,7 +271,7 @@ async function extend(guild, punishment, actor, extra) {
       lines: [
         `**Kullanıcı:** <@${punishment.userId}>`,
         `**Yetkili:** <@${actor.id}>`,
-        `**Eklenen süre:** ${Math.round(extra / MINUTE)} dakika`,
+        `**Eklenen süre:** ${ui.formatDuration(extra)}`,
       ],
     })
     .catch(() => {});
@@ -271,10 +298,17 @@ async function remove(guild, punishment, actorId, reason) {
 }
 
 // Süresi dolan cezaları kaldırır
+let sweeping = false;
 async function sweep(client) {
-  for (const punishment of store.expired()) {
-    const guild = client.guilds.cache.get(punishment.guildId);
-    if (guild) await lift(guild, punishment, null, 'Ceza süresi doldu');
+  if (sweeping) return; // önceki tur bitmeden yenisi başlamaz
+  sweeping = true;
+  try {
+    for (const punishment of store.expired()) {
+      const guild = client.guilds.cache.get(punishment.guildId);
+      if (guild) await lift(guild, punishment, null, 'Ceza süresi doldu');
+    }
+  } finally {
+    sweeping = false;
   }
 }
 

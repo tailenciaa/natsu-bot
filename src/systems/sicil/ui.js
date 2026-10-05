@@ -18,7 +18,7 @@ const {
   TextInputStyle,
   ThumbnailBuilder,
 } = require('discord.js');
-const { text, divider, unix, quote, shorten, pad, page: pageBlocks, colors } = require('../../core/ui');
+const { text, divider, unix, quote, shorten, page: pageBlocks, colors, pageInfo, pagerRow } = require('../../core/ui');
 const { statusLabel: applicationStatus } = require('../basvuru/ui');
 const { CATEGORIES, categoryOf, refText } = require('../degerlendirme/ui');
 const config = require('./config');
@@ -33,7 +33,8 @@ const IDS = {
 };
 
 const TABS = { genel: 'Genel', talepler: 'Destek Talepleri', basvurular: 'Başvurular', puan: 'Değerlendirmeler' };
-const PAGE_SIZE = 10;
+// Bir sayfada en fazla bu kadar kayıt: Genel sekmesi yetkililerde 40 bileşen sınırına yaklaştığı için 6
+const PAGE_SIZE = 6;
 
 // Ceza türleri. timed: süre verilebilir; durationRequired: süre zorunlu
 const TYPES = {
@@ -57,6 +58,8 @@ function formatDuration(ms) {
 }
 
 const lower = (value) => value.toLocaleLowerCase('tr-TR');
+// Listelerde çok satırlı sebep/yorum tek satıra indirilip kısaltılır (detayda tam hali var)
+const brief = (value, max = 80) => shorten(String(value ?? '').replace(/\s+/g, ' ').trim(), max);
 const formatAverage = (list) =>
   (list.reduce((sum, r) => sum + r.score, 0) / list.length).toLocaleString('tr-TR', { maximumFractionDigits: 1 });
 
@@ -68,6 +71,9 @@ function categoryAverages(ratings) {
     .map(([category, list]) => `${category.short}: \`${formatAverage(list)}\` (${list.length})`)
     .join(' - ');
 }
+
+// Liste satırlarındaki kısa durum: uyarılar süresiz olduğu için durum yazılmaz
+const stateWord = (p) => (p.type === 'uyari' ? null : { active: 'Aktif', expired: 'Süresi doldu', lifted: 'Kaldırıldı' }[p.status] ?? null);
 
 // Cezanın kısa durumu (uyarılar için yok)
 function punishmentState(p) {
@@ -81,7 +87,6 @@ const durationLabel = (p) => (p.type === 'uyari' ? null : p.duration ? formatDur
 // Maddeler: "**Başlık:** değer (ek)", Discord'un madde işaretiyle
 const code = (value) => `\`${value}\``;
 const stat = (label, value, extra) => `**${label}:** ${value}${extra ? ` (${extra})` : ''}`;
-const box = (lines) => lines.filter(Boolean).map((line) => `> ${line}`).join('\n');
 
 // Tablolar: kod bloğunda sabit genişlikli sütunlar; uzun yazılar "…" ile kısaltılır, satır kaymaz.
 // Sütun: [başlık, genişlik]; genişliği null olan sütun tek bir emoji taşır.
@@ -93,37 +98,36 @@ const dateOnly = (ms) => new Date(ms).toLocaleDateString('tr-TR', { timeZone: TI
 const ticketResult = (t) => (t.closedAt ? (t.closeReason?.label ?? 'Kapatıldı') : 'Açık');
 
 // Bölümlerdeki kayıtların listesi (yardım menüsündeki komut listesiyle aynı düzen: kalın başlık + küçük alt satır),
-// detay menüsündeki seçenekleri ve boşken görünen yazı. Ceza listesinde ✅ süren / geçerli, ❌ sona ermiş kayıt.
+// detay menüsündeki seçenekleri ve boşken görünen yazı. Sebep ve yorumlar listede kısaltılır.
 const LISTS = {
   genel: {
     title: 'Ceza Kayıtları',
-    empty: '-# Ceza kaydı bulunmamaktadır.',
-    placeholder: 'Detayını görmek istediğiniz cezayı seçin',
-    entry: (p) => `**${p.status === 'active' ? '✅' : '❌'} Ceza #${p.number} - ${TYPES[p.type].label}**\n-# ${dateTime(p.createdAt)} - ${p.reason}`,
+    empty: '**Ceza kaydı yok.**',
+    placeholder: 'Detayını görmek için bir ceza seç',
+    entry: (p) => `**Ceza #${p.number} - ${TYPES[p.type].label}**\n-# ${[stateWord(p), dateTime(p.createdAt), brief(p.reason)].filter(Boolean).join(' - ')}`,
     option: (p) => ({
       id: p.id,
-      emoji: p.status === 'active' ? '✅' : '❌',
       label: `Ceza #${p.number}`,
-      description: `${TYPES[p.type].label} - ${p.reason}`,
+      description: brief(`${TYPES[p.type].label} - ${[stateWord(p), p.reason].filter(Boolean).join(' - ')}`, 100),
     }),
   },
   talepler: {
-    empty: 'Hiç destek talebi açılmamış.',
-    placeholder: 'Detayını görmek istediğiniz talebi seçin',
-    entry: (t) => `**Talep #${t.number}**\n-# ${dateOnly(t.createdAt)} - ${ticketResult(t)} - ${t.reason}`,
-    option: (t) => ({ id: t.threadId, label: `Talep #${t.number}`, description: `${ticketResult(t)} - ${t.reason}` }),
+    empty: '**Destek talebi yok.**',
+    placeholder: 'Detayını görmek için bir talep seç',
+    entry: (t) => `**Talep #${t.number}**\n-# ${dateOnly(t.createdAt)} - ${ticketResult(t)} - ${brief(t.reason)}`,
+    option: (t) => ({ id: t.threadId, label: `Talep #${t.number}`, description: brief(`${ticketResult(t)} - ${t.reason}`, 100) }),
   },
   basvurular: {
-    empty: 'Hiç yetkili başvurusu yapılmamış.',
-    placeholder: 'Detayını görmek istediğiniz başvuruyu seçin',
+    empty: '**Başvuru yok.**',
+    placeholder: 'Detayını görmek için bir başvuru seç',
     entry: (a) => `**Başvuru #${a.number}**\n-# ${dateOnly(a.createdAt)} - ${applicationStatus(a)}`,
     option: (a) => ({ id: a.id, label: `Başvuru #${a.number}`, description: `${applicationStatus(a)} - ${dateOnly(a.createdAt)}` }),
   },
   puan: {
-    empty: 'Henüz hiç değerlendirme alınmamış.',
-    placeholder: 'Detayını görmek istediğiniz değerlendirmeyi seçin',
-    entry: (r) => `**${r.score}/5 - ${categoryOf(r).short}**\n-# ${dateOnly(r.ratedAt)}${r.comment ? ` - ${r.comment}` : ''}`,
-    option: (r) => ({ id: r.id, label: `${r.score}/5 - ${categoryOf(r).short}`, description: `${refText(r)}${r.comment ? ` - ${r.comment}` : ''}` }),
+    empty: '**Değerlendirme yok.**',
+    placeholder: 'Detayını görmek için bir değerlendirme seç',
+    entry: (r) => `**${r.score}/5 - ${categoryOf(r).short}**\n-# ${dateOnly(r.ratedAt)}${r.comment ? ` - ${brief(r.comment)}` : ''}`,
+    option: (r) => ({ id: r.id, label: `${r.score}/5 - ${categoryOf(r).short}`, description: brief(`${refText(r)}${r.comment ? ` - ${r.comment}` : ''}`, 100) }),
   },
 };
 
@@ -135,19 +139,20 @@ const HEADINGS = {
   puan: 'aldığı değerlendirmelere',
 };
 
-function header(user, tab) {
+// hasItems: bölümde kayıt varsa listeden detay açılabileceği de söylenir
+function header(user, tab, hasItems) {
   return new SectionBuilder()
     .addTextDisplayComponents(
       text(
-        `## Kullanıcı Sicili\n-# <@${user.id}> kullanıcısının ${HEADINGS[tab]} bu panelden ulaşabilirsin; üstteki butonlarla bölümler arasında geçiş yapabilir, alttaki menüden bir kaydın ayrıntılarını açabilirsin.`,
+        `## Kullanıcı Sicili\n-# <@${user.id}> kullanıcısının ${HEADINGS[tab]} buradan ulaşabilirsin. Bölüm butonlarıyla bölümler arasında geçebilir${hasItems ? ', listeden bir kaydın ayrıntılarını açabilirsin.' : '.'}`,
       ),
     )
     .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 })));
 }
 
 // Başlık, varsa işlem sonucu ve ayırıcı; her görünüm bununla başlar
-function frame(user, tab, banner) {
-  const container = new ContainerBuilder().addSectionComponents(header(user, tab));
+function frame(user, tab, banner, hasItems) {
+  const container = new ContainerBuilder().addSectionComponents(header(user, tab, hasItems));
   if (banner) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(banner));
   return container.addSeparatorComponents(divider());
 }
@@ -194,7 +199,7 @@ function sicil(view) {
   const start = page * PAGE_SIZE;
   const pageItems = items.slice(start, start + PAGE_SIZE);
 
-  const container = frame(user, tab, view.banner).addActionRowComponents(tabRow(user, tabs, tab)).addSeparatorComponents(divider());
+  const container = frame(user, tab, view.banner, items.length > 0).addActionRowComponents(tabRow(user, tabs, tab)).addSeparatorComponents(divider());
   if (tab === 'genel') container.addTextDisplayComponents(text(statsPanel(view))).addSeparatorComponents(divider());
 
   // Kategori dağılımı tek kategori varken ortalamanın aynısı olacağı için sadece birden fazla kategoride yazılır
@@ -209,7 +214,7 @@ function sicil(view) {
   if (tab === 'genel') container.addTextDisplayComponents(text(`**${list.title}**`));
   if (intro) container.addTextDisplayComponents(text(intro));
   if (!items.length) {
-    container.addTextDisplayComponents(text(box([list.empty])));
+    container.addTextDisplayComponents(text(list.empty));
   } else {
     pageItems.forEach((item, index) => {
       if (index > 0) container.addSeparatorComponents(divider());
@@ -243,19 +248,8 @@ function sicil(view) {
     const nav = (target, slot) => `${IDS.navigate}:${user.id}:${tab}:${target}:${slot}`;
     container
       .addSeparatorComponents(divider())
-      .addTextDisplayComponents(
-        text(
-          '**Sayfa Bilgisi**\n' +
-            `Toplam **${items.length}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
-            `Sayfa: ${code(`${page + 1} / ${pageCount}`)}`,
-        ),
-      )
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId(nav(page - 1, 'prev')).setLabel('«').setStyle(ButtonStyle.Primary).setDisabled(page === 0),
-          new ButtonBuilder().setCustomId(nav(page + 1, 'next')).setLabel('»').setStyle(ButtonStyle.Primary).setDisabled(page >= pageCount - 1),
-        ),
-      );
+      .addTextDisplayComponents(text(pageInfo(page, pageCount, items.length)))
+      .addActionRowComponents(pagerRow({ prevId: nav(page - 1, 'prev'), nextId: nav(page + 1, 'next'), page, pageCount }));
   }
 
   // Farklı iş yapan "Ceza Ver" çizgiyle ayrılır
@@ -317,7 +311,7 @@ function punishmentDetail(p, messageId, canEdit, banner) {
   container
     .addTextDisplayComponents(
       text(
-        `## Ceza #${p.number} - ${TYPES[p.type].label}\n-# Bu cezanın kimin tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu aşağıdan inceleyebilir, yetkin varsa işlem yapabilirsin.`,
+        `## Ceza #${p.number} - ${TYPES[p.type].label}\n-# Cezanın kim tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu burada görebilirsin. Yetkin varsa süre ekleyebilir, cezayı kaldırabilir ya da sicilden silebilirsin.`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -344,11 +338,9 @@ function typePicker(user, messageId, allowedTypes) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       text(
-        '## Ceza Ver\n-# Aşağıdaki menüden vermek istediğin ceza türünü seç; sonraki adımda sebep ve gerekiyorsa süre bilgisini bir form üzerinden girerek cezayı kişinin siciline işleyebilirsin.',
+        `## Ceza Ver\n-# <@${user.id}> için vermek istediğin ceza türünü menüden seç. Sonraki adımda sebebi ve gerekiyorsa süreyi bir formda yazarsın; ceza kişinin siciline işlenir.`,
       ),
     )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**<@${user.id}> kullanıcısına hangi cezayı vereceksin?**`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -360,7 +352,7 @@ function typePicker(user, messageId, allowedTypes) {
               new StringSelectMenuOptionBuilder()
                 .setValue(type)
                 .setLabel(TYPES[type].label)
-                .setDescription(type === 'jail' && !config.roles.jail ? 'Jail rolü henüz ayarlanmadı.' : TYPES[type].description),
+                .setDescription(type === 'jail' && !config.roles.jail ? 'Jail rolü ayarlanmamış.' : TYPES[type].description),
             ),
           ),
       ),
@@ -420,7 +412,7 @@ function extendModal(p, messageId) {
     .setCustomId(formId(p.userId, 'sure', p.id, messageId))
     .setTitle('Süre Ekle')
     .addTextDisplayComponents(
-      text(`**Ceza #${p.number} - ${TYPES[p.type].label}** cezasına süre ekliyorsun.\n-# Şu anki bitiş: ${dateTime(p.expiresAt)}`),
+      text(`**Ceza #${p.number} - ${TYPES[p.type].label}** cezasına süre ekliyorsun.${p.expiresAt ? `\n-# Şu anki bitiş: ${dateTime(p.expiresAt)}` : ''}`),
     )
     .addLabelComponents(durationInput('Eklenecek süre', 'dk: dakika, sa: saat, g: gün', true));
 }
@@ -464,7 +456,7 @@ function punishDm(p, guildName) {
       : 'Süre: Süresiz.';
   return pageBlocks({
     title: t.title,
-    sub: 'Sunucudaki davranışların nedeniyle hakkında bir işlem uygulandı; cezanın türü, süresi ve sebebi aşağıda yer alıyor. Tekrarlanmaması için bu mesajı dikkatle okuman önemlidir.',
+    sub: 'Sunucudaki davranışların nedeniyle hakkında bir işlem uygulandı. Cezanın türü, süresi ve sebebi aşağıda; bir daha yaşanmaması için mesajı dikkatle oku.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusunda ${t.verb}.**\n-# ${detail}`,
@@ -477,7 +469,7 @@ function punishDm(p, guildName) {
 function liftDm(p, guildName) {
   return pageBlocks({
     title: 'Cezan Sona Erdi',
-    sub: 'Sunucudaki cezan sona erdiği için artık kısıtlaman bulunmuyor; aşağıda hangi cezanın neden bittiğini görebilirsin. Kurallara uymaya devam etmeni rica ederiz, iyi eğlenceler.',
+    sub: 'Sunucudaki cezan sona erdi, artık kısıtlaman yok. Hangi cezanın neden bittiğini aşağıda görebilirsin; kurallara uymaya devam ettiğin sürece iyi eğlenceler.',
     accent: colors.success,
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
@@ -489,7 +481,7 @@ function liftDm(p, guildName) {
 function extendDm(p, extra, guildName) {
   return pageBlocks({
     title: 'Cezanın Süresi Uzatıldı',
-    sub: 'Sunucudaki aktif cezanın süresine ekleme yapıldı; eklenen süreyi ve cezanın yeni bitiş zamanını aşağıda görebilirsin. Tekrarlanmaması için kurallara dikkat etmeni rica ederiz.',
+    sub: 'Sunucudaki aktif cezanın süresine ekleme yapıldı. Eklenen süreyi ve cezanın yeni bitiş zamanını aşağıda görebilirsin; kurallara dikkat etmeni bekleriz.',
     accent: colors.warning,
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezana ${formatDuration(extra)} eklendi.**\n` +
@@ -507,14 +499,14 @@ function commandResult(p) {
   const duration = durationLabel(p);
   return pageBlocks({
     title: `${t.label} Uygulandı`,
-    sub: 'İşlem başarıyla uygulandı ve kullanıcının sicil kaydına işlendi; cezanın türü, süresi ve sebebi aşağıda yer alıyor, kayda sicil komutundan ya da ceza numarasıyla ulaşılabilir.',
+    sub: 'Ceza uygulandı ve kullanıcının siciline işlendi. Kaydı /sicil komutuyla görebilir, ceza numarasıyla /ceza-kaldir komutunu kullanarak cezayı kaldırabilirsin.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
     blocks: [
       [userLine(p), `**Yetkili:** <@${p.by}>`, `**Ceza:** ${t.label}`, duration ? `**Süre:** ${duration}` : null, p.expiresAt ? `**Bitiş:** <t:${unix(p.expiresAt)}:R>` : null]
         .filter(Boolean)
         .join('\n'),
       `**Sebep**\n${quote(p.reason)}`,
-      `-# Ceza #${pad(p.number)} - <t:${unix(p.createdAt)}:F>`,
+      `-# Ceza #${p.number} - <t:${unix(p.createdAt)}:F>`,
     ],
   });
 }
@@ -522,10 +514,10 @@ function commandResult(p) {
 function commandLift(p, byId, reason) {
   return pageBlocks({
     title: `${TYPES[p.type].label} Kaldırıldı`,
-    sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi; kaldıran yetkili ve kaldırma sebebi aşağıda yer alıyor.',
+    sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi. Kaldıran yetkili ve kaldırma sebebi aşağıda.',
     accent: colors.success,
     blocks: [
-      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${pad(p.number)}`].join('\n'),
+      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${p.number}`].join('\n'),
       `**Sebep**\n${quote(reason)}`,
       `-# <t:${unix(Date.now())}:F>`,
     ],
@@ -535,9 +527,9 @@ function commandLift(p, byId, reason) {
 function commandDelete(p, byId, reason) {
   return pageBlocks({
     title: 'Ceza Kaydı Silindi',
-    sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek; silinen kaydın bilgisi ile silen yetkili ve sebep aşağıda yer alıyor.',
+    sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek. Silinen kaydın bilgisi, silen yetkili ve sebep aşağıda.',
     blocks: [
-      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${pad(p.number)}`].join('\n'),
+      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${p.number}`].join('\n'),
       `**Sebep**\n${quote(reason)}`,
       `-# <t:${unix(Date.now())}:F>`,
     ],

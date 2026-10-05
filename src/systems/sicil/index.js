@@ -23,10 +23,10 @@ const ui = require('./ui');
 const commands = [
   new SlashCommandBuilder()
     .setName('sicil')
-    .setDescription('Bir kullanıcının sunucu sicilini gösterir.')
+    .setDescription('Bir üyenin sunucu sicilini gösterir.')
     .setContexts(InteractionContextType.Guild)
     .addUserOption((o) =>
-      o.setName('kullanici').setDescription('Sicili görüntülenecek kullanıcı (boş bırakırsan kendi sicilin)'),
+      o.setName('kullanici').setDescription('Sicili görüntülenecek üyeyi seç; boş bırakırsan kendi sicilin açılır.'),
     ),
 ];
 
@@ -40,6 +40,11 @@ const canView = (interaction) =>
   isStaff(interaction, [...config.viewerRoles, ...config.ratingManagers]);
 
 const fetchUser = (interaction, userId) => interaction.client.users.fetch(userId).catch(() => null);
+
+// Sebep alanı boşluklar sayılarak en az 3 karakter istiyor; kırpıldıktan sonra da kontrol edilir
+const MIN_REASON = 3;
+const shortReason = (interaction, reason) =>
+  reason.length < MIN_REASON ? replyError(interaction, `Sebep en az ${MIN_REASON} karakter olmalı.`) : null;
 
 async function buildView(interaction, user, tab, page, banner) {
   const { guild } = interaction;
@@ -109,6 +114,8 @@ async function handleCommand(interaction) {
     if (!canView(interaction)) return replyError(interaction, 'Başkalarının sicilini sadece yetkililer görüntüleyebilir.');
     if (!staffChannel) return staffChannelError(interaction);
   }
+  // Görünüm kurulurken Discord'dan üye çekilebilir; 3 saniyeyi aşmamak için cevap önce ertelenir
+  await interaction.deferReply(staffChannel ? undefined : { flags: core.EPHEMERAL });
   return respond(interaction, await sicilView(interaction, user, 'genel', 0), { ephemeral: !staffChannel });
 }
 
@@ -116,21 +123,23 @@ async function handleCommand(interaction) {
 async function handleNavigate(interaction) {
   if (!isMenuOwner(interaction)) return notOwner(interaction);
   const [, userId, tab, page] = interaction.customId.split(':');
+  await interaction.deferUpdate();
   const user = await fetchUser(interaction, userId);
-  if (!user) return replyError(interaction, 'Kullanıcı bulunamadı.');
-  return interaction.update({ components: [await sicilView(interaction, user, tab, Number(page) || 0)], allowedMentions: { parse: [] } });
+  if (!user) return replyError(interaction, 'Üye bulunamadı.');
+  return interaction.editReply({ components: [await sicilView(interaction, user, tab, Number(page) || 0)], allowedMentions: { parse: [] } });
 }
 
 // Bölümdeki kaydın detayı: sicil-detay:<kullanıcı>:<bölüm>:<sayfa>. Detay, seçen kişiye ayrı ve sadece ona görünen
 // mesaj olarak gelir; sicil mesajı değişmez, bu yüzden sicili gören herkes detay açabilir.
 async function handleDetail(interaction) {
   const [, userId, tab] = interaction.customId.split(':');
+  await interaction.deferUpdate();
   const user = await fetchUser(interaction, userId);
   const view = user && (await detail(interaction, user, tab, interaction.values[0], interaction.message.id));
+  // Sicil mesajı aynen yeniden kaydedilir ki menü son seçilen kayıtta kalmasın (sadece kendisine görünen sicilde de çalışır)
+  await interaction.editReply({ components: interaction.message.components.map((c) => c.toJSON()), allowedMentions: { parse: [] } }).catch(() => {});
   if (!view) return replyError(interaction, 'Bu kayıt bulunamadı.');
-  await respond(interaction, view);
-  // Sicil mesajı aynen yeniden kaydedilir ki menü son seçilen kayıtta kalmasın, yine "…seçin" yazsın
-  await interaction.message.edit({ components: interaction.message.components }).catch(() => {});
+  return respond(interaction, view);
 }
 
 // İşlem butonları: sicil-y:<kullanıcı>:<işlem>:<kayıt>:<sicil mesajı>. Yetki her işlemde ayrıca kontrol edilir.
@@ -138,7 +147,7 @@ async function handleAction(interaction) {
   if (!inStaffChannel(interaction)) return staffChannelError(interaction);
   const [, userId, action, id, messageId] = interaction.customId.split(':');
   const user = await fetchUser(interaction, userId);
-  if (!user) return replyError(interaction, 'Kullanıcı bulunamadı.');
+  if (!user) return replyError(interaction, 'Üye bulunamadı.');
 
   // "Ceza Ver": tür seçimi sadece yetkiliye görünür, işlem bitince sicil mesajı güncellenir
   if (action === 'ver') {
@@ -150,7 +159,7 @@ async function handleAction(interaction) {
     const type = interaction.values[0];
     if (!moderation.canPunish(interaction.member, type)) return replyError(interaction, 'Bu cezayı verme yetkin yok.');
     if (type === 'jail' && !config.roles.jail) {
-      return replyError(interaction, 'Jail rolü henüz ayarlanmadı.', 'Sicil ayarlarına jail rolünün ID\'si yazılmalı.');
+      return replyError(interaction, 'Jail rolü henüz ayarlanmadı.', 'Jail rolünün ayarlara eklenmesi gerekiyor.');
     }
     return interaction.showModal(ui.punishModal(user, type, messageId));
   }
@@ -165,8 +174,17 @@ async function handleAction(interaction) {
   const punishment = store.get(id);
   if (!punishment || punishment.status === 'deleted') return replyError(interaction, 'Bu ceza kaydı bulunamadı.');
   if (!canEditPunishment(interaction, punishment)) return replyError(interaction, 'Bu cezayı düzenleme yetkin yok.');
-  if (action === 'sure') return interaction.showModal(ui.extendModal(punishment, messageId));
-  if (action === 'kaldir') return interaction.showModal(ui.liftModal(punishment, messageId));
+  if (action === 'sure') {
+    if (punishment.status !== 'active' || !punishment.expiresAt) {
+      return replyError(interaction, 'Bu cezanın süresi uzatılamaz.', 'Sadece süren, süreli cezalara süre eklenebilir.');
+    }
+    return interaction.showModal(ui.extendModal(punishment, messageId));
+  }
+  if (action === 'kaldir') {
+    if (punishment.type === 'uyari') return replyError(interaction, 'Uyarılar kaldırılamaz.', 'Yanlış verildiyse sicilden silebilirsin.');
+    if (punishment.status !== 'active') return replyError(interaction, 'Bu ceza zaten sona ermiş.');
+    return interaction.showModal(ui.liftModal(punishment, messageId));
+  }
   if (action === 'sil') return interaction.showModal(ui.deleteModal(punishment, messageId));
 }
 
@@ -184,9 +202,11 @@ async function handlePunishForm(interaction, user, type, messageId) {
   const field = interaction.fields.fields.get(ui.IDS.duration);
   const duration = field ? moderation.parseDuration(field.value) : null;
   if (duration === undefined) return replyError(interaction, 'Süre anlaşılamadı.', 'Örnek: 30dk, 2sa, 7g ya da 1g 12sa');
+  const reason = interaction.fields.getTextInputValue(ui.IDS.reason).trim();
+  const tooShort = shortReason(interaction, reason);
+  if (tooShort) return tooShort;
 
   await interaction.deferUpdate();
-  const reason = interaction.fields.getTextInputValue(ui.IDS.reason).trim();
   const result = await moderation.punish(interaction.guild, interaction.member, user, type, duration, reason);
   if (result.error) return failed(interaction, result);
 
@@ -204,10 +224,14 @@ async function handleForm(interaction) {
   if (!inStaffChannel(interaction)) return staffChannelError(interaction);
   const [, userId, action, id, messageId] = interaction.customId.split(':');
   const user = await fetchUser(interaction, userId);
-  if (!user) return replyError(interaction, 'Kullanıcı bulunamadı.');
+  if (!user) return replyError(interaction, 'Üye bulunamadı.');
   if (action === 'ceza') return handlePunishForm(interaction, user, id, messageId);
 
   const reason = () => interaction.fields.getTextInputValue(ui.IDS.reason).trim();
+  if (action !== 'sure') {
+    const tooShort = shortReason(interaction, reason());
+    if (tooShort) return tooShort;
+  }
   const update = (components) => interaction.editReply({ components: [components], allowedMentions: { parse: [] } });
 
   if (action === 'puansil') {
@@ -258,7 +282,7 @@ module.exports = {
   help: {
     category: ['yetki', 'Yetkili İşlemleri'],
     access: {
-      sicil: `Herkes kendi sicilini görebilir. Başkalarının sicili ve ceza işlemleri yetkililer için, sadece <#${staffCommandChannel}> kanalında.`,
+      sicil: `Herkes kendi sicilini görebilir; başkalarının sicili ve ceza işlemleri yetkililer için, sadece <#${staffCommandChannel}> kanalında`,
     },
   },
   slash: { sicil: handleCommand },
