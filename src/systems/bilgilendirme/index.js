@@ -6,7 +6,7 @@ const { Events } = require('discord.js');
 const { guildId } = require('../../core/config');
 const { data, save } = require('../../core/db');
 const { fetchTextChannel } = require('../../core/helpers');
-const { CV2 } = require('../../core/ui');
+const { SILENT_CV2 } = require('../../core/ui');
 const logSystem = require('../log');
 const config = require('./config');
 const ui = require('./ui');
@@ -43,7 +43,7 @@ async function sendPanel(client) {
 
   const messageIds = [];
   for (const container of containers) {
-    const message = await channel.send({ components: [container], flags: CV2, allowedMentions: { parse: [] } });
+    const message = await channel.send({ components: [container], flags: SILENT_CV2, allowedMentions: { parse: [] } });
     messageIds.push(message.id);
   }
 

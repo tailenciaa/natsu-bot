@@ -5,7 +5,7 @@ module.exports = {
   // Panelin görseli (doğrudan URL). Discord CDN ek dosya linkleri imzalı ve süreli olur; link çalışmaz olursa
   // Discord'da görseli tekrar açıp "Bağlantıyı Kopyala" ile yeni bir link alıp burayı güncellemek gerekir.
   banner:
-    'https://cdn.discordapp.com/attachments/1538539811697332385/1556668048373579940/seslibilgikazuki.jpg?backend=b2&ex=6ac4ff98&is=6ac3ae18&hm=b9195c6e93c77d5afcaa8a52cb037ca9571398e7a7e5f342339dc7bd9c7dc1d0&',
+    'https://cdn.discordapp.com/attachments/1538539811697332385/1556669906676617326/seslibilgikazuki.jpg?backend=b2&ex=6ac50153&is=6ac3afd3&hm=440493ec55aaff70f54f64d098a1059f8420af1f9e9cc7e5dbf58acfcb67846c&',
 
   // Panelde adı geçen kanallar
   channels: {

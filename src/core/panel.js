@@ -52,7 +52,7 @@ async function syncPanel(client, { key, label, channelId, buttonId, build, image
   const message = await channel.send({
     components: [container],
     files: banner ? [new AttachmentBuilder(banner, { name: BANNER_NAME })] : [],
-    flags: ui.CV2,
+    flags: ui.SILENT_CV2,
   });
 
   data.panels[key] = { channelId: channel.id, messageId: message.id, hash };

@@ -7,5 +7,5 @@ module.exports = {
   // Panelin görseli (doğrudan URL). Discord CDN ek dosya linkleri imzalı ve süreli olur; link çalışmaz olursa
   // Discord'da görseli tekrar açıp "Bağlantıyı Kopyala" ile yeni bir link alıp burayı güncellemek gerekir.
   banner:
-    'https://cdn.discordapp.com/attachments/1538539811697332385/1556667572600967208/yaynyetkisikazuki.jpg?backend=b2&ex=6ac4ff26&is=6ac3ada6&hm=9dbd60d62cd6ac5ab62e3ef65e4d926ca14d1662d071abbcb007a6ec7fbe8d98&',
+    'https://cdn.discordapp.com/attachments/1538539811697332385/1556669860166115388/yaynyetkisikazuki.jpg?backend=b2&ex=6ac50148&is=6ac3afc8&hm=57b015216e593fce15733320fdc2e5f61e53088d68a1c88b4c7aa64237d1d0e0&',
 };
