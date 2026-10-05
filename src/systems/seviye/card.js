@@ -1,12 +1,13 @@
 // /seviye kartı: avatar, kullanıcı adı ve mesaj/ses seviyelerinin ayrı ayrı gösterildiği görsel (PNG, Buffer döner).
 // Kart, kullanıcının profilinde seçtiği renkte çizilir (seçmediyse varsayılan vurgu rengi).
-const { FONT, canvasLib, makeScheme, truncate, drawBackground, drawAvatar, drawBar } = require('../../core/canvas');
+const { FONT, canvasLib, makeScheme, fitText, drawBackground, drawAvatar, drawBar } = require('../../core/canvas');
 const { resolveTheme } = require('../profil/themes');
 const config = require('./config');
 const { levelFromXp } = require('./level');
 
 const WIDTH = 900;
 const HEIGHT = 362;
+const number = (n) => n.toLocaleString('tr-TR');
 
 // Bir sonraki rol seviyesi (5'in katları); 100'den sonrası yok
 const nextMilestone = (level) => config.milestones.find((m) => m > level) ?? null;
@@ -32,10 +33,13 @@ function drawRow(ctx, x, y, width, title, xp, rank, scheme) {
   ctx.textAlign = 'left';
   ctx.fillStyle = scheme.muted;
   ctx.font = `500 20px ${FONT}`;
-  ctx.fillText(`${xp - current} / ${next - current} XP`, x, y + 62);
+  const left = `${number(xp - current)} / ${number(next - current)} XP`;
+  ctx.fillText(left, x, y + 62);
 
+  // Sağdaki metin soldakiyle çakışmasın: kalan genişliğe sığdırılır
   ctx.textAlign = 'right';
-  ctx.fillText(`Sıralama ${rank ? `#${rank}` : '-'}   Sonraki rol: ${milestone ? `Seviye ${milestone}` : 'tamamlandı'}`, x + width, y + 62);
+  const right = `Sıralama ${rank ? `#${rank}` : '-'}   Sonraki rol: ${milestone ? `Seviye ${milestone}` : 'tamamlandı'}`;
+  ctx.fillText(fitText(ctx, right, width - ctx.measureText(left).width - 20), x + width, y + 62);
 }
 
 // view: { custom (profil kaydı), roleColor, mesajXp, sesXp, mesajRank, sesRank }
@@ -52,7 +56,7 @@ async function buildLevelCard(user, view) {
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
   ctx.font = `700 40px ${FONT}`;
-  ctx.fillText(truncate(user.username, 22), textX, 75);
+  ctx.fillText(fitText(ctx, user.globalName ?? user.username, WIDTH - textX - 60), textX, 75);
 
   const barWidth = WIDTH - textX - 60;
   drawRow(ctx, textX, 150, barWidth, 'Mesaj Seviyesi', view.mesajXp, view.mesajRank, scheme);

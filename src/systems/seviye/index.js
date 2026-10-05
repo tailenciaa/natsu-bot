@@ -7,7 +7,7 @@
 const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel } = require('../../core/helpers');
+const { fetchTextChannel, respond, replyError } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const { levelFromXp } = require('./level');
@@ -22,12 +22,12 @@ const commands = [
     .setName('seviye')
     .setDescription('Mesaj ve ses seviyeni gösterir.')
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesi görüntülenecek kullanıcı (boş bırakırsan kendi seviyen)'))
-    .addBooleanOption((o) => o.setName('test').setDescription('Yöneticiler için: seviye atlama duyurusunun örneğini duyuru kanalına gönderir')),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesine bakılacak üyeyi seçer, boş bırakırsan kendi seviyen gösterilir.'))
+    .addBooleanOption((o) => o.setName('test').setDescription('Yöneticiler için seviye atlama duyurusunun örneğini duyuru kanalına gönderir.')),
 ];
 
 // Üyenin XP'sine göre o türdeki (mesaj/ses) seviye rolünü eşitler: ulaştığı en yüksek ana seviyenin rolü verilir,
-// aynı türdeki diğer seviye rolleri alınır. Döndürdüğü değer: verilen rol ID'si (yoksa null).
+// aynı türdeki diğer seviye rolleri alınır. Döndürdüğü değer: verilen rol ID'si (yoksa ya da verilemediyse null).
 async function syncKindRole(member, kind) {
   const level = levelFromXp(store.xpOf(kind, member.id));
   const reached = config.milestones.filter((m) => m <= level && config.roles[kind][m]);
@@ -35,8 +35,21 @@ async function syncKindRole(member, kind) {
   const allIds = Object.values(config.roles[kind]);
 
   const stale = member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== targetId);
-  if (stale.size) await member.roles.remove([...stale.keys()], `Seviye rolü eşitlendi (${kind})`).catch(() => {});
-  if (targetId && !member.roles.cache.has(targetId)) await member.roles.add(targetId, `Seviye rolü eşitlendi (${kind})`).catch(() => {});
+  if (stale.size) {
+    await member.roles
+      .remove([...stale.keys()], `Seviye rolü eşitlendi (${kind})`)
+      .catch((err) => console.error(`[seviye] Eski seviye rolü alınamadı (${member.id}):`, err.message));
+  }
+  if (targetId && !member.roles.cache.has(targetId)) {
+    const added = await member.roles.add(targetId, `Seviye rolü eşitlendi (${kind})`).then(
+      () => true,
+      (err) => {
+        console.error(`[seviye] Seviye rolü verilemedi (${member.id}):`, err.message);
+        return false;
+      },
+    );
+    if (!added) return null;
+  }
   return targetId;
 }
 
@@ -59,8 +72,10 @@ async function syncAllRoles(guild) {
   console.log(`[seviye] Seviye rolleri eşitlendi (${done} üye).`);
 }
 
-// Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider)
-async function sendLevelUp(channel, user, kind, level, role) {
+// Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider).
+// ping false ise (örnek duyuru) etiket görünür ama kimseye bildirim gitmez. Gönderildiyse true döner.
+async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {}) {
+  const allowedMentions = ping ? { users: [user.id] } : { parse: [] };
   try {
     const member = await channel.guild.members.fetch(user.id).catch(() => null);
     const image = await buildLevelUpCard(user, {
@@ -75,14 +90,16 @@ async function sendLevelUp(channel, user, kind, level, role) {
     });
     await channel.send({
       content: `<@${user.id}>`,
-      files: [{ attachment: image, name: 'seviye-atladi.png' }],
-      allowedMentions: { users: [user.id] },
+      files: [{ attachment: image, name: 'seviye-atladi.png', description: `${user.username}, ${level}. seviyeye ulaştı` }],
+      allowedMentions,
     });
+    return true;
   } catch (err) {
     console.error('[seviye] Duyuru kartı gönderilemedi:', err.message);
-    await channel
-      .send({ components: [ui.levelUpAnnounce(user, kind, level, role)], flags: core.CV2, allowedMentions: { users: [user.id] } })
-      .catch(() => {});
+    return channel.send({ components: [ui.levelUpAnnounce(user, kind, level, role)], flags: core.CV2, allowedMentions }).then(
+      () => true,
+      () => false,
+    );
   }
 }
 
@@ -92,8 +109,8 @@ async function grantXp(guild, userId, kind, amount) {
   const after = levelFromXp(store.addXp(kind, userId, amount));
   if (after <= before) return;
 
-  const channel = await fetchTextChannel(guild, config.channel);
-  const user = await guild.client.users.fetch(userId).catch(() => null);
+  let channel;
+  let user;
 
   for (let level = before + 1; level <= after; level++) {
     if (level <= store.announcedLevel(kind, userId)) continue;
@@ -102,8 +119,12 @@ async function grantXp(guild, userId, kind, amount) {
 
     const roleId = config.roles[kind][level];
     const member = roleId ? await guild.members.fetch(userId).catch(() => null) : null;
-    if (member) await syncKindRole(member, kind);
-    const role = roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
+    const given = member ? await syncKindRole(member, kind) : null;
+    // Rol gerçekten verilemediyse duyuruda "kazanılan rol" olarak gösterilmez
+    const role = roleId && given === roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
+
+    channel ??= await fetchTextChannel(guild, config.channel);
+    user ??= await guild.client.users.fetch(userId).catch(() => null);
 
     if (user && channel) {
       await sendLevelUp(channel, user, kind, level, role);
@@ -179,31 +200,27 @@ function handleMessage(message) {
   grantXp(message.guild, message.author.id, 'mesaj', amount).catch((err) => console.error('[seviye] Mesaj XP verilemedi:', err.message));
 }
 
-// Genel sıralamadaki yer (sıralama sistemindeki tüm zamanlar toplamına göre); /profil ile aynı yöntem
-function rankOf(kind, userId) {
-  const sorted = [...rankingStore.totals(kind, null).entries()].sort((a, b) => b[1] - a[1]);
-  const index = sorted.findIndex(([id]) => id === userId);
-  return index === -1 ? null : index + 1;
-}
-
-// /seviye test:True (sadece yöneticiler): komutu kullanan üye için örnek duyuruyu gerçek duyuru kanalına gönderir
+// /seviye test:True (sadece yöneticiler): komutu kullanan üye için örnek duyuruyu gerçek duyuru kanalına gönderir;
+// etiket görünür ama kimseye bildirim gitmez, sonuç sadece yöneticiye gösterilir
 async function sendTestAnnounce(interaction) {
   if (!interaction.memberPermissions?.has('Administrator')) {
-    return interaction.reply({ components: [core.alert('Test duyurusunu sadece yöneticiler gönderebilir.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
+    return replyError(interaction, 'Test duyurusunu sadece yöneticiler gönderebilir.', 'Kendi seviyeni görmek için komutu test seçeneği olmadan kullan.');
   }
+  await interaction.deferReply({ flags: core.EPHEMERAL });
   const channel = await fetchTextChannel(interaction.guild, config.channel);
-  if (!channel) return interaction.reply({ components: [core.alert('Duyuru kanalı bulunamadı.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
+  if (!channel) return replyError(interaction, 'Duyuru kanalı bulunamadı.', 'Kanalın silinmediğinden ve botun görebildiğinden emin ol.');
   const roleId = config.roles.mesaj[15];
   const role = roleId ? (interaction.guild.roles.cache.get(roleId) ?? null) : null;
-  await sendLevelUp(channel, interaction.user, 'mesaj', 15, role);
-  return interaction.reply({ components: [core.alert(`Örnek duyuru <#${channel.id}> kanalına gönderildi.`)], flags: core.EPHEMERAL_CV2 });
+  const sent = await sendLevelUp(channel, interaction.user, 'mesaj', 15, role, { ping: false });
+  if (!sent) return replyError(interaction, 'Örnek duyuru gönderilemedi.', 'Botun duyuru kanalında mesaj ve dosya gönderme izni olmalı.');
+  return respond(interaction, core.alert('Örnek duyuru gönderildi.', `<#${channel.id}> kanalına bakabilirsin, kimseye bildirim gitmedi.`, 'success'));
 }
 
 // /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta
 async function handleCommand(interaction) {
   if (interaction.options.getBoolean('test')) return sendTestAnnounce(interaction);
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
-  if (user.bot) return interaction.reply({ components: [core.alert('Botların seviyesi bulunmaz.', undefined, 'danger')], flags: core.EPHEMERAL_CV2 });
+  if (user.bot) return replyError(interaction, 'Botların seviyesi bulunmaz.', 'Bir üye seçerek tekrar dene.');
   await interaction.deferReply();
   const member = await interaction.guild.members.fetch(user.id).catch(() => null);
   const buffer = await buildLevelCard(user, {
@@ -211,11 +228,11 @@ async function handleCommand(interaction) {
     roleColor: member?.displayColor ?? 0,
     mesajXp: store.xpOf('mesaj', user.id),
     sesXp: store.xpOf('ses', user.id),
-    mesajRank: rankOf('messages', user.id),
-    sesRank: rankOf('voice', user.id),
+    mesajRank: rankingStore.rankOf('messages', user.id),
+    sesRank: rankingStore.rankOf('voice', user.id),
   });
   return interaction.editReply({
-    components: [ui.levelImage('seviye.png')],
+    components: [ui.levelImage('seviye.png', `${user.username} seviye kartı`)],
     files: [new AttachmentBuilder(buffer, { name: 'seviye.png' })],
     flags: core.CV2,
     allowedMentions: { parse: [] },

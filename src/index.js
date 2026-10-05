@@ -11,6 +11,7 @@ const systems = require('./systems');
 const siralamaStore = require('./systems/siralama/store');
 const aktifStore = require('./systems/aktif/store');
 const saygiStore = require('./systems/saygi/store');
+const seviyeStore = require('./systems/seviye/store');
 
 const UNKNOWN_INTERACTION = 10062;
 const ALREADY_ACKNOWLEDGED = 40060;
@@ -154,6 +155,7 @@ async function shutdown(signal) {
   siralamaStore.flush();
   aktifStore.flush();
   saygiStore.flush();
+  seviyeStore.flush();
   await require('./core/db').close();
   await client.destroy();
   process.exit(0);

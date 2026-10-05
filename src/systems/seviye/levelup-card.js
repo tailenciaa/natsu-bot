@@ -13,7 +13,7 @@ const cleanName = (name) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const KIND_LABEL = { mesaj: 'SOHBET SEVİYESİ ATLADIN', ses: 'SES SEVİYESİ ATLADIN' };
+const KIND_LABEL = { mesaj: 'SOHBETTE SEVİYE ATLADIN', ses: 'SESTE SEVİYE ATLADIN' };
 
 function panel(ctx, x, y, w, h) {
   ctx.fillStyle = 'rgba(255,255,255,0.05)';
@@ -31,7 +31,7 @@ function label(ctx, text, x, y, color) {
   ctx.fillText(text, x, y);
 }
 
-// view: { kind, from, to, custom (profil kaydı), roleColor (üyenin rol rengi), roleName, roleDotColor, roleColor, nextMilestone }
+// view: { kind, from, to, custom (profil kaydı), roleColor (üyenin rol rengi), roleName, roleDotColor, nextMilestone }
 async function buildLevelUpCard(user, view) {
   const canvas = canvasLib().createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');

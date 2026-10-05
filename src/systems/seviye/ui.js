@@ -1,46 +1,26 @@
-// /seviye komutunun sonucu ve kanaldaki seviye atlama duyurusu
+// Seviye atlama duyurusunun yedeği (kart çizilemezse gider) ve /seviye cevabının kart görseli
 const { MediaGalleryBuilder, MediaGalleryItemBuilder, ContainerBuilder } = require('discord.js');
 const { page } = require('../../core/ui');
-const config = require('./config');
-const { levelFromXp } = require('./level');
 
 const KIND_TITLE = { mesaj: 'Mesaj', ses: 'Ses' };
-const KIND_PLACE = { mesaj: 'sohbette', ses: 'sesli sohbette' };
 
-// Ana seviyeye ulaşılınca kanala giden duyuru; kazanılan rol (varsa) ayrı blokta etiket olarak yazılır.
-// Etiketler allowedMentions ile sadece seviye atlayan üyeyi bildirir, rol etiketi bildirim göndermez.
+// Ana seviyeye ulaşılınca kanala giden yedek duyuru; kazanılan rol (varsa) aynı blokta etiket olarak yazılır.
+// allowedMentions ile sadece seviye atlayan üye bildirim alır, rol etiketi bildirim göndermez.
 function levelUpAnnounce(user, kind, level, role) {
-  const blocks = [`**Yeni Seviye**\n<@${user.id}> - ${KIND_TITLE[kind]} Seviyesi - **${level}**`];
-  if (role) blocks.push(`**Kazanılan Rol**\n<@&${role.id}>`);
+  const lines = [`**Üye:** <@${user.id}>`, `**Seviye:** ${KIND_TITLE[kind]} ${level}`];
+  if (role) lines.push(`**Kazanılan Rol:** <@&${role.id}>`);
   return page({
     title: 'Seviye Atladı',
-    sub: 'Sohbette ve sesli kanallarda aktif oldukça deneyim puanı kazanırsın; her 5 seviyede bir bu duyuru gönderilir ve o seviyeye ait rol hesabına otomatik olarak verilir.',
+    sub: 'Sohbette ve sesli kanallarda aktif oldukça XP kazanırsın; her 5 seviyede bir bu duyuru gelir ve o seviyeye ait rol hesabına otomatik olarak verilir.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
-    blocks,
+    blocks: [`**Yeni Seviye**\n${lines.join('\n')}`],
   });
 }
 
-const progressLine = (kind, xp) => {
-  const level = levelFromXp(xp);
-  const current = level > 0 ? config.xpForLevel(level) : 0;
-  const next = config.xpForLevel(level + 1);
-  return `**${KIND_TITLE[kind]} Seviyesi**\nSeviye \`${level}\` - ${xp - current}/${next - current} XP`;
-};
-
-// /seviye [kullanici]
-function levelCard(user, mesajXp, sesXp) {
-  return page({
-    title: 'Seviye Bilgisi',
-    thumbnail: user.displayAvatarURL({ size: 256 }),
-    sub: `<@${user.id}> kullanıcısının mesaj ve ses seviyeleri aşağıda; sohbette yazdıkça ve sesli kanallarda vakit geçirdikçe deneyim puanı kazanıp bir sonraki seviyeye yaklaşırsın.`,
-    blocks: [progressLine('mesaj', mesajXp), progressLine('ses', sesXp)],
-  });
-}
-
-// /seviye cevabı: sadece kart görseli
-const levelImage = (imageName) =>
+// /seviye cevabı: sadece kart görseli (description ekran okuyucular için)
+const levelImage = (imageName, description = 'Seviye kartı') =>
   new ContainerBuilder().addMediaGalleryComponents(
-    new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)),
+    new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`).setDescription(description)),
   );
 
-module.exports = { levelCard, levelUpAnnounce, levelImage };
+module.exports = { levelUpAnnounce, levelImage };

@@ -1,6 +1,6 @@
 // Profil kartı: kapak (tema gradyanı ya da kullanıcının görseli), avatar, ad, unvan, biyografi, mesaj/ses seviye kartları
 // ve alt bilgi kutuları içeren görsel (PNG, Buffer döner). Yazılar assets/fonts altındaki Poppins ile çizilir.
-const { FONT, canvasLib, fitText, wrapLines, roundRect, hexAlpha, mix, makeScheme, drawAvatar, drawBar } = require('../../core/canvas');
+const { FONT, fitText, wrapLines, roundRect, hexAlpha, mix, makeScheme, loadImageSafe, drawAvatar, drawBar } = require('../../core/canvas');
 const levelConfig = require('../seviye/config');
 const { levelFromXp } = require('../seviye/level');
 const { resolveTheme } = require('./themes');
@@ -12,7 +12,7 @@ const HEADER = 215;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 const number = (n) => n.toLocaleString('tr-TR');
-const date = (ms) => new Date(ms).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+const date = (ms) => new Date(ms).toLocaleDateString('tr-TR', { timeZone: 'Europe/Istanbul', day: 'numeric', month: 'short', year: 'numeric' });
 
 function duration(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -29,7 +29,7 @@ async function drawHeader(ctx, theme, bannerUrl, base) {
   let drawn = false;
   if (bannerUrl) {
     try {
-      const image = await canvasLib().loadImage(bannerUrl);
+      const image = await loadImageSafe(bannerUrl);
       const scale = Math.max(WIDTH / image.width, HEADER / image.height);
       const w = image.width * scale;
       const h = image.height * scale;
@@ -117,7 +117,7 @@ function infoBox(ctx, x, y, w, label, value, c) {
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
   ctx.font = font(500, 12);
-  ctx.fillText(label.toUpperCase(), x + 18, y + 21);
+  ctx.fillText(label.toLocaleUpperCase('tr-TR'), x + 18, y + 21);
   ctx.fillStyle = '#ffffff';
   ctx.font = font(700, 17);
   ctx.fillText(fitText(ctx, value, w - 36), x + 18, y + 43);
@@ -214,4 +214,4 @@ async function buildProfileCard(user, view) {
   return canvas.toBuffer('image/png');
 }
 
-module.exports = { buildProfileCard, WIDTH, HEIGHT };
+module.exports = { buildProfileCard };

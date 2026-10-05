@@ -14,7 +14,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { THEMES, DEFAULT_THEME } = require('./themes');
+const { THEMES } = require('./themes');
 
 // Hepsi profil-ayar:<eylem>; index.js'te tek ön ek altında karşılanır
 const IDS = {
@@ -29,18 +29,19 @@ const IDS = {
   bannerForm: 'profil-ayar:kapak-form',
 };
 
-function profile(imageName, editable, currentTheme = DEFAULT_THEME) {
+// currentTheme: kayıtlı tema (yoksa ya da silinmişse menüde hiçbir seçenek seçili gelmez)
+function profile(imageName, editable, currentTheme = null, description = 'Profil kartı') {
   const container = new ContainerBuilder().addMediaGalleryComponents(
-    new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)),
+    new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`).setDescription(description)),
   );
   if (!editable) return container;
 
   return container
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(IDS.bio).setLabel('Biyografi ve Unvan').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.bio).setLabel('Biyografi').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.color).setLabel('Renk').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapak Görseli').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapak').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.reset).setLabel('Sıfırla').setStyle(ButtonStyle.Danger),
       ),
     )
@@ -51,7 +52,7 @@ function profile(imageName, editable, currentTheme = DEFAULT_THEME) {
           .setPlaceholder('Profil temasını seç')
           .addOptions(
             Object.entries(THEMES).map(([key, theme]) =>
-              new StringSelectMenuOptionBuilder().setValue(key).setLabel(theme.label).setDescription(theme.description).setDefault(key === currentTheme),
+              new StringSelectMenuOptionBuilder().setValue(key).setLabel(theme.label).setDescription(theme.description).setDefault(THEMES[currentTheme] ? key === currentTheme : false),
             ),
           ),
       ),
@@ -68,35 +69,38 @@ const input = (id, style, maxLength, value, placeholder) => {
 const bioModal = (current) =>
   new ModalBuilder()
     .setCustomId(IDS.bioForm)
-    .setTitle('Biyografi ve Unvan')
+    .setTitle('Biyografi ve Unvanı Düzenle')
     .addLabelComponents([
-      new LabelBuilder().setLabel('Biyografi').setTextInputComponent(input('bio', TextInputStyle.Paragraph, 160, current.bio)),
+      new LabelBuilder()
+        .setLabel('Biyografi')
+        .setDescription('Kartında en fazla iki satır görünür.')
+        .setTextInputComponent(input('bio', TextInputStyle.Paragraph, 160, current.bio, 'Örn: Anime izlemeyi ve gece sohbetlerini severim.')),
       new LabelBuilder()
         .setLabel('Unvan')
-        .setDescription('İsminin altında küçük bir etiket olarak görünür')
+        .setDescription('Adının altında küçük bir etiket olarak görünür.')
         .setTextInputComponent(input('unvan', TextInputStyle.Short, 24, current.title, 'Örn: Anime Sever')),
     ]);
 
 const colorModal = (current) =>
   new ModalBuilder()
     .setCustomId(IDS.colorForm)
-    .setTitle('Profil Rengi')
+    .setTitle('Profil Rengini Seç')
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Vurgu rengi (hex kod)')
-        .setDescription('Çubuklar, halka ve unvan bu renkte çizilir; boş bırakırsan temanın rengi kullanılır')
+        .setDescription('Çubuklar, halka ve unvan bu renkte çizilir, boş bırakırsan temanın rengi kullanılır.')
         .setTextInputComponent(input('renk', TextInputStyle.Short, 7, current.color ? `#${current.color.toString(16).padStart(6, '0')}` : null, 'Örn: #ff5599')),
     ]);
 
 const bannerModal = (current) =>
   new ModalBuilder()
     .setCustomId(IDS.bannerForm)
-    .setTitle('Kapak Görseli')
+    .setTitle('Kapak Görselini Değiştir')
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Görsel bağlantısı')
-        .setDescription('https ile başlayan bir görsel linki; boş bırakırsan tema gradyanı kullanılır')
-        .setTextInputComponent(input('kapak', TextInputStyle.Short, 400, current.banner, 'https://...')),
+        .setDescription('https ile başlayan bir görsel bağlantısı gir, boş bırakırsan tema gradyanı kullanılır.')
+        .setTextInputComponent(input('kapak', TextInputStyle.Short, 400, current.banner, 'Örn: https://i.imgur.com/ornek.png')),
     ]);
 
 module.exports = { IDS, profile, bioModal, colorModal, bannerModal };

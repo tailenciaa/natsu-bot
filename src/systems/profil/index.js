@@ -14,17 +14,10 @@ const ui = require('./ui');
 const commands = [
   new SlashCommandBuilder()
     .setName('profil')
-    .setDescription('Sunucu profilini gösterir: seviye, sıralama ve daha fazlası.')
+    .setDescription('Seviye, sıralama ve istatistiklerinle sunucu profilini gösterir.')
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Profili görüntülenecek kullanıcı (boş bırakırsan kendi profilin)')),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Profiline bakılacak üyeyi seçer, boş bırakırsan kendi profilin gösterilir.')),
 ];
-
-// Kullanıcının genel sıralamadaki yeri (siralama sistemindeki tüm zamanlar toplamına göre)
-function rankOf(totals, userId) {
-  const sorted = [...totals.entries()].sort((a, b) => b[1] - a[1]);
-  const index = sorted.findIndex(([id]) => id === userId);
-  return index === -1 ? null : index + 1;
-}
 
 async function viewDataOf(guild, userId) {
   const messages = siralamaStore.totals('messages', null);
@@ -35,8 +28,8 @@ async function viewDataOf(guild, userId) {
     roleColor: member?.displayColor ?? 0,
     mesajXp: seviyeStore.xpOf('mesaj', userId),
     sesXp: seviyeStore.xpOf('ses', userId),
-    mesajRank: rankOf(messages, userId),
-    sesRank: rankOf(voice, userId),
+    mesajRank: siralamaStore.rankIn(messages, userId),
+    sesRank: siralamaStore.rankIn(voice, userId),
     joinedAt: member?.joinedTimestamp ?? null,
     messageCount: messages.get(userId) ?? 0,
     voiceSeconds: voice.get(userId) ?? 0,
@@ -57,7 +50,7 @@ async function buildMessage(guild, user, isSelf) {
 // /profil [kullanici]
 async function handleCommand(interaction) {
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
-  if (user.bot) return replyError(interaction, 'Botların profili bulunmaz.');
+  if (user.bot) return replyError(interaction, 'Botların profili bulunmaz.', 'Bir üye seçerek tekrar dene.');
   await interaction.deferReply();
   return interaction.editReply(await buildMessage(interaction.guild, user, user.id === interaction.user.id));
 }
@@ -69,6 +62,7 @@ async function refresh(interaction) {
 }
 
 const COLOR = /^#?([0-9a-fA-F]{6})$/;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 // Kapak görseli bağlantısı: https olmalı; botun kendi ağındaki adreslere (localhost, IP) istek atmasın diye bunlar reddedilir
 function isImageUrl(value) {
@@ -78,6 +72,21 @@ function isImageUrl(value) {
     return url.hostname.includes('.') && !/^[\d.]+$/.test(url.hostname) && !url.hostname.startsWith('[') && !url.hostname.endsWith('.local');
   } catch {
     return false;
+  }
+}
+
+// Kapak görseli gerçekten açılıyor mu: 5 saniyelik zaman aşımıyla içerik türü ve boyut denetlenir (yönlendirmeler izlenmez).
+// Sorun varsa kullanıcıya gösterilecek ipucunu, sorun yoksa null döndürür.
+async function checkImage(url) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000), redirect: 'error' });
+    res.body?.cancel().catch(() => {});
+    if (!res.ok) return 'Bağlantı açılamadı, görselin herkese açık olduğundan emin ol.';
+    if (!/^image\/(png|jpe?g|gif|webp)/i.test(res.headers.get('content-type') ?? '')) return 'Bağlantı PNG, JPG, GIF ya da WebP bir görsele gitmeli.';
+    if (Number(res.headers.get('content-length') ?? 0) > MAX_IMAGE_BYTES) return 'Görsel en fazla 8 MB olabilir.';
+    return null;
+  } catch {
+    return 'Bağlantı açılamadı, adresi kontrol edip tekrar dene.';
   }
 }
 
@@ -117,20 +126,24 @@ async function handleSettings(interaction) {
     case 'renk-form': {
       const value = interaction.fields.getTextInputValue('renk').trim();
       const match = COLOR.exec(value);
-      if (value && !match) return replyError(interaction, 'Renk anlaşılamadı.', 'Örnek: #ff5599 ya da ff5599');
+      if (value && !match) return replyError(interaction, 'Renk kodu geçersiz.', 'Altı haneli bir hex kod yaz, örneğin #ff5599.');
+      const color = match ? parseInt(match[1], 16) : null;
+      if (color === 0) return replyError(interaction, 'Siyah renk kartta okunmaz.', 'Biraz daha açık bir renk dene, örneğin #ff5599.');
       await interaction.deferUpdate();
-      store.set(interaction.user.id, { color: match ? parseInt(match[1], 16) : null });
+      store.set(interaction.user.id, { color });
       return refresh(interaction);
     }
     case 'kapak-form': {
       const value = interaction.fields.getTextInputValue('kapak').trim();
-      if (value && !isImageUrl(value)) return replyError(interaction, 'Bağlantı anlaşılamadı.', 'Görsel bağlantısı https ile başlayan, herkese açık bir adres olmalı.');
+      if (value && !isImageUrl(value)) return replyError(interaction, 'Görsel bağlantısı geçersiz.', 'Bağlantı https ile başlayan, herkese açık bir görsel adresi olmalı.');
       await interaction.deferUpdate();
+      const problem = value ? await checkImage(value) : null;
+      if (problem) return replyError(interaction, 'Kapak görseli kaydedilmedi.', problem);
       store.set(interaction.user.id, { banner: value || null });
       return refresh(interaction);
     }
     default:
-      return undefined;
+      return interaction.deferUpdate();
   }
 }
 

@@ -48,4 +48,13 @@ function totals(kind, days) {
   return result;
 }
 
-module.exports = { add, totals, flush };
+// Toplamlar haritasında (totals çıktısı) üyenin sırası; listede yoksa null. /seviye ve /profil aynı yöntemi kullanır
+function rankIn(map, userId) {
+  const sorted = [...map.entries()].sort((a, b) => b[1] - a[1]);
+  const index = sorted.findIndex(([id]) => id === userId);
+  return index === -1 ? null : index + 1;
+}
+
+const rankOf = (kind, userId) => rankIn(totals(kind, null), userId);
+
+module.exports = { add, totals, rankIn, rankOf, flush };

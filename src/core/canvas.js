@@ -117,11 +117,19 @@ function drawBackground(ctx, width, height, scheme, glowX, glowY) {
   ctx.fillRect(0, 0, width, height);
 }
 
+// Uzaktan görsel yükler; ağ yavaşsa kart çizimi sonsuza kadar beklemesin diye zaman aşımı koyar
+function loadImageSafe(source, timeoutMs = 6000) {
+  initCanvas();
+  return Promise.race([
+    canvasLib().loadImage(source),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('görsel zaman aşımına uğradı')), timeoutMs).unref()),
+  ]);
+}
+
 // Yuvarlak avatar ve vurgu renginde halka; avatar yüklenemezse sadece halka çizilir
 async function drawAvatar(ctx, user, x, y, size, accent) {
-  initCanvas();
   try {
-    const image = await canvasLib().loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
+    const image = await loadImageSafe(user.displayAvatarURL({ extension: 'png', size: 256 }));
     ctx.save();
     ctx.beginPath();
     ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
@@ -149,4 +157,4 @@ function drawBar(ctx, x, y, width, height, ratio, accent, track = '#2a1620') {
   ctx.fill();
 }
 
-module.exports = { FONT, canvasLib, fitText, wrapLines, roundRect, hexColor, hexAlpha, mix, luminance, makeScheme, truncate, drawBackground, drawAvatar, drawBar };
+module.exports = { FONT, canvasLib, fitText, wrapLines, roundRect, hexColor, hexAlpha, mix, luminance, makeScheme, truncate, loadImageSafe, drawBackground, drawAvatar, drawBar };
