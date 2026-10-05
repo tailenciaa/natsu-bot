@@ -3,16 +3,12 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   LabelBuilder,
-  MediaGalleryBuilder,
-  MediaGalleryItemBuilder,
   ModalBuilder,
-  SectionBuilder,
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, page } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, shorten, page, panel: standardPanel } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -26,30 +22,23 @@ const IDS = {
 };
 
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
-const answersText = (answers) => answers.map(({ title, answer }) => `**${title}:**\n${quote(answer)}`).join('\n');
+// Boş satır yığınları tek satıra indirilir; mesajdaki toplam metin 4000 karakteri aşmasın diye cevaplar kırpılır
+const answersText = (answers) =>
+  shorten(answers.map(({ title, answer }) => `**${title}:**\n${quote(answer.replace(/\n{2,}/g, '\n'))}`).join('\n'), 2800);
 
 // Standart sayfa düzeni: renk adı (primary, success...) ile page() kurar
 const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks, accent: color ? colors[color] : undefined, thumbnail });
 const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
 
-// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, çizgiyle ayrılmış bloklar
-function panel() {
-  const { title, buttonLabel } = config.panel;
-  const container = new ContainerBuilder().addSectionComponents(
-    new SectionBuilder()
-      .addTextDisplayComponents(
-        text(
-          `${title}\n-# Yetkili ekibine katılmak için sağdaki butondan başvuru formunu doldur; başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.`,
-        ),
-      )
-      .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.apply).setLabel(buttonLabel).setStyle(ButtonStyle.Primary)),
-  );
-  if (config.banner) {
-    const url = /^https?:\/\//.test(config.banner) ? config.banner : `attachment://${config.banner}`;
-    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
-  }
-  return container;
-}
+// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, en altta uyarı notu
+const panel = () =>
+  standardPanel({
+    title: config.panel.title,
+    sub: 'Yetkili ekibine katılmak için **Başvur** butonuyla başvuru formunu doldur. Başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.',
+    button: { id: IDS.apply, label: config.panel.buttonLabel },
+    image: config.banner,
+    note: config.panel.footer,
+  });
 
 // "Başvuru Yap" ile açılan form; sorular config.js'ten gelir
 function applicationModal() {
@@ -160,8 +149,8 @@ function applicationNotice(app, applicantUser) {
   const container = card(
     pending ? `Yeni Başvuru #${pad(app.number)}` : `Başvuru #${pad(app.number)}`,
     pending
-      ? 'Başvuranın bilgileri ve cevapları aşağıda; cevapları inceleyip başvuruyu onaylayabilir, reddedebilir ya da başvuranı sesli mülakata çağırabilirsin, karar başvurana DM ile iletilir.'
-      : 'Bu başvurunun bilgileri, cevapları ve güncel durumu aşağıda listeleniyor; başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenerek son durumu gösterir.',
+      ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip başvuruyu onaylayabilir, reddedebilir ya da başvuranı sesli mülakata çağırabilirsin; karar başvurana DM ile iletilir.'
+      : 'Bu başvurunun bilgileri, cevapları ve güncel durumu burada listelenir. Başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenerek son durumu gösterir.',
     [
       `**Başvuran**\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
       `**Cevaplar**\n${answersText(app.answers)}`,
@@ -264,7 +253,7 @@ function resultDm(app, guildName, reapplyAt) {
 
   return card(
     'Başvurun Sonuçlandı',
-    'Yetkili başvurun incelendi ve sonuçlandı; kararı veren yetkili, varsa belirtilen sebep ve yeniden başvurabileceğin tarih aşağıda yer alıyor, ilgin için teşekkür ederiz.',
+    'Yetkili başvurun incelendi ve sonuçlandı. Kararı veren yetkili, varsa belirtilen sebep ve yeniden başvurabileceğin tarih aşağıda; ilgin için teşekkür ederiz.',
     blocks,
     'danger',
   );
@@ -275,7 +264,7 @@ function resultDm(app, guildName, reapplyAt) {
 function meetingDm(app, guildName, voice) {
   const container = card(
     'Mülakata Davet Edildin',
-    'Yetkili başvurun hakkında seninle sesli bir görüşme yapmak istiyor; mülakat için hangi ses kanalına katılman gerektiği ve kanal erişiminin ne zaman kapanacağı aşağıda belirtiliyor.',
+    'Yetkili başvurun hakkında seninle sesli bir görüşme yapmak istiyor. Mülakat için hangi ses kanalına katılman gerektiği ve kanal erişiminin ne zaman kapanacağı bu mesajda yazıyor.',
     [`**Davet**\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n-# #${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
     'warning',
   );
@@ -288,7 +277,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
   return withFooter(
     card(
       'Başvuran Seni Bekliyor',
-      'Başvuran görüşme kanalına girdi ve seni bekliyor; aşağıdaki butonla kanala geçerek görüşmeyi ya da oryantasyonu hemen başlatabilirsin, başvuru ayrıntıları başvurular kanalında yer alıyor.',
+      'Başvuran görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.',
       [
         `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n**Başvuru:** #${pad(app.number)}` +
           (orientation ? '\n-# Kanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
@@ -312,7 +301,7 @@ function meetingLog(app) {
   const duration = ended ? Math.max(1, Math.round((m.endedAt - m.startedAt) / 60000)) : 0;
   return card(
     ended ? `Görüşme Tamamlandı - Başvuru #${pad(app.number)}` : `Görüşme Başladı - Başvuru #${pad(app.number)}`,
-    'Başvuranla yapılan sesli görüşmenin kayıt kanalındaki özeti; görüşme başlayınca gönderilir, bitince bu mesaj güncellenir ve görüşmenin süresi ile kanalı burada saklanır.',
+    'Başvuranla yapılan sesli görüşmenin kayıt kanalındaki özeti. Görüşme başlayınca gönderilir, bitince bu mesaj güncellenir ve görüşmenin süresi ile kanalı burada saklanır.',
     [
       ended
         ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +

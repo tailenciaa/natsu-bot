@@ -6,6 +6,7 @@
 // Onaylanan başvuru oryantasyona geçer (oryantasyon sistemi), reddedilenin kanalları kilitlenir.
 const { Events, PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
+const { guildId } = require('../../core/config');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const orientation = require('../oryantasyon');
@@ -148,16 +149,26 @@ async function handleApplySubmit(interaction) {
     });
 
     // İnceleyen rol etiketlenir, haberleri olur
-    const message = await channel.send({
-      components: [ui.applicationNotice(app, user)],
-      flags: core.CV2,
-      allowedMentions: { roles: config.roles.reviewer ? [config.roles.reviewer] : [] },
-    });
+    const message = await channel
+      .send({
+        components: [ui.applicationNotice(app, user)],
+        flags: core.CV2,
+        allowedMentions: { roles: config.roles.reviewer ? [config.roles.reviewer] : [] },
+      })
+      .catch((err) => {
+        console.error('[basvuru] Başvuru kanala gönderilemedi:', err.message);
+        return null;
+      });
+    // Gönderilemeyen başvuru kayıtta bekleyen kalıp kullanıcıyı kilitlemesin
+    if (!message) {
+      store.removeApplication(id);
+      return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
+    }
     store.updateApplication(id, { messageId: message.id });
 
     await respond(
       interaction,
-      core.alert('Başvurun bize ulaştı!', 'İnceleme tamamlanınca sonucu sana DM üzerinden ileteceğiz.', 'success'),
+      core.alert('Başvurun alındı.', 'İnceleme tamamlanınca sonucu sana DM üzerinden ileteceğiz.', 'success'),
     );
   } finally {
     submitting.delete(lockKey);
@@ -182,8 +193,9 @@ async function handleReviewButton(interaction) {
     meetingChannelId: voice.staffVoiceChannel(interaction.guild, interaction.user.id),
   });
 
+  await interaction.deferUpdate();
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
-  await interaction.update({ components: [ui.applicationNotice(app, applicant)], allowedMentions: { parse: [] } });
+  await interaction.editReply({ components: [ui.applicationNotice(app, applicant)], allowedMentions: { parse: [] } });
 
   const access = await openVoice(interaction, app, `Yetkili başvurusu #${core.pad(app.number)} görüşmesi`);
   const sent = await applicant
@@ -209,7 +221,7 @@ function staffReport(title, access, sent) {
       : 'Ses kanallarının kilidi açılamadı, başvuran sunucuda olmayabilir.',
     sent ? 'Başvurana DM üzerinden haber verildi.' : "Başvuranın DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.",
   ];
-  return core.notice(`**${title}**\n${lines.map((l) => `-# ${l}`).join('\n')}`, access && sent ? 'success' : 'warning');
+  return core.alert(title, lines.join('\n'), access && sent ? 'success' : 'warning');
 }
 
 // Aynı başvuru için kanal değiştirdikçe yetkiliye DM yağmasın diye son bildirim zamanları: başvuru -> zaman
@@ -239,8 +251,8 @@ async function notifyStaff(newState) {
 }
 
 // Görüşmeyi bitmiş sayar ve kayıt kanalındaki mesajını günceller (başvuran çıkınca ya da karar verilince)
-
 async function endMeeting(guild, app) {
+  waitingNotified.delete(app.id);
   if (!app.meeting?.startedAt || app.meeting.endedAt) return;
   store.updateApplication(app.id, { meeting: { ...app.meeting, endedAt: Date.now() } });
   await log.edit(guild, app.meeting.messageId, ui.meetingLog(app));
@@ -261,7 +273,11 @@ async function trackMeeting(oldState, newState) {
       // Kayıt await'ten önce yapılır, art arda gelen olaylarda iki kez başlatılmaz
       store.updateApplication(app.id, { meeting: { channelId: applicantChannel, startedAt: Date.now(), endedAt: null, messageId: null } });
       const message = await log.send(guild, app, ui.meetingLog(app));
-      if (message) store.updateApplication(app.id, { meeting: { ...app.meeting, messageId: message.id } });
+      if (message) {
+        store.updateApplication(app.id, { meeting: { ...app.meeting, messageId: message.id } });
+        // Mesaj gönderilirken başvuran çıktıysa (görüşme bitti) mesaj "Görüşme Başladı" halinde kalmasın
+        if (app.meeting.endedAt) await log.edit(guild, message.id, ui.meetingLog(app));
+      }
     } else if (newState.id === app.userId && !voice.isRecruitmentChannel(newState.channelId)) {
       await endMeeting(guild, app);
     }
@@ -270,6 +286,7 @@ async function trackMeeting(oldState, newState) {
 
 // Görüşme kanallarındaki giriş çıkışlar: kilitleme zamanlayıcıları, görüşme kaydı ve yetkiliye "başvuran seni bekliyor" bildirimi
 async function handleVoiceUpdate(oldState, newState) {
+  if (newState.guild.id !== guildId) return;
   voice.handleVoiceUpdate(oldState, newState);
   if (oldState.channelId === newState.channelId) return;
   if (!voice.isRecruitmentChannel(oldState.channelId) && !voice.isRecruitmentChannel(newState.channelId)) return;

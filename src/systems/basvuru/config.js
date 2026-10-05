@@ -1,9 +1,9 @@
 // Yetkili alım (başvuru) sistemi ayarları. ID değiştirince botu yeniden başlatmak yeterli.
 
-const { botName, panelTitle } = require('../../core/config');
+const { botName } = require('../../core/config');
 
 module.exports = {
-  // Panel görseli (doğrudan URL)
+  // Panel görseli (Discord CDN bağlantısı); bot görseli indirip panele kalıcı ek olarak koyar (core/banner.js)
   banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1555886026638102549/yetkilialmkazuki.jpg?backend=b2&ex=6ac378c7&is=6ac22747&hm=7dc28ff219fe2ab5cfca8a3252b4599a389b7b5184a2427a99ef898f5633631a&',
 
   channels: {
@@ -46,11 +46,9 @@ module.exports = {
   },
 
   panel: {
-    title: panelTitle(`${botName} Yetkili Alımı`),
-    description:
-      '**Ekibimizin bir parçası olmak ister misin?** Sağdaki butondan başvuru formunu doldur. Başvurun dikkatle incelenecek, sonuç sana DM üzerinden iletilecek.',
+    title: `${botName} Yetkili Alımı`,
     buttonLabel: 'Başvur',
-    footer: '-# Formu doğru ve eksiksiz doldur; yanlış bilgi başvurunun reddedilmesine yol açar.',
+    footer: 'Formu doğru ve eksiksiz doldur; yanlış bilgi başvurunun reddedilmesine yol açar.',
   },
 
   // Reddedilen başvurudan sonra kaç gün tekrar başvurulamaz (0: sınır yok)

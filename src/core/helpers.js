@@ -10,7 +10,10 @@ const ui = require('./ui');
 // ayrı ve sadece kullanana görünen mesaj olarak göstermek istiyorsan önce deferUpdate yapma, ya da interaction.followUp kullan.
 // followUp: true verilirse (ör. deferUpdate yapılmış modal gönderimi) cevap her zaman ayrı bir mesaj olarak gider, mevcut mesajı değiştirmez
 async function respond(interaction, container, { ephemeral = true, allowedMentions = { parse: [] }, followUp = false } = {}) {
-  if (!followUp && interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
+  // deferUpdate ile ertelenmiş modal gönderiminde (interaction.ephemeral hâlâ null; deferReply bunu true/false yapar) cevap,
+  // modalın bağlı olduğu mesajın üstüne yazılmasın diye ayrı mesaj olarak gider
+  const updatedByModal = interaction.isModalSubmit?.() && interaction.deferred && interaction.ephemeral === null;
+  if (!followUp && !updatedByModal && interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
     return interaction.editReply({ components: [container], flags: ui.CV2, allowedMentions });
   }
   const payload = { components: [container], flags: ephemeral ? ui.EPHEMERAL_CV2 : ui.CV2, allowedMentions };

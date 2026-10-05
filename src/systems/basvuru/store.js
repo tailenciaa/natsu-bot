@@ -19,6 +19,14 @@ module.exports = {
     return application;
   },
 
+  // Başvurular kanalına gönderilemeyen başvuruyu kayıttan kaldırır (kullanıcı yeniden başvurabilsin)
+  removeApplication(id) {
+    if (!data.applications[id]) return false;
+    delete data.applications[id];
+    save();
+    return true;
+  },
+
   updateApplication(id, patch) {
     if (!data.applications[id]) return null;
     Object.assign(data.applications[id], patch);
