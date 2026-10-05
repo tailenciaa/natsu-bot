@@ -43,8 +43,9 @@ const skippedTitles = (app) =>
 function plannedRoles(app) {
   const level = levelOf(app);
   const levelPerms = yetkiConfig.perms.filter((p) => level.perms.includes(p.id));
+  const levelDuties = yetkiConfig.duties.filter((d) => level.duties.includes(d.id));
   const areas = areasOf(app);
-  const roleIds = [app.acceptRoleId, level.roleId, ...levelPerms.map((p) => p.roleId), ...areas.map((a) => a.roleId)];
+  const roleIds = [app.acceptRoleId, level.roleId, ...(level.extraRoleIds ?? []), ...levelPerms.map((p) => p.roleId), ...levelDuties.map((d) => d.roleId), ...areas.map((a) => a.roleId)];
   return {
     roleIds: [...new Set(roleIds.filter(Boolean))],
     missing: [level, ...areas].filter((item) => !item.roleId).map((item) => item.label),
@@ -159,8 +160,8 @@ function levelMenu(app) {
       .setCustomId(actionId(app, 'seviye'))
       .setPlaceholder('Başlayacağı yetkiyi seç')
       .addOptions(
-        yetkiConfig.levels.map((l) =>
-          new StringSelectMenuOptionBuilder().setValue(l.id).setLabel(l.label).setDefault(l.id === levelOf(app).id),
+        yetkiConfig.levels.filter((l) => l.starter).map((l) =>
+          new StringSelectMenuOptionBuilder().setValue(l.id).setLabel(l.label).setDescription(l.description).setDefault(l.id === levelOf(app).id),
         ),
       ),
   );

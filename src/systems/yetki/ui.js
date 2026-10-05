@@ -11,16 +11,25 @@ const config = require('./config');
 
 const IDS = {
   level: 'yetki-seviye', // yetki-seviye:<kullanıcı>
-  perms: 'yetki-perm', // yetki-perm:<kullanıcı>:<seviye>
-  give: 'yetki-ver', // yetki-ver:<kullanıcı>:<seviye>:<yetkiler>
+  perms: 'yetki-perm', // yetki-perm:<kullanıcı>:<seviye>:<görev maskesi>
+  duties: 'yetki-gorev', // yetki-gorev:<kullanıcı>:<seviye>:<yetki maskesi>
+  give: 'yetki-ver', // yetki-ver:<kullanıcı>:<seviye>:<yetki maskesi>:<görev maskesi>
   cancel: 'yetki-iptal',
 };
 
+// Seçimler buton/menü ID'lerinde (en fazla 100 karakter) taşınır: listedeki sıraya göre bit maskesi, 36'lık tabanda
+const mask = (ids, list) => list.reduce((n, item, i) => (ids.includes(item.id) ? n | (1 << i) : n), 0).toString(36);
+const unmask = (value, list) => {
+  const n = parseInt(value || '0', 36) || 0;
+  return list.filter((_, i) => n & (1 << i)).map((item) => item.id);
+};
+
 // state: { user, levelId, permIds, done, missingRoles }. Seçimler buton/menü ID'lerinde taşınır.
-function staffPanel({ user, levelId, permIds, done, missingRoles }) {
-  const { levels, perms } = config;
+function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles }) {
+  const { levels, perms, duties } = config;
   const level = levels.find((l) => l.id === levelId);
   const permLabels = perms.filter((p) => permIds.includes(p.id)).map((p) => p.label);
+  const dutyLabels = duties.filter((d) => dutyIds.includes(d.id)).map((d) => d.label);
   const missingNote = missingRoles ? 'Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : 'Seçilen yetkilerin rolleri verildi.';
   const intro = done
     ? `**Yetki Durumu**\n<@${user.id}> artık ekipte.\n-# ${missingNote}`
@@ -29,13 +38,14 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
     '**Seçimler**',
     `Seviye: ${level ? level.label : 'Seçilmedi'}`,
     `Yetkiler: ${permLabels.length ? permLabels.join(', ') : 'Yok'}`,
+    `Görev Rolleri: ${dutyLabels.length ? dutyLabels.join(', ') : 'Yok'}`,
   ].join('\n');
 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
       ? 'Seçtiğin seviye ve yetkiler üyeye başarıyla tanımlandı; verilen seviye ile yetkilerin özeti aşağıda yer alıyor, bu mesaj yetkilendirme işleminin kaydı olarak kanalda kalır.'
-      : 'Seviye seçtiğinde o seviyenin yetkileri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilirsin, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
+      : 'Rütbe seçtiğinde o rütbenin yetkileri ve görev rolleri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilirsin, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,
     blocks: [intro, summary],
@@ -46,17 +56,17 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.level}:${user.id}`)
-          .setPlaceholder('Yetki seviyesini seç')
+          .setPlaceholder('Rütbeyi seç')
           .addOptions(
             levels.map((l) =>
-              new StringSelectMenuOptionBuilder().setValue(l.id).setLabel(l.label).setDefault(l.id === levelId),
+              new StringSelectMenuOptionBuilder().setValue(l.id).setLabel(l.label).setDescription(l.description).setDefault(l.id === levelId),
             ),
           ),
       ),
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
-          .setCustomId(`${IDS.perms}:${user.id}:${levelId ?? '0'}`)
-          .setPlaceholder(level ? 'Yetkileri düzenle' : 'Önce seviye seç')
+          .setCustomId(`${IDS.perms}:${user.id}:${levelId ?? '0'}:${mask(dutyIds, duties)}`)
+          .setPlaceholder(level ? 'Yetkileri düzenle' : 'Önce rütbe seç')
           .setMinValues(0)
           .setMaxValues(perms.length)
           .setDisabled(!level)
@@ -67,8 +77,21 @@ function staffPanel({ user, levelId, permIds, done, missingRoles }) {
           ),
       ),
       new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.duties}:${user.id}:${levelId ?? '0'}:${mask(permIds, perms)}`)
+          .setPlaceholder(level ? 'Görev rollerini düzenle' : 'Önce rütbe seç')
+          .setMinValues(0)
+          .setMaxValues(duties.length)
+          .setDisabled(!level)
+          .addOptions(
+            duties.map((d) =>
+              new StringSelectMenuOptionBuilder().setValue(d.id).setLabel(d.label).setDefault(dutyIds.includes(d.id)),
+            ),
+          ),
+      ),
+      new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`${IDS.give}:${user.id}:${levelId ?? '0'}:${permIds.join(',')}`)
+          .setCustomId(`${IDS.give}:${user.id}:${levelId ?? '0'}:${mask(permIds, perms)}:${mask(dutyIds, duties)}`)
           .setStyle(ButtonStyle.Success)
           .setLabel('Yetkiyi Ver')
           .setDisabled(!level),
@@ -90,4 +113,4 @@ function grantDm(guildName) {
   });
 }
 
-module.exports = { IDS, staffPanel, grantDm };
+module.exports = { IDS, mask, unmask, staffPanel, grantDm };
