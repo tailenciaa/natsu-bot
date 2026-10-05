@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, page, alert, unix, messageUrl } = require('../../core/ui');
+const { colors, notice, alert, unix, messageUrl } = require('../../core/ui');
 const { guildId } = require('../../core/config');
 
 // cekilis-ayril:<no>, cekilis-onay:<eylem>:<no>, cekilis-form:<no>
@@ -24,31 +24,25 @@ const IDS = {
   create: 'cekilis-yeni', // cekilis-yeni:<kanalID>:<rolID|0>
 };
 
-const PANEL_SUB =
-  'Aşağıdaki butona basarak çekilişe katılabilirsin; süre dolunca kazananlar katılanlar arasından rastgele seçilir ve bu kanalda duyurulur. İstersen butona tekrar basıp katılımdan ayrılabilirsin.';
-
 const mentions = (ids) => ids.map((id) => `<@${id}>`).join(', ');
+const quote = (lines) => lines.map((line) => `> ${line}`).join('\n');
 
-// Çekiliş mesajı: açıkken katıl butonu, bitince kazananlar ve devre dışı buton
+// Çekiliş mesajı: sade bir kutu (başlık, ödül, açıklama, bilgi satırları); açıkken katıl butonu, bitince kazananlar
 function panel(g) {
-  const info = [`**Kazanacak kişi:** ${g.winnerCount} kişi`, `**Katılan kişi:** ${g.participants.length} kişi`];
-  if (g.status === 'active') info.push(`**Bitiş:** <t:${unix(g.endsAt)}:R> (<t:${unix(g.endsAt)}:f>)`);
-  if (g.status === 'ended') info.push(`**Bitti:** <t:${unix(g.endsAt)}:f>`);
-  if (g.roleId) info.push(`**Katılım şartı:** <@&${g.roleId}> rolüne sahip olmak`);
+  const head = { active: `## Çekiliş #${g.no}`, ended: `## Çekiliş #${g.no} Sona Erdi`, cancelled: `## Çekiliş #${g.no} İptal Edildi` }[g.status];
+  const info = [];
+  if (g.status === 'ended') info.push(`**Kazananlar:** ${g.winners.length ? mentions(g.winners) : 'katılan olmadı'}`);
+  if (g.status === 'active') info.push(`**Bitiş:** <t:${unix(g.endsAt)}:R>`, `**Kazanan sayısı:** ${g.winnerCount}`);
+  if (g.status === 'active' && g.roleId) info.push(`**Şart:** <@&${g.roleId}>`);
   info.push(`**Düzenleyen:** <@${g.hostId}>`);
 
-  const blocks = [`**Ödül**\n${g.prize}`];
-  if (g.description) blocks.push(`**Açıklama**\n${g.description}`);
-  blocks.push(`**Çekiliş Bilgileri**\n${info.join('\n')}`);
-  if (g.status === 'ended') blocks.push(`**Kazananlar**\n${g.winners.length ? mentions(g.winners) : 'Katılan olmadığı için kazanan yok.'}`);
+  const lines = [head, `**${g.prize}**`];
+  if (g.description) lines.push(g.description);
+  lines.push(quote(info));
+  if (g.status === 'ended') lines.push(`-# <t:${unix(g.endsAt)}:f> tarihinde sona erdi`);
+  const container = notice(lines.join('\n'), g.status === 'cancelled' ? 'danger' : undefined);
 
   const label = { active: `Katıl (${g.participants.length})`, ended: `Çekiliş Bitti (${g.participants.length} katılımcı)`, cancelled: 'Çekiliş İptal Edildi' }[g.status];
-  const container = page({
-    title: `Çekiliş #${g.no}${g.status === 'cancelled' ? ' İptal Edildi' : g.status === 'ended' ? ' Sona Erdi' : ''}`,
-    sub: PANEL_SUB,
-    accent: g.status === 'cancelled' ? colors.danger : undefined,
-    blocks,
-  });
   // Katıl butonunun yanındaki yönetim butonlarını sadece yöneticiler kullanabilir (basınca kontrol edilir)
   const button = (id, text, style) => new ButtonBuilder().setCustomId(id).setLabel(text).setStyle(style);
   const row = new ActionRowBuilder().addComponents(
@@ -119,13 +113,8 @@ function confirm(action, g) {
 // Süre dolunca (ya da yeniden çekilince) kanala giden kazanan duyurusu
 function winners(g, ids, reroll = false) {
   const url = messageUrl(guildId, g.channelId, g.messageId);
-  return page({
-    title: reroll ? `Çekiliş #${g.no} Yeni Kazanan` : `Çekiliş #${g.no} Sona Erdi`,
-    sub: 'Çekilişe katılanlar arasından kazananlar rastgele seçildi; tebrikler! Ödülünü almak için yetkililerle iletişime geçebilirsin, çekiliş mesajına gitmek için aşağıdaki bağlantıyı kullan.',
-    blocks: [
-      `**${g.prize}**\n**Kazananlar:** ${mentions(ids)}\n**Katılımcı sayısı:** ${g.participants.length}\n**Çekiliş:** [mesaja git](${url})`,
-    ],
-  });
+  const lines = [`## Çekiliş #${g.no} ${reroll ? 'Yeni Kazanan' : 'Sona Erdi'}`, `**${g.prize}**`, quote([`**Kazananlar:** ${mentions(ids)}`, `**Düzenleyen:** <@${g.hostId}>`]), `-# [Çekilişe git](${url})`];
+  return notice(lines.join('\n'));
 }
 
 // Kazanan çıkmadıysa kanala giden kısa bildirim

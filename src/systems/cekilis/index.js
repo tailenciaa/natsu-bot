@@ -265,14 +265,7 @@ async function list(interaction) {
   const body = active.length
     ? active.map((g) => `**#${g.no} ${g.prize}:** <#${g.channelId}>, bitiş <t:${core.unix(g.endsAt)}:R>, ${g.participants.length} katılımcı`).join('\n')
     : 'Şu an açık çekiliş yok.';
-  return respond(
-    interaction,
-    core.page({
-      title: 'Açık Çekilişler',
-      sub: 'Şu anda devam eden çekilişlerin numarasını, ödülünü, kanalını, bitiş zamanını ve katılımcı sayısını burada görebilirsin; numarayı diğer çekiliş komutlarında kullanabilirsin.',
-      blocks: [body],
-    }),
-  );
+  return respond(interaction, core.notice(`## Açık Çekilişler\n${body}`));
 }
 
 async function handleCommand(interaction) {
