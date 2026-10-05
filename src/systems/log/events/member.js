@@ -19,7 +19,7 @@ async function joinSource(member) {
   if (member.user.bot) return await audit.by(member.guild, AuditLogEvent.BotAdd, member.id);
   const used = await invites.findUsed(member.guild);
   if (used) {
-    return `**Davet:** \`${used.code}\`${used.inviterId ? `・davet eden <@${used.inviterId}>` : ''}・${used.uses}. kullanım`;
+    return `**Davet:** \`${used.code}\`${used.inviterId ? `, davet eden <@${used.inviterId}>` : ''}, ${used.uses}. kullanım`;
   }
   return member.guild.vanityURLCode ? `**Davet:** özel bağlantı ya da bulunamadı` : '**Davet:** tespit edilemedi';
 }
@@ -31,7 +31,7 @@ async function handleMemberAdd(member) {
     'uye',
     ui.entry('success', 'Üye Katıldı', [
       `**Kullanıcı:** <@${member.id}> (${member.user.tag})`,
-      `**Hesap oluşturma:** <t:${unix(member.user.createdTimestamp)}:R>${newAccount ? ' • ⚠️ yeni hesap' : ''}`,
+      `**Hesap oluşturma:** <t:${unix(member.user.createdTimestamp)}:R>${newAccount ? ' (⚠️ yeni hesap)' : ''}`,
       `**Üye sayısı:** ${member.guild.memberCount}`,
       await joinSource(member),
     ]),

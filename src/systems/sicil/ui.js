@@ -60,19 +60,19 @@ const lower = (value) => value.toLocaleLowerCase('tr-TR');
 const formatAverage = (list) =>
   (list.reduce((sum, r) => sum + r.score, 0) / list.length).toLocaleString('tr-TR', { maximumFractionDigits: 1 });
 
-// Kategori bazında ortalamalar: "Destek: `4,8` (3)・Görüşme: `5` (1)"; değerlendirmesi olmayan kategori yazılmaz
+// Kategori bazında ortalamalar: "Destek: `4,8` (3) - Görüşme: `5` (1)"; değerlendirmesi olmayan kategori yazılmaz
 function categoryAverages(ratings) {
   return Object.entries(CATEGORIES)
     .map(([key, category]) => [category, ratings.filter((r) => (r.category ?? 'destek') === key)])
     .filter(([, list]) => list.length)
     .map(([category, list]) => `${category.short}: \`${formatAverage(list)}\` (${list.length})`)
-    .join('・');
+    .join(' - ');
 }
 
 // Cezanın kısa durumu (uyarılar için yok)
 function punishmentState(p) {
   if (p.type === 'uyari') return null;
-  if (p.status === 'active') return p.expiresAt ? `Aktif・<t:${unix(p.expiresAt)}:R> bitiyor` : 'Aktif・Süresiz';
+  if (p.status === 'active') return p.expiresAt ? `Aktif - <t:${unix(p.expiresAt)}:R> bitiyor` : 'Aktif - Süresiz';
   return p.status === 'expired' ? 'Süresi doldu' : 'Kaldırıldı';
 }
 
@@ -99,7 +99,7 @@ const LISTS = {
     title: 'Ceza Kayıtları',
     empty: '-# Ceza kaydı bulunmamaktadır.',
     placeholder: 'Detayını görmek istediğiniz cezayı seçin',
-    entry: (p) => `**${p.status === 'active' ? '✅' : '❌'} Ceza #${p.number}・${TYPES[p.type].label}**\n-# ${dateTime(p.createdAt)}・${p.reason}`,
+    entry: (p) => `**${p.status === 'active' ? '✅' : '❌'} Ceza #${p.number} - ${TYPES[p.type].label}**\n-# ${dateTime(p.createdAt)} - ${p.reason}`,
     option: (p) => ({
       id: p.id,
       emoji: p.status === 'active' ? '✅' : '❌',
@@ -110,20 +110,20 @@ const LISTS = {
   talepler: {
     empty: 'Hiç destek talebi açılmamış.',
     placeholder: 'Detayını görmek istediğiniz talebi seçin',
-    entry: (t) => `**Talep #${t.number}**\n-# ${dateOnly(t.createdAt)}・${ticketResult(t)}・${t.reason}`,
+    entry: (t) => `**Talep #${t.number}**\n-# ${dateOnly(t.createdAt)} - ${ticketResult(t)} - ${t.reason}`,
     option: (t) => ({ id: t.threadId, label: `Talep #${t.number}`, description: `${ticketResult(t)} - ${t.reason}` }),
   },
   basvurular: {
     empty: 'Hiç yetkili başvurusu yapılmamış.',
     placeholder: 'Detayını görmek istediğiniz başvuruyu seçin',
-    entry: (a) => `**Başvuru #${a.number}**\n-# ${dateOnly(a.createdAt)}・${applicationStatus(a)}`,
+    entry: (a) => `**Başvuru #${a.number}**\n-# ${dateOnly(a.createdAt)} - ${applicationStatus(a)}`,
     option: (a) => ({ id: a.id, label: `Başvuru #${a.number}`, description: `${applicationStatus(a)} - ${dateOnly(a.createdAt)}` }),
   },
   puan: {
     empty: 'Henüz hiç değerlendirme alınmamış.',
     placeholder: 'Detayını görmek istediğiniz değerlendirmeyi seçin',
-    entry: (r) => `**${r.score}/5・${categoryOf(r).short}**\n-# ${dateOnly(r.ratedAt)}${r.comment ? `・${r.comment}` : ''}`,
-    option: (r) => ({ id: r.id, label: `${r.score}/5・${categoryOf(r).short}`, description: `${refText(r)}${r.comment ? ` - ${r.comment}` : ''}` }),
+    entry: (r) => `**${r.score}/5 - ${categoryOf(r).short}**\n-# ${dateOnly(r.ratedAt)}${r.comment ? ` - ${r.comment}` : ''}`,
+    option: (r) => ({ id: r.id, label: `${r.score}/5 - ${categoryOf(r).short}`, description: `${refText(r)}${r.comment ? ` - ${r.comment}` : ''}` }),
   },
 };
 
@@ -304,11 +304,11 @@ function punishmentDetail(p, messageId, canEdit, banner) {
   const lines = [
     stat('Kullanıcı', `<@${p.userId}>`),
     punishmentState(p) && stat('Durum', punishmentState(p)),
-    stat('Veren', `<@${p.by}>・<t:${unix(p.createdAt)}:F>`),
+    stat('Veren', `<@${p.by}> - <t:${unix(p.createdAt)}:F>`),
     p.type !== 'uyari' && stat('Süre', code(durationLabel(p))),
     p.status === 'active' && p.expiresAt && stat('Bitiş', `<t:${unix(p.expiresAt)}:F>`),
     p.extensions.length && stat('Uzatmalar', p.extensions.map((e) => `${code(`+${formatDuration(e.added)}`)} <@${e.by}>`).join(', ')),
-    p.status === 'lifted' && stat('Kaldıran', `<@${p.liftedBy}>・<t:${unix(p.endedAt)}:F>`),
+    p.status === 'lifted' && stat('Kaldıran', `<@${p.liftedBy}> - <t:${unix(p.endedAt)}:F>`),
     p.status === 'expired' && stat('Sona Erdi', `<t:${unix(p.endedAt)}:F>`),
   ].filter(Boolean);
 
@@ -317,7 +317,7 @@ function punishmentDetail(p, messageId, canEdit, banner) {
   container
     .addTextDisplayComponents(
       text(
-        `## Ceza #${p.number}・${TYPES[p.type].label}\n-# Bu cezanın kimin tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu aşağıdan inceleyebilir, yetkin varsa işlem yapabilirsin.`,
+        `## Ceza #${p.number} - ${TYPES[p.type].label}\n-# Bu cezanın kimin tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu aşağıdan inceleyebilir, yetkin varsa işlem yapabilirsin.`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -404,7 +404,7 @@ function punishModal(user, type, messageId) {
     modal.addLabelComponents(
       durationInput(
         'Süre',
-        t.durationRequired ? 'dk: dakika, sa: saat, g: gün・en fazla 28 gün' : 'dk: dakika, sa: saat, g: gün・boş bırakırsan süresiz',
+        t.durationRequired ? 'dk: dakika, sa: saat, g: gün - en fazla 28 gün' : 'dk: dakika, sa: saat, g: gün - boş bırakırsan süresiz',
         Boolean(t.durationRequired),
       ),
     );
@@ -420,7 +420,7 @@ function extendModal(p, messageId) {
     .setCustomId(formId(p.userId, 'sure', p.id, messageId))
     .setTitle('Süre Ekle')
     .addTextDisplayComponents(
-      text(`**Ceza #${p.number}・${TYPES[p.type].label}** cezasına süre ekliyorsun.\n-# Şu anki bitiş: ${dateTime(p.expiresAt)}`),
+      text(`**Ceza #${p.number} - ${TYPES[p.type].label}** cezasına süre ekliyorsun.\n-# Şu anki bitiş: ${dateTime(p.expiresAt)}`),
     )
     .addLabelComponents(durationInput('Eklenecek süre', 'dk: dakika, sa: saat, g: gün', true));
 }
@@ -429,7 +429,7 @@ function liftModal(p, messageId) {
   return new ModalBuilder()
     .setCustomId(formId(p.userId, 'kaldir', p.id, messageId))
     .setTitle('Cezayı Kaldır')
-    .addTextDisplayComponents(text(`**Ceza #${p.number}・${TYPES[p.type].label}** şimdi kaldırılacak, kayıt sicilde kalacak.`))
+    .addTextDisplayComponents(text(`**Ceza #${p.number} - ${TYPES[p.type].label}** şimdi kaldırılacak, kayıt sicilde kalacak.`))
     .addLabelComponents(reasonInput('Örn: İtirazı haklı bulundu, erken kaldırıldı.'));
 }
 
@@ -439,7 +439,7 @@ function deleteModal(p, messageId) {
     .setTitle('Sicilden Sil')
     .addTextDisplayComponents(
       text(
-        `**Ceza #${p.number}・${TYPES[p.type].label}** kaydı sicilden tamamen silinecek.` +
+        `**Ceza #${p.number} - ${TYPES[p.type].label}** kaydı sicilden tamamen silinecek.` +
           (p.status === 'active' && p.type !== 'uyari' ? '\n-# Ceza sürdüğü için önce kaldırılacak.' : ''),
       ),
     )
@@ -450,7 +450,7 @@ function ratingRemoveModal(userId, rating, messageId) {
   return new ModalBuilder()
     .setCustomId(formId(userId, 'puansil', rating.id, messageId))
     .setTitle('Değerlendirmeyi Kaldır')
-    .addTextDisplayComponents(text(`**${rating.score}/5・${refText(rating)}** değerlendirmesi sicilden kaldırılacak.`))
+    .addTextDisplayComponents(text(`**${rating.score}/5 - ${refText(rating)}** değerlendirmesi sicilden kaldırılacak.`))
     .addLabelComponents(reasonInput('Örn: Üye yanlış yetkiliyi puanlamış.'));
 }
 
@@ -458,7 +458,7 @@ function ratingRemoveModal(userId, rating, messageId) {
 function punishDm(p, guildName) {
   const t = TYPES[p.type];
   const detail = p.expiresAt
-    ? `Süre: ${formatDuration(p.duration)}・<t:${unix(p.expiresAt)}:R> sona erecek.`
+    ? `Süre: ${formatDuration(p.duration)} - <t:${unix(p.expiresAt)}:R> sona erecek.`
     : p.type === 'uyari'
       ? 'Uyarılar sicilinde tutulur, tekrarlanması ceza almana neden olabilir.'
       : 'Süre: Süresiz.';
@@ -469,7 +469,7 @@ function punishDm(p, guildName) {
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusunda ${t.verb}.**\n-# ${detail}`,
       `**Sebep**\n${quote(p.reason)}`,
-      `-# Ceza #${p.number}・<t:${unix(p.createdAt)}:F>`,
+      `-# Ceza #${p.number} - <t:${unix(p.createdAt)}:F>`,
     ],
   });
 }
@@ -481,7 +481,7 @@ function liftDm(p, guildName) {
     accent: colors.success,
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
-      `-# Ceza #${p.number}・<t:${unix(Date.now())}:F>`,
+      `-# Ceza #${p.number} - <t:${unix(Date.now())}:F>`,
     ],
   });
 }

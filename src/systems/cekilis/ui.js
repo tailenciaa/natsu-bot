@@ -12,19 +12,23 @@ const mentions = (ids) => ids.map((id) => `<@${id}>`).join(', ');
 
 // Çekiliş mesajı: açıkken katıl butonu, bitince kazananlar ve devre dışı buton
 function panel(g) {
-  const lines = [`**${g.prize}**`];
-  if (g.status === 'active') lines.push(`- **Bitiş:** <t:${unix(g.endsAt)}:R> (<t:${unix(g.endsAt)}:f>)`);
-  if (g.status === 'ended') lines.push(`- **Bitti:** <t:${unix(g.endsAt)}:f>`);
-  lines.push(`- **Kazanan sayısı:** ${g.winnerCount}`, `- **Düzenleyen:** <@${g.hostId}>`);
-  if (g.roleId) lines.push(`- **Katılım şartı:** <@&${g.roleId}> rolüne sahip olmak`);
-  if (g.status === 'ended') lines.push(`- **Kazananlar:** ${g.winners.length ? mentions(g.winners) : 'Katılan olmadığı için kazanan yok'}`);
+  const info = [];
+  if (g.status === 'active') info.push(`- **Bitiş:** <t:${unix(g.endsAt)}:R> (<t:${unix(g.endsAt)}:f>)`);
+  if (g.status === 'ended') info.push(`- **Bitti:** <t:${unix(g.endsAt)}:f>`);
+  info.push(`- **Kazanan sayısı:** ${g.winnerCount}`, `- **Katılımcı sayısı:** ${g.participants.length}`, `- **Düzenleyen:** <@${g.hostId}>`);
+  if (g.roleId) info.push(`- **Katılım şartı:** <@&${g.roleId}> rolüne sahip olmak`);
+
+  const blocks = [`**Ödül**\n${g.prize}`];
+  if (g.description) blocks.push(`**Açıklama**\n${g.description}`);
+  blocks.push(`**Çekiliş Bilgileri**\n${info.join('\n')}`);
+  if (g.status === 'ended') blocks.push(`**Kazananlar**\n${g.winners.length ? mentions(g.winners) : 'Katılan olmadığı için kazanan yok.'}`);
 
   const label = { active: `Katıl (${g.participants.length})`, ended: `Çekiliş Bitti (${g.participants.length} katılımcı)`, cancelled: 'Çekiliş İptal Edildi' }[g.status];
   const container = page({
     title: g.status === 'cancelled' ? 'Çekiliş İptal Edildi' : g.status === 'ended' ? 'Çekiliş Sona Erdi' : 'Çekiliş',
     sub: PANEL_SUB,
     accent: g.status === 'cancelled' ? colors.danger : undefined,
-    blocks: [lines.join('\n')],
+    blocks,
   });
   return container.addActionRowComponents(
     new ActionRowBuilder().addComponents(

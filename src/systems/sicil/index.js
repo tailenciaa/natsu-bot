@@ -192,7 +192,7 @@ async function handlePunishForm(interaction, user, type, messageId) {
 
   const p = result.punishment;
   const banner =
-    `**${ui.TYPES[type].label} verildi・Ceza #${p.number}**\n-# ` +
+    `**${ui.TYPES[type].label} verildi - Ceza #${p.number}**\n-# ` +
     (type === 'uyari' ? 'Uyarı sicile işlendi.' : p.expiresAt ? `${ui.formatDuration(p.duration)} sonra kendiliğinden kalkacak.` : 'Süresiz.');
   await interaction.editReply({ components: [core.notice(banner, 'success')], allowedMentions: { parse: [] } });
   await refreshSicil(interaction, user, messageId, 'genel');
@@ -232,12 +232,12 @@ async function handleForm(interaction) {
     if (!extra) return replyError(interaction, 'Süre anlaşılamadı.', 'Örnek: 30dk, 2sa, 7g ya da 1g 12sa');
     await interaction.deferUpdate();
     result = await moderation.extend(interaction.guild, punishment, interaction.member, extra);
-    banner = `**Süre eklendi・${label}**\n-# +${ui.formatDuration(extra)}`;
+    banner = `**Süre eklendi - ${label}**\n-# +${ui.formatDuration(extra)}`;
   } else if (action === 'kaldir') {
     if (punishment.status !== 'active') return replyError(interaction, 'Bu ceza zaten sona ermiş.');
     await interaction.deferUpdate();
     result = await moderation.lift(interaction.guild, punishment, interaction.user.id, reason());
-    banner = `**Ceza kaldırıldı・${label}**`;
+    banner = `**Ceza kaldırıldı - ${label}**`;
   } else if (action === 'sil') {
     await interaction.deferUpdate();
     result = await moderation.remove(interaction.guild, punishment, interaction.user.id, reason());

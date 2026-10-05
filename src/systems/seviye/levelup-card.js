@@ -8,7 +8,7 @@ const HEIGHT = 310;
 // Yazı tipinde olmayan karakterler (・, emoji vb.) kutucuk çıkardığı için rol adından temizlenir
 const cleanName = (name) =>
   String(name)
-    .replace(/[・｜|]/g, ' • ')
+    .replace(/[・｜|]/g, ' - ')
     .replace(/[^\p{Script=Latin}\p{N}\s.,'’!&()+•_-]/gu, '')
     .replace(/\s+/g, ' ')
     .trim();

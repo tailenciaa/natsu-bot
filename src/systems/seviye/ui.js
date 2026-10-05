@@ -10,7 +10,7 @@ const KIND_PLACE = { mesaj: 'sohbette', ses: 'sesli sohbette' };
 // Ana seviyeye ulaşılınca kanala giden duyuru; kazanılan rol (varsa) ayrı blokta etiket olarak yazılır.
 // Etiketler allowedMentions ile sadece seviye atlayan üyeyi bildirir, rol etiketi bildirim göndermez.
 function levelUpAnnounce(user, kind, level, role) {
-  const blocks = [`**Yeni Seviye**\n<@${user.id}>・${KIND_TITLE[kind]} Seviyesi・**${level}**`];
+  const blocks = [`**Yeni Seviye**\n<@${user.id}> - ${KIND_TITLE[kind]} Seviyesi - **${level}**`];
   if (role) blocks.push(`**Kazanılan Rol**\n<@&${role.id}>`);
   return page({
     title: 'Seviye Atladı',
@@ -24,7 +24,7 @@ const progressLine = (kind, xp) => {
   const level = levelFromXp(xp);
   const current = level > 0 ? config.xpForLevel(level) : 0;
   const next = config.xpForLevel(level + 1);
-  return `**${KIND_TITLE[kind]} Seviyesi**\nSeviye \`${level}\`・${xp - current}/${next - current} XP`;
+  return `**${KIND_TITLE[kind]} Seviyesi**\nSeviye \`${level}\` - ${xp - current}/${next - current} XP`;
 };
 
 // /seviye [kullanici]

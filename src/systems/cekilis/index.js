@@ -28,6 +28,7 @@ const commands = [
         .setDescription('Yeni bir çekiliş başlatır.')
         .addStringOption((o) => o.setName('odul').setDescription('Çekilişin ödülü').setMaxLength(100).setRequired(true))
         .addStringOption((o) => o.setName('sure').setDescription('Süre: 30dk, 2sa, 1g, 1hf (dakika, saat, gün, hafta)').setRequired(true))
+        .addStringOption((o) => o.setName('aciklama').setDescription('Çekilişle ilgili kısa açıklama (isteğe bağlı)').setMaxLength(300))
         .addIntegerOption((o) => o.setName('kazanan').setDescription('Kazanan sayısı (varsayılan 1)').setMinValue(1).setMaxValue(20))
         .addChannelOption((o) =>
           o.setName('kanal').setDescription('Çekilişin gönderileceği kanal').addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
@@ -118,7 +119,7 @@ async function finish(client, g) {
       .write(client, 'bot', {
         color: 'success',
         title: 'Çekiliş Sonuçlandı',
-        lines: [`**Çekiliş:** #${g.no} • ${g.prize}`, `**Katılımcı sayısı:** ${g.participants.length}`, `**Kazananlar:** ${g.winners.length ? g.winners.map((id) => `<@${id}>`).join(', ') : 'yok'}`],
+        lines: [`**Çekiliş:** #${g.no} ${g.prize}`, `**Katılımcı sayısı:** ${g.participants.length}`, `**Kazananlar:** ${g.winners.length ? g.winners.map((id) => `<@${id}>`).join(', ') : 'yok'}`],
       })
       .catch(() => {});
     return true;
@@ -155,6 +156,7 @@ async function create(interaction) {
     channelId: target.id,
     messageId: null,
     prize: interaction.options.getString('odul', true).trim(),
+    description: interaction.options.getString('aciklama')?.trim() || null,
     winnerCount: interaction.options.getInteger('kazanan') ?? 1,
     endsAt: Date.now() + minutes * 60 * 1000,
     hostId: interaction.user.id,
@@ -189,7 +191,7 @@ async function create(interaction) {
     .write(interaction.client, 'bot', {
       color: 'primary',
       title: 'Çekiliş Başlatıldı',
-      lines: [`**Çekiliş:** #${g.no} • ${g.prize}`, `**Düzenleyen:** <@${interaction.user.id}>`, `**Kanal:** <#${target.id}>`, `**Kazanan sayısı:** ${g.winnerCount}`],
+      lines: [`**Çekiliş:** #${g.no} ${g.prize}`, `**Düzenleyen:** <@${interaction.user.id}>`, `**Kanal:** <#${target.id}>`, `**Kazanan sayısı:** ${g.winnerCount}`],
     })
     .catch(() => {});
 
@@ -245,7 +247,7 @@ async function cancel(interaction) {
 async function list(interaction) {
   const active = store.active();
   const body = active.length
-    ? active.map((g) => `- **#${g.no}:** ${g.prize} • <#${g.channelId}> • bitiş <t:${core.unix(g.endsAt)}:R> • ${g.participants.length} katılımcı`).join('\n')
+    ? active.map((g) => `- **#${g.no} ${g.prize}:** <#${g.channelId}>, bitiş <t:${core.unix(g.endsAt)}:R>, ${g.participants.length} katılımcı`).join('\n')
     : 'Şu an açık çekiliş yok.';
   return respond(
     interaction,

@@ -250,7 +250,7 @@ function postCard(request, trusted, banned) {
     .setAccentColor(colors.primary)
     .addTextDisplayComponents(
       head(
-        `Partner・\`${request.serverId ?? 'bilinmiyor'}\``,
+        `Partner - \`${request.serverId ?? 'bilinmiyor'}\``,
         'Aşağıda partner olduğumuz sunucunun tanıtım metni yer alıyor; ilgini çekerse sunucuya katılabilirsin. Yetkililer bu karttaki butonlarla partneri güvenilir listeye alabilir veya yönetebilir.',
       ),
     )

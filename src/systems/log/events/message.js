@@ -63,14 +63,16 @@ async function handleMessageUpdate(oldMessage, newMessage) {
     'mesaj',
     ui.entry('warning', 'Mesaj Düzenlendi', [
       `**Kullanıcı:** <@${newMessage.author.id}>`,
-      `**Kanal:** <#${newMessage.channelId}> • [Mesaja git](${newMessage.url})`,
+      `**Kanal:** <#${newMessage.channelId}>`,
+      `**Mesaj:** [Mesaja git](${newMessage.url})`,
       `**Önceki:**\n${core.quote(trim(oldMessage.content || '(boş)'))}`,
       `**Yeni:**\n${core.quote(trim(newMessage.content || '(boş)'))}`,
     ], [
       `**Mesaj sahibi:** <@${newMessage.author.id}>`,
       `**Gönderildiği zaman:** ${stamp(newMessage.createdTimestamp)}`,
       `**Düzenlendiği zaman:** ${stamp(Date.now())}`,
-      `**Kanal:** <#${newMessage.channelId}> • [Mesaja git](${newMessage.url})`,
+      `**Kanal:** <#${newMessage.channelId}>`,
+      `**Mesaj:** [Mesaja git](${newMessage.url})`,
       `**Mesaj ID:** \`${newMessage.id}\``,
       `**Önceki:**\n${core.quote((oldMessage.content || '(boş)').slice(0, 700))}`,
       `**Yeni:**\n${core.quote((newMessage.content || '(boş)').slice(0, 700))}`,
