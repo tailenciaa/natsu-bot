@@ -151,6 +151,11 @@ async function finish(guild, app, reason) {
   return voice.closeForApplicant(guild, app, reason);
 }
 
+// Paneli gönderilemeyen oryantasyonlar için uyarı bir kez gönderilir
+const panelFailureNotified = new Set();
+// Panel adım butonlarına art arda (çift) tıklama iki adım birden ilerletmesin: son adım değişikliği zamanı
+const lastMove = new Map();
+
 // Oryantasyonu başlatır: paneli kanalın sohbetine atar, iki taraf da etiketlenir
 async function start(guild, app, channelId) {
   saveOrientation(app, { status: 'active', channelId, startedAt: Date.now(), step: 0 });
@@ -167,6 +172,15 @@ async function start(guild, app, channelId) {
 
   if (!message) {
     saveOrientation(app, { status: 'waiting', channelId: null, startedAt: null });
+    // Her ses olayında yeniden denenip sessizce başarısız olmasın: yetkililere bir kez haber verilir
+    if (!panelFailureNotified.has(app.id)) {
+      panelFailureNotified.add(app.id);
+      await basvuruLog.send(
+        guild,
+        app,
+        core.alert('Oryantasyon paneli gönderilemedi.', 'Botun görüşme kanalının sohbetinde mesaj gönderme izni olmalı.', 'danger'),
+      );
+    }
     return false;
   }
 
@@ -588,7 +602,7 @@ async function handleGrant(interaction, app) {
     missing.length ? `Rolü tanımlanmadığı için atlananlar: ${missing.join(', ')}.` : null,
     `Görüşme kanalları kilitlendi${kicked ? `, yeni yetkili ${basvuruConfig.disconnectDelaySeconds} saniye içinde kanaldan çıkarılacak` : ''}.`,
   ].filter(Boolean);
-  await followUp(interaction, core.notice(`**Yetki verildi, oryantasyon tamamlandı!**\n${notes.map((n) => `-# ${n}`).join('\n')}`, 'success'));
+  await followUp(interaction, core.alert('Yetki verildi, oryantasyon tamamlandı.', notes.join('\n'), 'success'));
 }
 
 // Tüm oryantasyon butonları, menüleri ve formları: oryantasyon:<başvuru>:<işlem>
@@ -633,6 +647,10 @@ async function handleAction(interaction) {
   if (action === 'seviye') {
     saveOrientation(app, { levelId: interaction.values[0] });
   } else {
+    // Aynı oryantasyonda 1 saniye içindeki ikinci adım tıklaması yoksayılır (çift tıklama ya da iki yetkili aynı anda)
+    const now = Date.now();
+    if (now - (lastMove.get(app.id) ?? 0) < 1000) return interaction.deferUpdate();
+    lastMove.set(app.id, now);
     const error = moveStep(app, action);
     if (typeof error === 'string') return replyError(interaction, error);
   }

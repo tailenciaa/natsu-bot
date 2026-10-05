@@ -33,7 +33,7 @@ module.exports = {
   areas: [
     {
       id: 'destek',
-      label: 'Ticket',
+      label: 'Destek Talepleri',
       description: 'Destek taleplerini üstlenir ve üyelerin sorunlarını çözer.',
       roleName: 'Ticket Yetkilisi',
       info:
@@ -51,7 +51,7 @@ module.exports = {
       info:
         'Sorun çözme ses kanallarında üyelerin sorunlarını dinle ve çözmeye çalış.\n' +
         'Üyeyle sakin ve anlayışlı konuş; çözemediğin konuyu bekletmeden Sorun Çözücü Lideri\'ne ilet.\n' +
-        'Görüşme sonunda üye seni puanlayabilir, puanlar siciline işlenir.',
+        'Üyeler destek taleplerinin sonunda seni puanlayabilir, puanlar siciline işlenir.',
     },
     {
       id: 'oryantasyon',
