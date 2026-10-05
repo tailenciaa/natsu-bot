@@ -1,5 +1,5 @@
 // Kurallar paneli: bot açılınca #kurallar kanalına kendiliğinden gönderilir (core/panel.js), metin config.js'te.
-// Metin ya da görsel değişince eski panel silinip yenisi gönderilir. Panelin altındaki "Okudum, Kabul Ediyorum"
+// Metin ya da görsel değişince eski panel silinip yenisi gönderilir. Panelin altındaki "Kabul Ediyorum"
 // butonuna basan üyeye sadece kendisinin göreceği bir teşekkür mesajı gelir, butondaki sayı güncellenir.
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
@@ -36,10 +36,7 @@ async function handleAccept(interaction) {
     save();
   }
   await interaction.update({ components: [container], allowedMentions: { parse: [] } });
-  await respond(
-    interaction,
-    core.alert('Teşekkürler!', 'Kuralları okuyup kabul ettiğin için teşekkür ederiz. Sunucumuzda iyi eğlenceler!', 'success'),
-  );
+  await respond(interaction, core.alert('Kuralları kabul ettin.', 'Teşekkürler, sunucuda iyi eğlenceler.', 'success'));
 
   logSystem
     .write(interaction.client, 'bot', {

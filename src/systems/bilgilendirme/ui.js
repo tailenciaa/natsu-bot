@@ -5,14 +5,14 @@ const { text, divider } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 const config = require('./config');
 
-const TITLE = `${botName} Sunucu Bilgilendirmesi`;
+const TITLE = `${botName} Bilgilendirme`;
 
 // Bir bloğun metni: kalın alt başlık, açıklama, madde listesi ve küçük not
 function blockText(block) {
   const parts = [];
   if (block.heading) parts.push(`**${block.heading}**`);
   if (block.text) parts.push(block.text);
-  if (block.items) parts.push(block.items.map((item) => item).join('\n'));
+  if (block.items) parts.push(block.items.join('\n'));
   if (block.note) parts.push(`-# ${block.note}`);
   return parts.join('\n');
 }
@@ -27,7 +27,7 @@ function messages() {
     const container = new ContainerBuilder();
     if (index === 0) {
       container.addTextDisplayComponents(
-        text(`${panelTitle(TITLE)}\n**Sunucumuz hakkında bilmen gereken her şey bu kanalda, yukarıdan aşağı oku.**`),
+        text(`${panelTitle(TITLE)}\n-# Sunucumuz hakkında bilmen gereken her şey bu kanalda, sırayla oku.`),
       );
       if (config.banner) {
         container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));

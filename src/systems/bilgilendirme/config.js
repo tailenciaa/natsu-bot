@@ -6,11 +6,12 @@ module.exports = {
   // Panelin gönderileceği kanal (#bilgilendirme)
   channel: '1538533822940061706',
 
-  // İlk mesajın üstünde gösterilen görsel (doğrudan URL)
+  // İlk mesajın üstünde gösterilen görsel (doğrudan URL; süreli Discord bağlantıları gönderirken yerel kopyaya çevrilir,
+  // kalıcısı için görseli assets/banners/ altına dosya adıyla koymak yeterli)
   banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1555880947730223155/bilgilendirmekazuki.jpg?backend=b2&ex=6ac3740c&is=6ac2228c&hm=7e59ef0269e9f8fd2524f65fd9a4bd5d9e0096af1b76fcb6417c574b7ee928c9&',
 
   // Bölümler. Her biri ayrı bir mesaj olur. blocks içinde:
-  //   heading: kalın alt başlık, text: açıklama, items: madde listesi (plain: true ise madde işareti konmaz),
+  //   heading: kalın alt başlık, text: açıklama, items: satır satır liste (madde işareti metnin içinde yazılır),
   //   note: altta küçük yazılan not. Bloklar arasına çizgi konur.
   sections: [
     {
@@ -69,7 +70,7 @@ module.exports = {
       "blocks": [
         {
           "items": [
-            "`1.` <#1538533642832318517> kanalındaki kuralları oku ve **Okudum, Kabul Ediyorum** butonuna bas.",
+            "`1.` <#1538533642832318517> kanalındaki kuralları oku ve **Kabul Ediyorum** butonuna bas.",
             "`2.` <@&1544051409199042631> rolün girer girmez **otomatik** verilir, onay beklemene gerek yok. <#1538536247138590801> kanalında sohbete katılabilirsin.",
             "`3.` Takıldığın bir yer olursa <#1538535372588326973> kanalından **Talep Oluştur** ile destek talebi aç. Yetkililere özelden yazma."
           ],
@@ -122,7 +123,7 @@ module.exports = {
           "heading": "Görev Rolleri",
           "items": [
             "<@&1544337671340433569> <@&1553133497781325954>: Destek taleplerini üstlenir ve sorunları çözer.",
-            "<@&1554237787421548704> <@&1554239996645613638>: Ticket (destek) talepleriyle ilgilenir.",
+            "<@&1554237787421548704> <@&1554239996645613638>: Destek talepleriyle ilgilenir.",
             "<@&1554239999619375274> <@&1554239998214152222>: Sesli kanalların düzenini sağlar.",
             "<@&1554239997559705720> <@&1554240000177078322>: Sohbet kanallarının düzenini sağlar.",
             "<@&1554240000529539083> <@&1554239995412488304>: Etkinlikleri planlar ve yönetir.",
@@ -296,7 +297,7 @@ module.exports = {
       "blocks": [
         {
           "heading": "Özel oda",
-          "text": "<#1538940395663130674> kanalına girince sana ait **🔊 adın** isminde bir oda açılır ve oraya taşınırsın. Oda boşalınca kendiliğinden silinir."
+          "text": "<#1538940395663130674> kanalına girince görünen adınla sana ait bir oda açılır ve oraya taşınırsın. Oda boşalınca kendiliğinden silinir."
         },
         {
           "heading": "Oda sahibi olarak yapabileceklerin",
@@ -446,7 +447,7 @@ module.exports = {
             "`1.` Başvurun <@&1553398951816863844> ekibi tarafından incelenir, sonuç sana **DM** ile iletilir.",
             "`2.` Uygun bulunursan bir ses kanalında **görüşmeye** çağrılırsın.",
             "`3.` Görüşme olumluysa **oryantasyon** yapılır: kurallar, ceza sistemi, komutlar ve yetkili davranışı anlatılır.",
-            "`4.` Görev alanını seçersin: **Ticket, Sorun Çözücü, Oryantasyon, Sohbet, Ses, Etkinlik, Partner ya da Karşılama.**"
+            "`4.` Görev alanını seçersin: **Destek Talepleri, Sorun Çözücü, Oryantasyon, Sohbet Moderasyonu, Ses Moderasyonu, Etkinlik, Partner ya da Karşılama.**"
           ],
           "plain": true
         },

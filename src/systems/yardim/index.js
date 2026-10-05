@@ -18,9 +18,15 @@ const commands = [
 // Sistem listesi yardım sisteminin kendisini de içerdiği için ihtiyaç anında yüklenir
 const systems = () => require('..');
 
-// Kategoriler sistemlerin sırasıyla, aynı kategoriyi kullanan sistemler tek sekmede birleşir
+// Sekme sırası: herkesin kullandıkları önce, yetkili işlemleri sonda; listede olmayan kategoriler sistem sırasıyla sona eklenir
+const TAB_ORDER = ['genel', 'siralama', 'emoji', 'partner', 'cekilis', 'destek', 'yetki', 'log'];
+
+// Aynı kategoriyi kullanan sistemler tek sekmede birleşir; ilk sekme /yardim'in açıldığı sekmedir
 function categories() {
-  return Object.fromEntries(systems().filter((s) => s.help).map((s) => s.help.category));
+  const found = Object.fromEntries(systems().filter((s) => s.help).map((s) => s.help.category));
+  const ordered = TAB_ORDER.filter((key) => found[key]).map((key) => [key, found[key]]);
+  const rest = Object.entries(found).filter(([key]) => !TAB_ORDER.includes(key));
+  return Object.fromEntries([...ordered, ...rest]);
 }
 
 // Kategorideki komutları üretir; komut adı tıklanabilir olur, zorunlu seçenekler düz, isteğe bağlılar [köşeli] yazılır
@@ -30,7 +36,7 @@ function entriesFor(guild, category) {
   for (const system of systems()) {
     if (system.help?.category[0] !== category) continue;
 
-    for (const command of system.commands.map((c) => c.toJSON())) {
+    for (const command of (system.commands ?? []).map((c) => c.toJSON())) {
       const id = guild.commands.cache.find((c) => c.name === command.name)?.id;
       const subcommands = (command.options ?? []).filter((o) => o.type === SUBCOMMAND);
       const variants = subcommands.length

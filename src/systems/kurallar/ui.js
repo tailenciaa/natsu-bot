@@ -21,7 +21,7 @@ const sectionText = (section, index) =>
 // Panelin en altında kuralları kabul eden üye sayısını gösteren buton bulunur
 function panel() {
   const container = new ContainerBuilder().addTextDisplayComponents(
-    text(`${panelTitle(TITLE)}\n-# Sunucumuzda herkesin rahat etmesi için aşağıdaki kurallara uymak zorunludur; lütfen hepsini dikkatle oku ve sunucuda bu kurallara uygun davran, okuduktan sonra aşağıdaki butonla kabul et.`),
+    text(`${panelTitle(TITLE)}\n-# Sunucuda herkesin rahat etmesi için bu kurallara uymak zorunludur; hepsini dikkatle oku ve okuduktan sonra **Kabul Ediyorum** butonuyla onayla.`),
   );
   if (config.banner) {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
@@ -36,7 +36,7 @@ function panel() {
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(IDS.accept)
-          .setLabel(`Okudum, Kabul Ediyorum (${store.count()})`)
+          .setLabel(`Kabul Ediyorum (${store.count()})`)
           .setStyle(ButtonStyle.Success),
       ),
     );
