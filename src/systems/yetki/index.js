@@ -99,7 +99,7 @@ async function handleGive(interaction) {
   if (!added) return replyError(interaction, 'Roller verilemedi.', 'Botun rolü verilecek rollerin üstünde olmalı.');
 
   await interaction.update({
-    components: [ui.staffPanel({ user: member.user, levelId, permIds, dutyIds, done: true, missingRoles })],
+    components: [ui.staffPanel({ user: member.user, levelId, permIds, dutyIds, done: true, missingRoles, by: interaction.user.id, roleIds })],
     allowedMentions: { parse: [] },
   });
 

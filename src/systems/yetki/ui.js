@@ -25,30 +25,33 @@ const unmask = (value, list) => {
 };
 
 // state: { user, levelId, permIds, done, missingRoles }. Seçimler buton/menü ID'lerinde taşınır.
-function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles }) {
+function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, by, roleIds = [] }) {
   const { levels, perms, duties } = config;
   const level = levels.find((l) => l.id === levelId);
-  const permLabels = perms.filter((p) => permIds.includes(p.id)).map((p) => p.label);
-  const dutyLabels = duties.filter((d) => dutyIds.includes(d.id)).map((d) => d.label);
-  const missingNote = missingRoles ? 'Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : 'Seçilen yetkilerin rolleri verildi.';
-  const intro = done
-    ? `**Yetki Durumu**\n<@${user.id}> artık ekipte.\n-# ${missingNote}`
-    : `**Düzenlenen Üye**\n<@${user.id}> için yetki düzenliyorsun.`;
+  const labels = (list, ids) => list.filter((item) => ids.includes(item.id)).map((item) => item.label).join(', ') || 'Yok';
   const summary = [
-    '**Seçimler**',
-    `Seviye: ${level ? level.label : 'Seçilmedi'}`,
-    `Yetkiler: ${permLabels.length ? permLabels.join(', ') : 'Yok'}`,
-    `Görev Rolleri: ${dutyLabels.length ? dutyLabels.join(', ') : 'Yok'}`,
+    `**Rütbe:** ${level ? level.label : 'Seçilmedi'}`,
+    `**Yetkiler:** ${labels(perms, permIds)}`,
+    `**Görev Rolleri:** ${labels(duties, dutyIds)}`,
   ].join('\n');
+
+  const blocks = done
+    ? [
+        `**Yeni Yetkili**\n<@${user.id}> artık ekibimizin bir parçası.\n**Yetkiyi Veren:** <@${by}>`,
+        `**Verilen Yetkiler**\n${summary}`,
+        `**Verilen Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\n-# Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : ''}`,
+        `-# <t:${Math.floor(Date.now() / 1000)}:F>`,
+      ]
+    : [`**Düzenlenen Üye**\n<@${user.id}> için yetki düzenliyorsun.`, `**Seçimler**\n${summary}`];
 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
-      ? 'Seçtiğin seviye ve yetkiler üyeye başarıyla tanımlandı; verilen seviye ile yetkilerin özeti aşağıda yer alıyor, bu mesaj yetkilendirme işleminin kaydı olarak kanalda kalır.'
+      ? 'Seçtiğin rütbe, yetkiler ve görev rolleri üyeye başarıyla tanımlandı; verilen rollerin özeti aşağıda yer alıyor, bu mesaj yetkilendirme işleminin kaydı olarak kanalda kalır.'
       : 'Rütbe seçtiğinde o rütbenin yetkileri ve görev rolleri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilirsin, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,
-    blocks: [intro, summary],
+    blocks,
   });
 
   if (!done) {
