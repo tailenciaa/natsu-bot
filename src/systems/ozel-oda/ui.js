@@ -136,10 +136,10 @@ const GUIDE_TITLE = 'Özel Oda Rehberi';
 function guidePanel() {
   const { createChannelId } = require('./config');
   const blocks = [
-      `**Oda nasıl açılır?**\n**Katıl:** <#${createChannelId}> kanalına girdiğinde senin için otomatik olarak kendi ses kanalın açılır ve içine alınırsın.\n**İsim:** Odanın adı görünen adından oluşturulur, istediğin zaman değiştirebilirsin.\n**Kontrol paneli:** Odanın kendi yazı sohbetine oda ayarlarını yönettiğin panel gönderilir.`,
-      `**Oda sahibi neler yapabilir?**\n**Kilitle / Aç:** Kilitliyken yeni kimse odaya katılamaz, içeridekiler kalmaya devam eder.\n**Gizle / Göster:** Gizliyken oda kanal listesinde sadece içindekilere görünür.\n**Kişi Limiti:** Odaya girebilecek en fazla kişi sayısını belirler, 0 sınırsız demektir.\n**İsim Değiştir:** Odanın adını istediğin gibi değiştirir.`,
-      `**Kullanıcı yönetimi**\n**Kullanıcı At:** Seçtiğin kişiyi odadan çıkarır, istediği zaman tekrar girebilir.\n**Kullanıcı Yasakla:** Seçtiğin kişiyi çıkarır ve oda silinene kadar tekrar girmesini engeller.\n**Sahipliği Devret:** Odanın yönetimini odadaki başka bir üyeye verir.\n**Not:** Menüler sadece o an odada bulunan üyeleri listeler.`,
-      `**Bilmen gerekenler**\n**Kontrol:** Paneli sadece oda sahibi kullanabilir.\n**Bekleme:** Spam olmaması için panel işlemleri arasında kısa bir bekleme vardır, isim ve limit değişikliğinde bu süre biraz daha uzundur.\n**Silinme:** Odada kimse kalmayınca oda kendiliğinden silinir.\n**Yeni oda:** Oluştur kanalına her girişinde yeni bir oda açılır.`,
+    `**Oda nasıl açılır?**\n<#${createChannelId}> kanalına girdiğinde senin için kendi ses kanalın açılır ve içine alınırsın. Odanın adı görünen adından oluşur, istediğin zaman değiştirebilirsin. Odanın yazı sohbetinde oda ayarlarını yönettiğin panel durur.`,
+    '**Oda sahibi neler yapabilir?**\nOdayı kilitleyerek yeni girişleri durdurabilir, gizleyerek kanal listesinde sadece içindekilere görünür yapabilirsin. Kişi limitini ve odanın adını da değiştirebilirsin, limit 0 ise sınırsızdır.',
+    '**Kullanıcı yönetimi**\nSeçtiğin kişiyi odadan atabilir ya da oda silinene kadar tekrar girmesini engelleyebilirsin. Odanın sahipliğini odadaki başka bir üyeye devredebilirsin, menüler sadece o an odada olanları listeler.',
+    '**Bilmen gerekenler**\nPaneli sadece oda sahibi kullanabilir, spam olmasın diye işlemler arasında kısa bir bekleme vardır. Odada kimse kalmayınca oda silinir ve oluştur kanalına her girişinde yeni bir oda açılır.',
   ];
   const container = page({
     title: GUIDE_TITLE,

@@ -686,8 +686,7 @@ function partnerPanel(entry, guildName) {
     .addTextDisplayComponents(
       text(
         '**Neler Yapabilirsin?**\n' +
-          `**Müsaitlik:** Meşgul seçersen yetkililerimiz ${BUSY_DAYS} gün boyunca sana teklif göndermez.\n` +
-          '**Teklif:** Yeni partner metnini buradan gönderirsin; yetkilimiz onaylayınca otomatik paylaşılır.',
+          `Meşgul seçersen yetkililerimiz ${BUSY_DAYS} gün boyunca sana teklif göndermez. Yeni partner metnini buradan gönderebilirsin, yetkilimiz onaylayınca otomatik paylaşılır.`,
       ),
     )
     .addActionRowComponents(

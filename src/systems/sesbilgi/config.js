@@ -14,7 +14,6 @@ module.exports = {
     permanentRooms: '1538941087195074702', // kalıcı oda bilgi
     stream: '1538940642892324864', // yayın yetkisi
     weekly: '1538538279627132999', // haftanın aktifleri
-    rules: '1538533642832318517', // kurallar
     support: '1538535372588326973', // destek talebi
   },
   // Haftanın ses aktifleri rolü ve ses yetkilisi rolü

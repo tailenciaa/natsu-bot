@@ -91,18 +91,12 @@ function noticeRow(app) {
   return row.addComponents(manageButtons(app));
 }
 
-// Adım türüne göre "ne yapılacak" bloğu: kimin neye basacağı ve butonların ne işe yaradığı açıkça yazılır
+// Adım türüne göre kısa "ne yapılacak" cümlesi (butonların adı zaten ne yaptıklarını söylüyor)
 function stepHint(step, app) {
   const staff = `<@${app.orientation.staffId}>`;
-  if (step.type === 'areas') {
-    return [`**Yapılacak:** Başvuran ya da ${staff} menüden en az bir görev alanı seçer.`, '**Devam:** Alan seçilince açılır ve sonraki adıma geçer.'].join('\n');
-  }
-  if (step.type === 'final') {
-    return [`**Yapılacak:** ${staff} seviyeyi kontrol eder.`, '**Yetki Ver:** Roller otomatik verilir ve oryantasyon biter.'].join('\n');
-  }
-  const lines = [`**Yapılacak:** ${staff} konuyu anlatır.`, `**${step.nextLabel ?? 'Anlatıldı, Devam'}:** Sonraki adıma geçer.`];
-  if (step.skippable) lines.push('**Biliyor, Atla:** Başvuran konuyu biliyorsa adımı geçer.');
-  return lines.join('\n');
+  if (step.type === 'areas') return `Başvuran ya da ${staff} menüden en az bir görev alanı seçer.`;
+  if (step.type === 'final') return `${staff} seviyeyi kontrol eder, **Yetki Ver** ile roller verilir ve oryantasyon biter.`;
+  return `${staff} konuyu anlatır${step.skippable ? ', başvuran biliyorsa **Biliyor, Atla** ile geçilir' : ''}.`;
 }
 
 function stepBody(step, app) {

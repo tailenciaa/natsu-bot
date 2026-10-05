@@ -109,13 +109,8 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
 
 // Yeni yetkiliye giden DM'lerin "Başlarken" bölümü: nerede ne yapacağı
 const guideText = () =>
-  [
-    '**Başlarken**',
-    `**Komut Kanalı:** <#${staffCommandChannel}>`,
-    `**Kurallar:** <#${config.guide.rules}>`,
-    `**Bilgilendirme:** <#${config.guide.info}>`,
-    `**Yetkili Sohbet:** <#${config.guide.chat}>`,
-  ].join('\n');
+  '**Başlarken**\n' +
+  `Yetkili komutlarını <#${staffCommandChannel}> kanalında kullanabilirsin. Kuralları <#${config.guide.rules}>, işleyişi <#${config.guide.info}> kanalından okuyabilir, ekiple <#${config.guide.chat}> kanalında konuşabilirsin.`;
 
 // Yetki verilen kişiye giden DM: ne verildiği ve nereden başlayacağı
 function grantDm(guildName, { level, permIds, dutyIds, by }) {
