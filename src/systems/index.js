@@ -36,6 +36,7 @@ module.exports = [
   require('./ses'),
   require('./ozel-oda'),
   require('./durum'),
+  require('./cekilis'), // /cekilis: ödüllü çekilişler, katıl butonu, otomatik kazanan seçimi
   require('./temizle'), // /sil: kanaldaki mesajları toplu siler
   require('./log'), // Mesaj, ses, üye, moderasyon, sunucu ve boost logları; ana log kanalının altında kategori alt başlıkları
   require('./yardim'),
