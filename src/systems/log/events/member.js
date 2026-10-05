@@ -31,7 +31,7 @@ async function handleMemberAdd(member) {
     'uye',
     ui.entry('success', 'Üye Katıldı', [
       `**Kullanıcı:** <@${member.id}> (${member.user.tag})`,
-      `**Hesap oluşturma:** <t:${unix(member.user.createdTimestamp)}:R>${newAccount ? ' (⚠️ yeni hesap)' : ''}`,
+      `**Hesap oluşturma:** <t:${unix(member.user.createdTimestamp)}:R>${newAccount ? ' (yeni hesap)' : ''}`,
       `**Üye sayısı:** ${member.guild.memberCount}`,
       await joinSource(member),
     ]),

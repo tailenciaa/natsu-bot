@@ -103,7 +103,7 @@ async function handleAutoModRuleDelete(rule) {
 
 async function handleAutoModRuleUpdate(oldRule, newRule) {
   const changes = [];
-  if (oldRule?.name !== newRule.name) changes.push(`**Ad:** ${oldRule?.name ?? '?'} → ${newRule.name}`);
+  if (oldRule && oldRule.name !== newRule.name) changes.push(`**Ad:** ${oldRule.name} → ${newRule.name}`);
   if (oldRule && oldRule.enabled !== newRule.enabled) changes.push(`**Durum:** ${newRule.enabled ? 'açıldı' : 'kapatıldı'}`);
   if (!changes.length) return;
   await engine.send(

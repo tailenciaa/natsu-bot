@@ -55,7 +55,10 @@ async function handleMessageDelete(message) {
 
 async function handleMessageUpdate(oldMessage, newMessage) {
   if (!newMessage.guild || ignorable(newMessage.channel)) return;
-  if (newMessage.author?.bot) return;
+  // Önbellekte olmayan (partial) eski mesajın içeriği bilinmez; boş "önceki" ile yanıltıcı log atılmaz
+  if (oldMessage.partial) return;
+  if (newMessage.partial) newMessage = await newMessage.fetch().catch(() => null);
+  if (!newMessage?.author || newMessage.author.bot) return;
   if (oldMessage.content === newMessage.content) return; // embed önizlemesi gibi içerik dışı güncellemeler atlanır
 
   await engine.send(

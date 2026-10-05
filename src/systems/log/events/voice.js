@@ -40,7 +40,8 @@ async function handleVoiceStateUpdate(oldState, newState) {
     }
   }
 
-  if (!newState.channelId) return; // kanaldan çıkmışsa aşağıdaki durum değişiklikleri önemsiz
+  // Durum değişiklikleri sadece aynı kanalda kalarak olanlar için loglanır: girişte/çıkışta/taşınmada zaten kendi logu var
+  if (!oldState.channelId || !newState.channelId || oldState.channelId !== newState.channelId) return;
 
   const changes = [
     flagChange('Kendi mikrofonu', !oldState.selfMute, !newState.selfMute),

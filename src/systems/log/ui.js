@@ -63,7 +63,7 @@ function panel() {
     .setPlaceholder('Bir log kategorisi seç...')
     .addOptions(
       categories.map((c) =>
-        new StringSelectMenuOptionBuilder().setLabel(c.label).setDescription(c.description).setEmoji(c.emoji).setValue(c.key),
+        new StringSelectMenuOptionBuilder().setLabel(c.label).setDescription(c.description).setValue(c.key),
       ),
     );
 
@@ -89,7 +89,7 @@ function jumpLink(category, thread) {
       new SectionBuilder()
         .addTextDisplayComponents(
           text(
-            `## ${category.emoji} ${category.label}\n` +
+            `## ${category.label}\n` +
               '-# Seçtiğin log kategorisinin tutulduğu alt başlık hazır; yanındaki butona basarak doğrudan o alt başlığa gidebilir ve ilgili olay kayıtlarını orada inceleyebilirsin.',
           ),
         )
@@ -118,8 +118,8 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
     '**Kanallar**\n' +
       `**Ana log kanalı:** <#${mainId}>\n` +
       `**Log paneli kanalı:** <#${panelId}>\n` +
-      `**Panel:** ${panelUrl ? `✅ [mesaja git](${panelUrl})` : '❌ gönderilmemiş'}`,
-    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `${category.emoji} **${category.label}:** ${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')}`,
+      `**Panel:** ${panelUrl ? `[mesaja git](${panelUrl})` : 'gönderilmemiş'}`,
+    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n')}`,
   ];
   if (note) blocks.push(`**Son İşlem**\n${note}`);
 

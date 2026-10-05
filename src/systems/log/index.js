@@ -95,13 +95,13 @@ async function handleSetupButton(interaction) {
 
   if (action === 'setup') {
     await engine.ensureAllThreads(client);
-    note = '✅ Eksik alt başlıklar kuruldu.';
+    note = 'Eksik alt başlıklar kuruldu.';
   } else if (action === 'resetyes') {
     for (const { key } of categories) await engine.resetThread(client, key).catch((err) => console.error(`[log] "${key}" sıfırlanamadı:`, err.message));
-    note = '✅ Tüm alt başlıklar silinip yeniden açıldı.';
+    note = 'Tüm alt başlıklar silinip yeniden açıldı.';
   } else if (action === 'panel') {
     await syncLogPanel(client, true);
-    note = '✅ Panel log paneli kanalına gönderildi.';
+    note = 'Panel log paneli kanalına gönderildi.';
   }
 
   return interaction.editReply({ components: [await setupView(guild, note)], flags: core.CV2 });
@@ -131,7 +131,7 @@ async function handleDetail(interaction) {
   }
   const category = categories.find((c) => c.key === meta.category);
   await interaction.deferReply({ flags: core.EPHEMERAL });
-  return interaction.editReply({ components: [ui.detail(meta, category ? `${category.emoji} ${category.label}` : 'Log')], flags: core.CV2 });
+  return interaction.editReply({ components: [ui.detail(meta, category ? category.label : 'Log')], flags: core.CV2 });
 }
 
 module.exports = {
