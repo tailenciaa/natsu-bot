@@ -90,29 +90,35 @@ function noticeRow(app) {
   return row.addComponents(manageButtons(app));
 }
 
-// Adım türüne göre kısa "ne yapılacak" notu: kimin neye basacağı açıkça yazılır
+// Adım türüne göre "ne yapılacak" bloğu: kimin neye basacağı ve butonların ne işe yaradığı açıkça yazılır
 function stepHint(step, app) {
   const staff = `<@${app.orientation.staffId}>`;
-  if (step.type === 'areas') return `-# Başvuran ya da ${staff} menüden en az bir alan seçer, sonra **Devam** ile ilerlenir.`;
-  if (step.type === 'final') return `-# ${staff} seviyeyi kontrol edip **Yetki Ver**'e basınca roller otomatik verilir ve oryantasyon biter.`;
-  return `-# ${staff} konuyu anlatır, bitince **${step.nextLabel ?? 'Anlatıldı, Devam'}**'e basar.${step.skippable ? ' Başvuran konuyu biliyorsa **Biliyor, Atla** kullanılır.' : ''}`;
+  if (step.type === 'areas') {
+    return [`**Yapılacak:** Başvuran ya da ${staff} menüden en az bir görev alanı seçer.`, '**Devam:** Alan seçilince açılır ve sonraki adıma geçer.'].join('\n');
+  }
+  if (step.type === 'final') {
+    return [`**Yapılacak:** ${staff} seviyeyi kontrol eder.`, '**Yetki Ver:** Roller otomatik verilir ve oryantasyon biter.'].join('\n');
+  }
+  const lines = [`**Yapılacak:** ${staff} konuyu anlatır.`, `**${step.nextLabel ?? 'Anlatıldı, Devam'}:** Sonraki adıma geçer.`];
+  if (step.skippable) lines.push('**Biliyor, Atla:** Başvuran konuyu biliyorsa adımı geçer.');
+  return lines.join('\n');
 }
 
 function stepBody(step, app) {
   const body = fill(step.body, app);
   const o = app.orientation;
 
-  if (step.type === 'areas') return `${body}\n**Seçilen Alanlar:** ${areaLabels(app) || 'Henüz seçilmedi'}\n${stepHint(step, app)}`;
+  if (step.type === 'areas') return `${body}\n**Seçilen Alanlar:** ${areaLabels(app) || 'Henüz seçilmedi'}`;
   if (step.type === 'areaInfo') {
     const areas = areasOf(app);
-    return `${body}\n${areas.length ? areas.map((a) => `**${a.label}**\n${a.info}`).join('\n') : 'Henüz alan seçilmedi.'}\n${stepHint(step, app)}`;
+    return `${body}\n${areas.length ? areas.map((a) => `**${a.label}**\n${a.info}`).join('\n') : 'Henüz alan seçilmedi.'}`;
   }
   if (step.type === 'final') {
     const { roleIds } = plannedRoles(app);
     const roles = roleIds.length ? roleIds.map((id) => `<@&${id}>`).join(' ') : 'Rol tanımlı değil';
-    return `${body}\n${summaryLines(app, Date.now()).join('\n')}\n**Verilecek Roller:** ${roles}\n${stepHint(step, app)}`;
+    return `${body}\n${summaryLines(app, Date.now()).join('\n')}\n**Verilecek Roller:** ${roles}`;
   }
-  return `${body}\n${stepHint(step, app)}`;
+  return body;
 }
 
 // Son adımda ve tamamlanınca görünen oryantasyon özeti
@@ -183,14 +189,15 @@ function panel(app, applicantUser) {
   const step = steps[o.step];
   const presence = presenceText(app);
   const blocks = [
-    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için oryantasyon veriyor.\n**Adım:** ${o.step + 1}/${steps.length} - ${step.title}\n${progress(o.step, steps.length)}${steps[o.step + 1] ? `\n**Sıradaki:** ${steps[o.step + 1].title}` : ''}`,
+    `**Yetkili:** <@${o.staffId}>\n**Başvuran:** <@${app.userId}>\n**Adım:** ${o.step + 1}/${steps.length}\n${progress(o.step, steps.length)}${steps[o.step + 1] ? `\n**Sıradaki:** ${steps[o.step + 1].title}` : ''}`,
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
-  blocks.push(`**${step.title}**\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);
+  blocks.push(`### ${step.title}\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);
+  blocks.push(stepHint(step, app));
 
   const container = card(
     `Oryantasyon - Başvuru #${pad(app.number)}`,
-    'Görüşme kanalının sohbetinde adım adım ilerleyen oryantasyon paneli; adımları oryantasyonu veren yetkili ilerletir, alan seçimini başvuran da yapabilir ve süreç buradan yönetilir.',
+    'Yeni yetkilinin adım adım ilerlediği oryantasyon paneli; konuları oryantasyonu veren yetkili anlatır ve butonlarla ilerletir, süreç ve aktarma ya da iptal işlemleri buradan yönetilir.',
     blocks,
     presence ? 'warning' : 'primary',
     applicantUser?.displayAvatarURL({ size: 256 }),
@@ -233,8 +240,7 @@ function panel(app, applicantUser) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        // Alan seçimini kimin yapacağı o adımın metninde yazıyor
-        `-# Adımları <@${o.staffId}> ilerletir - Başlangıç <t:${unix(o.startedAt)}:R>`,
+        `-# Oryantasyon <t:${unix(o.startedAt)}:R> başladı`,
       ),
     );
 }
