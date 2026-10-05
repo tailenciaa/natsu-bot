@@ -2,6 +2,8 @@
 // limit/isim değiştirme formları.
 const {
   ActionRowBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ButtonBuilder,
   ButtonStyle,
   LabelBuilder,
@@ -11,7 +13,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { divider, colors, page } = require('../../core/ui');
+const { divider, colors, page, text } = require('../../core/ui');
 
 const IDS = {
   lock: 'oda-kilit',
@@ -126,21 +128,26 @@ function renameModal(current) {
 }
 
 
+const GUIDE_BANNER =
+  'https://cdn.discordapp.com/attachments/1538539811697332385/1555892852775718992/odabilgikazuki.jpg?backend=b2&ex=6ac37f23&is=6ac22da3&hm=da08b7431f50952593069496c3612a3eca3a95aeb8a126dcf0ffb67490fd403e&';
 const GUIDE_TITLE = 'Özel Oda Rehberi';
 
 // #özel-oda-rehberi kanalına giden bilgi paneli: odanın nasıl açıldığı ve kontrol panelinin ne yaptığı
 function guidePanel() {
   const { createChannelId } = require('./config');
-  return page({
-    title: GUIDE_TITLE,
-    sub: 'Kendi özel sesli odanı nasıl açacağını, oda kontrol panelindeki seçeneklerin ne işe yaradığını ve odanın hangi durumlarda kapandığını bu kanalda adım adım öğrenebilirsin.',
-    blocks: [
+  const blocks = [
       `**Oda nasıl açılır?**\n- **Katıl:** <#${createChannelId}> kanalına girdiğinde senin için otomatik olarak kendi ses kanalın açılır ve içine alınırsın.\n- **İsim:** Odanın adı görünen adından oluşturulur, istediğin zaman değiştirebilirsin.\n- **Kontrol paneli:** Odanın kendi yazı sohbetine oda ayarlarını yönettiğin panel gönderilir.`,
       `**Oda sahibi neler yapabilir?**\n- **Kilitle / Aç:** Kilitliyken yeni kimse odaya katılamaz, içeridekiler kalmaya devam eder.\n- **Gizle / Göster:** Gizliyken oda kanal listesinde sadece içindekilere görünür.\n- **Kişi Limiti:** Odaya girebilecek en fazla kişi sayısını belirler, 0 sınırsız demektir.\n- **İsim Değiştir:** Odanın adını istediğin gibi değiştirir.`,
       `**Kullanıcı yönetimi**\n- **Kullanıcı At:** Seçtiğin kişiyi odadan çıkarır, istediği zaman tekrar girebilir.\n- **Kullanıcı Yasakla:** Seçtiğin kişiyi çıkarır ve oda silinene kadar tekrar girmesini engeller.\n- **Sahipliği Devret:** Odanın yönetimini odadaki başka bir üyeye verir.\n- **Not:** Menüler sadece o an odada bulunan üyeleri listeler.`,
       `**Bilmen gerekenler**\n- **Kontrol:** Paneli sadece oda sahibi kullanabilir.\n- **Bekleme:** Spam olmaması için panel işlemleri arasında kısa bir bekleme vardır, isim ve limit değişikliğinde bu süre biraz daha uzundur.\n- **Silinme:** Odada kimse kalmayınca oda kendiliğinden silinir.\n- **Yeni oda:** Oluştur kanalına her girişinde yeni bir oda açılır.`,
-    ],
+  ];
+  const container = page({
+    title: GUIDE_TITLE,
+    sub: 'Kendi özel sesli odanı nasıl açacağını, oda kontrol panelindeki seçeneklerin ne işe yaradığını ve odanın hangi durumlarda kapandığını bu kanalda adım adım öğrenebilirsin.',
   });
+  container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(GUIDE_BANNER)));
+  for (const block of blocks) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));
+  return container;
 }
 
 module.exports = { IDS, NONE, GUIDE_TITLE, guidePanel, controlPanel, limitModal, renameModal };
