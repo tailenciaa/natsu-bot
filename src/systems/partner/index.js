@@ -7,7 +7,7 @@
 // gönderdiği için asla gerçek bir bildirim göndermez. Güvenilir partnerler kanalındaki "Teklifte Bulun" butonu
 // bir partner yetkilisi atar; atanan yetkili kabul edip metni onaylar/düzenler/iptal eder, onaylanınca karşı
 // taraf (daha önce hiç kabul etmediyse) şartları kabul edip otomatik paylaşılır, ardından karşı tarafa bizim
-// tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını ayarlayabilir.
+// tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını ayarlayabilir. Güvenilir listeye alınan partnerin yetkilileri DM'den bir Partner Paneli alır: müsaitlik durumlarını seçer (meşgulken yetkililerimiz teklif göndermez) ve istedikleri zaman kendi tarafından partnerlik teklifi gönderir; teklif oto partner talebiyle aynı yoldan inceleme kanalına düşer.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -26,7 +26,7 @@ const commands = [
     .setContexts(InteractionContextType.Guild),
   new SlashCommandBuilder()
     .setName('partner-musaitlik')
-    .setDescription('Teklifte bulunma ataması için müsaitlik durumunu ayarlar.')
+    .setDescription('Partner yetkilisi olarak teklif atamaları için müsaitlik durumunu ayarlar.')
     .setContexts(InteractionContextType.Guild)
     .addStringOption((o) =>
       o
@@ -321,10 +321,15 @@ async function handleReviewDecision(interaction) {
   if (sonuc === 'onayla') {
     // Onayda güvenilir listeye otomatik eklemiyoruz; yetkili karttaki "Güvenilir Partnerler Listesine Al"
     // butonuna basarak elle ekler. Kart bu yüzden "güvenilir değil" (buton aktif) durumuyla paylaşılır.
+    // Güvenilir partnerin Partner Paneli'nden gelen tekliflerde kayıt yeni metinle güncellenir (yenileme gibi)
+    const renewedEntry = request.renewalOf && store.getTrusted(request.renewalOf)
+      ? store.updateTrusted(request.renewalOf, { content: request.text, addedAt: Date.now(), sourceRequestId: request.id })
+      : null;
+    if (renewedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
     const postsChannel = await fetchTextChannel(interaction.guild, config.channels.posts);
     await postsChannel
       ?.send({
-        components: [ui.postCard(updated, null, store.isBanned(request.requesterId))],
+        components: [ui.postCard(updated, renewedEntry, store.isBanned(request.requesterId))],
         flags: core.CV2,
         allowedMentions: { parse: [] },
       })
@@ -393,8 +398,96 @@ async function handleTrustedAdd(interaction) {
   await interaction.update({ components: [ui.postCard(request, entry, store.isBanned(request.requesterId))], allowedMentions: { parse: [] } });
   await refreshTrustedPanel(interaction.client, interaction.guildId);
 
-  // Karşı tarafın yetkilisine bizim metni gönder
+  // Karşı tarafın yetkilisine bizim metni ve Partner Paneli'ni gönder
   await sendOurTextToContact(interaction.client, request.requesterId, entry);
+  await sendPartnerPanel(interaction.client, request.requesterId, entry);
+}
+
+// Partner yetkilisine DM'den Partner Paneli gider: müsaitlik durumunu seçer, istediğinde kendi tarafından teklif gönderir
+async function sendPartnerPanel(client, contactId, entry) {
+  const contact = await client.users.fetch(contactId).catch(() => null);
+  const guildName = client.guilds.cache.get(entry.guildId)?.name ?? 'Sunucu';
+  return contact?.send({ components: [ui.partnerPanel(entry, guildName)], flags: core.CV2 }).catch(() => null);
+}
+
+// Panel butonlarını sadece o kaydın partner yetkilileri kullanabilir (yasaklı kullanıcı ve sunucu hariç)
+function panelAccess(interaction, trustedId) {
+  const entry = store.getTrusted(trustedId);
+  if (!entry) return { error: 'Bu partnerlik artık mevcut değil.' };
+  if (!entry.contactIds?.includes(interaction.user.id)) return { error: 'Bu panel sadece sunucunun partner yetkilileri içindir.' };
+  if (store.isBanned(interaction.user.id) || store.isServerBanned(entry.serverId)) return { error: 'Partner sisteminden yasaklı olduğun için bu paneli kullanamazsın.' };
+  return { entry };
+}
+
+// Panelden müsaitlik seçilince: durum kaydedilir, aynı DM güncellenir
+async function handlePanelStatus(interaction) {
+  const { entry, error } = panelAccess(interaction, interaction.customId.slice(ui.IDS.panelStatus.length + 1));
+  if (error) return replyError(interaction, error);
+
+  const updated = store.updateTrusted(entry.id, { contactStatus: interaction.values[0] === 'mesgul' ? 'mesgul' : 'aktif', contactStatusAt: Date.now() });
+  const guildName = interaction.client.guilds.cache.get(entry.guildId)?.name ?? 'Sunucu';
+  return interaction.update({ components: [ui.partnerPanel(updated, guildName)] });
+}
+
+const OFFER_COOLDOWN = 24 * 60 * 60 * 1000; // aynı sunucu günde en fazla bir teklif gönderebilir
+
+// "Partnerlik Teklifi Gönder": kontroller geçerse metin formu açılır
+async function handlePanelOffer(interaction) {
+  const { entry, error } = panelAccess(interaction, interaction.customId.slice(ui.IDS.panelOffer.length + 1));
+  if (error) return replyError(interaction, error);
+  if (store.pendingOf(entry.guildId, interaction.user.id)) {
+    return replyError(interaction, 'Zaten bekleyen bir partner talebin var.', 'Bir yetkili inceleyene kadar beklemen gerekiyor.');
+  }
+  if (Date.now() - (entry.lastOfferAt ?? 0) < OFFER_COOLDOWN) {
+    return replyError(interaction, 'Bugün zaten bir teklif gönderdin.', 'Yeni bir teklif için 24 saat beklemelisin.');
+  }
+  return interaction.showModal(ui.panelOfferModal(entry.id));
+}
+
+// Form gönderilince teklif, oto partner talebiyle aynı yoldan yetkili incelemesine gider (şartlar daha önce kabul edilmediyse önce şartlar sorulur)
+async function handlePanelOfferSubmit(interaction) {
+  const { entry, error } = panelAccess(interaction, interaction.customId.slice(ui.IDS.panelOfferModal.length + 1));
+  if (error) return replyError(interaction, error);
+  if (store.pendingOf(entry.guildId, interaction.user.id)) return replyError(interaction, 'Zaten bekleyen bir partner talebin var.');
+
+  const adText = interaction.fields.getTextInputValue(ui.IDS.adText).trim();
+  if (!hasDiscordInviteLink(adText)) {
+    return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
+  }
+
+  const number = store.nextRequestNumber(entry.guildId);
+  const alreadyAccepted = store.hasAcceptedTerms(interaction.user.id);
+  const request = store.createRequest({
+    id: `${entry.guildId}-${number}`,
+    number,
+    guildId: entry.guildId,
+    requesterId: interaction.user.id,
+    serverId: entry.serverId,
+    text: adText,
+    status: alreadyAccepted ? 'pending' : 'awaiting_terms',
+    source: 'oto',
+    renewalOf: entry.id,
+    createdAt: Date.now(),
+    decidedBy: null,
+    decidedAt: null,
+  });
+  store.updateTrusted(entry.id, { lastOfferAt: Date.now() });
+
+  if (!alreadyAccepted) {
+    const sent = await interaction.user.send({ components: [ui.termsDm(`${ui.IDS.termsAccept}:${request.id}`)], flags: core.CV2 }).catch(() => null);
+    if (!sent) {
+      store.deleteRequest(request.id);
+      return replyError(interaction, 'Şartlar DM\'ine gönderilemedi.', 'DM\'lerin açık olduğundan emin ol ve tekrar dene.');
+    }
+    return respond(interaction, core.alert('Son bir adım kaldı!', 'Partner şartlarını DM\'inden onaylaman gerekiyor, onaylayınca teklifin yetkili incelemesine düşecek.', 'success'));
+  }
+
+  const guild = interaction.client.guilds.cache.get(request.guildId);
+  const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
+  await reviewChannel
+    ?.send({ components: [ui.reviewCard(request)], flags: core.CV2, allowedMentions: { roles: [config.roles.staff] } })
+    .catch((err) => console.error('[partner] İnceleme kanalına gönderilemedi:', err.message));
+  return respond(interaction, core.alert('Teklifin incelemeye gönderildi!', 'Yetkilimiz onaylayınca metnin otomatik paylaşılır, sonucu buradan öğreneceksin.', 'success'));
 }
 
 // Güvenilir listeye eklenen partnerin yetkilisine bizim metni gönder (linksiz — karşı tarafın kartı güncelleniyor, yeni mesaj yok)
@@ -437,6 +530,7 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   // Karşı tarafın tüm yetkililerine bizim metni gönder
   for (const contactId of contactIds) {
     await sendOurTextToContact(interaction.client, contactId, entry);
+    await sendPartnerPanel(interaction.client, contactId, entry);
   }
 
   return respond(interaction, core.alert('Partner güvenilir listeye eklendi.', null, 'success'));
@@ -504,6 +598,9 @@ async function handleTrustedAction(interaction) {
   if (store.getRenewalOffer(id)) {
     return replyError(interaction, 'Bu sunucu için zaten sürmekte olan bir teklif var.', 'Önce o süreç sonuçlanmalı.');
   }
+  if (ui.isBusy(entry)) {
+    return replyError(interaction, 'Bu partnerin yetkilisi şu an meşgul.', 'Müsait olduğunu bildirince ya da 7 gün sonra otomatik olarak tekrar teklif gönderebilirsin.');
+  }
 
   const members = await fetchStaffMembers(interaction.guild);
   if (!members.length) return replyError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
@@ -531,8 +628,10 @@ async function handleContactAddSubmit(interaction) {
     return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
   }
 
-  store.updateTrusted(id, { contactIds });
+  const newContacts = contactIds.filter((contactId) => !entry.contactIds?.includes(contactId));
+  const updated = store.updateTrusted(id, { contactIds });
   await refreshTrustedPanel(interaction.client, interaction.guildId);
+  for (const contactId of newContacts) await sendPartnerPanel(interaction.client, contactId, updated);
   return respond(interaction, core.alert('Partner yetkilisi kaydedildi.', null, 'success'));
 }
 
@@ -831,6 +930,9 @@ module.exports = {
     [ui.IDS.renewalCancel, handleRenewalCancelButton],
     [ui.IDS.renewalCancelModal, handleRenewalCancelSubmit],
     [ui.IDS.renewalTermsAccept, handleRenewalTermsAccept],
+    [ui.IDS.panelStatus, handlePanelStatus],
+    [ui.IDS.panelOffer, handlePanelOffer],
+    [ui.IDS.panelOfferModal, handlePanelOfferSubmit],
   ],
   events: {
     [Events.ClientReady]: handleReady,

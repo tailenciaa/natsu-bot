@@ -46,7 +46,15 @@ const IDS = {
   renewalCancelModal: 'partner-yenile-iptal-form', // partner-yenile-iptal-form:<kayıt>
   renewalCancelInput: 'partner-yenile-sebep',
   renewalTermsAccept: 'partner-yenile-sartlar-kabul', // partner-yenile-sartlar-kabul:<kayıt>
+  // Karşı sunucunun partner yetkililerine DM ile giden Partner Paneli: müsaitlik durumu ve kendi tarafından teklif
+  panelStatus: 'partner-panel-durum', // partner-panel-durum:<kayıt>
+  panelOffer: 'partner-panel-teklif', // partner-panel-teklif:<kayıt>
+  panelOfferModal: 'partner-panel-teklif-form', // partner-panel-teklif-form:<kayıt>
 };
+
+// Partner yetkilisi "meşgul" derse yetkililerimiz bu süre boyunca teklif göndermez; süre dolunca otomatik müsait sayılır
+const BUSY_DAYS = 7;
+const isBusy = (entry) => entry.contactStatus === 'mesgul' && Date.now() - (entry.contactStatusAt ?? 0) < BUSY_DAYS * 24 * 60 * 60 * 1000;
 
 // @everyone / @here hiçbir zaman gerçek bir bildirim göndermesin diye metinden temizlenir (kanal izniyle birlikte
 // çift güvence; bot zaten her mesajı mention'ları kapalı gönderir)
@@ -439,7 +447,8 @@ function trustedDetail(entry) {
         '**Kayıt Bilgileri**\n' +
           `- **Eklenme:** <t:${unix(entry.addedAt)}:F>\n` +
           `- **Ekleyen:** <@${entry.addedBy}>\n` +
-          `- **İletişim:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}`,
+          `- **İletişim:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
+          `- **Partner Durumu:** ${isBusy(entry) ? 'Meşgul' : 'Müsait'}`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -654,8 +663,77 @@ function banServerModal(serverId) {
     );
 }
 
+// Güvenilir listeye alınan partnerin yetkililerine DM'den giden panel; sadece o sunucunun yetkilileri kullanabilir
+function partnerPanel(entry, guildName) {
+  const busy = isBusy(entry);
+  const option = (value, label, description) =>
+    new StringSelectMenuOptionBuilder().setValue(value).setLabel(label).setDescription(description).setDefault(busy === (value === 'mesgul'));
+  return new ContainerBuilder()
+    .addTextDisplayComponents(
+      head(
+        `${guildName} Partner Paneli`,
+        'Sunucun artık güvenilir partnerlerimiz arasında; bu panelden müsaitlik durumunu belirleyebilir ve istediğin zaman bizimle yeni bir partnerlik teklifinde bulunabilirsin, panel sadece sunucunun partner yetkilileri içindir.',
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        '**Partner Bilgileri**\n' +
+          `- **Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
+          `- **Partnerlik:** <t:${unix(entry.addedAt)}:D>\n` +
+          `- **Durum:** ${busy ? 'Meşgul' : 'Müsait'}`,
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        '**Neler Yapabilirsin?**\n' +
+          `- **Müsaitlik:** Meşgul seçersen yetkililerimiz ${BUSY_DAYS} gün boyunca sana teklif göndermez.\n` +
+          '- **Teklif:** Yeni partner metnini buradan gönderirsin; yetkilimiz onaylayınca otomatik paylaşılır.',
+      ),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.panelStatus}:${entry.id}`)
+          .setPlaceholder('Müsaitlik durumunu seç')
+          .addOptions(
+            option('aktif', 'Müsaitim', 'Yetkililer sana teklif gönderebilir'),
+            option('mesgul', 'Meşgulüm', `${BUSY_DAYS} gün boyunca teklif gönderilmez`),
+          ),
+      ),
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.panelOffer}:${entry.id}`).setLabel('Partnerlik Teklifi Gönder').setStyle(ButtonStyle.Primary),
+      ),
+    );
+}
+
+// Partner Paneli'ndeki "Partnerlik Teklifi Gönder" formu: sunucu ID kayıttan bilindiği için sadece metin istenir
+function panelOfferModal(trustedId) {
+  return new ModalBuilder()
+    .setCustomId(`${IDS.panelOfferModal}:${trustedId}`)
+    .setTitle('Partnerlik Teklifi')
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel('Partner Metni')
+        .setDescription('Sunucunun reklam/partner metni, onaylanınca paylaşım kanalına bu haliyle gidecek.')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId(IDS.adText)
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder('Sunucunuzu tanıtan metni buraya yaz...')
+            .setMinLength(20)
+            .setMaxLength(1500)
+            .setRequired(true),
+        ),
+    );
+}
+
 module.exports = {
   IDS,
+  isBusy,
+  partnerPanel,
+  panelOfferModal,
   sanitize,
   startPrompt,
   startPromptDisabled,
