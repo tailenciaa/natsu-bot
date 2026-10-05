@@ -272,6 +272,7 @@ module.exports = {
     [Events.ClientReady]: (client) => {
       moderation.startSweeper(client);
       const guild = client.guilds.cache.get(guildId);
+      if (guild) moderation.ensureTierRoles(guild).catch((err) => console.error('[sicil] Kısıtlama rolleri hazırlanamadı:', err.message));
       if (guild) moderation.syncJailVisibility(guild).catch((err) => console.error('[sicil] Jail kanal görünürlüğü ayarlanamadı:', err.message));
     },
     [Events.GuildMemberAdd]: (member) => (member.guild.id === guildId ? moderation.handleMemberAdd(member) : null),

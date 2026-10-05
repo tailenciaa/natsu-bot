@@ -17,8 +17,8 @@ module.exports = {
   // Seviyeler: seçilince "perms" otomatik işaretlenir, seviyenin kendi rolü de verilir
   levels: [
     { id: '1', label: 'Deneme Yetkili', roleId: '1554237348940873758', perms: ['mesaj'] },
-    { id: '2', label: 'Yetkili', roleId: null, perms: ['mesaj', 'kayit', 'mute'] },
-    { id: '3', label: 'Kıdemli Yetkili', roleId: null, perms: ['mesaj', 'kayit', 'mute', 'ses', 'destek', 'kick'] },
-    { id: '4', label: 'Üst Yetkili', roleId: null, perms: ['mesaj', 'kayit', 'mute', 'ses', 'destek', 'kick', 'ban', 'basvuru'] },
+    { id: '2', label: 'Yetkili', roleId: '1554237348282245161', perms: ['mesaj', 'kayit', 'mute'] },
+    { id: '3', label: 'Kıdemli Yetkili', roleId: '1554237347631997029', perms: ['mesaj', 'kayit', 'mute', 'ses', 'destek', 'kick'] },
+    { id: '4', label: 'Üst Yetkili', roleId: '1554237341768482816', perms: ['mesaj', 'kayit', 'mute', 'ses', 'destek', 'kick', 'ban', 'basvuru'] },
   ],
 };

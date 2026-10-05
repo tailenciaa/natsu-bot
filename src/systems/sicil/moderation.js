@@ -3,6 +3,7 @@
 // Jail'deyken sunucudan çıkıp giren üyeye jail rolü tekrar verilir.
 const { PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
+const { data, save } = require('../../core/db');
 const config = require('./config');
 const store = require('./store');
 const logSystem = require('../log');
@@ -305,7 +306,36 @@ async function syncJailVisibility(guild) {
   console.log(`[sicil] Jail rolünün kanal görünürlüğü senkronize edildi (${channels.size} kanal).`);
 }
 
+// Ceza puanı kısıtlama rolleri (config.pointTiers) bir kere oluşturulur ve ID'leri kaydedilir (data.pointTierRoles).
+// Sonraki açılışlarda sadece kayıtlı ID kullanılır: rolü Discord'dan düzenlemek (ad, renk, izin, sıra) yeni rol açmaz,
+// silinen rol da yeniden oluşturulmaz (o kademe devre dışı kalır). config'te roleId elle yazılmışsa ona dokunulmaz.
+async function ensureTierRoles(guild) {
+  const saved = (data.pointTierRoles ??= {});
+  for (const tier of config.pointTiers) {
+    if (tier.roleId) continue;
+    const id = saved[tier.points];
+    if (id) {
+      const role = guild.roles.cache.get(id) ?? (await guild.roles.fetch(id).catch(() => null));
+      if (role) tier.roleId = id;
+      else console.warn(`[sicil] ${tier.label} rolü silinmiş, bu kademe devre dışı (yeniden oluşturulmaz).`);
+      continue;
+    }
+    const role = await guild.roles
+      .create({ name: tier.label, permissions: [], mentionable: false, hoist: false, reason: 'Ceza puanı kısıtlama rolü (bir kere oluşturulur)' })
+      .catch((err) => {
+        console.error(`[sicil] ${tier.label} rolü oluşturulamadı:`, err.message);
+        return null;
+      });
+    if (!role) continue;
+    saved[tier.points] = role.id;
+    save();
+    tier.roleId = role.id;
+    console.log(`[sicil] ${tier.label} rolü oluşturuldu: ${role.id}`);
+  }
+}
+
 module.exports = {
+  ensureTierRoles,
   parseDuration,
   canPunish,
   punish,

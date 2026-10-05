@@ -3,13 +3,13 @@ module.exports = {
   // Çekilişlerin gönderildiği kanal (komutta "kanal" seçilirse o kullanılır)
   channel: '1538533903130828851',
 
-  // Çekiliş mesajının altında yapılan duyuru etiketi (Çekiliş Bildirimi rolü, @everyone, @here).
+  // Çekiliş mesajının altında yapılan duyuru etiketi (Çekiliş Bildirimi rolü; @everyone ve @here şimdilik kapalı).
   // enabled: false yapılırsa hiçbir etiket atılmaz (test için).
   ping: {
     enabled: true,
     roleId: '1555890045066543154',
-    everyone: true,
-    here: true,
+    everyone: false,
+    here: false,
   },
 
   // Süre sınırları (dakika)
