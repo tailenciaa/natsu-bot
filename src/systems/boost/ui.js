@@ -10,7 +10,6 @@ const {
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   ModalBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
@@ -43,8 +42,8 @@ function thanksDm(guildName, panelChannelId, perks) {
     title: 'Takviyen İçin Teşekkürler',
     sub: `${guildName} sunucusunu takviye ettiğin için çok teşekkür ederiz; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir ve bu mesajdaki bilgilerle hepsini kullanabilirsin.`,
     blocks: [
-      `**Panelden yapabileceklerin**\n${panelLine} takma adını değiştirebilir ve kendi renginde, emojinde bir rol oluşturabilirsin.\n-# Takma ad ve rol takviyen bitince geri alınır.`,
-      `**Emoji ve çıkartma**\nEmoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullanabilirsin.\n-# Hakların: ${perks.emoji} emoji, ${perks.sticker} çıkartma.`,
+      `**Panelden yapabileceklerin**\n${panelLine} takma adını değiştirebilir ve kendi renginde, emojinde bir rol oluşturabilirsin.\nTakma ad ve rol takviyen bitince geri alınır.`,
+      `**Emoji ve çıkartma**\nEmoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullanabilirsin.\nHakların: **${perks.emoji} emoji**, **${perks.sticker} çıkartma**.`,
     ],
   });
 }
@@ -59,57 +58,63 @@ function channelThanks(user) {
   });
 }
 
-// Panelden yapılan işlemler: başlık, açıklama, butonun etiketi ve ID'si (her biri kendi satırında, butonu sağında)
+// Panelden yapılan işlemler: ad, açıklama, butonun etiketi ve ID'si (açıklamalar "İşlem Seçenekleri" bloğunda, butonlar altındaki satırda)
 const ACTIONS = [
-  { title: 'Takma Ad', note: 'Sunucudaki takma adını değiştirir.', label: 'Değiştir', id: IDS.nick },
-  { title: 'Özel Rol', note: 'Kendi adında, renginde ve emojinde bir rol oluşturur ya da düzenler.', label: 'Ayarla', id: IDS.role },
+  { title: 'Takma Ad', note: 'Sunucudaki takma adını değiştirmeni sağlar.', label: 'Takma Ad', id: IDS.nick },
+  { title: 'Özel Rol', note: 'Kendi adında, renginde ve emojinde bir rol oluşturmanı ya da düzenlemeni sağlar.', label: 'Özel Rol', id: IDS.role },
 ];
 
-// Bot panelinden yapılamayanlar: booster rolünün Discord'daki kanal/sunucu izinlerinden gelen avantajlar
+// Avantajlar: bot panelinden yapılanlar ve booster rolünün Discord'daki kanal/sunucu izinlerinden gelenler (anahtar sözcükler kalın)
 function perkLines() {
   return [
-    'Çekiliş ve etkinliklerde önceliklisin.',
-    'Özel rolünle diğer üyelerden üstte, ayrı bir grupta görünürsün.',
-    `\`/emoji-ekle\` ile ${config.perks.emoji} emoji, \`/cikartma-ekle\` ile ${config.perks.sticker} çıkartma ekleyebilirsin.`,
-    'Sesli kanallarda ses panelini (soundboard) kullanabilirsin.',
-    'Metin kanallarına dosya ve bağlantı gönderebilirsin.',
-    'Harici emoji ve çıkartma kullanabilirsin.',
+    '- Sunucuda üstte görünen bir **özel rol** kazanırsın.',
+    '- **Çekiliş ve etkinliklerde** önceliklisin.',
+    '- Sohbete **dosya ve bağlantı** gönderebilirsin.',
+    '- **Harici emoji ve çıkartma** kullanabilirsin.',
+    '- **Takma adını** değiştirebilirsin.',
+    '- **Ses panelini** (soundboard) kullanabilirsin.',
+    `- \`/emoji-ekle\` ile **${config.perks.emoji} emoji**, \`/cikartma-ekle\` ile **${config.perks.sticker} çıkartma** ekleyebilirsin.`,
   ];
+}
+
+// İşlem Seçenekleri bloğu: her işlem kalın adıyla ve normal yazıyla açıklamasıyla
+function optionLines() {
+  const lines = ACTIONS.map((a) => `**${a.title}:** ${a.note}`);
+  if (config.colorRoles.length) lines.push('**Renk Rolü:** Sana hazırladığımız renk rollerinden birini menüden seçebilirsin.');
+  return lines;
 }
 
 // guild: sağ üstteki sunucu simgesi için
 function panel(guild) {
   const container = page({
     title: 'Booster İşlemleri',
-    sub: 'Bu panel sadece sunucuyu takviye eden üyeler içindir; takma ad ve özel rol takviyen sürdüğü sürece geçerlidir, takviyen bitince otomatik olarak geri alınır.',
+    sub: 'Bu panel sadece sunucuyu takviye eden üyeler içindir. Takviye ederek takma adını değiştirebilir, sana özel rol oluşturabilir veya diğer booster ayrıcalıklarından yararlanabilirsin.',
     thumbnail: guild?.iconURL({ size: 256 }),
-    blocks: [`**Avantajların**\n${perkLines().join('\n')}`],
+    blocks: [`**Booster Olmanın Avantajları**\n${perkLines().join('\n')}`],
   });
 
   if (config.banner) {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
   }
 
-  for (const action of ACTIONS) {
-    container.addSeparatorComponents(divider()).addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(text(`**${action.title}**\n-# ${action.note}`))
-        .setButtonAccessory(new ButtonBuilder().setCustomId(action.id).setLabel(action.label).setStyle(ButtonStyle.Primary)),
+  container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`**İşlem Seçenekleri**\n${optionLines().join('\n')}`))
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(ACTIONS.map((a) => new ButtonBuilder().setCustomId(a.id).setLabel(a.label).setStyle(ButtonStyle.Primary))),
     );
-  }
 
   // Hazır renk rolü tanımlı değilse menü hiç gösterilmez
   if (config.colorRoles.length) {
-    container
-      .addSeparatorComponents(divider())
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(`${IDS.colorRole}:0`)
-            .setPlaceholder('Renk rolünü seç')
-            .addOptions(config.colorRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
-        ),
-      );
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.colorRole}:0`)
+          .setPlaceholder('Renk rolünü seç')
+          .addOptions(config.colorRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
+      ),
+    );
   }
   return container;
 }

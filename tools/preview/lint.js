@@ -268,6 +268,19 @@ function lint(norm) {
       if (shown.length > 28) warn('baslik-uzun', s.path, `## başlığı ${shown.length} karakter (hedef en çok 28): "${shown}"`);
     }
 
+    // Küçük gri yazı (-#) sadece başlığın hemen altındaki açıklamada, zaman damgasında ve sayfa bilgisinde kullanılır;
+    // diğer her şey normal boyutta yazılır (aşırı gri yazı okunmaz)
+    {
+      const rows = s.value.split('\n');
+      rows.forEach((line, i) => {
+        if (!line.startsWith('-# ')) return;
+        const underTitle = i > 0 && /^#{1,3} /.test(rows[i - 1]);
+        const stamp = /^-# <t:\d+:[A-Za-z]>$/.test(line);
+        const pager = /^-# Sayfa \d+ \/ \d+/.test(line);
+        const rank = /^-# \d+\. /.test(line); // sıralama listelerinde ilk üçten sonraki satırlar
+        if (!underTitle && !stamp && !pager && !rank) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
+      });
+    }
     const noCode = stripCode(s.value);
     if (/\S {2,}\S/.test(noCode.replace(/^ +/gm, ''))) warn('cift-bosluk', s.path, 'Çift boşluk var');
     if (/[ \t]+$/m.test(noCode)) warn('satir-sonu-bosluk', s.path, 'Satır sonunda boşluk var');

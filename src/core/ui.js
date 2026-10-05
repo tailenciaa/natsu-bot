@@ -47,13 +47,10 @@ const messageUrl = (guildId, channelId, messageId) => `https://discord.com/chann
 const hasValue = (value) => value !== null && value !== undefined && value !== false && value !== '';
 const fields = (rows) => rows.filter(hasValue).join('\n');
 const field = (label, value) => `**${label}:** ${value}`;
-// Küçük gri yazı: çok satırlı metinde her satır ayrı "-#" olur (Discord yalnızca satır başındaki "-#"yi küçültür)
-const hint = (value) =>
-  String(value)
-    .split('\n')
-    .map((line) => `-# ${line}`)
-    .join('\n');
-// Kalın başlık/ana cümle, altında düz satırlar, en altta küçük ipucu
+// Açıklama/ipucu satırı: normal boyutta yazılır. Küçük gri yazı (-#) çok okunaksız olduğu için sadece başlığın hemen
+// altındaki açıklamada (page/panel), zaman damgasında ve sayfa bilgisinde kullanılır (tools/preview/lint.js bunu denetler).
+const hint = (value) => String(value);
+// Kalın başlık/ana cümle, altında düz satırlar, en altta açıklama satırı
 const block = (title, body, note) => fields([`**${title}**`, body, hasValue(note) ? hint(note) : null]);
 // Sayfa bilgisi tek satırda: "Sayfa 2 / 5 · 48 kayıt"
 const pageInfo = (page, pageCount, total) => `Sayfa ${page + 1} / ${pageCount}${hasValue(total) ? ` · ${total.toLocaleString('tr-TR')} kayıt` : ''}`;
@@ -74,7 +71,7 @@ function notice(sections, color) {
   return container;
 }
 
-// Kısa bildirimlerin ortak düzeni: kalın ana cümle, altında küçük açıklama
+// Kısa bildirimlerin ortak düzeni: kalın ana cümle, altında normal yazıyla açıklama
 function alert(message, note, color) {
   return notice(hasValue(note) ? `**${message}**\n${hint(note)}` : `**${message}**`, color);
 }
@@ -83,7 +80,7 @@ function alert(message, note, color) {
 const bannerGallery = (url) => new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url));
 
 // STANDART PANEL: başlık ve açıklama solda, istenirse buton sağda (section aksesuarı), altında afiş ve küçük not.
-// button: { id, label, style } ; image: afiş bağlantısı ya da dosya adı ; note: en alttaki küçük yazı (-# eklenir)
+// button: { id, label, style } ; image: afiş bağlantısı ya da dosya adı ; note: en alttaki not (normal yazı, çizgiyle ayrılır)
 function panel({ title, sub, button, image, note, thumbnail }) {
   const header = text(`## ${title}${hasValue(sub) ? `\n-# ${sub}` : ''}`);
   const container = new ContainerBuilder();

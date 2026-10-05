@@ -18,7 +18,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 ## 2. Kalıcı tercihler
 
 1. **Embed yok**, hep Components V2 (container, text display, section, separator, media gallery, file).
-2. **Önemli cümle kalın, ek açıklama küçük yazı (`-#`)**. Birbiriyle ilgisiz iki bilgi arasına çizgi, ilişkili olanlar aynı blokta.
+2. **Önemli cümle ve anahtar sözcükler kalın, açıklamalar normal boyutta.** Küçük gri yazı (`-#`) okunaksız olduğu için yalnızca başlığın hemen altındaki açıklamada, zaman damgasında, sayfa bilgisinde ve sıralama listesinin 4. sıradan sonraki satırlarında kullanılır; `tools/preview/check.js` başka her kullanımı hata sayar. Birbiriyle ilgisiz iki bilgi arasına çizgi, ilişkili olanlar aynı blokta.
 3. **Derli toplu**: aynı bilgi iki kez yazılmaz, her yerde aynı kalıp (hata, onay, panel, log).
 4. **Emoji yok** (buton, menü, etiket, metin). Tek istisna puan yıldızı ⭐; botun durum yazısındaki `❄️` kullanıcının kendi seçimidir.
    `◀ ▶` gibi emojiye dönüşen ok simgeleri de yok, sayfa butonları `«` `»`.
@@ -40,7 +40,7 @@ Ortak yardımcılar `src/core/ui.js` içindedir (`page`, `alert`, `notice`, `pan
   Section: "## Başlık\n-# kısa açıklama"      [Buton (sağda)]
   (varsa) görsel
   ---
-  -# alt not
+  alt not (normal yazı)
 ```
 
 Başlık en çok 28, buton etiketi en çok 20 karakter. Paneller `core/panel.js` içindeki `syncPanel` ile gönderilir.
@@ -53,7 +53,7 @@ Başlık en çok 28, buton etiketi en çok 20 karakter. Paneller `core/panel.js`
 ---
 **Blok başlığı** ya da **Ana cümle.**
 değer satırları
--# küçük ipucu
+açıklama satırı (normal yazı)
 ---
 [Butonlar]
 ---
@@ -61,12 +61,12 @@ değer satırları
 ```
 
 - `sub` bilerek iki satırı dolduracak uzunluktadır: bütün mesajlar aynı genişlikte görünsün diye. Kısa tutulmaz, doldurma da yapılmaz; bloklardaki bilgiyi tekrar etmeyen gerçek bir açıklama yazılır.
-- Her blok kalın bir başlık ya da ana cümleyle başlar, ardından düz değer satırları, en sonda `-#` ipucu gelir. Bir blok en fazla yaklaşık 8 satırdır.
+- Her blok kalın bir başlık ya da ana cümleyle başlar, ardından düz değer satırları, en sonda normal yazıyla açıklama gelir; önemli sözcükler kalın yazılır. Bir blok en fazla yaklaşık 8 satırdır.
 - Serbest metin (konu, sebep, yorum) `quote()` ile alıntı bloğunda, etiket-değer satırları `**Etiket:** değer` biçimindedir.
 
 ### Bildirim: `alert(mesaj, ipucu, renk)` / `notice(bölümler, renk)`
 
-Kısa hata, onay ve uyarı. Biçim `**Ana cümle.**` + isteğe bağlı `-# ipucu`. Hata cümlesi "ne oldu + ne yapmalı" sırasındadır.
+Kısa hata, onay ve uyarı. Biçim `**Ana cümle.**` + isteğe bağlı normal yazıyla ikinci satır. Hata cümlesi "ne oldu + ne yapmalı" sırasındadır.
 Renk durumu söyler: yeşil tamamlandı/onaylandı, sarı bekliyor, kırmızı hata/kapandı/reddedildi, renksiz nötr bilgi.
 
 ### Menü ve sekmeli görünümler (yardım, sicil, sıralama)
@@ -127,7 +127,7 @@ Yeni mesaj eklerken `tools/preview/cases/<sistem>.js` içine bir case eklenir; `
 ## 9. Her mesaj için kontrol listesi
 
 1. Embed, emoji ya da ok simgesi var mı (⭐ hariç)?
-2. Ana cümle kalın, ipucu `-#`, ilgisiz bloklar çizgiyle ayrılmış mı?
+2. Ana cümle ve anahtar sözcükler kalın, açıklama normal boyutta (`-#` yalnızca izin verilen yerlerde), ilgisiz bloklar çizgiyle ayrılmış mı?
 3. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
 4. Başlık kısa ve tek satır mı? Buton en çok 20 karakter ve Başlık Düzeni mi?
 5. Yön sözcüğü gerçekten doğru mu, buton adı metinde doğru yazılmış mı?

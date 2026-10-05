@@ -12,7 +12,7 @@ Kazuki, tek sunucuda çalışan Türkçe bir Discord yönetim botu (discord.js 1
 ## Mesaj tasarımı (özet; tamamı `docs/TASARIM.md`)
 
 - **Embed yok**, hep Components V2. Yardımcılar `src/core/ui.js` içinde (`page`, `alert`, `notice`, `panel`, `fields`, `hint`, `pagerRow`, `tabRow`...).
-- Önemli cümle **kalın**, ek açıklama küçük yazı (`-#`), alakasız bloklar arasında çizgi. Aynı bilgi iki kez yazılmaz.
+- Önemli cümle ve anahtar sözcükler **kalın**, açıklamalar **normal boyutta** yazılır; küçük gri yazı (`-#`) YALNIZCA başlığın hemen altındaki açıklamada (`page`/`panel` sub), zaman damgasında, sayfa bilgisinde ve sıralama listesinin 4. sıradan sonraki satırlarında kullanılır (`node tools/preview/check.js` başka her `-#` kullanımını hata sayar). Birbirinden bağımsız bloklar arasında çizgi (`page` blokları ya da `divider()`). Aynı bilgi iki kez yazılmaz.
 - **Emoji yok** (buton, menü, etiket, metin); tek istisna puan yıldızı ⭐ ve `durum` yazısı. `◀ ▶` gibi ok simgeleri yok; sayfa butonları `«` `»`.
 - `page()` mesajlarının gri açıklaması (`sub`) 140–220 karakterlik gerçek bir cümledir (bütün mesajlar aynı genişlikte görünsün diye bilerek uzun).
 - Mobilde de güzel: kısa tek satır başlık, boşlukla ortalama yok, geniş tablo yok. Panel butonu başlığın yanında (section aksesuarı) durur.
