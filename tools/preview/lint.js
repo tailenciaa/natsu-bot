@@ -248,7 +248,8 @@ function lint(norm) {
     for (const word of config.DIRECTION_WORDS) {
       if (wordRe(lower(word)).test(low)) warn('yon-sozcugu', s.path, `"${word}" yön sözcüğü geçiyor, elle gözden geçirilsin`);
     }
-    if (/…|(?<!\.)\.{2}(?!\.)|\.{4,}/.test(plain)) warn('uc-nokta', s.path, 'Üç nokta "..." olarak yazılmalı');
+    // Kırpılmış metindeki tek karakterlik … (core shorten) kabul edilir; yalnızca iki ya da dörtten fazla nokta uyarılır
+    if (/(?<!\.)\.{2}(?!\.)|\.{4,}/.test(plain)) warn('uc-nokta', s.path, 'Üç nokta "..." olarak yazılmalı');
     for (const m of plain.matchAll(/(?<![\p{L}\p{N}_])\p{Lu}{4,}(?![\p{L}\p{N}_])/gu)) {
       if (!config.ABBREVIATIONS.includes(m[0])) warn('buyuk-harf', s.path, `Tamamen büyük harfli sözcük: ${m[0]}`);
     }

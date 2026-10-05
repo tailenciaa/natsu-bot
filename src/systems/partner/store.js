@@ -1,6 +1,8 @@
 // Partner taleplerinin (oto ya da elle yapılan, hepsi kayıt altına alınır) ve güvenilir partner listesinin kaydı
 const { data, save, guildData } = require('../../core/db');
 
+const TERMS_WAIT = 24 * 60 * 60 * 1000; // şartları kabul etmesi beklenen talebin geçerlilik süresi
+
 data.partnerRequests ??= {};
 data.trustedPartners ??= {};
 data.partnerTermsAccepted ??= {}; // kullanıcı ID'si -> ilk kabul zamanı (bir kez kabul edince tekrar sorulmaz)
@@ -54,13 +56,25 @@ module.exports = {
     return true;
   },
 
-  // Kullanıcının sonuçlanmamış (şartları bekleyen ya da incelemedeki) talebi var mı
+  // Kullanıcının sonuçlanmamış (şartları bekleyen ya da incelemedeki) talebi var mı. Şartlar 24 saat içinde kabul
+  // edilmezse (DM kapalı, mesaj silinmiş) talep bekleyen sayılmaz, kullanıcı yeniden başvurabilir.
   pendingOf(guildId, userId) {
+    const now = Date.now();
     return (
       Object.values(data.partnerRequests).find(
-        (r) => r.guildId === guildId && r.requesterId === userId && ['awaiting_terms', 'pending'].includes(r.status),
+        (r) =>
+          r.guildId === guildId &&
+          r.requesterId === userId &&
+          (r.status === 'pending' || (r.status === 'awaiting_terms' && now - r.createdAt < TERMS_WAIT)),
       ) ?? null
     );
+  },
+
+  // Bir sunucu ID'sine ait tüm talepler (yasaklama sırasında bekleyenleri bulmak için)
+  requestsOfServer(serverId) {
+    return Object.values(data.partnerRequests)
+      .filter((r) => r.serverId === serverId)
+      .sort((a, b) => a.createdAt - b.createdAt);
   },
 
   nextTrustedNumber(guildId) {

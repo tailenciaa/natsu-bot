@@ -20,6 +20,8 @@ const ui = require('./ui');
 // Güvenilir listeden çıkarma ve kullanıcı yasaklama gibi ağır kararlar sadece partner lideri rolüne açık
 const isLead = (interaction) => isStaff(interaction, config.roles.lead);
 
+const UNKNOWN_MESSAGE = 10008;
+
 const commands = [
   new SlashCommandBuilder()
     .setName('guvenilir-partnerler')
@@ -27,12 +29,12 @@ const commands = [
     .setContexts(InteractionContextType.Guild),
   new SlashCommandBuilder()
     .setName('partner-musaitlik')
-    .setDescription('Partner yetkilisi olarak teklif atamaları için müsaitlik durumunu ayarlar.')
+    .setDescription('Teklif atamaları için partner müsaitlik durumunu ayarlar.')
     .setContexts(InteractionContextType.Guild)
     .addStringOption((o) =>
       o
         .setName('durum')
-        .setDescription('Durumun')
+        .setDescription('Müsaitlik durumunu seç.')
         .setRequired(true)
         .addChoices({ name: 'Aktif', value: 'aktif' }, { name: 'Meşgul', value: 'mesgul' }),
     ),
@@ -56,20 +58,11 @@ function hasDiscordInviteLink(text) {
   return /(discord\.gg\/|discord\.com\/invite\/|discordapp\.com\/invite\/)/i.test(text);
 }
 
-// Partner metnindeki Discord invite linkinden sunucu ID'sini çıkart
-function extractServerIdFromText(text) {
-  // Farklı Discord invite formatlarını destekle
-  // discord.gg/invite ve discordapp.com/invite formatları
-  const match = text.match(/discord\.gg\/([A-Za-z0-9\-]+)/i);
-  if (match && match[1]) {
-    // Eğer invite kodu rakam değilse (geçerli invite) kontrol et
-    return null; // Invite kodu olabilir, tam sunucu ID değil
-  }
-  return null;
-}
-
 async function handleRequestChannel(message) {
+  if (message.author.bot) return;
+  if (message.member?.roles.cache.has(config.roles.staff)) return; // yetkili sohbeti teklif tetiklemez
   if (store.isBanned(message.author.id)) return;
+  if (store.pendingOf(message.guildId, message.author.id)) return; // zaten bekleyen talebi olana her mesajda kart gönderilmez
   if (!matchesTrigger(message)) return;
   await message.channel
     .send({
@@ -86,32 +79,45 @@ async function handleRequestChannel(message) {
 async function handlePostsChannel(message) {
   if (message.author.bot) return;
   const text = message.content?.trim() ?? '';
-  const files = [...message.attachments.values()].map((a) => ({ attachment: a.url, name: a.name }));
+  // Ekler karta eklenir (Components V2'de ek bir bileşenle gösterilmedikçe görünmez); adları güvenli hale getirilir
+  const attachments = [...message.attachments.values()].map((a, i) => ({
+    url: a.url,
+    name: `${i + 1}-${(a.name ?? 'dosya').replace(/[^A-Za-z0-9._-]/g, '_')}`,
+    image: Boolean(a.contentType?.startsWith('image/')),
+  }));
 
   const number = store.nextRequestNumber(message.guildId);
-  const request = store.createRequest({
+  const request = {
     id: `${message.guildId}-${number}`,
     number,
     guildId: message.guildId,
     requesterId: message.author.id,
     serverId: null,
-    text: text || '-# (metin yok, sadece dosya paylaşıldı)',
+    text: text || '(metin yok, sadece dosya paylaşıldı)',
+    files: attachments.map(({ name, image }) => ({ name, image })),
     status: 'approved',
     source: 'manuel',
     createdAt: Date.now(),
     decidedBy: null,
     decidedAt: Date.now(),
-  });
+  };
 
-  await message.delete().catch(() => {});
-  await message.channel
+  // Önce kart gönderilir; gönderilemezse (izin, ağ, geçersiz bileşen) üyenin mesajı silinmez, metin kaybolmaz
+  const card = await message.channel
     .send({
       components: [ui.postCard(request, null, store.isBanned(message.author.id))],
-      files,
+      files: attachments.map(({ url, name }) => ({ attachment: url, name })),
       flags: core.CV2,
       allowedMentions: { parse: [] },
     })
-    .catch((err) => console.error('[partner] Elle atılan partner metni paylaşılamadı:', err.message));
+    .catch((err) => {
+      console.error('[partner] Elle atılan partner metni paylaşılamadı:', err.message);
+      return null;
+    });
+  if (!card) return;
+
+  store.createRequest(request);
+  await message.delete().catch(() => {});
 }
 
 function handleMessageCreate(message) {
@@ -122,13 +128,18 @@ function handleMessageCreate(message) {
 
 // ── Oto partner akışı: buton → form → inceleme → onay/red ──────────────────────
 
+// Bekleyen talebin durumuna göre kullanıcıya söylenecek (mesaj, ipucu)
+const pendingMessage = (pending) =>
+  pending.status === 'awaiting_terms'
+    ? ['Önce partner şartlarını kabul etmen gerekiyor.', 'DM kutundaki şartlar mesajında butona bas; mesajı bulamazsan DM\'lerinin açık olduğundan emin ol.']
+    : ['Zaten bekleyen bir partner talebin var.', 'Bir yetkili inceleyene kadar beklemen gerekiyor.'];
+
 async function handleStartButton(interaction) {
   const authorId = interaction.customId.slice(ui.IDS.start.length + 1);
   if (interaction.user.id !== authorId) return replyError(interaction, 'Bu butonu sadece mesajı yazan kullanabilir.');
   if (store.isBanned(interaction.user.id)) return replyError(interaction, 'Partner sisteminden yasaklandığın için talep oluşturamazsın.');
-  if (store.pendingOf(interaction.guildId, interaction.user.id)) {
-    return replyError(interaction, 'Zaten bekleyen bir partner talebin var.', 'Bir yetkili inceleyene kadar beklemen gerekiyor.');
-  }
+  const pending = store.pendingOf(interaction.guildId, interaction.user.id);
+  if (pending) return replyError(interaction, ...pendingMessage(pending));
 
   return interaction.showModal(ui.requestModalWithMessageId(interaction.message.id));
 }
@@ -149,34 +160,56 @@ async function handleStartBanSubmit(interaction) {
   const reason = interaction.fields.getTextInputValue(ui.IDS.banReason).trim();
   store.banServer(serverId, reason, interaction.user.id);
 
-  await interaction.deferUpdate();
-  await interaction.editReply({
-    components: [core.alert('Sunucu yasaklandı.', `Sunucu ID: \`${serverId}\``, 'danger')],
-  });
+  // Bu sunucunun bekleyen talepleri de reddedilir; yoksa kart butonlarıyla birlikte kaybolur ama talep "bekliyor" kalırdı
+  const rejected = store
+    .requestsOfServer(serverId)
+    .filter((r) => ['pending', 'awaiting_terms'].includes(r.status))
+    .map((r) => store.updateRequest(r.id, { status: 'rejected', decidedBy: interaction.user.id, decidedAt: Date.now() }));
 
-  // Yasaklı partnerler kanalına gönder
-  const guild = interaction.guild;
-  const bannedChannel = await fetchTextChannel(guild, config.channels.banned);
-  await bannedChannel?.send({
-    components: [
-      core.alert(
-        `🚫 **Sunucu Yasaklandı** — \`${serverId}\``,
-        `**Sebep:** ${reason}\n**Yasaklayan:** <@${interaction.user.id}>`,
-        'danger',
-      ),
-    ],
-    flags: core.CV2,
-    allowedMentions: { parse: [] },
-  }).catch((err) => console.error('[partner] Yasaklı sunucu kanalına gönderilemedi:', err.message));
+  await interaction.deferUpdate();
+  const card = rejected.at(-1);
+  if (card) {
+    await interaction.editReply({
+      components: [ui.reviewCard(card, { sonuc: 'reddet', by: interaction.user.id, banned: true })],
+      allowedMentions: { parse: [] },
+    });
+  } else {
+    await interaction.editReply({ components: [core.alert('Sunucu yasaklandı.', `Sunucu ID: \`${serverId}\``, 'danger')], allowedMentions: { parse: [] } });
+  }
+
+  // Reddedilen taleplerin sahiplerine sonuç DM'i gider
+  for (const request of rejected) {
+    const requester = await interaction.client.users.fetch(request.requesterId).catch(() => null);
+    await requester?.send({ components: [ui.requesterResult('reddet', request, interaction.user.id)], flags: core.CV2 }).catch(() => {});
+  }
+
+  // Yasaklı partnerler kanalına kayıt düşer
+  const bannedChannel = await fetchTextChannel(interaction.guild, config.channels.banned);
+  await bannedChannel
+    ?.send({ components: [ui.serverBannedLog(serverId, reason, interaction.user.id)], flags: core.CV2, allowedMentions: { parse: [] } })
+    .catch((err) => console.error('[partner] Yasaklı sunucu kanalına gönderilemedi:', err.message));
 }
 
 // Form gönderilince talep hemen incelemeye gitmez: önce talep sahibine DM'den şartlar sorulur, kabul edince
 // inceleme kanalına düşer. Ama şartları daha önce kabul ettiyse doğrudan incelemeye gider. "awaiting_terms"
 // durumu da pendingOf tarafından bekleyen talep sayılır.
+// İnceleme kartını yetkili kanalına gönderir; gönderilemezse null döner
+async function sendToReview(client, request) {
+  const guild = client.guilds.cache.get(request.guildId);
+  const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
+  return (
+    (await reviewChannel
+      ?.send({ components: [ui.reviewCard(request)], flags: core.CV2, allowedMentions: { roles: [config.roles.staff] } })
+      .catch((err) => {
+        console.error('[partner] İnceleme kanalına gönderilemedi:', err.message);
+        return null;
+      })) ?? null
+  );
+}
+
 async function handleNewRequestSubmit(interaction, serverId, adText, messageId) {
-  if (store.pendingOf(interaction.guildId, interaction.user.id)) {
-    return replyError(interaction, 'Zaten bekleyen bir partner talebin var.');
-  }
+  const pending = store.pendingOf(interaction.guildId, interaction.user.id);
+  if (pending) return replyError(interaction, ...pendingMessage(pending));
 
   // Sunucu ID doğrulama
   if (!isValidServerId(serverId)) {
@@ -188,34 +221,24 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
     return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
   }
 
+  // Bundan sonraki işlemler (DM, kanal mesajları) 3 saniyeyi aşabilir; önce cevap ertelenir
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+
   // Yasaklı sunucu kontrolü
   const bannedInfo = store.isServerBanned(serverId);
   if (bannedInfo) {
-    // Talep sahibine DM gönder
-    await interaction.user
-      .send({
-        components: [
-          core.alert(
-            '❌ Sunucunuz Yasaklandı',
-            `**Sebep:** ${bannedInfo.reason}\n\nBu yasaklılık kaldırılmadığı sürece partner yapılamayacaksınız.`,
-            'danger',
-          ),
-        ],
-        flags: core.CV2,
-      })
-      .catch(() => {});
-
-    return replyError(interaction, 'Bu sunucu yasaklı.', 'Yasaklılık hakkında daha fazla bilgi için DM\'ini kontrol et.');
+    // Talep sahibine sebep DM ile bildirilir
+    await interaction.user.send({ components: [ui.serverBannedDm(bannedInfo.reason)], flags: core.CV2 }).catch(() => {});
+    return replyError(interaction, 'Bu sunucu yasaklı.', 'Yasak sebebi için DM kutunu kontrol et.');
   }
 
-  // Orijinal mesajı update et (buton devre dışı, success state)
-  if (messageId) {
-    try {
-      await interaction.channel.messages.edit(messageId, { components: [ui.startPromptSuccess()] }).catch(() => {});
-    } catch (err) {
-      console.error('[partner] Orijinal mesaj güncellenemedi:', err.message);
-    }
-  }
+  // Talep mesajı, talep gerçekten ilerleyince "gönderildi" haline gelir; başarısız denemede buton açık kalır
+  const markPromptSent = (accepted) =>
+    messageId
+      ? interaction.channel.messages
+          .edit(messageId, { components: [ui.startPromptSuccess(accepted)] })
+          .catch((err) => console.error('[partner] Talep mesajı güncellenemedi:', err.message))
+      : null;
 
   const number = store.nextRequestNumber(interaction.guildId);
   const alreadyAccepted = store.hasAcceptedTerms(interaction.user.id);
@@ -236,15 +259,14 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
 
   // Şartları daha önce kabul ettiyse doğrudan incelemeye gönder
   if (alreadyAccepted) {
-    const guild = interaction.client.guilds.cache.get(request.guildId);
-    const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
-    await reviewChannel
-      ?.send({ components: [ui.reviewCard(request)], flags: core.CV2, allowedMentions: { roles: [config.roles.staff] } })
-      .catch((err) => console.error('[partner] İnceleme kanalına gönderilemedi:', err.message));
-
+    if (!(await sendToReview(interaction.client, request))) {
+      store.deleteRequest(request.id);
+      return replyError(interaction, 'Talebin yetkililere iletilemedi.', 'Birkaç dakika sonra yeniden dene.');
+    }
+    await markPromptSent(true);
     return respond(
       interaction,
-      core.alert('Partner talebin incelemeye gönderildi!', 'Şartları daha önce kabul ettiğin için hemen yetkili incelemesine düştü.', 'success'),
+      core.alert('Partner talebin incelemeye gönderildi.', 'Şartları daha önce kabul ettiğin için doğrudan yetkili incelemesine düştü.', 'success'),
     );
   }
 
@@ -254,12 +276,13 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
     .catch(() => null);
   if (!sent) {
     store.deleteRequest(request.id);
-    return replyError(interaction, 'DM\'ine gönderemedim.', 'DM\'lerin açık olduğundan emin ol ve tekrar dene.');
+    return replyError(interaction, 'Şartlar DM kutuna gönderilemedi.', "DM'lerin açık olduğundan emin ol ve tekrar dene.");
   }
 
+  await markPromptSent(false);
   return respond(
     interaction,
-    core.alert('Son bir adım kaldı!', 'Partner şartlarını DM\'inden onaylaman gerekiyor, onaylayınca talebin yetkili incelemesine düşecek.', 'success'),
+    core.alert('Son bir adım kaldı.', "Partner şartlarını DM kutundan onaylaman gerekiyor; onaylayınca talebin yetkili incelemesine düşecek.", 'success'),
   );
 }
 
@@ -272,20 +295,22 @@ async function handleInitialTermsAccept(interaction) {
   }
   if (request.status !== 'awaiting_terms') return replyError(interaction, 'Bu talep zaten işlendi.');
 
-  await interaction.deferUpdate();
+  // Durum await'lerden önce eşzamanlı değiştirilir: iki kez basılırsa kart yetkili kanalına iki kez gitmesin
   store.markTermsAccepted(interaction.user.id);
   store.updateRequest(requestId, { status: 'pending' });
   const updated = store.getRequest(requestId);
+  await interaction.deferUpdate();
+
+  if (!(await sendToReview(interaction.client, updated))) {
+    store.updateRequest(requestId, { status: 'awaiting_terms' });
+    return interaction.editReply({
+      components: [core.alert('Talebin yetkililere iletilemedi.', 'Birkaç dakika sonra butona yeniden bas.', 'danger'), ui.termsDm(`${ui.IDS.termsAccept}:${requestId}`)],
+    });
+  }
 
   await interaction.editReply({
-    components: [core.alert('Şartları kabul ettin!', 'Talebin yetkili incelemesine gönderildi, sonucu buradan öğreneceksin.', 'success')],
+    components: [core.alert('Şartları kabul ettin.', 'Talebin yetkili incelemesine gönderildi, sonucu buradan öğreneceksin.', 'success')],
   });
-
-  const guild = interaction.client.guilds.cache.get(request.guildId);
-  const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
-  await reviewChannel
-    ?.send({ components: [ui.reviewCard(updated)], flags: core.CV2, allowedMentions: { roles: [config.roles.staff] } })
-    .catch((err) => console.error('[partner] İnceleme kanalına gönderilemedi:', err.message));
 }
 
 async function handleModalSubmit(interaction) {
@@ -309,9 +334,13 @@ async function handleReviewDecision(interaction) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu kararı sadece partner yetkilileri verebilir.');
   const request = store.getRequest(requestId);
   if (!request || request.status !== 'pending') return replyError(interaction, 'Bu talep zaten sonuçlandı ya da bulunamadı.');
+  if (sonuc === 'onayla' && store.isServerBanned(request.serverId)) {
+    return replyError(interaction, 'Bu sunucu yasaklı.', 'Yasak kalkmadan talep onaylanamaz; talebi reddedebilirsin.');
+  }
 
-  await interaction.deferUpdate();
+  // Karar await'lerden önce kaydedilir: aynı anda basan ikinci yetkili yukarıdaki kontrole takılır
   store.updateRequest(requestId, { status: sonuc === 'onayla' ? 'approved' : 'rejected', decidedBy: interaction.user.id, decidedAt: Date.now() });
+  await interaction.deferUpdate();
   const updated = store.getRequest(requestId);
 
   await interaction.editReply({ components: [ui.reviewCard(updated, { sonuc, by: interaction.user.id })], allowedMentions: { parse: [] } });
@@ -330,13 +359,23 @@ async function handleReviewDecision(interaction) {
       : null;
     if (renewedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
     const postsChannel = await fetchTextChannel(interaction.guild, config.channels.posts);
-    await postsChannel
+    const posted = await postsChannel
       ?.send({
         components: [ui.postCard(updated, renewedEntry, store.isBanned(request.requesterId))],
         flags: core.CV2,
         allowedMentions: { parse: [] },
       })
-      .catch((err) => console.error('[partner] Onaylanan talep paylaşılamadı:', err.message));
+      .catch((err) => {
+        console.error('[partner] Onaylanan talep paylaşılamadı:', err.message);
+        return null;
+      });
+    if (!posted) {
+      await interaction.followUp({
+        components: [core.alert('Paylaşım kanalına gönderilemedi.', 'Talep onaylandı olarak kaydedildi; kanal izinlerini kontrol edip metni elle paylaşabilirsin.', 'warning')],
+        flags: core.EPHEMERAL_CV2,
+        allowedMentions: { parse: [] },
+      });
+    }
   }
 }
 
@@ -351,10 +390,17 @@ async function refreshTrustedPanel(client, guildId_) {
 
   const container = ui.trustedListPanel(store.trustedOf(guildId_));
   const messageId = store.trustedPanelMessageId(guildId_);
-  const edited = messageId
-    ? await channel.messages.edit(messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => null)
-    : null;
-  if (edited) return;
+  let missing = !messageId;
+  if (messageId) {
+    const edited = await channel.messages.edit(messageId, { components: [container], allowedMentions: { parse: [] } }).catch((err) => {
+      // Yalnızca mesaj gerçekten silinmişse yenisi gönderilir; geçici hatada (ağ, hız sınırı) çift panel oluşmasın
+      if (err.code === UNKNOWN_MESSAGE) missing = true;
+      else console.error('[partner] Güvenilir partnerler paneli düzenlenemedi:', err.message);
+      return null;
+    });
+    if (edited) return;
+  }
+  if (!missing) return;
 
   const message = await channel
     .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } })
@@ -438,11 +484,10 @@ const OFFER_COOLDOWN = 24 * 60 * 60 * 1000; // aynı sunucu günde en fazla bir 
 async function handlePanelOffer(interaction) {
   const { entry, error } = panelAccess(interaction, interaction.customId.slice(ui.IDS.panelOffer.length + 1));
   if (error) return replyError(interaction, error);
-  if (store.pendingOf(entry.guildId, interaction.user.id)) {
-    return replyError(interaction, 'Zaten bekleyen bir partner talebin var.', 'Bir yetkili inceleyene kadar beklemen gerekiyor.');
-  }
+  const pending = store.pendingOf(entry.guildId, interaction.user.id);
+  if (pending) return replyError(interaction, ...pendingMessage(pending));
   if (Date.now() - (entry.lastOfferAt ?? 0) < OFFER_COOLDOWN) {
-    return replyError(interaction, 'Bugün zaten bir teklif gönderdin.', 'Yeni bir teklif için 24 saat beklemelisin.');
+    return replyError(interaction, 'Son 24 saat içinde zaten bir teklif gönderdin.', 'Yeni bir teklif için 24 saat beklemelisin.');
   }
   return interaction.showModal(ui.panelOfferModal(entry.id));
 }
@@ -451,12 +496,16 @@ async function handlePanelOffer(interaction) {
 async function handlePanelOfferSubmit(interaction) {
   const { entry, error } = panelAccess(interaction, interaction.customId.slice(ui.IDS.panelOfferModal.length + 1));
   if (error) return replyError(interaction, error);
-  if (store.pendingOf(entry.guildId, interaction.user.id)) return replyError(interaction, 'Zaten bekleyen bir partner talebin var.');
+  const pending = store.pendingOf(entry.guildId, interaction.user.id);
+  if (pending) return replyError(interaction, ...pendingMessage(pending));
 
   const adText = interaction.fields.getTextInputValue(ui.IDS.adText).trim();
   if (!hasDiscordInviteLink(adText)) {
     return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
   }
+
+  // DM ve yetkili kanalı işlemleri 3 saniyeyi aşabilir; önce cevap ertelenir
+  await interaction.deferReply({ flags: core.EPHEMERAL });
 
   const number = store.nextRequestNumber(entry.guildId);
   const alreadyAccepted = store.hasAcceptedTerms(interaction.user.id);
@@ -474,32 +523,32 @@ async function handlePanelOfferSubmit(interaction) {
     decidedBy: null,
     decidedAt: null,
   });
-  store.updateTrusted(entry.id, { lastOfferAt: Date.now() });
 
   if (!alreadyAccepted) {
     const sent = await interaction.user.send({ components: [ui.termsDm(`${ui.IDS.termsAccept}:${request.id}`)], flags: core.CV2 }).catch(() => null);
     if (!sent) {
       store.deleteRequest(request.id);
-      return replyError(interaction, 'Şartlar DM\'ine gönderilemedi.', 'DM\'lerin açık olduğundan emin ol ve tekrar dene.');
+      return replyError(interaction, 'Şartlar DM kutuna gönderilemedi.', "DM'lerin açık olduğundan emin ol ve tekrar dene.");
     }
-    return respond(interaction, core.alert('Son bir adım kaldı!', 'Partner şartlarını DM\'inden onaylaman gerekiyor, onaylayınca teklifin yetkili incelemesine düşecek.', 'success'));
+    // Bekleme süresi teklif gerçekten ilerleyince başlar; DM gönderilemeyen deneme süreyi harcamaz
+    store.updateTrusted(entry.id, { lastOfferAt: Date.now() });
+    return respond(interaction, core.alert('Son bir adım kaldı.', "Partner şartlarını DM kutundan onaylaman gerekiyor; onaylayınca teklifin yetkili incelemesine düşecek.", 'success'));
   }
 
-  const guild = interaction.client.guilds.cache.get(request.guildId);
-  const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
-  await reviewChannel
-    ?.send({ components: [ui.reviewCard(request)], flags: core.CV2, allowedMentions: { roles: [config.roles.staff] } })
-    .catch((err) => console.error('[partner] İnceleme kanalına gönderilemedi:', err.message));
-  return respond(interaction, core.alert('Teklifin incelemeye gönderildi!', 'Yetkilimiz onaylayınca metnin otomatik paylaşılır, sonucu buradan öğreneceksin.', 'success'));
+  if (!(await sendToReview(interaction.client, request))) {
+    store.deleteRequest(request.id);
+    return replyError(interaction, 'Teklifin yetkililere iletilemedi.', 'Birkaç dakika sonra yeniden dene.');
+  }
+  store.updateTrusted(entry.id, { lastOfferAt: Date.now() });
+  return respond(interaction, core.alert('Teklifin incelemeye gönderildi.', 'Yetkilimiz onaylayınca metnin otomatik paylaşılır, sonucu buradan öğreneceksin.', 'success'));
 }
 
-// Güvenilir listeye eklenen partnerin yetkilisine bizim metni gönder (linksiz — karşı tarafın kartı güncelleniyor, yeni mesaj yok)
+// Güvenilir listeye eklenen partnerin yetkilisine bizim metni gönder: paylaşılan mesaj bilinmediği için sadece
+// paylaşım kanalına giden bağlantı eklenir
 async function sendOurTextToContact(client, contactId, entry) {
   const contact = await client.users.fetch(contactId).catch(() => null);
   if (!contact) return;
 
-  // Karşı tarafın linkini bulamıyoruz (güncelleme yapılıyor, yeni mesaj yok)
-  // Bizim kanal linkini geç
   const guild = client.guilds.cache.get(entry.guildId);
   const postsChannel = guild && (await fetchTextChannel(guild, config.channels.posts));
 
@@ -522,6 +571,8 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
     return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
   }
 
+  // Yetkililere gönderilen DM'ler 3 saniyeyi aşabilir; önce cevap ertelenir
+  await interaction.deferReply({ flags: core.EPHEMERAL });
   const entry = createTrustedRecord(interaction, request, contactIds);
 
   const channel = await fetchTextChannel(interaction.guild, config.channels.posts);
@@ -592,6 +643,7 @@ async function handleTrustedAction(interaction) {
   if (action === 'kaldir') {
     if (!isLead(interaction)) return replyError(interaction, 'Bu işlemi sadece partner lideri yapabilir.');
     store.removeTrusted(id);
+    store.deleteRenewalOffer(id); // sürmekte olan yenileme teklifi de düşer
     await refreshTrustedPanel(interaction.client, interaction.guildId);
     return respond(interaction, core.alert('Partner güvenilir listeden çıkarıldı.', null, 'danger'));
   }
@@ -605,6 +657,8 @@ async function handleTrustedAction(interaction) {
     return replyError(interaction, 'Bu partnerin yetkilisi şu an meşgul.', 'Müsait olduğunu bildirince ya da 7 gün sonra otomatik olarak tekrar teklif gönderebilirsin.');
   }
 
+  // Yetkili listesini çekmek 3 saniyeyi aşabilir; önce cevap ertelenir
+  await interaction.deferReply({ flags: core.EPHEMERAL });
   const members = await fetchStaffMembers(interaction.guild);
   if (!members.length) return replyError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
 
@@ -631,6 +685,7 @@ async function handleContactAddSubmit(interaction) {
     return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
   }
 
+  await interaction.deferReply({ flags: core.EPHEMERAL });
   const newContacts = contactIds.filter((contactId) => !entry.contactIds?.includes(contactId));
   const updated = store.updateTrusted(id, { contactIds });
   await refreshTrustedPanel(interaction.client, interaction.guildId);
@@ -654,9 +709,10 @@ async function handleContactRemove(interaction) {
 
 // Partner yetkilisi rolüne sahip üyeler, yetkili seçim menüsünü doldurmak için
 async function fetchStaffMembers(guild) {
-  await guild.members.fetch().catch((err) => console.error('[partner] Üyeler çekilemedi:', err.message));
   const role = guild.roles.cache.get(config.roles.staff);
-  return role ? [...role.members.values()] : [];
+  if (!role) return [];
+  if (role.members.size === 0) await guild.members.fetch().catch((err) => console.error('[partner] Üyeler çekilemedi:', err.message));
+  return [...role.members.values()];
 }
 
 // Yetkili seçim menüsünden seçim yapılınca: seçilen yetkiliye DM gider, süreç atanmış olarak kaydedilir
@@ -670,7 +726,7 @@ async function handleRenewalAssign(interaction) {
 
   const staffUser = await interaction.client.users.fetch(assignedStaffId).catch(() => null);
   const sent = await staffUser
-    ?.send({ components: [ui.assignedOfferDm(entry, interaction.guild.name)], flags: core.CV2 })
+    ?.send({ components: [ui.assignedOfferDm(entry, interaction.user.id)], flags: core.CV2 })
     .catch(() => null);
   if (!sent) {
     return interaction.editReply({
@@ -687,7 +743,7 @@ async function handleRenewalAssign(interaction) {
   });
 
   return interaction.editReply({
-    components: [core.alert(`<@${assignedStaffId}> kişisine bildirim gönderildi.`, 'Kabul ederse metni inceleyip onaylayacak.', 'success')],
+    components: [core.alert(`<@${assignedStaffId}> yetkilisine bildirim gönderildi.`, 'Kabul ederse metni inceleyip onaylayacak.', 'success')],
   });
 }
 
@@ -724,6 +780,9 @@ async function handleRenewalEditSubmit(interaction) {
   if (error) return replyError(interaction, error);
 
   const content = interaction.fields.getTextInputValue(ui.IDS.renewalEditInput).trim();
+  if (!hasDiscordInviteLink(content)) {
+    return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
+  }
   const updated = store.updateTrusted(trustedId, { content });
 
   return interaction.update({ components: [ui.renewalReviewDm(updated)] });
@@ -750,17 +809,7 @@ async function handleRenewalCancelSubmit(interaction) {
   const guild = interaction.client.guilds.cache.get(offer.guildId);
   const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
   await reviewChannel
-    ?.send({
-      components: [
-        core.alert(
-          `❌ **Teklifte Bulun iptal edildi** — Sunucu \`${entry.serverId ?? 'bilinmiyor'}\``,
-          `Yetkili: <@${offer.assignedStaffId}>\nSebep: ${reason}`,
-          'danger',
-        ),
-      ],
-      flags: core.CV2,
-      allowedMentions: { parse: [] },
-    })
+    ?.send({ components: [ui.renewalCancelledLog(entry, offer.assignedStaffId, reason)], flags: core.CV2, allowedMentions: { parse: [] } })
     .catch(() => {});
 }
 
@@ -776,12 +825,15 @@ async function handleRenewalApprove(interaction) {
   const acceptedContactId = entry.contactIds.find((id) => store.hasAcceptedTerms(id));
   if (acceptedContactId) {
     const result = await postRenewal(interaction.client, entry, acceptedContactId);
-    store.deleteRenewalOffer(trustedId);
+    // Paylaşım başarısız olursa teklif açık kalır, onay yeniden denenebilir
     if (!result) {
-      return interaction.editReply({ components: [core.alert('Sunucuya ulaşılamadı, paylaşılamadı.', null, 'danger')] });
+      return interaction.editReply({
+        components: [core.alert('Paylaşım kanalına gönderilemedi.', 'Kanal izinlerini kontrol edip teklifi yeniden onayla.', 'danger')],
+      });
     }
-    await sendOurTextDm(interaction.client, acceptedContactId, result, entry, result.message.id);
-    return interaction.editReply({ components: [core.alert('Onaylandı, partner metni paylaşıldı.', null, 'success')] });
+    store.deleteRenewalOffer(trustedId);
+    await sendOurTextDm(interaction.client, acceptedContactId, result, entry);
+    return interaction.editReply({ components: [core.alert('Teklif onaylandı.', 'Partner metni paylaşıldı.', 'success')] });
   }
 
   const sends = await Promise.all(
@@ -795,7 +847,7 @@ async function handleRenewalApprove(interaction) {
   }
 
   return interaction.editReply({
-    components: [core.alert('Onayladın!', 'Karşı taraf daha önce şartları kabul etmemiş, ona gönderildi. Kabul edince otomatik paylaşılacak.', 'success')],
+    components: [core.alert('Teklif onaylandı.', 'Karşı taraf şartları daha önce kabul etmediği için şartlar ona gönderildi; kabul edince metin otomatik paylaşılacak.', 'success')],
   });
 }
 
@@ -805,20 +857,24 @@ async function handleRenewalTermsAccept(interaction) {
   const entry = store.getTrusted(trustedId);
   if (!entry) return replyError(interaction, 'Bu teklif artık geçerli değil.');
   if (!store.getRenewalOffer(trustedId)) return replyError(interaction, 'Bu teklif zaten işlendi.');
+  if (!entry.contactIds?.includes(interaction.user.id)) return replyError(interaction, 'Bu teklif sana ait değil.');
 
   await interaction.deferUpdate();
   store.markTermsAccepted(interaction.user.id);
 
   const result = await postRenewal(interaction.client, entry, interaction.user.id);
   const offer = store.getRenewalOffer(trustedId);
+
+  // Paylaşım başarısız olursa teklif açık kalır, butona yeniden basılabilir
+  if (!result) {
+    return interaction.editReply({
+      components: [core.alert('Paylaşım kanalına gönderilemedi.', 'Bir yetkiliye haber ver, ardından butona yeniden basabilirsin.', 'danger'), ui.termsDm(`${ui.IDS.renewalTermsAccept}:${trustedId}`)],
+    });
+  }
   store.deleteRenewalOffer(trustedId);
 
-  if (!result) {
-    return interaction.editReply({ components: [core.alert('Sunucuya ulaşılamadı, paylaşılamadı.', null, 'danger')] });
-  }
-
-  await interaction.editReply({ components: [core.alert('Teşekkürler! Partner metnin paylaşıldı.', null, 'success')] });
-  await sendOurTextDm(interaction.client, interaction.user.id, result, entry, result.message.id);
+  await interaction.editReply({ components: [core.alert('Şartları kabul ettin.', 'Partner metnin paylaşıldı.', 'success')] });
+  await sendOurTextDm(interaction.client, interaction.user.id, result, entry);
 
   if (offer) {
     const staffUser = await interaction.client.users.fetch(offer.assignedStaffId).catch(() => null);
@@ -833,7 +889,8 @@ async function postRenewal(client, entry, contactId) {
   if (!guild) return null;
 
   const number = store.nextRequestNumber(entry.guildId);
-  const request = store.createRequest({
+  const now = Date.now();
+  const request = {
     id: `${entry.guildId}-${number}`,
     number,
     guildId: entry.guildId,
@@ -842,17 +899,16 @@ async function postRenewal(client, entry, contactId) {
     text: entry.content,
     status: 'approved',
     source: 'teklif',
-    createdAt: Date.now(),
+    createdAt: now,
     decidedBy: null,
-    decidedAt: Date.now(),
-  });
+    decidedAt: now,
+  };
 
-  const updatedEntry = store.updateTrusted(entry.id, { addedAt: Date.now(), sourceRequestId: request.id });
-
+  // Önce paylaşılır; kayıtlar ancak paylaşım başarılı olursa değişir, böylece başarısız denemede teklif yeniden denenebilir
   const postsChannel = await fetchTextChannel(guild, config.channels.posts);
   const message = await postsChannel
     ?.send({
-      components: [ui.postCard(request, updatedEntry, store.isBanned(contactId))],
+      components: [ui.postCard(request, { ...entry, addedAt: now, sourceRequestId: request.id }, store.isBanned(contactId))],
       flags: core.CV2,
       allowedMentions: { parse: [] },
     })
@@ -860,25 +916,22 @@ async function postRenewal(client, entry, contactId) {
       console.error('[partner] Teklif sonrası paylaşılamadı:', err.message);
       return null;
     });
+  if (!message) return null;
+
+  store.createRequest(request);
+  store.updateTrusted(entry.id, { addedAt: now, sourceRequestId: request.id });
   await refreshTrustedPanel(client, entry.guildId);
 
-  return message ? { message, channel: postsChannel } : null;
+  return { message, channel: postsChannel };
 }
 
-// Paylaşımdan sonra bizim tanıtım metnimiz karşı tarafa gider, her bölümün altında kendi mesajına giden buton
-async function sendOurTextDm(client, contactId, { message, channel }, entry, partnerMessageId) {
+// Paylaşımdan sonra bizim tanıtım metnimiz karşı tarafa gider; karşı tarafın metninin paylaşıldığı mesaja giden bir buton da eklenir
+async function sendOurTextDm(client, contactId, { message, channel }, entry) {
   const contact = await client.users.fetch(contactId).catch(() => null);
   if (!contact) return;
 
-  const ourJumpUrl = core.messageUrl(channel.guildId, channel.id, message.id);
-
-  // Karşı tarafın metninin paylaşıldığı mesajın linkini bul
-  let partnerJumpUrl = null;
-  if (partnerMessageId && channel) {
-    partnerJumpUrl = core.messageUrl(channel.guildId, channel.id, partnerMessageId);
-  }
-
-  await contact.send({ components: [ui.ourTextDm(entry, partnerJumpUrl, ourJumpUrl)], flags: core.CV2 }).catch(() => {});
+  const sharedUrl = core.messageUrl(channel.guildId, channel.id, message.id);
+  await contact.send({ components: [ui.ourTextDm(entry, sharedUrl, sharedUrl)], flags: core.CV2 }).catch(() => {});
 }
 
 // ── Paylaşım kanalında @everyone/@here'in gerçekten çalışmasını engelleyen izin ─────────────────────────────
@@ -905,7 +958,7 @@ module.exports = {
   help: {
     category: ['partner', 'Partner'],
     access: {
-      'guvenilir-partnerler': 'Herkes görebilir, işlemler partner yetkilileri için.',
+      'guvenilir-partnerler': 'Herkes görebilir; işlemler partner yetkilileri için',
       'partner-musaitlik': 'Partner yetkilileri',
     },
   },

@@ -51,7 +51,9 @@ for (const sys of results) {
     const targets =
       c.norm.kind === 'modal'
         ? [{ id: c.norm.modal.custom_id, kind: 'modal', path: 'custom_id', type: 'modal' }]
-        : interactives(c.norm).map((i) => ({ id: i.id, kind: i.kind, path: i.path, type: i.type }));
+        : interactives(c.norm)
+            .filter((i) => !i.comp?.disabled) // pasif bileşene basılamaz, handler gerekmez
+            .map((i) => ({ id: i.id, kind: i.kind, path: i.path, type: i.type }));
 
     for (const t of targets) {
       if (!t.id) continue; // eksik custom_id lint'te raporlanır
