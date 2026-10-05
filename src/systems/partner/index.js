@@ -11,7 +11,7 @@
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, isStaff, isMenuOwner, menuOwnerError, fetchTextChannel } = require('../../core/helpers');
 const ratings = require('../degerlendirme');
 const config = require('./config');
 const store = require('./store');
@@ -21,6 +21,17 @@ const ui = require('./ui');
 const isLead = (interaction) => isStaff(interaction, config.roles.lead);
 
 const UNKNOWN_MESSAGE = 10008;
+
+// Sürmekte olan "Teklifte Bulun" süreci bu süre içinde sonuçlanmazsa düşer; yetkili hiç yanıt vermese bile o partnere tekrar teklif edilebilir
+const OFFER_TTL_MS = 3 * 24 * 60 * 60 * 1000;
+function activeOffer(trustedId) {
+  const offer = store.getRenewalOffer(trustedId);
+  if (offer && Date.now() - (offer.createdAt ?? 0) > OFFER_TTL_MS) {
+    store.deleteRenewalOffer(trustedId);
+    return null;
+  }
+  return offer;
+}
 
 const commands = [
   new SlashCommandBuilder()
@@ -606,6 +617,19 @@ async function handleBan(interaction) {
   if (trustedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
 }
 
+// Yasaklı partner kartındaki "Yasağı Kaldır": sadece partner lideri kullanabilir, kullanıcı tekrar partner talebi açabilir
+async function handleUnban(interaction) {
+  const requestId = interaction.customId.slice(ui.IDS.unban.length + 1);
+  if (!isLead(interaction)) return replyError(interaction, 'Bu işlemi sadece partner lideri yapabilir.');
+
+  const request = store.getRequest(requestId);
+  if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
+
+  store.unbanUser(request.requesterId);
+  const trustedEntry = store.trustedBySource(interaction.guildId, requestId);
+  await interaction.update({ components: [ui.postCard(request, trustedEntry, false)], allowedMentions: { parse: [] } });
+}
+
 // Paylaşım kartındaki "Partneri Sil": sadece gönderiyi kaldırır, kullanıcıyı yasaklamaz
 async function handleDeletePost(interaction) {
   const requestId = interaction.customId.slice(ui.IDS.deletePost.length + 1);
@@ -617,6 +641,13 @@ async function handleDeletePost(interaction) {
 }
 
 const handleTrustedCommand = (interaction) => respond(interaction, ui.trustedList(store.trustedOf(interaction.guildId)), { ephemeral: false });
+
+// Güvenilir liste sayfa butonları: partner-guven-sayfa:<sayfa>:<buton yeri>; sadece komutu kullanan gezebilir
+async function handleTrustedPage(interaction) {
+  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
+  const page = Number(interaction.customId.split(':')[1]) || 0;
+  return interaction.update({ components: [ui.trustedList(store.trustedOf(interaction.guildId), page)], allowedMentions: { parse: [] } });
+}
 
 async function handleStaffStatusCommand(interaction) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu komutu sadece partner yetkilileri kullanabilir.');
@@ -650,8 +681,8 @@ async function handleTrustedAction(interaction) {
 
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
 
-  if (store.getRenewalOffer(id)) {
-    return replyError(interaction, 'Bu sunucu için zaten sürmekte olan bir teklif var.', 'Önce o süreç sonuçlanmalı.');
+  if (activeOffer(id)) {
+    return replyError(interaction, 'Bu sunucu için zaten sürmekte olan bir teklif var.', 'O süreç sonuçlanmalı; 3 gün içinde sonuçlanmazsa yeniden teklif edebilirsin.');
   }
   if (ui.isBusy(entry)) {
     return replyError(interaction, 'Bu partnerin yetkilisi şu an meşgul.', 'Müsait olduğunu bildirince ya da 7 gün sonra otomatik olarak tekrar teklif gönderebilirsin.');
@@ -749,7 +780,7 @@ async function handleRenewalAssign(interaction) {
 
 // Atanan yetkilinin kabul-ettiği şu süreç için kontrol: offer var mı, mesajı alan gerçekten bu kişi mi
 function renewalOfferError(interaction, trustedId) {
-  const offer = store.getRenewalOffer(trustedId);
+  const offer = activeOffer(trustedId);
   if (!offer) return { error: 'Bu teklif artık geçerli değil.' };
   if (offer.assignedStaffId !== interaction.user.id) return { error: 'Bu teklif sana atanmamış.' };
   const entry = store.getTrusted(trustedId);
@@ -856,7 +887,7 @@ async function handleRenewalTermsAccept(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalTermsAccept.length + 1);
   const entry = store.getTrusted(trustedId);
   if (!entry) return replyError(interaction, 'Bu teklif artık geçerli değil.');
-  if (!store.getRenewalOffer(trustedId)) return replyError(interaction, 'Bu teklif zaten işlendi.');
+  if (!activeOffer(trustedId)) return replyError(interaction, 'Bu teklif zaten işlendi ya da süresi doldu.');
   if (!entry.contactIds?.includes(interaction.user.id)) return replyError(interaction, 'Bu teklif sana ait değil.');
 
   await interaction.deferUpdate();
@@ -972,6 +1003,8 @@ module.exports = {
     [ui.IDS.review, handleReviewDecision],
     [ui.IDS.trustedAdd, handleTrustedAdd],
     [ui.IDS.ban, handleBan],
+    [ui.IDS.unban, handleUnban],
+    [ui.IDS.trustedPage, handleTrustedPage],
     [ui.IDS.deletePost, handleDeletePost],
     [ui.IDS.trustedSelect, handleTrustedSelect],
     [ui.IDS.trustedAction, handleTrustedAction],

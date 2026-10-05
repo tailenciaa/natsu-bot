@@ -155,6 +155,7 @@ async function punish(guild, actor, targetUser, type, duration, reason) {
     console.error(`[sicil] ${ui.TYPES[type].label} uygulanamadı:`, err.message);
     // Yasak uygulanamadıysa kişiye gönderilen "yasaklandın" mesajı geri alınır
     await banDm?.delete().catch(() => {});
+    store.releaseNumber(guild.id, number);
     return { error: 'Ceza Discord üzerinde uygulanamadı.', hint: 'Botun yetkilerini ve rol sırasını kontrol et.' };
   }
 
@@ -318,10 +319,17 @@ function startSweeper(client) {
   setInterval(run, config.sweepSeconds * 1000).unref();
 }
 
-// Jail'deyken çıkıp giren üyeye jail rolü tekrar verilir
+// Jail'deyken çıkıp giren üyeye jail rolü, susturmadayken çıkıp giren üyeye kalan süre kadar susturma tekrar verilir
+// (Discord zaman aşımı üye sunucudan ayrılınca silinir)
 async function handleMemberAdd(member) {
   const jail = store.activeOf(member.guild.id, member.id, 'jail');
   if (jail && config.roles.jail) await member.roles.add(config.roles.jail, `Jail #${core.pad(jail.number)} sürüyor`).catch(() => {});
+  const mute = store.activeOf(member.guild.id, member.id, 'mute');
+  const remaining = mute?.expiresAt ? Math.min(mute.expiresAt - Date.now(), MAX_TIMEOUT) : 0;
+  if (remaining > 0 && member.moderatable) {
+    dedupe.markHandled(member.guild.id, member.id, 'mute');
+    await member.timeout(remaining, `Susturma #${core.pad(mute.number)} sürüyor`).catch((err) => console.error('[sicil] Susturma yeniden uygulanamadı:', err.message));
+  }
   await syncRestrictions(member.guild, member.id);
 }
 

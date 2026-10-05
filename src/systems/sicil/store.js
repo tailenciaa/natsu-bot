@@ -14,6 +14,14 @@ module.exports = {
     return guild.punishmentCounter;
   },
 
+  // Ceza Discord'da uygulanamayınca tüketilen numara geri verilir (araya başka ceza girmediyse)
+  releaseNumber(guildId, number) {
+    const guild = guildData(guildId);
+    if (guild.punishmentCounter !== number) return;
+    guild.punishmentCounter = number - 1;
+    save();
+  },
+
   create(punishment) {
     data.punishments[punishment.id] = punishment;
     save();

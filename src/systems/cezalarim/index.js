@@ -97,7 +97,8 @@ async function handleItirazKarar(interaction) {
 
   if (sonuc === 'onayla') {
     // Denetim kaydı açıklaması en fazla 512 karakter olabilir
-    const result = await moderation.lift(interaction.guild, punishment, interaction.user.id, core.shorten(`İtiraz kabul edildi: ${ticket.itirazSebep}`, 500));
+    // Haksız bulunan ceza kaldırılıp sicilden de silinir; böylece ceza puanı düşer ve puana bağlı roller güncellenir
+    const result = await moderation.remove(interaction.guild, punishment, interaction.user.id, core.shorten(`İtiraz kabul edildi: ${ticket.itirazSebep}`, 500));
     if (result.error) {
       destekStore.updateTicket(interaction.channelId, { itirazKarar: null });
       return respond(interaction, core.alert(result.error, result.hint, 'danger'));

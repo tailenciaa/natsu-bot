@@ -176,6 +176,13 @@ module.exports = {
     return Boolean(data.partnerBans[userId]);
   },
 
+  unbanUser(userId) {
+    if (!data.partnerBans[userId]) return false;
+    delete data.partnerBans[userId];
+    save();
+    return true;
+  },
+
   banServer(serverId, reason, by) {
     data.bannedServers[serverId] = { reason, by, at: Date.now() };
     save();

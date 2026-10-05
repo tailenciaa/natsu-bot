@@ -161,7 +161,7 @@ const itirazTicketReason = (p) => `Ceza İtirazı: ${label(p)}`;
 // Cezanın kısa durumu (uyarılarda yok)
 function durumText(p) {
   if (p.type === 'uyari') return null;
-  if (p.status === 'lifted') return 'Kaldırıldı';
+  if (p.status === 'lifted' || p.status === 'deleted') return 'Kaldırıldı';
   if (p.status === 'expired') return 'Süresi doldu';
   if (!p.expiresAt) return 'Aktif, süresiz';
   return p.expiresAt <= Date.now() ? 'Süresi doldu' : `Aktif, <t:${unix(p.expiresAt)}:R> bitiyor`;
@@ -191,7 +191,7 @@ function itirazCard(p, sebep, karar) {
       karar
         ? fields([
             `**İtiraz <@${karar.by}> tarafından ${approved ? 'onaylandı' : 'reddedildi'}.**`,
-            approved ? hint('Ceza kaldırıldı.') : p.status === 'active' ? hint('Ceza sürüyor.') : null,
+            approved ? hint('Ceza kaldırıldı ve sicilden silindi, ceza puanı düşürüldü.') : p.status === 'active' ? hint('Ceza sürüyor.') : null,
           ])
         : null,
     ],

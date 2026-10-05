@@ -15,7 +15,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, alert, field, fields, stamp } = require('../../core/ui');
+const { text, divider, colors, unix, quote, shorten, alert, field, fields, stamp, pagerRow } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -31,6 +31,8 @@ const IDS = {
   review: 'partner-karar', // partner-karar:<talep>:<onayla|reddet>
   trustedAdd: 'partner-guven-ekle', // partner-guven-ekle:<talep>
   ban: 'partner-yasakla', // partner-yasakla:<talep>
+  unban: 'partner-yasak-kaldir', // partner-yasak-kaldir:<talep>
+  trustedPage: 'partner-guven-sayfa', // partner-guven-sayfa:<sayfa>:<buton yeri>
   deletePost: 'partner-sil', // partner-sil:<talep>
   trustedSelect: 'partner-guven-sec',
   trustedAction: 'partner-guven-y', // partner-guven-y:<kayıt>:<teklif|kaldir>
@@ -274,11 +276,11 @@ function postCard(request, trusted, banned) {
     )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
+        // Yasaklıysa aynı yerdeki buton yasağı kaldırır (sadece lider kullanabilir)
         new ButtonBuilder()
-          .setCustomId(`${IDS.ban}:${request.id}`)
-          .setLabel(banned ? 'Yasaklandı' : 'Yasaklıya Al')
-          .setStyle(ButtonStyle.Danger)
-          .setDisabled(Boolean(banned)),
+          .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
+          .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
+          .setStyle(banned ? ButtonStyle.Secondary : ButtonStyle.Danger),
         new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
       ),
     );
@@ -338,10 +340,17 @@ const renewalCancelledLog = (entry, staffId, reason) =>
   );
 
 // /guvenilir-partnerler listesi
-function trustedList(entries) {
+const TRUSTED_PAGE_SIZE = 25; // seçim menüsü en fazla 25 seçenek alır
+
+function trustedList(entries, page = 0) {
   if (!entries.length) return alert('Güvenilir listeye eklenmiş bir partner yok.');
 
-  return new ContainerBuilder()
+  const pageCount = Math.ceil(entries.length / TRUSTED_PAGE_SIZE);
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  const shown = entries.slice(current * TRUSTED_PAGE_SIZE, (current + 1) * TRUSTED_PAGE_SIZE);
+  const nav = (target, slot) => `${IDS.trustedPage}:${target}:${slot}`;
+
+  const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         'Güvenilir Partnerler',
@@ -350,7 +359,7 @@ function trustedList(entries) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Liste Durumu**', field('Toplam', `${entries.length} sunucu`), entries.length > 25 ? '-# Menüde en yeni 25 sunucu listelenir.' : null])),
+      text(fields(['**Liste Durumu**', field('Toplam', `${entries.length} sunucu`), pageCount > 1 ? `-# Sayfa ${current + 1} / ${pageCount}` : null])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -359,8 +368,7 @@ function trustedList(entries) {
           .setCustomId(`${IDS.trustedSelect}:0`)
           .setPlaceholder('Bir partner seç')
           .addOptions(
-            entries
-              .slice(0, 25)
+            shown
               .map((e) =>
                 new StringSelectMenuOptionBuilder()
                   .setValue(e.id)
@@ -370,6 +378,10 @@ function trustedList(entries) {
           ),
       ),
     );
+  if (pageCount > 1) {
+    container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
+  }
+  return container;
 }
 
 // Elle paylaşılan bir metni güvenilir listeye alırken karşı sunucunun partner yetkilisinin ID'si bilinmez,
@@ -612,7 +624,7 @@ function renewalReviewDm(entry) {
 
 function renewalEditModal(entry) {
   // Kayıtlı metin formun alt sınırından (20) kısaysa (ör. elle paylaşılan kısa metin) form hiç açılmazdı; alt sınır buna göre ayarlanır
-  const current = shorten(entry.content, 1500);
+  const current = shorten(entry.content, 2800);
   return new ModalBuilder()
     .setCustomId(`${IDS.renewalEditModal}:${entry.id}`)
     .setTitle('Partner Metnini Düzenle')
@@ -626,7 +638,7 @@ function renewalEditModal(entry) {
             .setStyle(TextInputStyle.Paragraph)
             .setValue(current)
             .setMinLength(Math.min(20, current.length))
-            .setMaxLength(1500)
+            .setMaxLength(2800)
             .setRequired(true),
         ),
     );
