@@ -5,17 +5,17 @@
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, fetchTextChannel, stillMember } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
-const { weekKey, previousWeekKey, isMonday } = require('../aktif/week');
+const { weekKey, previousWeekKey } = require('../aktif/week');
 
 const commands = [
   new SlashCommandBuilder()
     .setName('saygi-ver')
-    .setDescription('Bir üyeye +1 saygınlık verir (günde bir kez kullanılabilir).')
-    .addUserOption((opt) => opt.setName('kullanici').setDescription('Saygınlık vereceğin üye').setRequired(true))
+    .setDescription('Bir üyeye +1 saygınlık verir, günde bir kez kullanılabilir.')
+    .addUserOption((opt) => opt.setName('kullanici').setDescription('Saygınlık verilecek üyeyi seçer.').setRequired(true))
     .setContexts(InteractionContextType.Guild),
   new SlashCommandBuilder()
     .setName('saygi-siralama')
@@ -27,48 +27,70 @@ const CHECK_INTERVAL = 15 * 60 * 1000;
 // "+rep" ile başlayan mesajlarda tetiklenir (örn: "+rep @kullanıcı")
 const REP_TRIGGER = /^\+rep\b/i;
 
-// O haftanın/tüm zamanların toplamlarından en yüksekten düşüğe ilk N kullanıcıyı listeler
-function topUsers(totals, limit = 5) {
+// O haftanın/tüm zamanların toplamlarından en yüksekten düşüğe ilk N kullanıcıyı listeler (sunucudan ayrılanlar hariç)
+function topUsers(guild, totals, limit = 5) {
   return Object.entries(totals)
+    .filter(([userId]) => stillMember(guild, userId))
     .map(([userId, value]) => ({ userId, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
 }
 
-async function announceWeek(guild, target) {
-  const channel = await fetchTextChannel(guild, config.channel);
-  if (!channel) return;
+// Rolü önceki sahibinden alıp yeni birinciye verir; rol gerçekten verilemezse sahip kaydedilmez
+async function passRole(guild, winnerId) {
+  const prevHolder = store.holder();
+  if (!config.roleId || winnerId === prevHolder) return;
 
-  const results = topUsers(store.weekTotals(target));
+  if (prevHolder) {
+    const prevMember = await guild.members.fetch(prevHolder).catch(() => null);
+    await prevMember?.roles.remove(config.roleId, 'Haftanın saygın üyesi değişti').catch((err) => console.error('[saygi] Rol önceki sahibinden alınamadı:', err.message));
+  }
+  if (!winnerId) return store.setHolder(null);
+  const member = await guild.members.fetch(winnerId).catch(() => null);
+  const given = member ? await member.roles.add(config.roleId, 'Haftanın saygın üyesi').then(() => true, (err) => {
+    console.error('[saygi] Haftanın saygın üyesi rolü verilemedi:', err.message);
+    return false;
+  }) : false;
+  store.setHolder(given ? winnerId : null);
+}
+
+// Duyuruyu gönderir ve rolü devreder; duyuru atıldıysa (ya da duyurulacak kayıt yoksa) true, tekrar denenmesi gerekiyorsa false döner
+async function announceWeek(guild, target) {
+  const results = topUsers(guild, store.weekTotals(target));
   const winner = results[0] ?? null;
 
-  if (config.roleId && winner && winner.userId !== store.holder()) {
-    const prevHolder = store.holder();
-    if (prevHolder) {
-      const prevMember = await guild.members.fetch(prevHolder).catch(() => null);
-      await prevMember?.roles.remove(config.roleId, 'Haftanın saygın üyesi değişti').catch(() => {});
-    }
-    const member = await guild.members.fetch(winner.userId).catch(() => null);
-    await member?.roles.add(config.roleId, 'Haftanın saygın üyesi').catch(() => {});
-    store.setHolder(winner.userId);
-  }
+  await passRole(guild, winner?.userId ?? null);
+  if (!winner) return true; // kimse saygınlık kazanmadıysa boş duyuru atılmaz
 
-  await channel
+  const channel = await fetchTextChannel(guild, config.channel);
+  if (!channel) {
+    console.error('[saygi] Haftalık duyuru kanalı bulunamadı.');
+    return false;
+  }
+  return channel
     .send({
       components: [ui.weeklyAnnounce(guild, results, config.roleId)],
       flags: core.CV2,
-      allowedMentions: { users: winner ? [winner.userId] : [] },
+      allowedMentions: { users: [winner.userId] },
     })
-    .catch(() => {});
+    .then(
+      () => true,
+      (err) => {
+        console.error('[saygi] Haftalık duyuru gönderilemedi:', err.message);
+        return false;
+      },
+    );
 }
 
+// Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar
 async function checkWeeklyAnnounce(guild) {
-  const now = Date.now();
-  if (!isMonday(now)) return;
-  const target = previousWeekKey(now);
+  const target = previousWeekKey(Date.now());
   if (store.lastRun() === target) return;
-  await announceWeek(guild, target).catch((err) => console.error('[saygi] Haftalık duyuru gönderilemedi:', err.message));
-  store.setLastRun(target);
+  const done = await announceWeek(guild, target).catch((err) => {
+    console.error('[saygi] Haftalık duyuru hatası:', err.message);
+    return false;
+  });
+  if (done) store.setLastRun(target);
 }
 
 // Saygınlık verme kuralları: kendine/bota verilemez, günde bir kez kullanılabilir. Hem /saygi-ver hem "+rep" bunu kullanır.
@@ -85,10 +107,12 @@ function evaluateGive(giverId, target) {
   return { ok: true, newTotal: store.allTotals()[target.id] ?? 0 };
 }
 
+// Kalan süre cümlede açık yazılır: "3 saat 5 dakika", tam saat ya da tam dakika olunca 0'lı kısım yazılmaz
 function cooldownHint(remaining) {
-  const hours = Math.floor(remaining / 3600000);
-  const minutes = Math.ceil((remaining % 3600000) / 60000);
-  return `Tekrar verebilmen için ${hours > 0 ? `${hours} saat ` : ''}${minutes} dk bekle.`;
+  const total = Math.max(1, Math.ceil(remaining / 60000));
+  const hours = Math.floor(total / 60);
+  const minutes = total % 60;
+  return `Tekrar saygınlık verebilmek için ${[hours ? `${hours} saat` : '', minutes ? `${minutes} dakika` : ''].filter(Boolean).join(' ')} bekle.`;
 }
 
 // /saygi-ver: hedefe +1 saygınlık verir
@@ -113,9 +137,19 @@ async function handleMessage(message) {
   if (message.guildId !== guildId || message.author.bot || message.webhookId) return;
   if (!REP_TRIGGER.test(message.content.trim())) return;
 
-  const target = message.mentions.users.find((u) => u.id !== message.author.id);
+  // Hata cevapları kanalı kirletmesin diye kısa süre sonra silinir
+  const replyBrief = async (container) => {
+    const sent = await message.reply({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => null);
+    if (sent) setTimeout(() => sent.delete().catch(() => {}), 10 * 1000).unref();
+  };
+
+  // Botlar ve yazarın kendisi hedef sayılmaz; etiketlenenler arasında geçerli ilk üye seçilir
+  const target = message.mentions.users.find((u) => !u.bot && u.id !== message.author.id);
   if (!target) {
-    await message.reply({ components: [core.alert('Kime saygınlık vereceğini belirtmelisin.', 'Örnek: +rep @kullanıcı', 'danger')], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+    const attempted = message.mentions.users.size > 0;
+    await replyBrief(
+      core.alert(attempted ? 'Bu kişiye saygınlık veremezsin.' : 'Kime saygınlık vereceğini yazmalısın.', 'Örn: +rep @üye', 'danger'),
+    );
     return;
   }
 
@@ -127,8 +161,7 @@ async function handleMessage(message) {
         : result.reason === 'bot'
           ? 'Botlara saygınlık veremezsin.'
           : 'Zaten saygınlık verdin.';
-    const hint = result.reason === 'cooldown' ? cooldownHint(result.remaining) : null;
-    await message.reply({ components: [core.alert(text, hint, 'danger')], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+    await replyBrief(core.alert(text, result.reason === 'cooldown' ? cooldownHint(result.remaining) : null, 'danger'));
     return;
   }
 
@@ -143,7 +176,7 @@ async function handleMessage(message) {
 
 // /saygi-siralama: tüm zamanların toplam tablosu
 async function handleTable(interaction) {
-  const ranking = topUsers(store.allTotals(), 15);
+  const ranking = topUsers(interaction.guild, store.allTotals(), 15);
   return respond(interaction, ui.table(interaction.guild, ranking), { ephemeral: false });
 }
 

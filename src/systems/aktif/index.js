@@ -4,11 +4,11 @@
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel } = require('../../core/helpers');
+const { fetchTextChannel, stillMember } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
-const { weekKey, previousWeekKey, isMonday } = require('./week');
+const { weekKey, previousWeekKey } = require('./week');
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
 const TICK = 60 * 1000;
@@ -69,49 +69,66 @@ function handleMessage(message) {
   store.add('mesaj', message.author.id, 1, weekKey(message.createdTimestamp));
 }
 
-// O haftanın toplamlarından en yüksekten düşüğe ilk 5 kullanıcıyı listeler
-function topUsers(totals, limit = 5) {
+// O haftanın toplamlarından en yüksekten düşüğe ilk 5 kullanıcıyı listeler (sunucudan ayrılanlar hariç)
+function topUsers(guild, totals, limit = 5) {
   return Object.entries(totals)
+    .filter(([userId]) => stillMember(guild, userId))
     .map(([userId, value]) => ({ userId, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
 }
 
-async function announceWeek(guild, target) {
-  const channel = await fetchTextChannel(guild, config.channel);
-  if (!channel) return;
+// Kategorinin rolünü önceki sahibinden alıp yeni birinciye verir; rol gerçekten verilemezse sahip kaydedilmez
+async function passRole(guild, kind, winnerId) {
+  const roleId = config.roles[kind];
+  const prevHolder = store.holder(kind);
+  if (!roleId || winnerId === prevHolder) return;
 
-  const results = {};
-  const winnerIds = [];
-  for (const kind of ['ses', 'mesaj', 'yayin']) {
-    const list = topUsers(store.totals(kind, target));
-    results[kind] = list;
-    const winner = list[0] ?? null;
-    if (winner) winnerIds.push(winner.userId);
-
-    const roleId = config.roles[kind];
-    const prevHolder = store.holder(kind);
-    if (roleId && winner && winner.userId !== prevHolder) {
-      if (prevHolder) {
-        const prevMember = await guild.members.fetch(prevHolder).catch(() => null);
-        await prevMember?.roles.remove(roleId, 'Haftanın aktifi değişti').catch(() => {});
-      }
-      const member = await guild.members.fetch(winner.userId).catch(() => null);
-      await member?.roles.add(roleId, 'Haftanın aktifi').catch(() => {});
-      store.setHolder(kind, winner.userId);
-    }
+  if (prevHolder) {
+    const prevMember = await guild.members.fetch(prevHolder).catch(() => null);
+    await prevMember?.roles.remove(roleId, 'Haftanın aktifi değişti').catch((err) => console.error(`[aktif] Rol önceki sahibinden alınamadı (${kind}):`, err.message));
   }
-
-  await channel.send({ components: [ui.weeklyAnnounce(guild, results)], flags: core.CV2, allowedMentions: { users: winnerIds } }).catch(() => {});
+  if (!winnerId) return store.setHolder(kind, null);
+  const member = await guild.members.fetch(winnerId).catch(() => null);
+  const given = member ? await member.roles.add(roleId, 'Haftanın aktifi').then(() => true, (err) => {
+    console.error(`[aktif] Haftanın aktifi rolü verilemedi (${kind}):`, err.message);
+    return false;
+  }) : false;
+  store.setHolder(kind, given ? winnerId : null);
 }
 
+// Duyuruyu gönderir ve rolleri devreder; duyuru atıldıysa (ya da duyurulacak kayıt yoksa) true, tekrar denenmesi gerekiyorsa false döner
+async function announceWeek(guild, target) {
+  const results = {};
+  for (const kind of ['ses', 'mesaj', 'yayin']) results[kind] = topUsers(guild, store.totals(kind, target));
+  const winnerIds = ['ses', 'mesaj', 'yayin'].map((kind) => results[kind][0]?.userId).filter(Boolean);
+
+  for (const kind of ['ses', 'mesaj', 'yayin']) await passRole(guild, kind, results[kind][0]?.userId ?? null);
+  if (!winnerIds.length) return true; // hiç kayıt yoksa boş duyuru atılmaz
+
+  const channel = await fetchTextChannel(guild, config.channel);
+  if (!channel) {
+    console.error('[aktif] Haftalık duyuru kanalı bulunamadı.');
+    return false;
+  }
+  return channel.send({ components: [ui.weeklyAnnounce(guild, results)], flags: core.CV2, allowedMentions: { users: winnerIds } }).then(
+    () => true,
+    (err) => {
+      console.error('[aktif] Haftalık duyuru gönderilemedi:', err.message);
+      return false;
+    },
+  );
+}
+
+// Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar
 async function checkWeeklyAnnounce(guild) {
-  const now = Date.now();
-  if (!isMonday(now)) return;
-  const target = previousWeekKey(now);
+  const target = previousWeekKey(Date.now());
   if (store.lastRun() === target) return;
-  await announceWeek(guild, target).catch((err) => console.error('[aktif] Haftalık duyuru gönderilemedi:', err.message));
-  store.setLastRun(target);
+  const done = await announceWeek(guild, target).catch((err) => {
+    console.error('[aktif] Haftalık duyuru hatası:', err.message);
+    return false;
+  });
+  if (done) store.setLastRun(target);
 }
 
 function handleReady(client) {

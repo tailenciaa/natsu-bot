@@ -1,4 +1,4 @@
-// Sıralama mesajı: başlık (sunucu adı ve ikonu), rol filtresi, sıralama türü, dönem butonları, liste ve sayfalar.
+// Sıralama mesajı: başlık (sunucu ikonuyla), dönem butonları, rol filtresi, sıralama türü, liste ve sayfalar.
 // Tüm durum (tür, dönem, gün sayısı, rol, sayfa) buton ve menü ID'lerinde taşınır.
 const {
   ActionRowBuilder,
@@ -12,7 +12,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { divider, text, page: pageLayout } = require('../../core/ui');
+const { divider, text, pageInfo, pagerRow, page: pageLayout } = require('../../core/ui');
 
 const IDS = {
   navigate: 'siralama', // siralama:<tür>:<dönem>:<gün>:<rol>:<sayfa>:<buton yeri>
@@ -35,6 +35,7 @@ function formatValue(type, value) {
   if (type === 'mesaj') return `${number(value)} mesaj`;
   const hours = Math.floor(value / 3600);
   const minutes = Math.floor((value % 3600) / 60);
+  if (!hours && !minutes) return 'Bir dakikadan az';
   return hours ? `${number(hours)} saat ${minutes} dk` : `${minutes} dk`;
 }
 
@@ -52,7 +53,7 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
   // Filtreler: rol, sıralama türü ve dönem
   const roleSelect = new RoleSelectMenuBuilder()
     .setCustomId(`${IDS.role}:${type}:${period}:${days}`)
-    .setPlaceholder('Sıralamayı Rol İle Filtrele')
+    .setPlaceholder('Rol ile filtrele')
     .setMinValues(0)
     .setMaxValues(1);
   if (role) roleSelect.setDefaultRoles(role);
@@ -69,23 +70,20 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     lines.push(`-# ${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Sen)**`);
   }
 
-  const listBlock = lines.length ? lines.join('\n') : '-# Bu dönem için henüz veri yok.';
-  const infoBlock = ranking.length
-    ? `**Sayfa Bilgisi**\n` +
-      `-# Toplam **${number(ranking.length)}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
-      `-# Sayfa: \`${current + 1} / ${pageCount}\``
-    : null;
+  const listBlock = lines.length
+    ? lines.join('\n')
+    : `**Henüz kayıt yok.**\n-# ${role ? 'Bu rolde bu dönemde sayılan üye yok.' : 'Bu dönemde sayılan bir mesaj ya da ses süresi yok.'}`;
 
   const container = pageLayout({
-    title: `${guild.name} Sıralamaları`,
+    title: 'Sıralama',
     sub:
-      (role ? `<@&${role}> rolündeki üyelerin verileri listeleniyor; ` : 'Sunucu genelindeki tüm veriler listeleniyor; ') +
-      'aşağıdaki menülerden rol, sıralama türü ve dönem seçerek listeyi istediğin gibi filtreleyebilir, butonlarla sayfalar arasında gezebilirsin.',
+      (role ? `<@&${role}> rolündeki üyeler listeleniyor; ` : 'Sunucudaki bütün üyeler listeleniyor; ') +
+      'mesaj sayısı ve ses süresine göre sıralanır, dönemi, türü ve rolü seçerek listeyi daraltabilirsin. Sayım sistem kurulduğundan beri sürüyor.',
     thumbnail: guild.iconURL({ size: 256 }),
   });
 
   // Sıra: dönem butonları, rol ve tür menüleri, liste başlığı + liste (başlıktan ayrı bir metin: listedeki küçük satırlar
-  // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi, en altta sayfa butonları
+  // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi ve en altta sayfa butonları (tek sayfada ikisi de yok)
   container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -114,17 +112,13 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**${TYPES[type]} (${periodLabel(period, days)})**`), text(listBlock));
-  if (infoBlock) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(infoBlock));
 
-  // Sayfalar
-  if (ranking.length) {
+  if (pageCount > 1) {
     const nav = (target, slot) => `${IDS.navigate}:${state(type, period, days, roleId)}:${target}:${slot}`;
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(nav(current - 1, 'prev')).setLabel('«').setStyle(ButtonStyle.Primary).setDisabled(current === 0),
-        new ButtonBuilder().setCustomId(nav(current + 1, 'next')).setLabel('»').setStyle(ButtonStyle.Primary).setDisabled(current >= pageCount - 1),
-      ),
-    );
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, ranking.length)}`))
+      .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   }
   return container;
 }
@@ -133,11 +127,11 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
 function customModal(type, roleId) {
   return new ModalBuilder()
     .setCustomId(`${IDS.customModal}:${type}:${roleId}`)
-    .setTitle('Özel Süre')
+    .setTitle('Özel Süre Seç')
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('Kaç günlük sıralama gösterilsin?')
-        .setDescription('1 ile 365 arasında bir sayı yaz. Bugün dahil son o kadar gün sayılır.')
+        .setDescription('1 ile 365 arasında bir gün sayısı yaz; bugün de sayılır.')
         .setTextInputComponent(
           new TextInputBuilder().setCustomId(IDS.days).setStyle(TextInputStyle.Short).setPlaceholder('Örn: 30').setMaxLength(3).setRequired(true),
         ),

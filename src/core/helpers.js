@@ -54,4 +54,10 @@ const inStaffChannel = (interaction) => !staffCommandChannel || interaction.chan
 const staffChannelError = (interaction) =>
   replyError(interaction, `Bu komut sadece <#${staffCommandChannel}> kanalında kullanılabilir.`);
 
-module.exports = { respond, replyError, isStaff, fetchTextChannel, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
+// Üyenin hâlâ sunucuda olup olmadığı: üye önbelleği büyük ölçüde doluysa (açılışta fetch edilir) önbelleğe bakılır,
+// değilse (fetch başarısız olduysa) kimse yanlışlıkla elenmesin diye true döner
+function stillMember(guild, userId) {
+  return guild.members.cache.size < guild.memberCount * 0.9 || guild.members.cache.has(userId);
+}
+
+module.exports = { respond, replyError, isStaff, fetchTextChannel, stillMember, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };

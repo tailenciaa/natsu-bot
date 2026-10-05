@@ -3,7 +3,7 @@
 // Botlar ve AFK kanalı sayılmaz. Sayım bu sistem kurulduğundan itibaren başlar.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isMenuOwner } = require('../../core/helpers');
+const { respond, replyError, isMenuOwner, stillMember } = require('../../core/helpers');
 const store = require('./store');
 const ui = require('./ui');
 
@@ -24,8 +24,8 @@ const countsVoice = (state) =>
 function creditVoice(userId, now = Date.now()) {
   const since = voiceSince.get(userId);
   if (since === undefined) return;
-  // Bilgisayar uyku vb. yüzünden araya giren uzun boşluklar sayılmaz
-  store.add('voice', userId, Math.min(now - since, 2 * TICK) / 1000, now);
+  // Bilgisayar uyku vb. yüzünden araya giren uzun boşluklar sayılmaz; saniye tam sayı olarak tutulur
+  store.add('voice', userId, Math.round(Math.min(now - since, 2 * TICK) / 1000), now);
 }
 
 function tickVoice(guild) {
@@ -40,6 +40,8 @@ function tickVoice(guild) {
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
+  // Rol filtresi ve ayrılan üyelerin ayıklanması üye önbelleğine dayanır
+  guild.members.fetch().catch((err) => console.error('[siralama] Üyeler getirilemedi:', err.message));
   for (const state of guild.voiceStates.cache.values()) if (countsVoice(state)) voiceSince.set(state.id, Date.now());
   setInterval(() => tickVoice(guild), TICK).unref();
 }
@@ -61,11 +63,11 @@ function handleMessage(message) {
   store.add('messages', message.author.id, 1, message.createdTimestamp);
 }
 
-// Sıralamayı hesaplar: türün dönemdeki toplamları, rol seçildiyse sadece o roldeki üyeler
+// Sıralamayı hesaplar: türün dönemdeki toplamları (sunucudan ayrılanlar hariç), rol seçildiyse sadece o roldeki üyeler
 function ranking(guild, type, period, days, roleId) {
   const totals = store.totals(type === 'mesaj' ? 'messages' : 'voice', period === 'genel' ? null : period === 'haftalik' ? 7 : days);
   return [...totals]
-    .filter(([userId]) => roleId === '0' || guild.members.cache.get(userId)?.roles.cache.has(roleId))
+    .filter(([userId]) => (roleId === '0' ? stillMember(guild, userId) : guild.members.cache.get(userId)?.roles.cache.has(roleId)))
     .map(([userId, value]) => ({ userId, value }))
     .sort((a, b) => b.value - a.value);
 }
@@ -122,9 +124,10 @@ async function handleCustom(interaction) {
 
 async function handleCustomSubmit(interaction) {
   const [, type, roleId] = interaction.customId.split(':');
-  const days = Number(interaction.fields.getTextInputValue(ui.IDS.days).trim());
-  if (!Number.isInteger(days) || days < 1 || days > 365) {
-    return replyError(interaction, 'Gün sayısı 1 ile 365 arasında bir sayı olmalı.');
+  const raw = interaction.fields.getTextInputValue(ui.IDS.days).trim();
+  const days = /^\d{1,3}$/.test(raw) ? Number(raw) : 0;
+  if (days < 1 || days > 365) {
+    return replyError(interaction, 'Geçerli bir gün sayısı yazmalısın.', '1 ile 365 arasında bir tam sayı gir.');
   }
   return show(interaction, view(interaction, type, 'ozel', days, roleId, 0));
 }

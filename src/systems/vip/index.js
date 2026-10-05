@@ -1,6 +1,6 @@
 // VIP sistemi: yetkililer /vip-ver ile bir üyeye VIP rolünü kalıcı olarak verir (bot geri almaz, geri alma Discord
 // üzerinden elle yapılır). /vip-siralama o an rolü taşıyan üyeleri VIP olma sırasına göre listeler.
-const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const { respond, replyError, isStaff, isMenuOwner } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
@@ -10,17 +10,18 @@ const commands = [
   new SlashCommandBuilder()
     .setName('vip-ver')
     .setDescription('Bir üyeye VIP rolünü verir.')
-    .addUserOption((opt) => opt.setName('kullanici').setDescription('VIP verilecek üye').setRequired(true))
+    .addUserOption((opt) => opt.setName('kullanici').setDescription('VIP rolü verilecek üyeyi seçer.').setRequired(true))
+    .setDefaultMemberPermissions(config.staffRoles.length ? null : PermissionFlagsBits.Administrator)
     .setContexts(InteractionContextType.Guild),
   new SlashCommandBuilder()
     .setName('vip-siralama')
-    .setDescription('VIP üyeleri, VIP olma sırasına göre listeler.')
+    .setDescription('VIP üyeleri VIP olma sırasına göre listeler.')
     .setContexts(InteractionContextType.Guild),
 ];
 
-// /vip-ver: hedefe VIP rolünü kalıcı olarak verir, sadece yetkililer kullanabilir
+// /vip-ver: hedefe VIP rolünü kalıcı olarak verir, sadece yöneticiler (ya da ayarlı yetkili rolleri) kullanabilir
 async function handleGive(interaction) {
-  if (!isStaff(interaction, config.staffRoles)) return replyError(interaction, 'Bu komutu sadece yetkililer kullanabilir.');
+  if (!isStaff(interaction, config.staffRoles)) return replyError(interaction, 'Bu komutu sadece yöneticiler kullanabilir.');
 
   const target = interaction.options.getUser('kullanici', true);
   if (target.bot) return replyError(interaction, 'Botlara VIP verilemez.');
@@ -29,7 +30,15 @@ async function handleGive(interaction) {
   if (!member) return replyError(interaction, 'Bu üye sunucuda bulunamadı.');
   if (member.roles.cache.has(config.roleId)) return replyError(interaction, 'Bu üye zaten VIP.');
 
-  await member.roles.add(config.roleId, `VIP verildi (${interaction.user.tag})`).catch(() => null);
+  // Rol gerçekten verilemediyse kayıt tutulmaz ve duyuru yapılmaz
+  const added = await member.roles.add(config.roleId, `VIP verildi (${interaction.user.tag})`).then(
+    () => true,
+    (err) => {
+      console.error('[vip] VIP rolü verilemedi:', err.message);
+      return false;
+    },
+  );
+  if (!added) return replyError(interaction, 'VIP rolü verilemedi.', 'Botun rolünün VIP rolünden üstte olduğundan ve rol yönetme izni olduğundan emin ol.');
   store.grant(target.id, interaction.user.id);
 
   return respond(interaction, ui.given(interaction.user.id, target.id, config.roleId), {
@@ -44,7 +53,7 @@ async function vipRanking(guild) {
   return role
     ? [...role.members.values()]
         .map((m) => ({ userId: m.id, grantedAt: store.grantedAt(m.id) ?? 0 }))
-        .sort((a, b) => a.grantedAt - b.grantedAt)
+        .sort((a, b) => a.grantedAt - b.grantedAt || a.userId.localeCompare(b.userId))
     : [];
 }
 
@@ -67,7 +76,7 @@ module.exports = {
   commands,
   help: {
     category: ['siralama', 'Sıralama'],
-    access: { 'vip-ver': 'Sadece yetkililer', 'vip-siralama': 'Herkes' },
+    access: { 'vip-ver': 'Yöneticiler', 'vip-siralama': 'Herkes' },
   },
   slash: { 'vip-ver': handleGive, 'vip-siralama': handleTable },
   prefixed: [[ui.IDS.page, handlePage]],
