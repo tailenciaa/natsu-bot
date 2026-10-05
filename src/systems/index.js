@@ -26,6 +26,7 @@ module.exports = [
   require('./cezalarim'), // #cezalarım paneli; sicil'in kayıtlarını okur
   require('./partner'),
   require('./partnergorme'),
+  require('./yayin'), // yayın yetkisi paneli: butonla yayın yetkisi rolünü alma / bırakma
   require('./siralama'),
   require('./seviye'),
   require('./aktif'),
