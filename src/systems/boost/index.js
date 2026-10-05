@@ -1,8 +1,8 @@
 // Sunucu takviyesi (boost): biri takviye başlattığında DM ile teşekkür eder, teşekkür kanalına kısa bir bildirim
-// düşer. "Booster İşlemleri" paneli (#panelChannel) sadece takviye edenler için: emoji ekleme (/emoji-ekle ile
-// aynı motor), çıkartma ekleme (dosya gerektirdiği için sadece /cikartma-ekle'ye yönlendirir), isim değiştirme ve
-// kendi renginde/emojinde özel rol oluşturma/düzenleme. İsim ve rol takviye sürdüğü sürece geçerli; takviye
-// bitince (GuildMemberUpdate) otomatik geri alınır.
+// düşer. "Booster İşlemleri" paneli (#panelChannel) sadece takviye edenler için: takma ad değiştirme ve kendi
+// renginde/emojinde özel rol oluşturma/düzenleme (emoji ve çıkartma /emoji-ekle ve /cikartma-ekle ile eklenir).
+// Takma ad ve rol takviye sürdüğü sürece geçerli; takviye bitince (GuildMemberUpdate) ya da üye sunucudan ayrılınca
+// otomatik geri alınır.
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -14,10 +14,30 @@ const store = require('./store');
 const ui = require('./ui');
 
 const isBooster = (interaction) => Boolean(interaction.member?.premiumSince);
+const notBooster = (interaction) => respond(interaction, ui.notBoosterView());
+const errorCode = (err) => err?.code ?? err?.rawError?.code;
+
+// Takviye bitince (ya da üye ayrılınca) verilen özel rol silinir; kayıt sadece işlem başarılıysa temizlenir
+async function revokeRole(guild, userId) {
+  const roleId = store.getRole(userId);
+  if (!roleId) return;
+  const role = await guild.roles.fetch(roleId).catch((err) => (errorCode(err) === 10011 ? null : undefined));
+  if (role === undefined) return console.error('[boost] Özel rol getirilemedi, kayıt korundu.');
+  if (role) {
+    const deleted = await role.delete('Takviye sona erdi, özel rol kaldırıldı').then(() => true, (err) => {
+      console.error('[boost] Özel rol silinemedi, kayıt korundu:', err.message);
+      return false;
+    });
+    if (!deleted) return;
+  }
+  store.clearRole(userId);
+}
 
 // premiumSince önce boştu şimdi doluysa takviye yeni başlamış, tam tersiyse yeni bitmiş demektir
 async function handleMemberUpdate(oldMember, newMember) {
   if (newMember.guild.id !== guildId) return;
+  // Önbellekte olmayan (partial) eski üyede takviye bilgisi bilinmez, yanlışlıkla "yeni takviye" sayılmasın
+  if (oldMember.partial) return;
   const started = !oldMember.premiumSince && newMember.premiumSince;
   const ended = oldMember.premiumSince && !newMember.premiumSince;
   if (!started && !ended) return;
@@ -33,17 +53,24 @@ async function handleMemberUpdate(oldMember, newMember) {
     return;
   }
 
-  // Takviye bitti: değiştirilen takma ad ve verilen özel rol geri alınır
+  // Takviye bitti: değiştirilen takma ad, hazır renk rolü ve verilen özel rol geri alınır
   if (store.hasSavedNick(newMember.id)) {
-    await newMember.setNickname(store.getSavedNick(newMember.id), 'Takviye sona erdi, isim eski haline döndü').catch(() => {});
-    store.clearNick(newMember.id);
+    const restored = await newMember.setNickname(store.getSavedNick(newMember.id), 'Takviye sona erdi, takma ad eski haline döndü').then(() => true, (err) => {
+      console.error('[boost] Takma ad geri alınamadı, kayıt korundu:', err.message);
+      return false;
+    });
+    if (restored) store.clearNick(newMember.id);
   }
-  const roleId = store.getRole(newMember.id);
-  if (roleId) {
-    const role = await newMember.guild.roles.fetch(roleId).catch(() => null);
-    await role?.delete('Takviye sona erdi, özel rol kaldırıldı').catch(() => {});
-    store.clearRole(newMember.id);
-  }
+  const colorIds = newMember.roles.cache.filter((r) => config.colorRoles.some((c) => c.roleId === r.id)).map((r) => r.id);
+  if (colorIds.length) await newMember.roles.remove(colorIds, 'Takviye sona erdi, renk rolü kaldırıldı').catch((err) => console.error('[boost] Renk rolü alınamadı:', err.message));
+  await revokeRole(newMember.guild, newMember.id);
+}
+
+// Takviye eden üye sunucudan ayrılırsa özel rolü (ve kayıtları) temizlenir; takma ad zaten kendiliğinden gider
+async function handleMemberRemove(member) {
+  if (member.guild.id !== guildId) return;
+  await revokeRole(member.guild, member.id);
+  store.clearNick(member.id);
 }
 
 function sendPanel(client) {
@@ -52,15 +79,15 @@ function sendPanel(client) {
     key: 'boost-panel',
     label: 'Booster İşlemleri',
     channelId: config.panelChannel,
-    buttonId: ui.IDS.emoji,
+    buttonId: ui.IDS.nick,
     build: () => ui.panel(client.guilds.cache.get(guildId)),
     image: '',
   });
 }
 
-// ── Emoji Ekle: emoji sistemindeki motoru form üzerinden çağırır ──────────────
+// ── Emoji Ekle: eski panellerdeki buton; emoji sistemindeki motoru form üzerinden çağırır ──
 
-const handleEmojiButton = (interaction) => (isBooster(interaction) ? interaction.showModal(ui.emojiModal()) : respond(interaction, ui.notBoosterView()));
+const handleEmojiButton = (interaction) => (isBooster(interaction) ? interaction.showModal(ui.emojiModal()) : notBooster(interaction));
 
 const handleEmojiForm = (interaction) =>
   emoji.runEmojiAdd(
@@ -69,41 +96,46 @@ const handleEmojiForm = (interaction) =>
     interaction.fields.getTextInputValue(ui.IDS.nameField).trim() || null,
   );
 
-// ── Çıkartma Ekle: dosya yüklemesi modalla yapılamadığı için komuta yönlendirir ─
+// ── Çıkartma Ekle: eski panellerdeki buton; dosya yüklemesi modalla yapılamadığı için komuta yönlendirir ─
 
 const handleStickerButton = (interaction) => respond(interaction, isBooster(interaction) ? ui.stickerInfoView() : ui.notBoosterView());
 
-// ── İsim Değiştir ──────────────────────────────────────────────────────────────
+// ── Takma Ad ──────────────────────────────────────────────────────────────────────
 
-const handleNickButton = (interaction) =>
-  isBooster(interaction) ? interaction.showModal(ui.nickModal(interaction.member.nickname)) : respond(interaction, ui.notBoosterView());
+const handleNickButton = (interaction) => (isBooster(interaction) ? interaction.showModal(ui.nickModal(interaction.member.nickname)) : notBooster(interaction));
 
 async function handleNickForm(interaction) {
-  if (!isBooster(interaction)) return replyError(interaction, 'Bu işlem sadece takviye eden üyeler içindir.');
+  if (!isBooster(interaction)) return notBooster(interaction);
   const member = interaction.member;
-  if (!member.manageable) return replyError(interaction, 'Botun rolü senin takma adını değiştirmeye yetmiyor.');
+  if (!member.manageable) return replyError(interaction, 'Takma adını değiştiremiyorum.', 'Botun rolü senin rolünden üstte olmalı.');
   const newNick = interaction.fields.getTextInputValue(ui.IDS.nickField).trim();
+  if (!newNick) return replyError(interaction, 'Takma ad boş olamaz.', 'Bir ad yazıp tekrar dene.');
 
   await interaction.deferReply({ flags: core.EPHEMERAL });
-  if (!store.hasSavedNick(member.id)) store.saveNick(member.id, member.nickname ?? null);
+  const previousNick = member.nickname ?? null;
   const ok = await member
-    .setNickname(newNick, 'Booster işlemleri: isim değişikliği')
+    .setNickname(newNick, 'Booster işlemleri: takma ad değişikliği')
     .then(() => true)
     .catch((err) => {
       console.error('[boost] Takma ad değiştirilemedi:', err.message);
       return false;
     });
   if (!ok) return respond(interaction, core.alert('Takma ad değiştirilemedi.', 'Botun rolü senin rolünden üstte olmalı.', 'danger'));
-  return respond(interaction, core.alert(`Takma adın **${newNick}** olarak değiştirildi.`, 'Takviyen bitince eski adına döner.', 'success'));
+  // Eski takma ad değişiklik başarılı olduktan sonra saklanır; sonraki değişikliklerde üzerine yazılmaz
+  if (!store.hasSavedNick(member.id)) store.saveNick(member.id, previousNick);
+  return respond(interaction, core.alert(`Takma adın \`${newNick.replace(/`/g, "'")}\` olarak değiştirildi.`, 'Takviyen bitince eski adına döner.', 'success'));
 }
 
 // ── Özel Rol ─────────────────────────────────────────────────────────────────
 
+// Rol simgesi (unicode emoji) sunucuda takviye seviyesi 2 ister
+const hasRoleIcons = (guild) => guild.features.includes('ROLE_ICONS');
+
 async function handleRoleButton(interaction) {
-  if (!isBooster(interaction)) return respond(interaction, ui.notBoosterView());
+  if (!isBooster(interaction)) return notBooster(interaction);
   const roleId = store.getRole(interaction.user.id);
   const existing = roleId ? await interaction.guild.roles.fetch(roleId).catch(() => null) : null;
-  return interaction.showModal(ui.roleModal(existing));
+  return interaction.showModal(ui.roleModal(existing, { icons: hasRoleIcons(interaction.guild) }));
 }
 
 // "#ff5599" / "ff5599" -> sayı, anlaşılmazsa null
@@ -112,65 +144,84 @@ const parseColor = (input) => {
   return match ? parseInt(match[1], 16) : null;
 };
 
-// Boşsa null, tek emoji ise kendisi, anlaşılmazsa undefined döner
+// Boşsa null, tek emoji (ten rengi, bayrak, birleşik emojiler dahil) ise kendisi, anlaşılmazsa undefined döner
 const parseRoleEmoji = (input) => {
   const value = input.trim();
   if (!value) return null;
-  return /^\p{Extended_Pictographic}️?$/u.test(value) ? value : undefined;
+  const graphemes = [...new Intl.Segmenter('tr', { granularity: 'grapheme' }).segment(value)];
+  return graphemes.length === 1 && /\p{Extended_Pictographic}|\p{Regional_Indicator}|[0-9#*]\uFE0F?\u20E3/u.test(value) ? value : undefined;
 };
 
+// Discord hata kodundan kullanıcıya gösterilecek ipucu
+function roleErrorHint(err) {
+  const code = errorCode(err);
+  if (code === 50013) return 'Botun "Rolleri Yönet" izni ve rol sırası yeterli olmalı.';
+  if (code === 50035) return 'Rol adı ya da rengi geçersiz, farklı bir değer dene.';
+  return 'Birkaç dakika sonra tekrar dene.';
+}
+
 async function handleRoleForm(interaction) {
-  if (!isBooster(interaction)) return replyError(interaction, 'Bu işlem sadece takviye eden üyeler içindir.');
+  if (!isBooster(interaction)) return notBooster(interaction);
+  const { guild } = interaction;
+  const icons = hasRoleIcons(guild);
 
   const name = interaction.fields.getTextInputValue(ui.IDS.roleNameField).trim();
+  if (!name) return replyError(interaction, 'Rol adı boş olamaz.', 'Bir ad yazıp tekrar dene.');
   const color = parseColor(interaction.fields.getTextInputValue(ui.IDS.roleColorField));
-  if (color === null) return replyError(interaction, 'Renk anlaşılamadı.', 'Örnek: #ff5599 ya da ff5599');
-  const unicodeEmoji = parseRoleEmoji(interaction.fields.getTextInputValue(ui.IDS.roleEmojiField));
-  if (unicodeEmoji === undefined) {
+  if (color === null) return replyError(interaction, 'Renk kodu geçersiz.', 'Altı haneli bir hex kod yaz, örneğin #ff5599.');
+  const unicodeEmoji = icons ? parseRoleEmoji(interaction.fields.getTextInputValue(ui.IDS.roleEmojiField)) : undefined;
+  if (unicodeEmoji === undefined && icons && interaction.fields.getTextInputValue(ui.IDS.roleEmojiField).trim()) {
     return replyError(interaction, 'Emoji anlaşılamadı.', 'Tek bir emoji yazmalısın, bu alanı boş da bırakabilirsin.');
   }
 
   await interaction.deferReply({ flags: core.EPHEMERAL });
-  const { guild } = interaction;
   const existingId = store.getRole(interaction.user.id);
   let role = existingId ? await guild.roles.fetch(existingId).catch(() => null) : null;
 
   try {
     if (role) {
-      await role.edit({ name, color, unicodeEmoji, hoist: true }, 'Booster işlemleri: özel rol güncellendi');
+      await role.edit({ name, color, ...(icons ? { unicodeEmoji } : {}), hoist: true }, 'Booster işlemleri: özel rol güncellendi');
+      // Rol üyeden alınmış olabilir; düzenleme sessizce başarılı görünüp rol eksik kalmasın
+      if (!interaction.member.roles.cache.has(role.id)) await interaction.member.roles.add(role, 'Booster işlemleri: özel rol geri verildi');
     } else {
       role = await guild.roles.create({
         name,
         color,
-        unicodeEmoji,
+        ...(icons ? { unicodeEmoji } : {}),
         permissions: [],
         mentionable: false,
         // Booster'ların diğer üyelerden üstte, ayrı bir grupta görünmesi için
         hoist: true,
         reason: `Booster özel rolü: ${interaction.user.username}`,
       });
-      await interaction.member.roles.add(role, 'Booster işlemleri: özel rol verildi');
+      // Kayıt hemen yazılır; üyeye verilemezse rol silinip kayıt temizlenir (sahipsiz rol kalmasın)
       store.setRole(interaction.user.id, role.id);
+      try {
+        await interaction.member.roles.add(role, 'Booster işlemleri: özel rol verildi');
+      } catch (err) {
+        await role.delete('Özel rol üyeye verilemedi').catch(() => {});
+        store.clearRole(interaction.user.id);
+        throw err;
+      }
     }
   } catch (err) {
     console.error('[boost] Özel rol oluşturulamadı/güncellenemedi:', err.message);
-    return respond(interaction, core.alert('Rol oluşturulamadı/güncellenemedi.', 'Botun "Rolleri Yönet" izni ve rol sırası yeterli olmalı.', 'danger'));
+    return respond(interaction, core.alert('Rol oluşturulamadı ya da güncellenemedi.', roleErrorHint(err), 'danger'));
   }
 
-  return respond(interaction, core.alert(`Rolün **${role.name}** olarak ayarlandı.`, 'Takviyen bitince rol geri alınır.', 'success'));
+  return respond(interaction, core.alert(`Rolün \`${role.name.replace(/`/g, "'")}\` olarak ayarlandı.`, 'Takviyen bitince rol geri alınır.', 'success'));
 }
 
 // ── Renk Rolü: hazır (gradyan) rollerden birini tek seçimli seçme menüsü ──────
 
 async function handleColorRole(interaction) {
-  if (!isBooster(interaction)) return replyError(interaction, 'Bu işlem sadece takviye eden üyeler içindir.');
+  if (!isBooster(interaction)) return notBooster(interaction);
   const roleId = interaction.values[0];
-  if (roleId === ui.NO_COLOR_ROLE) return respond(interaction, core.alert('Renk rolleri henüz hazır değil.', 'Çok yakında buradan seçebileceksin.', 'primary'));
   const allIds = config.colorRoles.map((c) => c.roleId);
+  if (!allIds.includes(roleId)) return replyError(interaction, 'Bu renk rolü artık geçerli değil.', 'Güncel panelden başka bir renk seçebilirsin.');
 
-  const toRemove = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId);
-  for (const r of toRemove.values()) await interaction.member.roles.remove(r, 'Booster işlemleri: renk rolü değişti').catch(() => {});
-
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  // Önce yeni rol verilir; başarılıysa eskileri alınır (hata olursa üyenin rengi kaybolmaz)
   const ok = await interaction.member.roles
     .add(roleId, 'Booster işlemleri: renk rolü seçildi')
     .then(() => true)
@@ -178,10 +229,11 @@ async function handleColorRole(interaction) {
       console.error('[boost] Renk rolü verilemedi:', err.message);
       return false;
     });
-  return respond(
-    interaction,
-    ok ? core.alert('Renk rolün ayarlandı.', undefined, 'success') : core.alert('Renk rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'),
-  );
+  if (!ok) return respond(interaction, core.alert('Renk rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'));
+
+  const stale = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId).map((r) => r.id);
+  if (stale.length) await interaction.member.roles.remove(stale, 'Booster işlemleri: renk rolü değişti').catch((err) => console.error('[boost] Eski renk rolü alınamadı:', err.message));
+  return respond(interaction, core.alert('Renk rolün ayarlandı.', undefined, 'success'));
 }
 
 module.exports = {
@@ -201,5 +253,6 @@ module.exports = {
   events: {
     [Events.ClientReady]: sendPanel,
     [Events.GuildMemberUpdate]: handleMemberUpdate,
+    [Events.GuildMemberRemove]: handleMemberRemove,
   },
 };

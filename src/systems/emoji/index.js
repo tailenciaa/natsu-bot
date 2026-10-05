@@ -5,8 +5,8 @@
 //   Mesaja sağ tık > Uygulamalar > "Emojileri Sunucuya Ekle": mesajdaki ve tepkilerdeki emojiler önizlemeyle listelenir,
 //     menüden seçilenler eklenir. Sonuç sadece kullanana görünür.
 // "Emoji ve Çıkartmaları Yönet" izni olanlar sınırsız kullanabilir; botun da bu izne sahip olması gerekir.
-// Sunucuyu takviye eden (boost) üyeler, izinleri olmasa da /emoji-ekle ve /cikartma-ekle ile takviye başına bir kez
-// emoji/çıkartma ekleyebilir (boost/config.js'teki perks). Bulk seçim menüsü (sağ tık) sadece yetkililer içindir.
+// Sunucuyu takviye eden (boost) üyeler, izinleri olmasa da /emoji-ekle ve /cikartma-ekle ile belirli sayıda
+// emoji/çıkartma ekleyebilir (boost/config.js'teki perks; hak üye başına sayılır). Bulk seçim menüsü (sağ tık) sadece yetkililer içindir.
 const {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
@@ -21,6 +21,7 @@ const boostStore = require('../boost/store');
 const ui = require('./ui');
 
 const MENU_NAME = 'Emojileri Sunucuya Ekle';
+const MAX_ITEMS = 25; // /emoji-ekle ile bir seferde eklenebilecek en fazla emoji
 const PERMISSION = PermissionFlagsBits.ManageGuildExpressions;
 
 const commands = [
@@ -29,16 +30,16 @@ const commands = [
     .setDescription('Başka sunucudaki bir emojiyi ID, bağlantı ya da emojinin kendisiyle bu sunucuya ekler.')
     .setContexts(InteractionContextType.Guild)
     .addStringOption((o) =>
-      o.setName('emoji').setDescription('Emoji, emoji ID\'si ya da bağlantısı (birden fazlası için boşlukla ayır)').setRequired(true),
+      o.setName('emoji').setDescription('Eklenecek emojiyi, ID\'sini ya da bağlantısını yazar, birden fazlası boşlukla ayrılır.').setRequired(true),
     )
-    .addStringOption((o) => o.setName('isim').setDescription('Emojinin sunucudaki adı (tek emoji eklerken)').setMaxLength(32)),
+    .addStringOption((o) => o.setName('isim').setDescription('Emojiye sunucuda verilecek adı belirler, tek emoji eklerken kullanılır.').setMaxLength(32)),
   new SlashCommandBuilder()
     .setName('cikartma-ekle')
     .setDescription('Bir görsel dosyasını çıkartma olarak bu sunucuya ekler.')
     .setContexts(InteractionContextType.Guild)
-    .addAttachmentOption((o) => o.setName('dosya').setDescription('PNG, APNG ya da GIF (en fazla 512 KB)').setRequired(true))
-    .addStringOption((o) => o.setName('isim').setDescription('Çıkartmanın adı (2-30 karakter)').setRequired(true).setMinLength(2).setMaxLength(30))
-    .addStringOption((o) => o.setName('etiket').setDescription('İlgili duygu/emoji (ör. gülüyor, üzgün)').setRequired(true).setMaxLength(20)),
+    .addAttachmentOption((o) => o.setName('dosya').setDescription('PNG, APNG ya da GIF dosyasını yükler, en fazla 512 KB olabilir.').setRequired(true))
+    .addStringOption((o) => o.setName('isim').setDescription('Çıkartmaya verilecek adı belirler, 2-30 karakter olmalı.').setRequired(true).setMinLength(2).setMaxLength(30))
+    .addStringOption((o) => o.setName('etiket').setDescription('Çıkartmayı anlatan bir duygu ya da kelime yazar, örneğin gülüyor.').setRequired(true).setMinLength(2).setMaxLength(20)),
   new ContextMenuCommandBuilder()
     .setName(MENU_NAME)
     .setType(ApplicationCommandType.Message)
@@ -78,7 +79,7 @@ function parseInput(input) {
 
 // Sadece ID'si bilinen emojinin hareketli olup olmadığını Discord'dan öğrenir
 async function isAnimated(id) {
-  const res = await fetch(`https://cdn.discordapp.com/emojis/${id}.gif?size=16`, { method: 'HEAD' }).catch(() => null);
+  const res = await fetch(`https://cdn.discordapp.com/emojis/${id}.gif?size=16`, { method: 'HEAD', signal: AbortSignal.timeout(5000) }).catch(() => null);
   return Boolean(res?.ok);
 }
 
@@ -136,7 +137,7 @@ function access(interaction, kind) {
 
 function accessError(interaction, kind, label) {
   if (isBooster(interaction)) {
-    return replyError(interaction, `${label} ekleme takviye hakkını zaten kullanmışsın.`, 'Bu hak takviye başına bir kez kullanılabilir.');
+    return replyError(interaction, `${label} ekleme takviye hakkını zaten kullanmışsın.`, `Takviye edenler ${boostConfig.perks[kind]} kez ekleyebilir.`);
   }
   return replyError(
     interaction,
@@ -154,8 +155,13 @@ async function runEmojiAdd(interaction, emojiInput, customNameInput) {
 
   const { items, invalid } = parseInput(emojiInput);
   if (!items.length) return replyError(interaction, 'Eklenecek emoji bulunamadı.', 'Emojinin kendisini, ID\'sini ya da bağlantısını yazmalısın.');
+  if (items.length > MAX_ITEMS) return replyError(interaction, `Bir seferde en fazla ${MAX_ITEMS} emoji ekleyebilirsin.`, 'Emojileri iki parçaya bölüp tekrar dene.');
   if (!perm.unlimited && items.length > 1) {
-    return replyError(interaction, 'Takviye hakkınla bir seferde sadece bir emoji ekleyebilirsin.');
+    return replyError(interaction, 'Takviye hakkınla bir seferde sadece bir emoji ekleyebilirsin.', 'Tek bir emoji yazıp tekrar dene.');
+  }
+  // Rastgele resim bağlantıları sadece emoji yönetme iznine sahip yetkililer içindir; takviye edenler Discord emojileri ekler
+  if (!perm.unlimited && items.some((item) => item.url)) {
+    return replyError(interaction, 'Takviye hakkınla sadece Discord emojileri eklenebilir.', 'Emojinin kendisini, ID\'sini ya da Discord emoji bağlantısını yaz.');
   }
   const customName = items.length === 1 ? customNameInput : null;
 
@@ -184,8 +190,8 @@ async function handleStickerCommand(interaction) {
   }
 
   const file = interaction.options.getAttachment('dosya', true);
-  if (!/^image\/(png|gif)/.test(file.contentType ?? '')) return replyError(interaction, 'Sadece PNG, APNG ya da GIF dosyaları kabul edilir.');
-  if (file.size > 512 * 1024) return replyError(interaction, 'Dosya çok büyük, çıkartma en fazla 512 KB olabilir.');
+  if (!/^image\/(png|gif)/.test(file.contentType ?? '')) return replyError(interaction, 'Sadece PNG, APNG ya da GIF dosyaları kabul edilir.', 'Başka türde bir dosyayı bu türlerden birine çevirip tekrar dene.');
+  if (file.size > 512 * 1024) return replyError(interaction, 'Dosya çok büyük, çıkartma en fazla 512 KB olabilir.', 'Dosyayı küçültüp tekrar dene.');
 
   const name = interaction.options.getString('isim', true).trim();
   const tags = interaction.options.getString('etiket', true).trim();
@@ -200,7 +206,7 @@ async function handleStickerCommand(interaction) {
   if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'));
 
   if (!perm.unlimited) boostStore.use(interaction.user.id, 'sticker');
-  return respond(interaction, core.alert(`"${sticker.name}" çıkartması eklendi!`, undefined, 'success'));
+  return respond(interaction, core.alert('Çıkartma eklendi.', `\`${sticker.name}\` adıyla sunucuya eklendi.`, 'success'));
 }
 
 // Sağ tık > "Emojileri Sunucuya Ekle": mesajdaki ve tepkilerdeki emojileri listeler
@@ -248,9 +254,8 @@ module.exports = {
     category: ['emoji', 'Emoji'],
     access: {
       'emoji-ekle':
-        'Emoji yönetme izni olanlar sınırsız, sunucuyu takviye edenler takviye başına 1 kez (Booster İşlemleri panelinden de ' +
-        `yapılabilir). Ayrıca herhangi bir mesaja sağ tık > Uygulamalar > "${MENU_NAME}" ile mesajdaki emojiler seçilerek eklenebilir (bu sadece yetkililer için).`,
-      'cikartma-ekle': 'Emoji yönetme izni olanlar sınırsız, sunucuyu takviye edenler takviye başına 1 kez.',
+        `Emoji yönetme izni olanlar; takviye edenler ${boostConfig.perks.emoji} emoji ekleyebilir. Bir mesaja sağ tık > Uygulamalar > ${MENU_NAME} ile de eklenir (sadece yetkililer).`,
+      'cikartma-ekle': `Emoji yönetme izni olanlar; takviye edenler ${boostConfig.perks.sticker} çıkartma ekleyebilir.`,
     },
   },
   slash: { 'emoji-ekle': handleCommand, 'cikartma-ekle': handleStickerCommand, [MENU_NAME]: handleMessageMenu },
