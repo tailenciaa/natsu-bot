@@ -1,7 +1,7 @@
 // Çekiliş sistemi ayarları. ID değiştirince botu yeniden başlatmak yeterli.
 module.exports = {
-  // Komutta kanal seçilmezse çekilişin gönderileceği kanal (boşsa komutta kanal seçmek zorunlu)
-  channel: '',
+  // Çekilişlerin gönderildiği kanal (komutta "kanal" seçilirse o kullanılır)
+  channel: '1538533903130828851',
 
   // Çekiliş mesajının altında yapılan duyuru etiketi. enabled: false iken hiçbir etiket atılmaz (test için).
   // Gerçek çekilişlere geçmek için enabled: true yapıp botu yeniden başlatmak yeterli.
