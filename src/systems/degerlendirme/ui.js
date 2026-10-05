@@ -140,9 +140,9 @@ function ratingNotice(rating, staffUser) {
     sub = 'Değerlendirilen yetkili bu puana itiraz etti ve itiraz liderlere iletildi; inceleme sonuçlanana kadar değerlendirme sicilde bekler, karar verildiğinde bu mesaj güncellenir.';
     status = `**Durum**\n<@${rating.staffId}> bu değerlendirmeye itiraz etti.\n-# İtiraz liderler tarafından inceleniyor.`;
   } else {
-    // Değerlendirmenin nereden geldiği aşağıdaki "Kaynak" satırında
+    // Değerlendirmenin nereden geldiği "Kaynak" satırında
     title = 'Yeni Değerlendirme';
-    sub = 'Bir üye aldığı hizmeti puanlayıp yorumunu bıraktı; puan ve yorum yetkilinin sicilinde tutulur, yetkili haksız bulursa aşağıdaki butondan itiraz edebilir ya da yorum ekleyebilir.';
+    sub = 'Bir üye aldığı hizmeti puanlayıp yorumunu bıraktı. Puan ve yorum yetkilinin sicilinde tutulur; yetkili butonlarla yorum ekleyebilir ya da haksız bulursa itiraz edebilir.';
     status = `**Durum**\n<@${rating.staffId}> yeni bir değerlendirme aldı.`;
   }
 
@@ -352,24 +352,26 @@ function meetingDm(rating, guildName) {
 
 // Oryantasyon, partner talebi (ve eski görüşme kayıtları) sonrası giden puanlama DM'i (destek talepleri kapanış DM'inin altında puanlanır)
 function ratingRequestDm(rating) {
-  // Soru alttaki puanlama bölümünde sorulur
+  // Soru puanlama bölümünde sorulur; puan verildikten sonra açıklama puanlama talimatı vermez
+  const rated = Boolean(rating.score);
   const dm = {
     oryantasyon: {
       title: 'Oryantasyonunu Değerlendir',
-      sub: 'Oryantasyonun tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.',
+      sub: 'Oryantasyonun tamamlandı. Yetkiliye yıldız vererek puanlayabilirsin; geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.',
       block: `**Başvuru Bilgileri**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
     },
     partner: {
       title: 'Partner Sürecini Değerlendir',
-      sub: 'Partner talebin yetkilimiz tarafından sonuçlandırıldı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, geri bildirimin partner sürecimizi geliştirmemize yardımcı olur.',
+      sub: 'Partner talebin yetkilimiz tarafından sonuçlandırıldı. Yetkiliye yıldız vererek puanlayabilirsin; geri bildirimin partner sürecimizi geliştirmemize yardımcı olur.',
       block: `**Talep Bilgileri**\n**Talep:** #${pad(rating.partnerNumber)}`,
     },
   }[rating.category] ?? {
     title: 'Görüşmeni Değerlendir',
-    sub: 'Yetkili alım görüşmen tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, başvurunun sonucundan bağımsız olarak vereceğin geri bildirim bizim için değerli.',
+    sub: 'Yetkili alım görüşmen tamamlandı. Yetkiliye yıldız vererek puanlayabilirsin; başvurunun sonucundan bağımsız olarak vereceğin geri bildirim bizim için değerli.',
     block: `**Görüşme Bilgileri**\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
   };
-  return ratingSection(page({ title: dm.title, sub: dm.sub, accent: colors.primary, blocks: [dm.block] }), rating);
+  const sub = rated ? 'Puanın ilgili yetkiliye iletildi. Geri bildirimin için teşekkür ederiz.' : dm.sub;
+  return ratingSection(page({ title: dm.title, sub, accent: colors.primary, blocks: [dm.block] }), rating);
 }
 
 // İtiraz sonuçlanınca itiraz eden yetkiliye giden DM

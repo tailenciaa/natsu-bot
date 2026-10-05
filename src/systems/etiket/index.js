@@ -37,10 +37,11 @@ async function syncRole(member) {
 // Etiketi yeni takan üyeye kanalda teşekkür eder; etiketi çıkarıp takarak kanalı doldurmasın diye bekleme süresi var
 async function announce(member) {
   if (Date.now() - store.lastThanked(member.id) < config.announceCooldownHours * HOUR) return;
+  // Kayıt await'ten önce yapılır: aynı anda gelen iki olay iki teşekkür mesajı göndermesin
+  store.setThanked(member.id);
   const channel = await fetchTextChannel(member.guild, config.channels.announce);
   if (!channel) return console.error('[etiket] Duyuru kanalı bulunamadı.');
 
-  store.setThanked(member.id);
   await channel.send({ components: [ui.thanks(member.user)], flags: core.CV2, allowedMentions: { users: [member.id] } });
 }
 

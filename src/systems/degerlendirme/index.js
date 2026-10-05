@@ -1,7 +1,8 @@
 // Yetkili değerlendirme sistemi: üye DM'den puan ve yorum bırakır, değerlendirme kanalına gider ve yetkilinin siciline
 // işlenir. Değerlendirmeler kategorilere ayrılır: destek talebi kapanınca (destek), oryantasyon tamamlanınca
-// (oryantasyon) ve partner talebi sonuçlanınca (partner); eski görüşme (gorusme) kayıtları sicilde durur. Değerlendirilen yetkili haksız bulduğu değerlendirmeye şikayet
-// kanalından itiraz edebilir, liderler onaylar / reddeder / görüşmeye çağırır.
+// (oryantasyon) ve partner talebi sonuçlanınca (partner); eski görüşme (gorusme) kayıtları sicilde durur, yeni görüşme
+// değerlendirmesi istenmez. Değerlendirilen yetkili haksız bulduğu değerlendirmeye şikayet kanalından itiraz edebilir,
+// liderler onaylar / reddeder / görüşmeye çağırır.
 const core = require('../../core/ui');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const destekUi = require('../destek/ui');
@@ -13,6 +14,9 @@ const ui = require('./ui');
 // Talebi üstlenen yetkili değerlendirilir; kimse üstlenmediyse talebi kapatan yetkili değerlendirilir.
 // Talep sahibi kendini değerlendiremez.
 async function createPending(client, ticket) {
+  const existing = store.getRating(ticket.threadId);
+  if (existing) return existing; // aynı talep için kayıt varsa (puanlanmış olabilir) üzerine yazılmaz
+
   const staffId = [ticket.claimedBy, ticket.closedBy].find((id) => id && id !== ticket.ownerId);
   if (!staffId) return null;
 
@@ -36,8 +40,8 @@ async function createPending(client, ticket) {
   });
 }
 
-// Başvuru sistemi görüşme bitince (gorusme) ve oryantasyon tamamlanınca (oryantasyon) çağırır: başvurana DM ile
-// görüşmeyi yapan / oryantasyonu veren yetkiliyi puanlama mesajı gönderir. Her başvuru için her kategoride bir kez.
+// Oryantasyon sistemi oryantasyon tamamlanınca (oryantasyon) çağırır: başvurana DM ile oryantasyonu veren yetkiliyi
+// puanlama mesajı gönderir. Her başvuru için her kategoride bir kez (eski görüşme kategorisi de aynı işlevi kullanır).
 async function requestForApplication(client, app, category, staffId) {
   const id = `${app.id}-${category}`;
   if (!staffId || staffId === app.userId || store.getRating(id)) return null;
@@ -139,12 +143,17 @@ async function handleRateSubmit(interaction) {
 
   // Değerlendirilen yetkili etiketlenir, bildirim alır
   const staff = await interaction.client.users.fetch(rating.staffId).catch(() => null);
-  const message = await channel.send({
-    components: [ui.ratingNotice(rating, staff)],
-    flags: core.CV2,
-    allowedMentions: { users: [rating.staffId] },
-  });
-  store.updateRating(id, { channelId: channel.id, messageId: message.id });
+  const message = await channel
+    .send({
+      components: [ui.ratingNotice(rating, staff)],
+      flags: core.CV2,
+      allowedMentions: { users: [rating.staffId] },
+    })
+    .catch((err) => {
+      console.error('[degerlendirme] Değerlendirme kanalına gönderilemedi:', err.message);
+      return null;
+    });
+  if (message) store.updateRating(id, { channelId: channel.id, messageId: message.id });
 }
 
 // Değerlendirme kanalındaki "Yorum Ekle" butonu: sadece değerlendirilen yetkili, bir kez kullanabilir
@@ -206,11 +215,12 @@ async function handleReportButton(interaction) {
 async function handleReportSubmit(interaction) {
   const id = interaction.customId.slice(ui.IDS.reportModal.length + 1);
   const rating = store.getRating(id);
-  if (!rating?.score || interaction.user.id !== rating.staffId) {
+  if (!rating?.score || rating.removedAt || interaction.user.id !== rating.staffId) {
     return replyError(interaction, 'Bu değerlendirme bulunamadı.');
   }
   if (rating.reportedAt) return replyError(interaction, 'Bu değerlendirmeye zaten itiraz edildi.');
 
+  // Kayıt await'ten önce yapılır, iki kez gönderilen form ikinci kez işlenmez; şikayet gönderilemezse geri alınır
   store.updateRating(id, {
     reportedAt: Date.now(),
     reportReason: interaction.fields.getTextInputValue(ui.IDS.reportReason).trim(),
@@ -218,21 +228,31 @@ async function handleReportSubmit(interaction) {
     leaderRoleId: config.roles.leader,
   });
 
+  const revert = () => store.updateRating(id, { reportedAt: null, reportReason: null, reportStatus: null });
   const complaintChannel = await fetchTextChannel(interaction.guild, config.channels.complaint);
   if (!complaintChannel) {
-    store.updateRating(id, { reportedAt: null, reportReason: null, reportStatus: null });
+    revert();
     return replyError(interaction, 'Şikayet kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
+  }
+
+  // Lider rolü etiketlenir, haberleri olur
+  const complaint = await complaintChannel
+    .send({
+      components: [ui.ratingComplaint(rating)],
+      flags: core.CV2,
+      allowedMentions: { roles: rating.leaderRoleId ? [rating.leaderRoleId] : [] },
+    })
+    .catch((err) => {
+      console.error('[degerlendirme] İtiraz şikayet kanalına gönderilemedi:', err.message);
+      return null;
+    });
+  if (!complaint) {
+    revert();
+    return replyError(interaction, 'İtirazın liderlere iletilemedi.', 'Birkaç dakika sonra yeniden dene.');
   }
 
   // Değerlendirme mesajındaki buton "İtiraz Edildi" olur
   await interaction.update({ components: [ui.ratingNotice(rating, interaction.user)], allowedMentions: { parse: [] } });
-
-  // Lider rolü etiketlenir, haberleri olur
-  await complaintChannel.send({
-    components: [ui.ratingComplaint(rating)],
-    flags: core.CV2,
-    allowedMentions: { roles: rating.leaderRoleId ? [rating.leaderRoleId] : [] },
-  });
 
   await respond(
     interaction,
@@ -272,6 +292,10 @@ async function handleReview(interaction) {
   if (!isStaff(interaction, config.roles.leader)) {
     return replyError(interaction, 'Bu işlemi sadece Sorun Çözücü Liderleri yapabilir.');
   }
+  if (interaction.user.id === rating.staffId) {
+    return replyError(interaction, 'Kendi itirazını sonuçlandıramazsın.', 'Başka bir lider karar versin.');
+  }
+  if (rating.removedAt) return replyError(interaction, 'Bu değerlendirme zaten sicilden kaldırıldı.');
   if (rating.reportStatus === 'approved' || rating.reportStatus === 'rejected') {
     return replyError(interaction, 'Bu itiraz zaten sonuçlandırıldı.');
   }

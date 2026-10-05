@@ -1,35 +1,28 @@
 // Yeni/şüpheli hesap sisteminin mesajları: kısıtlı kanaldaki bilgilendirme paneli ve "ne zaman kalkacak" sonucu.
-const { ButtonBuilder, ButtonStyle, ContainerBuilder, SectionBuilder } = require('discord.js');
-const { text, divider, unix, notice } = require('../../core/ui');
-const { botName, panelTitle } = require('../../core/config');
+const { ButtonStyle } = require('discord.js');
+const { alert, panel: standardPanel, unix } = require('../../core/ui');
+const { botName } = require('../../core/config');
 const config = require('./config');
 
 const IDS = {
   sure: 'yenihesap:sure',
 };
 
-function panel() {
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      text(
-        `${panelTitle(`${botName} Hesap Doğrulama`)}\n-# Yeni açılan hesaplar güvenlik amacıyla bir süre kısıtlı kanalda bekletilir; aşağıdaki butonla kısıtlamanın ne zaman kalkacağını kendi hesabın için öğrenebilirsin.`,
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          text(`**Ne Zaman Kalkacak?**\n-# Hesabın ${config.thresholdDays} günden yeni olduğu için şu an sadece bu kanalı görebiliyorsun; kalan süreni buradan öğren.`),
-        )
-        .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.sure).setLabel('Süreyi Öğren').setStyle(ButtonStyle.Success)),
-    );
-}
+// Panel herkese açık kanalda durur; metin kişiden bağımsız yazılır (kısıtlı olmayanlar da okuyabilir)
+const panel = () =>
+  standardPanel({
+    title: `${botName} Hesap Doğrulama`,
+    sub: `Hesabı ${config.thresholdDays} günden yeni olanlar güvenlik için sunucuda sadece bu kanalı görebilir. **Süreyi Öğren** butonuyla kısıtlamanın ne zaman kalkacağını kendi hesabın için öğrenebilirsin.`,
+    button: { id: IDS.sure, label: 'Süreyi Öğren', style: ButtonStyle.Success },
+  });
 
-// "Ne Zaman Kalkacak?": hesap eşiğe ulaşana kadar kalan süre
+// "Süreyi Öğren": hesap eşiğe ulaşana kadar kalan süre
 function sureView(user, hasRestriction) {
-  if (!hasRestriction) return notice('✅ Hesabın artık kısıtlı değil, tüm kanalları görebilirsin.', 'success');
+  if (!hasRestriction) return alert('Hesabın kısıtlı değil.', 'Tüm kanalları görebilirsin.', 'success');
   const freeAt = user.createdTimestamp + config.thresholdDays * 24 * 60 * 60 * 1000;
-  return notice(`⏳ Kısıtlaman <t:${unix(freeAt)}:R> kendiliğinden kalkacak.`, 'warning');
+  // Süre dolmuş ama düzenli tarama rolü henüz almamış olabilir
+  if (freeAt <= Date.now()) return alert('Kısıtlaman birazdan kalkacak.', 'Rol düzenli taramada otomatik alınır.', 'warning');
+  return alert(`Kısıtlaman <t:${unix(freeAt)}:R> kendiliğinden kalkacak.`, null, 'warning');
 }
 
 module.exports = { IDS, panel, sureView };

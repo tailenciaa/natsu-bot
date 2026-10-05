@@ -2,6 +2,7 @@
 // Sunucuda kurallar ekranı (üyelik taraması) açıksa rol, üye kuralları kabul ettiğinde verilir.
 // Discord Developer Portal'da "Server Members Intent" açık olmalı; botun rolü verilecek rolün üstünde olmalı.
 const { Events } = require('discord.js');
+const { guildId } = require('../../core/config');
 const config = require('./config');
 
 async function giveRole(member) {
@@ -16,8 +17,8 @@ async function giveRole(member) {
 module.exports = {
   name: 'otorol',
   events: {
-    [Events.GuildMemberAdd]: (member) => (member.pending ? null : giveRole(member)),
-    // Kurallar ekranını geçen üye
-    [Events.GuildMemberUpdate]: (before, after) => (before.pending && !after.pending ? giveRole(after) : null),
+    [Events.GuildMemberAdd]: (member) => (member.guild.id === guildId && !member.pending ? giveRole(member) : null),
+    // Kurallar ekranını geçen üye (önceki hal önbellekte yoksa da rol eksikse verilir)
+    [Events.GuildMemberUpdate]: (before, after) => (after.guild.id === guildId && !after.pending && before.pending !== false ? giveRole(after) : null),
   },
 };

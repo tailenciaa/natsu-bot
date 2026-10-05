@@ -42,7 +42,7 @@ async function syncMember(member, roleId) {
   if (!roleId || member.user.bot) return;
   const has = member.roles.cache.has(roleId);
   const shouldHave = isNewAccount(member.user);
-  if (shouldHave && !has) await member.roles.add(roleId, 'Hesap 7 günden yeni').catch(() => {});
+  if (shouldHave && !has) await member.roles.add(roleId, `Hesap ${config.thresholdDays} günden yeni`).catch(() => {});
   else if (!shouldHave && has) await member.roles.remove(roleId, 'Hesap artık yeterince eski').catch(() => {});
 }
 
@@ -74,7 +74,8 @@ async function handleReady(client) {
 
   await syncVisibility(guild, role.id);
   await syncAllMembers(guild, role.id);
-  await sendPanel(client);
+  // Panel gönderilemese de düzenli tarama kurulur
+  await Promise.resolve(sendPanel(client)).catch((err) => console.error('[yenihesap] Panel gönderilemedi:', err.message));
 
   const run = () =>
     syncAllMembers(guild, role.id).catch((err) => console.error('[yenihesap] Üyeler senkronize edilemedi:', err.message));
