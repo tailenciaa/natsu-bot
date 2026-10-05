@@ -36,6 +36,7 @@ module.exports = [
   require('./emoji'),
   require('./ses'),
   require('./ozel-oda'),
+  require('./sesbilgi'), // #sesli-bilgi paneli
   require('./durum'),
   require('./cekilis'), // /cekilis: ödüllü çekilişler, katıl butonu, otomatik kazanan seçimi
   require('./temizle'), // /sil: kanaldaki mesajları toplu siler

@@ -446,7 +446,7 @@ module.exports = {
             "`1.` Başvurun <@&1553398951816863844> ekibi tarafından incelenir, sonuç sana **DM** ile iletilir.",
             "`2.` Uygun bulunursan bir ses kanalında **görüşmeye** çağrılırsın.",
             "`3.` Görüşme olumluysa **oryantasyon** yapılır: kurallar, ceza sistemi, komutlar ve yetkili davranışı anlatılır.",
-            "`4.` Görev alanını seçersin: **Sorun Çözücü, Sohbet Moderasyonu, Ses Moderasyonu, Karşılama, Etkinlik, İçerik & Tasarım.**"
+            "`4.` Görev alanını seçersin: **Ticket, Sorun Çözücü, Oryantasyon, Sohbet, Ses, Etkinlik, Partner ya da Karşılama.**"
           ],
           "plain": true
         },
