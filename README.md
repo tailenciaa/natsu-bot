@@ -1,11 +1,12 @@
 # Kazuki
 
-**Kazuki**, sunucunun tüm sistemlerini tek bir çatı altında toplayan yönetim botu. Components V2 ile yazılmıştır, hiçbir mesajda embed kullanılmaz.
-Bot tek bir sunucuda çalışır; kanal ve rol ID'leri koda sabit yazılır, hiçbir kurulum komutu kanal ya da rol sormaz.
+**Kazuki**, tek bir Discord sunucusunun bütün sistemlerini bir çatı altında toplayan Türkçe yönetim botudur (discord.js 14).
+Hiçbir mesajda embed yoktur, hepsi Components V2 ile yazılmıştır. Kanal ve rol ID'leri koda sabit yazılır; hiçbir kurulum komutu kanal ya da rol sormaz.
+Görünüm kuralları `docs/TASARIM.md` dosyasında, çalışma notları `CLAUDE.md` dosyasındadır.
 
 ## Kurulum
 
-1. [Discord Developer Portal](https://discord.com/developers/applications) → uygulama → **Bot**:
+1. [Discord Developer Portal](https://discord.com/developers/applications) > uygulama > **Bot** sekmesinde:
    - **Reset Token** ile tokeni al.
    - **SERVER MEMBERS INTENT** ve **MESSAGE CONTENT INTENT** seçeneklerini aç.
 2. Botu sunucuya ekle (`CLIENT_ID` yerine uygulamanın ID'sini yaz):
@@ -15,145 +16,101 @@ Bot tek bir sunucuda çalışır; kanal ve rol ID'leri koda sabit yazılır, hi�
    TOKEN=tokenin_buraya
    GUILD_ID=sunucu_id
    ```
-4. Botu başlat:
+4. Botu başlat (Node 20.12 ve üzeri):
    ```
    npm install
    npm start
    ```
 
-Bot açılınca komutları sunucuya yükler, **destek** ve **yetkili alım** panellerini ayarlı kanallara kendisi gönderir.
-Panel metni ya da görseli değişmediyse panele dokunulmaz; değiştiyse eski panel silinip yenisi gönderilir.
+Bot açılınca komutları sunucuya yükler ve panelleri (destek, yetkili alımı, kurallar, bilgilendirme, booster, özel oda rehberi vb.) ayarlı kanallara kendisi gönderir.
+Panel metni ya da görseli değişmediyse panele dokunulmaz; değiştiyse yeni panel gönderilir ve eskisi silinir (gönderim başarısız olursa kanal panelsiz kalmaz).
+
+> **Aynı token ile aynı anda tek yerde çalıştır.** Hem kendi bilgisayarında hem Railway'de açık olursa her olay iki kez işlenir (çift mesaj, çift panel).
+
+## Veri
+
+Veri MongoDB'de tutulur: ortam değişkenlerine `MONGODB_URI` (ve isteğe bağlı `MONGODB_DB`) yazılırsa kullanılır. Yazılmazsa `data/db.json` dosyası kullanılır.
+Sık değişen kayıtlar (XP, sıralama, haftalık aktifler, saygınlık) birkaç saniyede bir toplu yazılır ve bot kapanırken diske boşaltılır.
 
 ## Komutlar
 
-Butonla yapılabilen işler için komut yoktur. Sadece şunlar kalmıştır:
+Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır (hepsi `/yardim` menüsünde de görünür):
 
 | Komut | Açıklama | Kimler |
 | --- | --- | --- |
-| `/destek ekle kullanici` | Bulunduğun destek talebine kullanıcı ekler | Yetkililer |
-| `/destek cikar kullanici` | Bulunduğun destek talebinden kullanıcı çıkarır | Yetkililer |
-| `/yetki-ver kullanici` | Panelden seviye ve yetki seçerek elle yetki verir | Yöneticiler |
-| `/sicil [kullanici]` | Sicili gösterir | Herkes kendi sicilini, yetkililer herkesinkini |
-| `/yardim` | Botun komutlarını kategorilere ayrılmış bir menüde gösterir | Herkes |
+| `/yardim` | Komutları kategorilere göre gösterir | Herkes |
+| `/sicil [kullanici]` | Üyenin sicilini gösterir | Herkes kendisininkini, yetkililer herkesinkini |
+| `/seviye [kullanici]` | Mesaj ve ses seviyesini kartla gösterir | Herkes |
+| `/profil [kullanici]` | Seviye, sıralama ve istatistiklerle profil kartı (altındaki butonlarla özelleştirilir) | Herkes |
+| `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
+| `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
+| `/saygi-siralama` | Tüm zamanların saygınlık tablosu | Herkes |
+| `/vip-siralama` | VIP üyeleri VIP olma sırasına göre listeler | Herkes |
+| `/vip-ver kullanici` | Bir üyeye VIP rolünü verir | Yöneticiler |
+| `/guvenilir-partnerler` | Güvenilir partner sunucuların listesi | Herkes |
+| `/partner-musaitlik` | Teklif atamaları için partner müsaitliğini ayarlar | Partner yetkilileri |
+| `/emoji-ekle emoji [isim]` | Başka sunucudaki emojiyi ekler | Emoji yönetme izni olanlar, takviye edenler (1 emoji) |
+| `/cikartma-ekle dosya isim etiket` | Görseli çıkartma olarak ekler | Emoji yönetme izni olanlar, takviye edenler (1 çıkartma) |
+| Mesaja sağ tık > **Emojileri Sunucuya Ekle** | Mesajdaki emojileri seçip ekler | Emoji yönetme izni olanlar |
+| `/destek ekle` ve `/destek cikar` | Bulunduğun destek talebine üye ekler ya da çıkarır | Yetkililer |
+| `/yetki-ver kullanici` | Rütbe, yetki ve görev rolü seçerek yetki verir | Yöneticiler |
+| `/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban` | Hızlı ceza komutları (sicile işlenir) | İlgili ceza yetkisi olanlar |
+| `/ceza-kaldir`, `/ceza-sil` | Cezayı numarasıyla kaldırır ya da sicilden siler | Yetkisi olanlar |
+| `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
+| `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
+| `/log kur` | Log kurulum menüsünü açar | Yöneticiler |
 
-## Dosya Düzeni
+Yetkili komutları sadece yetkili komut kanalında çalışır.
 
-Her sistem `src/systems` altında kendi klasöründe, birbirine karışmadan durur:
+## Sistemler
+
+Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışmaz:
+
+| Grup | Sistemler |
+| --- | --- |
+| Destek ve yetkili | `destek` (talep alt başlıkları), `degerlendirme` (memnuniyet puanı ve itiraz), `basvuru` (yetkili alımı), `oryantasyon` (onaylanan başvuranın son aşaması), `yetki` (elle yetki verme) |
+| Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
+| Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
+| Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `profil`, `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
+| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
+
+Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
 
 ```
 src/
-  index.js               Botun girişi: sistemleri yükler, etkileşimleri ilgili sisteme yönlendirir
-  core/                  Tüm sistemlerin ortak parçaları
-    config.js              Bot adı, sunucu ID'si, renkler
-    db.js                  Veri dosyası (data/db.json)
-    helpers.js             Ortak etkileşim ve yetki yardımcıları
-    panel.js               Panellerin açılışta otomatik gönderilmesi
-    ui.js                  Ortak mesaj parçaları
-    logger.js              Konsol çıktısını bot.log dosyasına da yazar
-  systems/
-    destek/              Destek talepleri (ticket)
-    degerlendirme/       Yetkili değerlendirme (memnuniyet)
-    basvuru/             Yetkili alımı
-    yetki/               Elle yetki verme
-    otorol/              Sunucuya katılana otomatik rol
-    sicil/               Üye sicili
-    ses/                 Botun ses kanalında durması
-    durum/               Botun durumu (İzliyor: sunucu adı · Seste 12 kişi)
-    yardim/              Yardım menüsü
+  start.js               Giriş: .env, veritabanı, sonra bot
+  index.js               Sistemleri yükler, etkileşimleri ilgili sisteme yönlendirir
+  core/                  Ortak parçalar
+    ui.js                  Mesaj yardımcıları (page, alert, panel, pagerRow, tabRow...) ve otomatik düzenleme
+    helpers.js             respond, replyError, yetki ve menü sahibi kontrolleri
+    panel.js               Panellerin açılışta gönderilmesi
+    banner.js              Panel afişleri (aşağıya bak)
+    canvas.js              Seviye ve profil kartı çizimi (assets/fonts içindeki yazı tipiyle)
+    db.js, config.js, logger.js
+  systems/<sistem>/      Yukarıdaki sistemler
+tools/preview/           Mesaj önizleme ve doğrulama aracı
+docs/TASARIM.md          Görünüm kuralları
 ```
 
-Her sistem klasöründe:
-- `config.js`: o sistemin kanal ve rol ID'leri, metinleri
-- `index.js`: komutları ve butonlara/formlara ne olacağı
-- `ui.js`: gönderdiği mesajlar
-- `store.js`: kayıtları (`data/db.json` içinde)
+## Panel afişleri
 
-## Destek Sistemi
+Discord'a yüklenmiş görsellerin `cdn.discordapp.com` bağlantıları yaklaşık bir günde süresi dolan imzalar taşır. Bu yüzden panel gönderilirken afiş bir kez indirilip `data/banners/` altında saklanır ve mesaja kendi eki olarak konur; süresi hiç dolmaz.
+Kalıcı bir afiş için görseli `assets/banners/<dosya adı>` olarak koymak yeterlidir (dosya adı, bağlantıdaki ad ile aynı olmalı); bu kopya her zaman önceliklidir.
 
-İki kanal kullanır (`src/systems/destek/config.js`):
-- **#destek-talebi:** panel burada, talepler bu kanalın altında özel alt başlık olarak açılır
-- **#destek-talepleri:** yetkililere giden yeni talep ve hatırlatma mesajları
+## Doğrulama
 
-1. Kullanıcı panelde **Talep Oluştur**'a basar, açılan formda sorununu yazar.
-2. #destek-talebi kanalının altında `konu-kullaniciadi-0007` adında **özel alt başlık** açılır. Ayrı kanal açılmaz.
-   Alt başlığı başta sadece talep sahibi görür, üyeye "yetkili bekleniyor" mesajı gösterilir.
-3. #destek-talepleri kanalına yetkili rolü etiketlenerek **Talebi Üstlen** butonlu bir mesaj gider.
-   Butona ilk basan yetkili talebi alır ve alt başlığa eklenir. Kimse kendi açtığı talebi üstlenemez.
-4. Yetkili bağlanana kadar üye **Hatırlat** butonuyla talep kanalına bir kez hatırlatma gönderebilir.
-5. **Talebi Kapat** → sebep formu ("Sorun çözüldü mü?" + isteğe bağlı not) → talep sahibine DM'den kısa bir
-   "talebin kapatıldı" bilgisi ve yetkiliyi değerlendirme butonları gider.
-   Alt başlık silinmez: yönetici olmayan herkes çıkarılır, alt başlık kilitlenip arşivlenir.
-   Kapanan talepleri sadece "Alt Başlıkları Yönet" yetkisi olanlar **Alt Başlıklar** listesinden görebilir.
+Discord'a bağlanmadan mesajların görünümünü, her butonun bir işleyiciye bağlı olduğunu ve komutları denetleyen bir araç vardır (ayrıntı: `tools/preview/README.md`):
 
-Her kullanıcının aynı anda sadece bir açık talebi olabilir.
-İstenirse `config.js` içindeki `channels.log` ayarlanarak açılış/kapanış logları ve konuşma kaydı (.txt) bir kanala gönderilebilir (şu an kapalı).
-
-## Yetkili Değerlendirme (Memnuniyet)
-
-1. Talep kapanınca üyeye giden DM'de 1-5 arası puan butonları olur. Talebi üstlenen yetkili değerlendirilir;
-   kimse üstlenmediyse talebi kapatan yetkili değerlendirilir. Üye kendi talebini üstlenemez.
-2. Üye puana basar, açılan formda isteğe bağlı yorum yazar. Değerlendirme yetkilinin siciline işlenir.
-3. Değerlendirme kanalına puan, yorum, yetkili ve değerlendiren kişiyle bir mesaj gider.
-4. Değerlendirilen yetkili, haksız bulduğu değerlendirmeye o mesajdaki **İtiraz Et** butonuyla,
-   sebebini yazarak şikayet kanalından itiraz edebilir. Her değerlendirmeye bir kez itiraz edilebilir.
-5. Şikayet mesajında lider rolü etiketlenir. Liderler (ve yöneticiler):
-   - **Onayla:** değerlendirme yetkilinin sicilinden kaldırılır, değerlendirme mesajı "Değerlendirme Kaldırıldı" haline gelir
-   - **Reddet:** değerlendirme puanda kalır
-   - **Görüşmeye Çağır:** itiraz eden yetkiliye DM'den görüşme çağrısı gider
-
-   Sonuç itiraz eden yetkiliye DM ile iletilir ve değerlendirme mesajındaki butonda görünür.
-
-## Yetkili Alımı
-
-1. Yetkili alım kanalındaki panelde **Başvur**'a basılır, form doldurulur (sorular `src/systems/basvuru/config.js` içinde).
-2. Başvuru, başvurular kanalına inceleyen rol etiketlenerek düşer: başvuranın bilgileri, önceki başvuruları ve cevapları.
-3. İnceleyen rol (ve yöneticiler):
-   - **Onayla:** isteğe bağlı not yazılır, ayarlandıysa rol otomatik verilir, görüşme ses kanallarının kilidi açılır
-   - **Reddet:** sebep yazılır, açık olan ses kanalı erişimi kapatılır
-   - **Görüşmeye Çağır:** görüşme ses kanallarının kilidi açılır, başvurana DM'den görüşme çağrısı gider
-4. Sonuç (not ya da sebeple) başvurana DM ile gider, başvuru sicile işlenir.
-
-### Görüşme Ses Kanalları
-
-Yetkili Alım 1, 2 ve 3 ses kanalları normalde herkese kapalıdır (`src/systems/basvuru/config.js` içindeki `voiceChannels`).
-Başvuran görüşmeye çağrılınca ya da onaylanınca kanalların kilidi sadece ona açılır. DM'de:
-- Butona basan yetkili bu kanallardan birindeyse: "**@yetkili mülakat için seni şu an #kanal kanalında bekliyor!**" + **Kanala Katıl** butonu
-- Değilse: "**Mülakat için aşağıdaki ses kanallarından birine katılabilirsin.**" + üç kanalın butonu
-
-Erişim 24 saat sonra (`voiceAccessHours`) kendiliğinden kapanır; başvuru reddedilirse hemen kapanır.
-
-Bekleyen başvurusu olan tekrar başvuramaz; reddedilen kişi `reapplyCooldownDays` gün sonra tekrar başvurabilir.
-
-## Oto Rol
-
-Sunucuya katılan herkese **Üye** rolü otomatik verilir (`src/systems/otorol/config.js`, botlara verilmez).
-Botun rolü verilecek rolün üstünde olmalı.
-
-## Ses Kanalı
-
-Bot, `src/systems/ses/config.js` içindeki ses kanalında mikrofonu ve kulaklığı kapalı şekilde sürekli durur.
-Kanaldan atılırsa, taşınırsa ya da bağlantısı koparsa birkaç saniye içinde kendiliğinden geri döner.
-
-## Bot Durumu
-
-Bot, Discord'un **İzliyor** durumunu kullanır (`src/systems/durum/config.js` içinden Oynuyor / Dinliyor yapılabilir).
-Başta sunucunun adı yazar, 30 saniyede bir güncellenir:
-1. Seste biri varsa: **❄️ Kazuki ‵ Anime & Public・Seste 12 kişi** (botlar sayılmaz)
-2. Seste kimse yoksa: **❄️ Kazuki ‵ Anime & Public・18 aktif üye**
-3. Aktif üye sayısı alınamazsa `phrases` listesindeki yazılar sırayla gösterilir
-
-## Sicil
-
-`/sicil` her üyenin sicilini bölüm bölüm, sayfa sayfa gösterir:
-- **Genel:** hesap/katılma tarihi, açtığı talep ve başvuru sayısı; yetkililerde üstlendiği talep sayısı ve ortalama puanı
-- **Destek Talepleri:** açtığı talepler, durumları ve üstlenen yetkili
-- **Başvurular:** yetkili başvuruları ve sonuçları
-- **Değerlendirmeler:** yetkililerin aldığı puanlar ve yorumlar (sadece yetkililerde ve değerlendirme almış kişilerde)
+```
+node tools/preview/check.js [sistem]    # lint, handler kapsamı, komut denetimi
+node tools/preview/build.js [sistem]    # tools/preview/out/index.html (tarayıcıda aç) ve <sistem>.txt
+node -e "process.env.GUILD_ID='1'; require('./src/systems')"   # bot yükleniyor mu
+```
 
 ## Özelleştirme
 
-- Bot adı ve renkler: `src/core/config.js`
-- Kanal, rol ID'leri ve panel metinleri: ilgili sistemin `config.js` dosyası
-- Panel görseli: `assets/banner.png` (dosyayı değiştirip botu yeniden başlatınca paneller yenilenir)
-- Kapatma sebepleri: `src/systems/destek/config.js` içindeki `closeReasons`
-- Talepler, talep geçmişi, değerlendirmeler, başvurular ve sayaçlar `data/db.json` dosyasında tutulur.
+- Bot adı ve renkler: `src/core/config.js`.
+- Kanal, rol ID'leri ve panel metinleri: ilgili sistemin `config.js` dosyası.
+- Panel görselleri: ilgili `config.js` içindeki bağlantı ya da `assets/` ve `assets/banners/` altındaki dosyalar.
+- Destek kapatma sebepleri: `src/systems/destek/config.js` içindeki `closeReasons`; yetkili alım soruları: `src/systems/basvuru/config.js`.
+- Botun rolü, verdiği rollerin (otorol, seviye, takviye, VIP vb.) üstünde olmalıdır.
