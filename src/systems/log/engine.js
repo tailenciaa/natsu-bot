@@ -104,10 +104,13 @@ async function ensureAllThreads(client) {
 async function send(client, key, container) {
   const thread = await ensureThread(client, key);
   if (!thread) return null;
-  return thread.send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } }).catch((err) => {
+  const message = await thread.send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } }).catch((err) => {
     console.error(`[log] "${key}" kategorisine log gönderilemedi:`, err.message);
     return null;
   });
+  // "Detaylı Bilgi" butonunun göstereceği veri log mesajının ID'siyle saklanır
+  if (message && container.logMeta) store.saveDetail(message.id, { ...container.logMeta, category: key });
+  return message;
 }
 
 module.exports = { ensureThread, resetThread, ensureAllThreads, send, categoryOf };

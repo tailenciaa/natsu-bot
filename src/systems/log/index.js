@@ -123,6 +123,17 @@ async function handleSelect(interaction) {
   return interaction.editReply({ components: [ui.jumpLink(category, thread)], flags: core.CV2 });
 }
 
+// Log girdisindeki "Detaylı Bilgi" butonu: kaydedilen ayrıntıları sadece basana gösterir
+async function handleDetail(interaction) {
+  const meta = store.getDetail(interaction.message.id);
+  if (!meta) {
+    return replyError(interaction, 'Bu logun detayı artık saklanmıyor.', 'Detaylar sadece en son kayıtlar için tutulur.');
+  }
+  const category = categories.find((c) => c.key === meta.category);
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  return interaction.editReply({ components: [ui.detail(meta, category ? `${category.emoji} ${category.label}` : 'Log')], flags: core.CV2 });
+}
+
 module.exports = {
   name: 'log',
   commands,
@@ -136,6 +147,7 @@ module.exports = {
   prefixed: [
     [ui.IDS.select, handleSelect],
     [ui.IDS.setup, handleSetupButton],
+    [ui.IDS.detail, handleDetail],
   ],
   events: {
     [Events.ClientReady]: async (client) => {

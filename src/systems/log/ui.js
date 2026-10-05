@@ -12,18 +12,48 @@ const { botName, guildId } = require('../../core/config');
 const { colors, text, divider, unix, page } = require('../../core/ui');
 const categories = require('./categories');
 
-const IDS = { select: 'logpanel', setup: 'logkur' }; // logpanel:sec, logkur:<eylem>
+const IDS = { select: 'logpanel', setup: 'logkur', detail: 'logdetay' }; // logpanel:sec, logkur:<eylem>
 
 // Bir log girdisinin kutusu: başlık, uzun gri açıklama, çizgiyle ayrılmış kalın başlıklı bilgi bloğu (null/boş satırlar
 // atlanır) ve en altta zaman damgası. Bütün log girdileri aynı genişlikte görünsün diye açıklama bilerek uzun tutulur.
 const ENTRY_SUB =
   'Sunucuda gerçekleşen bu olay ilgili log kategorisine otomatik olarak kaydedildi; olayı kimin yaptığı, nerede gerçekleştiği ve ayrıntıları aşağıdaki bilgilerde yer alıyor.';
 
-function entry(color, title, lines) {
-  const body = [].concat(lines).filter((line) => line != null && line !== '').join('\n');
-  return page({ title, sub: ENTRY_SUB, accent: colors[color] ?? colors.primary, blocks: [`**Olay Bilgileri**\n${body}`] })
+// details: butona basınca gösterilecek ek satırlar (mesaj ID'si, gönderilme zamanı vb.); verilmezse olay satırları gösterilir
+function entry(color, title, lines, details) {
+  const list = [].concat(lines).filter((line) => line != null && line !== '');
+  const container = page({ title, sub: ENTRY_SUB, accent: colors[color] ?? colors.primary, blocks: [`**Olay Bilgileri**\n${list.join('\n')}`] })
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# <t:${unix(Date.now())}:f>`));
+    .addTextDisplayComponents(text(`-# <t:${unix(Date.now())}:f>`))
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.detail}:goster`).setLabel('Detaylı Bilgi').setStyle(ButtonStyle.Secondary),
+      ),
+    );
+  container.logMeta = { title, lines: list, details: [].concat(details ?? []).filter((line) => line != null && line !== ''), at: Date.now() };
+  return container;
+}
+
+// "Detaylı Bilgi" butonuna basınca sadece basana görünen cevap: olayın tam zamanı, ilgili kişi/kanal ID'leri ve ek ayrıntılar
+const label = (line) => (line.startsWith('**') ? `- ${line}` : line);
+function detail(meta, categoryLabel) {
+  const at = Math.floor(meta.at / 1000);
+  const body = (meta.details.length ? meta.details : meta.lines).map(label).join('\n');
+  const users = [...new Set([...meta.lines.join('\n').matchAll(/<@!?(\d{15,})>/g)].map((m) => m[1]))];
+  const channels = [...new Set([...meta.lines.join('\n').matchAll(/<#(\d{15,})>/g)].map((m) => m[1]))];
+  const ids = [...users.map((id) => `- **Kullanıcı ID:** \`${id}\``), ...channels.map((id) => `- **Kanal ID:** \`${id}\``)];
+
+  const blocks = [
+    `**${meta.title}**\n- **Kategori:** ${categoryLabel}\n- **Tarih:** <t:${at}:D>\n- **Saat:** <t:${at}:T> (<t:${at}:R>)`,
+    `**Ayrıntılar**\n${body}`.slice(0, 2800),
+  ];
+  if (ids.length) blocks.push(`**İlgili ID'ler**\n${ids.slice(0, 8).join('\n')}`);
+
+  return page({
+    title: 'Log Detayı',
+    sub: 'Seçtiğin log kaydının gerçekleştiği tarih ve saati, ilgili kişi ve kanalların ID bilgilerini ve olaya ait bütün ayrıntıları bu mesajda bulabilirsin.',
+    blocks,
+  });
 }
 
 // #log-paneli kanalına gönderilen, kategori seçim menülü panel
@@ -127,4 +157,4 @@ function resetConfirm() {
     );
 }
 
-module.exports = { IDS, entry, panel, jumpLink, setupView, resetConfirm };
+module.exports = { IDS, entry, detail, panel, jumpLink, setupView, resetConfirm };
