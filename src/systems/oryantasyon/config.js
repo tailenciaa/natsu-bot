@@ -28,13 +28,14 @@ module.exports = {
     staffGraceMinutes: 3,
   },
 
-  // Başvuranın seçebileceği görev alanları. Yetki verilirken seçilen alanların rolü de verilir (roleId: null ise verilmez).
+  // Başvuranın seçebileceği görev alanları. Yetki verilirken seçilen alanın rolü de verilir.
+  // roleName rolün sunucudaki adıdır (bot açılınca bulunup bağlanır); roleId ise sabit ID. Lider ve yönetici rolleri buraya konmaz.
   areas: [
     {
       id: 'destek',
-      label: 'Sorun Çözücü',
-      description: 'Destek taleplerini üstlenir, üyelerin sorunlarını çözer.',
-      roleId: '1544337671340433569',
+      label: 'Ticket',
+      description: 'Destek taleplerini üstlenir ve üyelerin sorunlarını çözer.',
+      roleName: 'Ticket Yetkilisi',
       info:
         'Talep kanalına düşen **Yeni Destek Talebi** mesajındaki **Talebi Üstlen** ile talebi alırsın.\n' +
         'Üyeye kısa sürede dönüş yap, kibar ve anlaşılır ol; teknik terimlerle boğma.\n' +
@@ -43,10 +44,30 @@ module.exports = {
         'Talep kapanınca üye sana puan verir ve siciline işlenir; haksız bulduğun puana itiraz edebilirsin.',
     },
     {
+      id: 'sorun',
+      label: 'Sorun Çözücü',
+      description: 'Sorun çözme kanallarında üyelerin sorunlarına bakar.',
+      roleName: 'Sorun Çözücü',
+      info:
+        'Sorun çözme ses kanallarında üyelerin sorunlarını dinle ve çözmeye çalış.\n' +
+        'Üyeyle sakin ve anlayışlı konuş; çözemediğin konuyu bekletmeden Sorun Çözücü Lideri\'ne ilet.\n' +
+        'Görüşme sonunda üye seni puanlayabilir, puanlar siciline işlenir.',
+    },
+    {
+      id: 'oryantasyon',
+      label: 'Oryantasyon',
+      description: 'Yeni yetkililere oryantasyon verir ve işleyişi anlatır.',
+      roleName: 'Oryantasyon Yetkilisi',
+      info:
+        'Onaylanan yeni yetkililere oryantasyon panelinden adım adım kuralları, davranışları ve komutları anlat.\n' +
+        'Konuyu anlatmadan adımı geçme, başvuranın sorularını sabırla cevapla.\n' +
+        'Oryantasyon bitince başvuran seni puanlayabilir, puanlar siciline işlenir.',
+    },
+    {
       id: 'sohbet',
       label: 'Sohbet Moderasyonu',
       description: 'Yazılı kanalları takip eder, kural ihlallerine müdahale eder.',
-      roleId: '1554239997559705720',
+      roleName: 'Sohbet Sorumlusu',
       info:
         'Sohbet kanallarını düzenli takip et; spam, küfür, reklam ve rahatsız edici içeriği sil.\n' +
         'Hafif ihlalde önce uyar, tekrar ederse zaman aşımı uygula.\n' +
@@ -57,7 +78,7 @@ module.exports = {
       id: 'ses',
       label: 'Ses Moderasyonu',
       description: 'Ses kanallarını gezer, sesli sohbetteki düzeni sağlar.',
-      roleId: '1554239999619375274',
+      roleName: 'Ses Yetkilisi',
       info:
         'Ses kanallarını ara ara gez; mikrofon spamı, bağırma ve ses efekti kötüye kullanımını takip et.\n' +
         'Rahatsızlık veren üyeyi önce uyar, devam ederse sustur ya da kanaldan çıkar.\n' +
@@ -65,20 +86,10 @@ module.exports = {
         'Özel odalara izinsiz girme, sadece şikayet varsa müdahale et.',
     },
     {
-      id: 'kayit',
-      label: 'Karşılama',
-      description: 'Yeni gelen üyeleri karşılar, sunucuya ısınmalarını sağlar.',
-      roleId: '1555890045599223868',
-      info:
-        'Sunucuya yeni katılanları sıcak bir dille karşıla, kanalları ve kuralları kısaca tanıt.\n' +
-        'Sahte ya da yeni açılmış şüpheli hesapları üst yetkiliye bildir.\n' +
-        'Yeni üyelerin sorularını sabırla cevapla; ilk izlenim sunucunun yüzüdür.',
-    },
-    {
       id: 'etkinlik',
       label: 'Etkinlik',
       description: 'Anime izleme partileri, oyun geceleri ve çekilişler düzenler.',
-      roleId: '1554240000529539083',
+      roleName: 'Etkinlik Yetkilisi',
       info:
         'Anime izleme partileri, oyun geceleri, quizler ve çekilişler planla.\n' +
         'Etkinliği önceden duyur, saatini ve kurallarını net yaz.\n' +
@@ -89,12 +100,22 @@ module.exports = {
       id: 'partner',
       label: 'Partner',
       description: 'Partner sunucularla iletişim kurar, ortaklıkları yürütür.',
-      roleId: '1554237785416794202',
+      roleName: 'Partner Yetkilisi',
       info:
         'Partner taleplerini partner kanalından ve botun oto partner sisteminden takip et.\n' +
         'Gelen teklifleri onaylamadan önce karşı sunucunun düzenini, üye sayısını ve içeriğini kontrol et.\n' +
         'Güvenilir partner listesini güncel tut; sorun çıkaran partnerleri üst yetkiliye bildir.\n' +
         'Partner metinlerinde sunucumuzun kurallarına uymayan içerik varsa onaylama.',
+    },
+    {
+      id: 'kayit',
+      label: 'Karşılama',
+      description: 'Yeni gelen üyeleri karşılar, sunucuya ısınmalarını sağlar.',
+      roleId: '1555890045599223868',
+      info:
+        'Sunucuya yeni katılanları sıcak bir dille karşıla, kanalları ve kuralları kısaca tanıt.\n' +
+        'Sahte ya da yeni açılmış şüpheli hesapları üst yetkiliye bildir.\n' +
+        'Yeni üyelerin sorularını sabırla cevapla; ilk izlenim sunucunun yüzüdür.',
     },
   ],
 
