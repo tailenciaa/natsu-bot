@@ -17,6 +17,12 @@ module.exports = {
   get: (no) => all()[no] ?? null,
   byMessage: (messageId) => Object.values(all()).find((g) => g.messageId === messageId) ?? null,
   active: () => Object.values(all()).filter((g) => g.status === 'active'),
+  // En son biten çekilişler (yeni olan önce); yeniden çekiliş bunlar üzerinde yapılabilir
+  recentEnded: (limit = 5) =>
+    Object.values(all())
+      .filter((g) => g.status === 'ended')
+      .sort((a, b) => b.endsAt - a.endsAt)
+      .slice(0, limit),
   save() {
     const now = Date.now();
     for (const [no, g] of Object.entries(all())) if (g.status !== 'active' && now - g.endsAt > KEEP_MS) delete all()[no];

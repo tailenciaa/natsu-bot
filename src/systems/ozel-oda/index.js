@@ -1,11 +1,11 @@
 // Özel oda sistemi (VoiceMaster benzeri): ayarlı "Özel Oda Oluştur" ses kanalına katılan üyeye otomatik kendi ses
 // kanalı açılır ve içine alınır. Kanalın kendi metin sohbetine sadece oda sahibinin kullanabildiği bir kontrol
 // paneli düşer: kilitle/aç, gizle/göster, kişi limiti, isim değiştir, kullanıcı at, kullanıcı yasakla, sahipliği
-// devret. At/yasakla/devret menüleri sadece o an odada bulunan üyeleri listeler. Yasaklanan kullanıcı odadan atılır
-// ve o oda silinene kadar tekrar giremez (at sadece anlık çıkarır, kalıcı engellemez). Odada kimse kalmayınca kanal
-// kendiliğinden silinir. Oluştur kanalına her girişte yeni bir oda açılır; sahibi eski odasından ayrılıp sahipliği
-// devretmediyse eski oda, içindeki diğer üyeler çıkana kadar kendi başına kalır. Trolleri önlemek için her panel
-// işleminin kısa bir beklemesi vardır.
+// devret. Yasaklanan kullanıcı odadan atılır ve o oda silinene kadar tekrar giremez (at sadece anlık çıkarır,
+// kalıcı engellemez). Odada kimse kalmayınca kanal kendiliğinden silinir. Oluştur kanalına her girişte yeni bir
+// oda açılır; sahibi eski odasından ayrılıp sahipliği devretmediyse eski oda, içindeki diğer üyeler çıkana kadar
+// kendi başına kalır. Trolleri önlemek için her panel işleminin kısa bir beklemesi vardır. Oda sahibine kendi
+// odasında ayrı izin verilir, böylece kilitleyince ya da gizleyince kendisi dışarıda kalmaz.
 const { ChannelType, Events } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
@@ -40,6 +40,16 @@ function takeCooldown(channelId, action) {
   return null;
 }
 
+// Oda silinince bekleme kayıtları da silinir
+function clearCooldowns(channelId) {
+  for (const key of cooldowns.keys()) if (key.startsWith(`${channelId}:`)) cooldowns.delete(key);
+}
+
+const slowDown = (interaction, wait) => replyError(interaction, 'Biraz yavaş ol.', `${wait} saniye sonra tekrar deneyebilirsin.`);
+
+// İzin değişikliklerinin hatası kayda geçer ama akışı kesmez
+const logFailure = (what) => (err) => console.error(`[ozel-oda] ${what}:`, err.message);
+
 // ── Oda oluşturma / silme ───────────────────────────────────────────────────────
 
 async function createRoom(member) {
@@ -63,6 +73,8 @@ async function createRoom(member) {
     if (!channel) return;
 
     const room = store.setRoom(channel.id, { guildId: guild.id, ownerId: member.id, createdAt: Date.now() });
+    // Sahip kendi odasını kilitlese ya da gizlese bile giriş ve görme izni kalır
+    await channel.permissionOverwrites.edit(member.id, { ViewChannel: true, Connect: true }).catch(logFailure('Oda sahibine izin verilemedi'));
 
     const moved = await member.voice.setChannel(channel).catch(() => false);
     if (moved === false) {
@@ -82,6 +94,7 @@ async function deleteIfEmpty(channel) {
   if (!channel || !store.getRoom(channel.id)) return;
   if (channel.members.size > 0) return;
   store.deleteRoom(channel.id);
+  clearCooldowns(channel.id);
   await channel.delete().catch(() => {});
 }
 
@@ -122,18 +135,30 @@ function ownerError(interaction, room) {
   return null;
 }
 
+// Panel mesajını (izin değişikliğinin önbelleğe geç yansımasına takılmadan) yeni durumla yeniden çizer
+const redraw = (interaction, room, state) =>
+  interaction.editReply({ components: [ui.controlPanel(room, interaction.channel, state)], allowedMentions: { parse: [] } });
+
+// Panelin butonundan açılan formlar mesajı günceller; 3 saniye dolmadan cevap verilir, yavaş işler sonra yapılır
+const acknowledge = (interaction) => (interaction.isFromMessage() ? interaction.deferUpdate() : interaction.deferReply({ flags: core.EPHEMERAL }));
+const finishEdit = (interaction, room, confirmation) =>
+  interaction.isFromMessage() ? redraw(interaction, room) : respond(interaction, core.alert(confirmation, null, 'success'));
+
+// Kilit ve gizleme @everyone izninden okunur, değişince önbelleği beklemeden yeni durum çizilir
 async function handleLockToggle(interaction) {
   const room = store.getRoom(interaction.channelId);
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const wait = takeCooldown(interaction.channelId, ui.IDS.lock);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
+  if (wait) return slowDown(interaction, wait);
 
+  await interaction.deferUpdate();
   const { channel } = interaction;
   const everyone = channel.guild.roles.everyone;
   const locked = channel.permissionOverwrites.cache.get(everyone.id)?.deny.has('Connect') ?? false;
-  await channel.permissionOverwrites.edit(everyone, { Connect: locked ? null : false });
-  return interaction.update({ components: [ui.controlPanel(room, channel)] });
+  const changed = await channel.permissionOverwrites.edit(everyone, { Connect: locked ? null : false }).then(() => true, logFailure('Kilit değiştirilemedi'));
+  if (!changed) return replyError(interaction, 'Oda kilidi değiştirilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
+  return redraw(interaction, room, { locked: !locked });
 }
 
 async function handleHideToggle(interaction) {
@@ -141,13 +166,15 @@ async function handleHideToggle(interaction) {
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const wait = takeCooldown(interaction.channelId, ui.IDS.hide);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
+  if (wait) return slowDown(interaction, wait);
 
+  await interaction.deferUpdate();
   const { channel } = interaction;
   const everyone = channel.guild.roles.everyone;
   const hidden = channel.permissionOverwrites.cache.get(everyone.id)?.deny.has('ViewChannel') ?? false;
-  await channel.permissionOverwrites.edit(everyone, { ViewChannel: hidden ? null : false });
-  return interaction.update({ components: [ui.controlPanel(room, channel)] });
+  const changed = await channel.permissionOverwrites.edit(everyone, { ViewChannel: hidden ? null : false }).then(() => true, logFailure('Görünürlük değiştirilemedi'));
+  if (!changed) return replyError(interaction, 'Oda görünürlüğü değiştirilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
+  return redraw(interaction, room, { hidden: !hidden });
 }
 
 async function handleLimitButton(interaction) {
@@ -160,17 +187,17 @@ async function handleLimitSubmit(interaction) {
   const room = store.getRoom(interaction.channelId);
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
+
+  const raw = interaction.fields.getTextInputValue(ui.IDS.limitInput).trim();
+  const limit = /^\d{1,2}$/.test(raw) ? Number(raw) : -1;
+  if (limit < 0) return replyError(interaction, 'Geçerli bir sayı gir.', '0-99 arası olmalı, 0 sınırsız demektir.');
   const wait = takeCooldown(interaction.channelId, ui.IDS.limit);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
+  if (wait) return slowDown(interaction, wait);
 
-  const limit = Number(interaction.fields.getTextInputValue(ui.IDS.limitInput).trim());
-  if (!Number.isInteger(limit) || limit < 0 || limit > 99) {
-    return replyError(interaction, 'Geçerli bir sayı gir.', '0-99 arası olmalı, 0 sınırsız demektir.');
-  }
-
-  await interaction.channel.setUserLimit(limit).catch(() => {});
-  if (interaction.isFromMessage()) return interaction.update({ components: [ui.controlPanel(room, interaction.channel)] });
-  return respond(interaction, core.alert('Kişi limiti güncellendi.', null, 'success'));
+  await acknowledge(interaction);
+  const changed = await interaction.channel.setUserLimit(limit).then(() => true, logFailure('Kişi limiti değiştirilemedi'));
+  if (!changed) return replyError(interaction, 'Kişi limiti değiştirilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
+  return finishEdit(interaction, room, 'Kişi limiti güncellendi.');
 }
 
 async function handleRenameButton(interaction) {
@@ -183,13 +210,26 @@ async function handleRenameSubmit(interaction) {
   const room = store.getRoom(interaction.channelId);
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
-  const wait = takeCooldown(interaction.channelId, ui.IDS.rename);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
 
   const name = interaction.fields.getTextInputValue(ui.IDS.renameInput).trim();
-  await interaction.channel.setName(name).catch(() => {});
-  if (interaction.isFromMessage()) return interaction.update({ components: [ui.controlPanel(room, interaction.channel)] });
-  return respond(interaction, core.alert('Oda ismi güncellendi.', null, 'success'));
+  if (!name) return replyError(interaction, 'Oda ismi boş olamaz.', 'Bir isim yazıp tekrar dene.');
+  const wait = takeCooldown(interaction.channelId, ui.IDS.rename);
+  if (wait) return slowDown(interaction, wait);
+
+  await acknowledge(interaction);
+  // Discord kanal adını 10 dakikada en fazla 2 kez değiştirmeye izin verir; sınıra takılan istek uzun süre bekleyebilir
+  const result = await Promise.race([
+    interaction.channel.setName(name).then(() => 'ok', (error) => {
+      console.error('[ozel-oda] Oda ismi değiştirilemedi:', error.message);
+      return 'fail';
+    }),
+    new Promise((resolve) => setTimeout(() => resolve('slow'), 8000).unref()),
+  ]);
+  if (result === 'fail') return replyError(interaction, 'Oda ismi değiştirilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
+  if (result === 'slow') {
+    return respond(interaction, core.alert('Oda ismi sıraya alındı.', 'Discord kanal adını 10 dakikada en fazla 2 kez değiştirmeye izin verir; isim sıra gelince kendiliğinden güncellenir.', 'warning'));
+  }
+  return finishEdit(interaction, room, 'Oda ismi güncellendi.');
 }
 
 async function handleKick(interaction) {
@@ -197,14 +237,15 @@ async function handleKick(interaction) {
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const targetId = interaction.values[0];
-  if (targetId === ui.NONE) return replyError(interaction, 'Odada atılacak kimse yok.');
+  if (targetId === room.ownerId) return replyError(interaction, 'Kendini odadan atamazsın.', 'Odadan ayrılmak için kanaldan çıkman yeterli.');
   const wait = takeCooldown(interaction.channelId, ui.IDS.kick);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
+  if (wait) return slowDown(interaction, wait);
 
+  await interaction.deferUpdate();
   const member = await interaction.guild.members.fetch(targetId).catch(() => null);
-  if (member?.voice.channelId === interaction.channelId) await member.voice.disconnect().catch(() => {});
-
-  return interaction.update({ components: [ui.controlPanel(room, interaction.channel)] });
+  if (member?.voice.channelId !== interaction.channelId) return replyError(interaction, 'Bu üye şu an odada değil.', 'Odada bulunan birini seç.');
+  await member.voice.disconnect().catch(logFailure('Üye odadan atılamadı'));
+  return redraw(interaction, room);
 }
 
 async function handleBan(interaction) {
@@ -212,15 +253,16 @@ async function handleBan(interaction) {
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const targetId = interaction.values[0];
-  if (targetId === ui.NONE) return replyError(interaction, 'Odada yasaklanacak kimse yok.');
+  if (targetId === room.ownerId) return replyError(interaction, 'Kendini odadan yasaklayamazsın.', 'Odadan ayrılmak için kanaldan çıkman yeterli.');
   const wait = takeCooldown(interaction.channelId, ui.IDS.ban);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
+  if (wait) return slowDown(interaction, wait);
 
+  await interaction.deferUpdate();
+  const banned = await interaction.channel.permissionOverwrites.edit(targetId, { Connect: false }).then(() => true, logFailure('Üye yasaklanamadı'));
+  if (!banned) return replyError(interaction, 'Üye yasaklanamadı.', 'Botun bu kanalı yönetme izni olmalı.');
   const member = await interaction.guild.members.fetch(targetId).catch(() => null);
-  if (member?.voice.channelId === interaction.channelId) await member.voice.disconnect().catch(() => {});
-  await interaction.channel.permissionOverwrites.edit(targetId, { Connect: false }).catch(() => {});
-
-  return interaction.update({ components: [ui.controlPanel(room, interaction.channel)] });
+  if (member?.voice.channelId === interaction.channelId) await member.voice.disconnect().catch(logFailure('Üye odadan atılamadı'));
+  return redraw(interaction, room);
 }
 
 async function handleTransfer(interaction) {
@@ -228,17 +270,21 @@ async function handleTransfer(interaction) {
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const targetId = interaction.values[0];
-  if (targetId === ui.NONE) return replyError(interaction, 'Odada devredilecek kimse yok.');
+  if (targetId === room.ownerId) return replyError(interaction, 'Oda zaten senin.', 'Devretmek için odadaki başka bir üyeyi seç.');
   const wait = takeCooldown(interaction.channelId, ui.IDS.transfer);
-  if (wait) return replyError(interaction, `Çok hızlısın, ${wait} saniye sonra tekrar dene.`);
+  if (wait) return slowDown(interaction, wait);
 
+  await interaction.deferUpdate();
   const member = await interaction.guild.members.fetch(targetId).catch(() => null);
-  if (member?.voice.channelId !== interaction.channelId) {
-    return replyError(interaction, 'Sahipliği sadece odanda bulunan birine devredebilirsin.');
+  if (member?.voice.channelId !== interaction.channelId || member.user.bot) {
+    return replyError(interaction, 'Sahipliği sadece odanda bulunan bir üyeye devredebilirsin.', 'Odada bulunan bir üye seç.');
   }
 
   const updated = store.updateRoom(interaction.channelId, { ownerId: targetId });
-  return interaction.update({ components: [ui.controlPanel(updated, interaction.channel)] });
+  // Giriş ve görme izni yeni sahibe geçer, eski sahibin ayrı izni kalkar
+  await interaction.channel.permissionOverwrites.delete(room.ownerId).catch(logFailure('Eski sahibin izni kaldırılamadı'));
+  await interaction.channel.permissionOverwrites.edit(targetId, { ViewChannel: true, Connect: true }).catch(logFailure('Yeni sahibe izin verilemedi'));
+  return redraw(interaction, updated);
 }
 
 function sendGuide(client) {
@@ -276,6 +322,9 @@ module.exports = {
       await sendGuide(client);
     },
     [Events.VoiceStateUpdate]: handleVoiceUpdate,
-    [Events.ChannelDelete]: (channel) => store.deleteRoom(channel.id),
+    [Events.ChannelDelete]: (channel) => {
+      store.deleteRoom(channel.id);
+      clearCooldowns(channel.id);
+    },
   },
 };

@@ -17,7 +17,7 @@ function join(client) {
 
   const channel = guild.channels.cache.get(config.channelId);
   if (!channel?.isVoiceBased()) return console.error(`[ses] Ses kanalı bulunamadı (${config.channelId}).`);
-  if (!channel.permissionsFor(guild.members.me).has(['ViewChannel', 'Connect'])) {
+  if (!channel.permissionsFor(guild.members.me)?.has(['ViewChannel', 'Connect'])) {
     return console.error(`[ses] Botun #${channel.name} kanalına bağlanma yetkisi yok.`);
   }
 

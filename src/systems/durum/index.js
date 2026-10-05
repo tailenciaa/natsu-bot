@@ -22,7 +22,8 @@ async function onlineCount(client) {
 }
 
 function voiceCount(guild) {
-  return guild.voiceStates.cache.filter((state) => state.channelId && !state.member?.user.bot).size;
+  // AFK kanalındakiler seviye ve sıralama sistemlerindeki gibi sayılmaz
+  return guild.voiceStates.cache.filter((state) => state.channelId && state.channelId !== guild.afkChannelId && !state.member?.user.bot).size;
 }
 
 async function detail(client, guild) {

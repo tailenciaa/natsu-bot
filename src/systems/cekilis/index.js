@@ -14,7 +14,8 @@ const store = require('./store');
 const ui = require('./ui');
 
 const ending = new Set(); // aynı anda iki kez sonuçlanmasın
-const UNITS = { dk: 1, sa: 60, g: 60 * 24, hf: 60 * 24 * 7 };
+const UNITS = { dk: 1, dakika: 1, sa: 60, saat: 60, g: 60 * 24, gun: 60 * 24, gün: 60 * 24, hf: 60 * 24 * 7, hafta: 60 * 24 * 7 };
+const DURATION_HINT = 'Şöyle yaz: 30 dakika, 2 saat, 1 gün ya da 1 hafta (en az 1 dakika, en fazla 30 gün).';
 
 const commands = [
   new SlashCommandBuilder()
@@ -27,43 +28,44 @@ const commands = [
         .setName('baslat')
         .setDescription('Yeni bir çekiliş başlatır; ödül, süre ve kazanan sayısı açılan formda girilir.')
         .addChannelOption((o) =>
-          o.setName('kanal').setDescription('Çekilişin gönderileceği kanal').addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
+          o.setName('kanal').setDescription('Çekilişin gönderileceği kanalı seçer.').addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
         )
-        .addRoleOption((o) => o.setName('rol').setDescription('Katılmak için gereken rol (isteğe bağlı)')),
+        .addRoleOption((o) => o.setName('rol').setDescription('Katılmak için gereken rolü seçer, boş bırakırsan herkes katılır.')),
     )
     .addSubcommand((s) =>
       s
         .setName('bitir')
         .setDescription('Açık bir çekilişi süresini beklemeden hemen sonuçlandırır.')
-        .addIntegerOption((o) => o.setName('no').setDescription('Çekiliş numarası').setMinValue(1).setRequired(true)),
+        .addIntegerOption((o) => o.setName('no').setDescription('Çekiliş numarasını girer.').setMinValue(1).setRequired(true)),
     )
     .addSubcommand((s) =>
       s
         .setName('yeniden-cek')
         .setDescription('Biten bir çekilişte yeniden kazanan seçer.')
-        .addIntegerOption((o) => o.setName('no').setDescription('Çekiliş numarası').setMinValue(1).setRequired(true))
-        .addIntegerOption((o) => o.setName('kazanan').setDescription('Yeni seçilecek kazanan sayısı (varsayılan 1)').setMinValue(1).setMaxValue(20)),
+        .addIntegerOption((o) => o.setName('no').setDescription('Çekiliş numarasını girer.').setMinValue(1).setRequired(true))
+        .addIntegerOption((o) => o.setName('kazanan').setDescription('Yeni seçilecek kazanan sayısını girer, boş bırakırsan 1 seçilir.').setMinValue(1).setMaxValue(20)),
     )
     .addSubcommand((s) =>
       s
         .setName('iptal')
         .setDescription('Açık bir çekilişi kazanan seçmeden iptal eder.')
-        .addIntegerOption((o) => o.setName('no').setDescription('Çekiliş numarası').setMinValue(1).setRequired(true)),
+        .addIntegerOption((o) => o.setName('no').setDescription('Çekiliş numarasını girer.').setMinValue(1).setRequired(true)),
     )
-    .addSubcommand((s) => s.setName('liste').setDescription('Açık çekilişleri listeler.')),
+    .addSubcommand((s) => s.setName('liste').setDescription('Açık ve yeni biten çekilişleri listeler.')),
 ];
 
-// "30dk", "2sa", "1g", "1hf" -> dakika; geçersizse null
+// "30 dakika", "2 saat", "1 gün", "1 hafta" (ya da kısaca 30dk, 2sa, 1g, 1hf) -> dakika; geçersizse null
 function parseMinutes(input) {
-  const match = /^(\d{1,4})\s*(dk|sa|g|hf)$/i.exec(input.trim());
-  return match ? Number(match[1]) * UNITS[match[2].toLowerCase()] : null;
+  const match = /^(\d{1,4})\s*(dakika|dk|saat|sa|gün|gun|g|hafta|hf)$/i.exec(input.trim());
+  const unit = match ? UNITS[match[2].toLowerCase()] : null;
+  return unit ? Number(match[1]) * unit : null;
 }
 
 // ── Mesajı güncelleme ───────────────────────────────────────────────────────────
 
 async function fetchPanel(client, g) {
   const channel = await fetchTextChannel(client.guilds.cache.get(guildId), g.channelId);
-  const message = channel ? await channel.messages.fetch(g.messageId).catch(() => null) : null;
+  const message = channel && g.messageId ? await channel.messages.fetch(g.messageId).catch(() => null) : null;
   return { channel, message };
 }
 
@@ -126,6 +128,12 @@ async function finish(client, g) {
 
 async function sweep(client) {
   for (const g of store.active()) {
+    // Çekiliş kaydı açılıp mesajı hiç gönderilemediyse (süreç aradan çöktü) kayıt iptal edilir
+    if (!g.messageId) {
+      g.status = 'cancelled';
+      store.save();
+      continue;
+    }
     if (g.endsAt > Date.now()) continue;
     await finish(client, g).catch((err) => console.error(`[cekilis] #${g.no} sonuçlandırılamadı:`, err.message));
   }
@@ -133,13 +141,16 @@ async function sweep(client) {
 
 // ── Komutlar ────────────────────────────────────────────────────────────────────
 
+const maxActiveError = (interaction) =>
+  replyError(interaction, `En fazla ${config.maxActive} çekiliş aynı anda açık olabilir.`, 'Yeni çekiliş açmak için birini bitir ya da iptal et.');
+
 // /cekilis baslat: kanal ve rol kontrol edilip bilgilerin girileceği form açılır
 async function start(interaction) {
-  if (store.active().length >= config.maxActive) return replyError(interaction, `En fazla ${config.maxActive} çekiliş aynı anda açık olabilir.`);
+  if (store.active().length >= config.maxActive) return maxActiveError(interaction);
   const target = interaction.options.getChannel('kanal') ?? (config.channel ? await fetchTextChannel(interaction.guild, config.channel) : null);
   if (!target) return replyError(interaction, 'Çekiliş kanalı seçilmedi.', 'Komutta "kanal" seçeneğiyle çekilişin gönderileceği kanalı seç.');
   if (!target.permissionsFor(interaction.guild.members.me)?.has(['ViewChannel', 'SendMessages'])) {
-    return replyError(interaction, 'Botun bu kanala mesaj gönderme yetkisi yok.');
+    return replyError(interaction, 'Botun bu kanala mesaj gönderme yetkisi yok.', 'Botun kanalı görme ve mesaj gönderme izni olmalı, ya da komutta başka bir kanal seç.');
   }
   return interaction.showModal(ui.createModal(target.id, interaction.options.getRole('rol')?.id));
 }
@@ -154,14 +165,12 @@ async function create(interaction) {
   const prize = field('odul');
   const winnerCount = Number(field('kazanan'));
   const minutes = parseMinutes(field('sure'));
-  if (!prize) return replyError(interaction, 'Ödül boş olamaz.');
-  if (!Number.isInteger(winnerCount) || winnerCount < 1 || winnerCount > 20) return replyError(interaction, 'Kazanan sayısı 1 ile 20 arasında olmalı.');
-  if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) {
-    return replyError(interaction, 'Süre anlaşılamadı.', 'Şöyle yaz: 30dk, 2sa, 1g ya da 1hf (en az 1 dakika, en fazla 30 gün).');
-  }
-  if (store.active().length >= config.maxActive) return replyError(interaction, `En fazla ${config.maxActive} çekiliş aynı anda açık olabilir.`);
+  if (!prize) return replyError(interaction, 'Ödül boş olamaz.', 'Ödül alanına bir ad yaz.');
+  if (!Number.isInteger(winnerCount) || winnerCount < 1 || winnerCount > 20) return replyError(interaction, 'Kazanan sayısı 1 ile 20 arasında olmalı.', 'Kazanan sayısına tam sayı yaz.');
+  if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) return replyError(interaction, 'Süre anlaşılamadı.', DURATION_HINT);
+  if (store.active().length >= config.maxActive) return maxActiveError(interaction);
   const target = await fetchTextChannel(interaction.guild, channelId);
-  if (!target) return replyError(interaction, 'Çekiliş kanalı bulunamadı.');
+  if (!target) return replyError(interaction, 'Çekiliş kanalı bulunamadı.', 'Komutu tekrar çalıştırıp başka bir kanal seçebilirsin.');
 
   await interaction.deferReply({ flags: core.EPHEMERAL });
   const g = store.create({
@@ -175,10 +184,22 @@ async function create(interaction) {
     roleId,
   });
 
-  const message = await target.send({ components: [ui.panel(g)], flags: core.CV2, allowedMentions: { parse: [] } }).catch((err) => {
-    console.error('[cekilis] Çekiliş mesajı gönderilemedi:', err.message);
-    return null;
-  });
+  // Duyuru etiketi çekiliş mesajının üst satırı olarak gider (aynı mesaj, tek bildirim); sonraki güncellemelerde satır kalkar.
+  // Test modunda (ping.enabled false) hiç etiket atılmaz.
+  const { ping } = config;
+  const pingParts = ping.enabled ? [ping.roleId && `<@&${ping.roleId}>`, ping.everyone && '@everyone', ping.here && '@here'].filter(Boolean) : [];
+  const message = await target
+    .send({
+      components: [...(pingParts.length ? [core.text(pingParts.join(' '))] : []), ui.panel(g)],
+      flags: core.CV2,
+      allowedMentions: pingParts.length
+        ? { parse: ping.everyone || ping.here ? ['everyone'] : [], roles: ping.roleId ? [ping.roleId] : [] }
+        : { parse: [] },
+    })
+    .catch((err) => {
+      console.error('[cekilis] Çekiliş mesajı gönderilemedi:', err.message);
+      return null;
+    });
   if (!message) {
     g.status = 'cancelled';
     store.save();
@@ -186,18 +207,6 @@ async function create(interaction) {
   }
   g.messageId = message.id;
   store.save();
-
-  // Duyuru etiketi ayrı bir mesajdır (bileşenli mesajlara metin eklenemez); test modunda atılmaz
-  const { ping } = config;
-  let pinged = false;
-  if (ping.enabled) {
-    const parts = [ping.roleId && `<@&${ping.roleId}>`, ping.everyone && '@everyone', ping.here && '@here'].filter(Boolean);
-    pinged = Boolean(
-      await target
-        .send({ content: parts.join(' '), allowedMentions: { parse: ping.everyone || ping.here ? ['everyone'] : [], roles: ping.roleId ? [ping.roleId] : [] } })
-        .catch(() => null),
-    );
-  }
 
   logSystem
     .write(interaction.client, 'bot', {
@@ -211,31 +220,31 @@ async function create(interaction) {
     interaction,
     core.alert(
       `Çekiliş #${g.no} başlatıldı.`,
-      `${target.toString()} kanalına gönderildi, bitiş <t:${core.unix(g.endsAt)}:R>. ${pinged ? 'Etiket mesajı atıldı.' : 'Etiket mesajı kapalı, kimse etiketlenmedi.'}`,
+      `${target.toString()} kanalına gönderildi, bitiş <t:${core.unix(g.endsAt)}:R>. ${pingParts.length ? 'Duyuru etiketi atıldı.' : 'Duyuru etiketi kapalı, kimse etiketlenmedi.'}`,
       'success',
     ),
   );
 }
 
-function getGiveaway(interaction) {
+async function getGiveaway(interaction) {
   const g = store.get(interaction.options.getInteger('no', true));
-  if (!g) replyError(interaction, 'Bu numarada bir çekiliş bulunamadı.', 'Açık çekilişleri /cekilis liste ile görebilirsin.');
+  if (!g) await replyError(interaction, 'Bu numarada bir çekiliş bulunamadı.', 'Açık ve yeni biten çekilişleri /cekilis liste ile görebilirsin.');
   return g;
 }
 
 async function end(interaction) {
-  const g = getGiveaway(interaction);
+  const g = await getGiveaway(interaction);
   if (!g) return;
-  if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.');
+  if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.', 'Sonuçlanmış çekilişte /cekilis yeniden-cek ile yeni kazanan seçebilirsin.');
   await interaction.deferReply({ flags: core.EPHEMERAL });
-  await finish(interaction.client, g);
-  return respond(interaction, core.alert(`Çekiliş #${g.no} sonuçlandırıldı.`, g.winners.length ? 'Kazananlar çekiliş kanalında duyuruldu.' : 'Katılan olmadığı için kazanan seçilemedi.', 'success'));
+  if (!(await finish(interaction.client, g))) return respond(interaction, core.alert('Çekiliş zaten sonuçlanıyor.', 'Birkaç saniye sonra çekiliş mesajına bakabilirsin.', 'warning'));
+  return respond(interaction, core.alert(`Çekiliş #${g.no} sonuçlandırıldı.`, g.winners.length ? 'Kazananlar çekiliş kanalında duyuruldu.' : ui.noWinnerReason(g), 'success'));
 }
 
 async function reroll(interaction) {
-  const g = getGiveaway(interaction);
+  const g = await getGiveaway(interaction);
   if (!g) return;
-  if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.');
+  if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.', 'Açık bir çekilişi önce /cekilis bitir ile sonuçlandır.');
   await interaction.deferReply({ flags: core.EPHEMERAL });
   const ids = await pickWinners(interaction.guild, g, interaction.options.getInteger('kazanan') ?? 1);
   if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'));
@@ -248,24 +257,34 @@ async function reroll(interaction) {
 
 async function cancelGiveaway(client, g) {
   g.status = 'cancelled';
+  g.endsAt = Math.min(g.endsAt, Date.now()); // kayıt temizliği bitiş tarihine göre yapılır
   store.save();
   await refreshPanel(client, g);
 }
 
 async function cancel(interaction) {
-  const g = getGiveaway(interaction);
+  const g = await getGiveaway(interaction);
   if (!g) return;
-  if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.');
+  if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.', 'Biten bir çekilişte /cekilis yeniden-cek ile yeni kazanan seçebilirsin.');
   await cancelGiveaway(interaction.client, g);
   return respond(interaction, core.alert(`Çekiliş #${g.no} iptal edildi.`, undefined, 'success'));
 }
 
 async function list(interaction) {
-  const active = store.active();
-  const body = active.length
-    ? active.map((g) => `**#${g.no} ${g.prize}:** <#${g.channelId}>, bitiş <t:${core.unix(g.endsAt)}:R>, ${g.participants.length} katılımcı`).join('\n')
-    : 'Şu an açık çekiliş yok.';
-  return respond(interaction, core.notice(`## Açık Çekilişler\n${body}`));
+  const url = (g) => core.messageUrl(guildId, g.channelId, g.messageId);
+  const active = store.active().map((g) => `**#${g.no} ${g.prize}**\n**Kanal:** <#${g.channelId}>\n**Bitiş:** <t:${core.unix(g.endsAt)}:R>\n**Katılımcı:** ${g.participants.length}\n[Çekilişe git](${url(g)})`);
+  const ended = store.recentEnded().map((g) => `**#${g.no} ${g.prize}:** ${g.winners.length ? g.winners.map((id) => `<@${id}>`).join(', ') : 'kazanan yok'}`);
+  return respond(
+    interaction,
+    core.page({
+      title: 'Çekilişler',
+      sub: 'Şu an açık olan çekilişleri ve yeni bitenleri görüyorsun; bitenlerde /cekilis yeniden-cek komutuyla numarasını yazarak yeni kazanan seçebilirsin.',
+      blocks: [
+        ...(active.length ? active : ['**Şu an açık çekiliş yok.**']),
+        ended.length ? `**Son Biten Çekilişler**\n${ended.join('\n')}` : null,
+      ],
+    }),
+  );
 }
 
 async function handleCommand(interaction) {
@@ -307,18 +326,18 @@ async function handleLeave(interaction) {
 
 // ── Çekiliş mesajındaki yönetim butonları (sadece yöneticiler) ───────────────────
 
-function adminGiveaway(interaction) {
+async function adminGiveaway(interaction) {
   if (!isStaff(interaction)) {
-    replyError(interaction, 'Bu butonu sadece yöneticiler kullanabilir.');
+    await replyError(interaction, 'Bu butonu sadece yöneticiler kullanabilir.');
     return null;
   }
   const g = store.byMessage(interaction.message.id);
-  if (!g) replyError(interaction, 'Bu çekilişin kaydı bulunamadı.');
+  if (!g) await replyError(interaction, 'Bu çekilişin kaydı bulunamadı.', 'Kayıtlar bitiş tarihinden 30 gün sonra silinir.');
   return g;
 }
 
 async function handleEditButton(interaction) {
-  const g = adminGiveaway(interaction);
+  const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler düzenlenebilir.');
   return interaction.showModal(ui.editModal(g));
@@ -333,14 +352,12 @@ async function handleEditSubmit(interaction) {
   const description = interaction.fields.getTextInputValue('aciklama').trim();
   const winnerCount = Number(interaction.fields.getTextInputValue('kazanan').trim());
   const duration = interaction.fields.getTextInputValue('sure').trim();
-  if (!prize) return replyError(interaction, 'Ödül boş olamaz.');
-  if (!Number.isInteger(winnerCount) || winnerCount < 1 || winnerCount > 20) return replyError(interaction, 'Kazanan sayısı 1 ile 20 arasında olmalı.');
+  if (!prize) return replyError(interaction, 'Ödül boş olamaz.', 'Ödül alanına bir ad yaz.');
+  if (!Number.isInteger(winnerCount) || winnerCount < 1 || winnerCount > 20) return replyError(interaction, 'Kazanan sayısı 1 ile 20 arasında olmalı.', 'Kazanan sayısına tam sayı yaz.');
   let endsAt = g.endsAt;
   if (duration) {
     const minutes = parseMinutes(duration);
-    if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) {
-      return replyError(interaction, 'Süre anlaşılamadı.', 'Şöyle yaz: 30dk, 2sa, 1g ya da 1hf (en az 1 dakika, en fazla 30 gün).');
-    }
+    if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) return replyError(interaction, 'Süre anlaşılamadı.', DURATION_HINT);
     endsAt = Date.now() + minutes * 60 * 1000;
   }
 
@@ -353,14 +370,14 @@ async function handleEditSubmit(interaction) {
 }
 
 async function handleEndButton(interaction) {
-  const g = adminGiveaway(interaction);
+  const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.');
   return interaction.reply({ components: [ui.confirm('bitir', g)], flags: core.EPHEMERAL_CV2 });
 }
 
 async function handleCancelButton(interaction) {
-  const g = adminGiveaway(interaction);
+  const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.');
   return interaction.reply({ components: [ui.confirm('iptal', g)], flags: core.EPHEMERAL_CV2 });
@@ -371,14 +388,18 @@ async function handleConfirm(interaction) {
   const [, action, no] = interaction.customId.split(':');
   const g = store.get(Number(no));
   if (!g || g.status !== 'active') return interaction.update({ components: [core.alert('Bu çekiliş artık açık değil.', undefined, 'danger')] });
+  if (action !== 'bitir' && action !== 'iptal') return interaction.deferUpdate();
   await interaction.deferUpdate();
-  if (action === 'bitir') await finish(interaction.client, g);
-  else await cancelGiveaway(interaction.client, g);
+  if (action === 'bitir') {
+    if (!(await finish(interaction.client, g))) return interaction.editReply({ components: [core.alert('Çekiliş zaten sonuçlanıyor.', 'Birkaç saniye sonra çekiliş mesajına bakabilirsin.', 'warning')] });
+  } else {
+    await cancelGiveaway(interaction.client, g);
+  }
   return interaction.editReply({ components: [core.alert(action === 'bitir' ? `Çekiliş #${g.no} sonuçlandırıldı.` : `Çekiliş #${g.no} iptal edildi.`, undefined, 'success')] });
 }
 
 async function handleRerollButton(interaction) {
-  const g = adminGiveaway(interaction);
+  const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.');
   await interaction.deferReply({ flags: core.EPHEMERAL });
