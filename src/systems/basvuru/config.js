@@ -36,7 +36,8 @@ module.exports = {
     // Yetkili Alım DM: başvuruları inceler, yeni başvurularda etiketlenir
     reviewer: '1553398951816863844',
     // Oryantasyonu tamamlayan kişiye seviye ve alan rollerinin yanında verilecek ortak yetkili rolü. null: verilmez
-    accept: null,
+    // Yetkili Ekibi
+    accept: '1555890043992940614',
   },
 
   panel: {

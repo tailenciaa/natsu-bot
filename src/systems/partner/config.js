@@ -22,12 +22,15 @@ module.exports = {
     // ekleyip çıkarabilen rol
     staff: '1554237785416794202',
     // Güvenilir listeden çıkarma ve kullanıcı yasaklama gibi ağır kararları verebilen üst rol
-    lead: 'BURAYA_PARTNER_LIDERI_ROL_IDSI',
+    lead: '1554239996058411068',
   },
 
   // Partner talebini tetikleyen kelimeler (mesaj küçük harfe çevrilip tam kelime olarak aranır)
   triggerWords: ['partner', 'dm'],
 
   // Teklifte bulunma (yenileme) onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin
-  ourAdText: 'BURAYA_SUNUCUMUZU_TANITAN_METNI_YAZ',
+  ourAdText: '**Kazuki Anime & Public**\n' +
+    'Anime sohbetinden oyun odalarına, etkinliklerden çekilişlere kadar her şeyin olduğu Türkçe bir topluluk sunucusuyuz.\n' +
+    'Toksiklikten uzak, güvenli ve samimi bir ortam; aktif yetkili ekibi ve destek sistemi; seviye sistemi, özel odalar ve sürekli etkinlikler.\n' +
+    'Davet: https://discord.gg/kazuki',
 };

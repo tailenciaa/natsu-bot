@@ -90,17 +90,29 @@ function noticeRow(app) {
   return row.addComponents(manageButtons(app));
 }
 
+// Adım türüne göre kısa "ne yapılacak" notu: kimin neye basacağı açıkça yazılır
+function stepHint(step, app) {
+  const staff = `<@${app.orientation.staffId}>`;
+  if (step.type === 'areas') return `-# Başvuran ya da ${staff} menüden en az bir alan seçer, sonra **Devam** ile ilerlenir.`;
+  if (step.type === 'final') return `-# ${staff} seviyeyi kontrol edip **Yetki Ver**'e basınca roller otomatik verilir ve oryantasyon biter.`;
+  return `-# ${staff} konuyu anlatır, bitince **${step.nextLabel ?? 'Anlatıldı, Devam'}**'e basar.${step.skippable ? ' Başvuran konuyu biliyorsa **Biliyor, Atla** kullanılır.' : ''}`;
+}
+
 function stepBody(step, app) {
   const body = fill(step.body, app);
   const o = app.orientation;
 
-  if (step.type === 'areas') return `${body}\n**Seçilen Alanlar:** ${areaLabels(app) || 'Henüz seçilmedi'}`;
+  if (step.type === 'areas') return `${body}\n**Seçilen Alanlar:** ${areaLabels(app) || 'Henüz seçilmedi'}\n${stepHint(step, app)}`;
   if (step.type === 'areaInfo') {
     const areas = areasOf(app);
-    return `${body}\n${areas.length ? areas.map((a) => `**${a.label}**\n${a.info}`).join('\n') : 'Henüz alan seçilmedi.'}`;
+    return `${body}\n${areas.length ? areas.map((a) => `**${a.label}**\n${a.info}`).join('\n') : 'Henüz alan seçilmedi.'}\n${stepHint(step, app)}`;
   }
-  if (step.type === 'final') return `${body}\n${summaryLines(app, Date.now()).join('\n')}`;
-  return body;
+  if (step.type === 'final') {
+    const { roleIds } = plannedRoles(app);
+    const roles = roleIds.length ? roleIds.map((id) => `<@&${id}>`).join(' ') : 'Rol tanımlı değil';
+    return `${body}\n${summaryLines(app, Date.now()).join('\n')}\n**Verilecek Roller:** ${roles}\n${stepHint(step, app)}`;
+  }
+  return `${body}\n${stepHint(step, app)}`;
 }
 
 // Son adımda ve tamamlanınca görünen oryantasyon özeti
@@ -171,7 +183,7 @@ function panel(app, applicantUser) {
   const step = steps[o.step];
   const presence = presenceText(app);
   const blocks = [
-    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için oryantasyon veriyor.\n-# Adım ${o.step + 1}/${steps.length}\n${progress(o.step, steps.length)}`,
+    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için oryantasyon veriyor.\n**Adım:** ${o.step + 1}/${steps.length} - ${step.title}\n${progress(o.step, steps.length)}${steps[o.step + 1] ? `\n**Sıradaki:** ${steps[o.step + 1].title}` : ''}`,
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
   blocks.push(`**${step.title}**\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);

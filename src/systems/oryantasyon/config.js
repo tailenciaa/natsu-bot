@@ -46,7 +46,7 @@ module.exports = {
       id: 'sohbet',
       label: 'Sohbet Moderasyonu',
       description: 'Yazılı kanalları takip eder, kural ihlallerine müdahale eder.',
-      roleId: null,
+      roleId: '1554239997559705720',
       info:
         'Sohbet kanallarını düzenli takip et; spam, küfür, reklam ve rahatsız edici içeriği sil.\n' +
         'Hafif ihlalde önce uyar, tekrar ederse zaman aşımı uygula.\n' +
@@ -57,7 +57,7 @@ module.exports = {
       id: 'ses',
       label: 'Ses Moderasyonu',
       description: 'Ses kanallarını gezer, sesli sohbetteki düzeni sağlar.',
-      roleId: null,
+      roleId: '1554239999619375274',
       info:
         'Ses kanallarını ara ara gez; mikrofon spamı, bağırma ve ses efekti kötüye kullanımını takip et.\n' +
         'Rahatsızlık veren üyeyi önce uyar, devam ederse sustur ya da kanaldan çıkar.\n' +
@@ -68,7 +68,7 @@ module.exports = {
       id: 'kayit',
       label: 'Karşılama',
       description: 'Yeni gelen üyeleri karşılar, sunucuya ısınmalarını sağlar.',
-      roleId: null,
+      roleId: '1555890045599223868',
       info:
         'Sunucuya yeni katılanları sıcak bir dille karşıla, kanalları ve kuralları kısaca tanıt.\n' +
         'Sahte ya da yeni açılmış şüpheli hesapları üst yetkiliye bildir.\n' +
@@ -78,12 +78,23 @@ module.exports = {
       id: 'etkinlik',
       label: 'Etkinlik',
       description: 'Anime izleme partileri, oyun geceleri ve çekilişler düzenler.',
-      roleId: null,
+      roleId: '1554240000529539083',
       info:
         'Anime izleme partileri, oyun geceleri, quizler ve çekilişler planla.\n' +
         'Etkinliği önceden duyur, saatini ve kurallarını net yaz.\n' +
         'Etkinlik sırasında düzeni sağla, sonunda katılımcılara teşekkür et.\n' +
         'Ödüllü etkinliklerde kazananı adil ve şeffaf şekilde belirle.',
+    },
+    {
+      id: 'partner',
+      label: 'Partner',
+      description: 'Partner sunucularla iletişim kurar, ortaklıkları yürütür.',
+      roleId: '1554237785416794202',
+      info:
+        'Partner taleplerini partner kanalından ve botun oto partner sisteminden takip et.\n' +
+        'Gelen teklifleri onaylamadan önce karşı sunucunun düzenini, üye sayısını ve içeriğini kontrol et.\n' +
+        'Güvenilir partner listesini güncel tut; sorun çıkaran partnerleri üst yetkiliye bildir.\n' +
+        'Partner metinlerinde sunucumuzun kurallarına uymayan içerik varsa onaylama.',
     },
     {
       id: 'icerik',
@@ -204,7 +215,7 @@ module.exports = {
       type: 'final',
       body:
         '**Tüm konular tamamlandı, {aday} ekibe katılmaya hazır!**\n' +
-        '-# {yetkili}, aşağıdan başlayacağı yetkiyi seçip (gerekirse değiştirip) **Yetki Ver** ile oryantasyonu tamamlayabilirsin.',
+        'Başlayacağı yetkiyi ve verilecek rolleri aşağıdan kontrol edebilirsin.',
     },
   ],
 };
