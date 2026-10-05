@@ -29,6 +29,9 @@ const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
+// Oryantasyon verebilen roller: başvuruları inceleyen rol ve yetkili alım / oryantasyon liderleri ile oryantasyon yetkilileri
+const orienterRoles = (app) => [app.reviewerRoleId, ...basvuruConfig.roles.orientation].filter(Boolean);
+const mentionRoles = (ids) => ids.map((id) => `<@&${id}>`).join(', ');
 const isAdmin = (interaction) => Boolean(interaction.memberPermissions?.has(PermissionFlagsBits.Administrator));
 const fetchUser = (client, userId) => client.users.fetch(userId).catch(() => null);
 const followUp = (interaction, container) =>
@@ -474,10 +477,8 @@ async function handleTransfer(interaction, app) {
   else if (member.user.bot) error = 'Oryantasyon bir bota aktarılamaz.';
   else if (targetId === app.userId) error = 'Oryantasyon başvurana aktarılamaz.';
   else if (targetId === o.staffId) error = 'Oryantasyon zaten bu yetkilide.';
-  else if (!member.permissions.has(PermissionFlagsBits.Administrator) && !(app.reviewerRoleId && member.roles.cache.has(app.reviewerRoleId))) {
-    error = app.reviewerRoleId
-      ? `Oryantasyon sadece <@&${app.reviewerRoleId}> rolündekilere aktarılabilir.`
-      : 'Oryantasyon sadece yöneticilere aktarılabilir.';
+  else if (!member.permissions.has(PermissionFlagsBits.Administrator) && !orienterRoles(app).some((id) => member.roles.cache.has(id))) {
+    error = `Oryantasyon sadece ${mentionRoles(orienterRoles(app))} rolündekilere aktarılabilir.`;
   }
   if (error) return interaction.update({ components: [core.alert(error, null, 'danger')], allowedMentions: { parse: [] } });
 
@@ -504,11 +505,8 @@ async function handleTakeover(interaction, app) {
     return replyError(interaction, 'Bu oryantasyon şu an yetkili beklemiyor.');
   }
   if (interaction.user.id === app.userId) return replyError(interaction, 'Kendi oryantasyonunu devralamazsın.');
-  if (!isStaff(interaction, app.reviewerRoleId)) {
-    return replyError(
-      interaction,
-      app.reviewerRoleId ? `Oryantasyonu sadece <@&${app.reviewerRoleId}> rolündekiler devralabilir.` : 'Oryantasyonu sadece yöneticiler devralabilir.',
-    );
+  if (!isStaff(interaction, orienterRoles(app))) {
+    return replyError(interaction, `Oryantasyonu sadece ${mentionRoles(orienterRoles(app))} rolündekiler devralabilir.`);
   }
 
   const fromId = assignStaff(interaction.guild, app, interaction.user.id, interaction.user.id);

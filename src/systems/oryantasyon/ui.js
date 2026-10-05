@@ -596,7 +596,7 @@ function transferPicker(app) {
       'Oryantasyonu Aktar',
       'Oryantasyonu başka bir yetkiliye devretmek için aşağıdaki menüden birini seç; yeni yetkiliye DM ile haber verilir ve oryantasyon kalınan adımdan kesintisiz devam eder.',
       [
-        `**Yeni Yetkili**\nOryantasyonu kime aktarmak istiyorsun?\n-# Sadece ${app.reviewerRoleId ? `<@&${app.reviewerRoleId}> rolündekiler` : 'yöneticiler'} seçilebilir. ` +
+        `**Yeni Yetkili**\nOryantasyonu kime aktarmak istiyorsun?\n-# Sadece ${[app.reviewerRoleId, ...basvuruConfig.roles.orientation].filter(Boolean).map((id) => `<@&${id}>`).join(', ')} rolündekiler seçilebilir. ` +
           'Yeni yetkiliye DM ile haber verilir, oryantasyon kalınan adımdan devam eder.',
       ],
       'primary',

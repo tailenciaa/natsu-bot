@@ -38,6 +38,11 @@ module.exports = {
     // Oryantasyonu tamamlayan kişiye seviye ve alan rollerinin yanında verilecek ortak yetkili rolü. null: verilmez
     // Yetkili Ekibi
     accept: '1555890043992940614',
+    // Yetkili Alım DM'nin yanında başvuruları inceleyebilen roller: Yetkili Alım Lideri
+    reviewerExtra: ['1554240783580667954'],
+    // Yetkili Alım DM'nin yanında oryantasyon verebilen, oryantasyonu devralabilen ve kendilerine aktarılabilen roller:
+    // Yetkili Alım Lideri, Oryantasyon Lideri, Oryantasyon Yetkilisi
+    orientation: ['1554240783580667954', '1554240783769669663', '1554240783929049168'],
   },
 
   panel: {

@@ -62,9 +62,10 @@ function applyError(interaction) {
 // Karar butonlarını ve formlarını kullanma kontrolü; sorun yoksa null döner
 function reviewError(interaction, app) {
   if (!app) return 'Bu başvuru bulunamadı.';
-  if (!isStaff(interaction, app.reviewerRoleId)) {
-    return app.reviewerRoleId
-      ? `Başvuruları sadece <@&${app.reviewerRoleId}> rolündekiler inceleyebilir.`
+  const reviewerRoles = [app.reviewerRoleId, ...config.roles.reviewerExtra].filter(Boolean);
+  if (!isStaff(interaction, reviewerRoles)) {
+    return reviewerRoles.length
+      ? `Başvuruları sadece ${reviewerRoles.map((id) => `<@&${id}>`).join(', ')} rolündekiler inceleyebilir.`
       : 'Başvuruları sadece yöneticiler inceleyebilir.';
   }
   if (app.status !== 'pending') return 'Bu başvuru zaten sonuçlandırıldı.';
