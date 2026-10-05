@@ -96,16 +96,6 @@ module.exports = {
         'Güvenilir partner listesini güncel tut; sorun çıkaran partnerleri üst yetkiliye bildir.\n' +
         'Partner metinlerinde sunucumuzun kurallarına uymayan içerik varsa onaylama.',
     },
-    {
-      id: 'icerik',
-      label: 'İçerik & Tasarım',
-      description: 'Anime paylaşımları, duyurular ve sunucu görselleri hazırlar.',
-      roleId: null,
-      info:
-        'Anime haberleri, öneriler ve paylaşım kanallarını canlı tut.\n' +
-        'Duyuru ve etkinlik görsellerini sunucunun temasına uygun hazırla.\n' +
-        'Başkasına ait içeriği paylaşırken kaynak belirt; +18 ve spoiler kurallarına dikkat et.',
-    },
   ],
 
   steps: [
