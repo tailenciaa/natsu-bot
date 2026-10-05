@@ -20,7 +20,7 @@ function sendPanel(client) {
 }
 
 async function handleTake(interaction) {
-  if (interaction.member.roles.cache.has(config.role)) return replyError(interaction, 'Zaten yayın yetkin var.');
+  if (interaction.member.roles.cache.has(config.role)) return replyError(interaction, 'Zaten yayın yetkin var.', 'Bırakmak için **Yetkiyi Bırak** butonuna bas.');
 
   const added = await interaction.member.roles.add(config.role, 'Yayın yetkisi alındı').catch((err) => {
     console.error('[yayin] Rol verilemedi:', err.message);
@@ -28,11 +28,11 @@ async function handleTake(interaction) {
   });
   if (!added) return replyError(interaction, 'Rol verilemedi.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, core.alert('Yayın yetkin verildi!', 'Artık sesli kanallarda yayın açabilirsin.', 'success'));
+  return respond(interaction, core.alert('Yayın yetkin verildi.', 'Artık sesli kanallarda yayın açabilirsin.', 'success'));
 }
 
 async function handleLeave(interaction) {
-  if (!interaction.member.roles.cache.has(config.role)) return replyError(interaction, 'Zaten yayın yetkin yok.');
+  if (!interaction.member.roles.cache.has(config.role)) return replyError(interaction, 'Yayın yetkin zaten yok.', 'Almak için **Yayın Yetkisi Al** butonuna bas.');
 
   const removed = await interaction.member.roles.remove(config.role, 'Yayın yetkisi bırakıldı').catch((err) => {
     console.error('[yayin] Rol alınamadı:', err.message);

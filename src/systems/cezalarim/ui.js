@@ -6,8 +6,6 @@ const {
   ButtonStyle,
   ContainerBuilder,
   LabelBuilder,
-  MediaGalleryBuilder,
-  MediaGalleryItemBuilder,
   ModalBuilder,
   SectionBuilder,
   StringSelectMenuBuilder,
@@ -15,8 +13,8 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, pad, notice, page: pageBlocks } = require('../../core/ui');
-const { botName, panelTitle } = require('../../core/config');
+const { text, divider, hint, colors, unix, quote, shorten, alert, bannerGallery, block, field, fields, page } = require('../../core/ui');
+const { botName } = require('../../core/config');
 const { TYPES, formatDuration } = require('../sicil/ui');
 const config = require('./config');
 
@@ -30,39 +28,36 @@ const IDS = {
   itirazKarar: 'cezalarim-itiraz-karar', // cezalarim-itiraz-karar:<ceza kaydı ID'si>:<onayla|reddet>
 };
 
+// Mesaj sınırları: bir listede en fazla bu kadar ceza gösterilir (40 bileşen / 4000 karakter sınırı), menüde en fazla 25 seçenek olur
+const MAX_LIST = 10;
+const MAX_REASON = 250;
+
+const label = (p) => `${TYPES[p.type].label} #${p.number}`;
+
 // Her satır kendi açıklamasıyla birlikte, tam yanında o satırın butonuyla durur
 const row = (title, description, buttonId, buttonLabel, style) =>
   new SectionBuilder()
-    .addTextDisplayComponents(text(`**${title}**\n-# ${description}`))
+    .addTextDisplayComponents(text(block(title, null, description)))
     .setButtonAccessory(new ButtonBuilder().setCustomId(buttonId).setLabel(buttonLabel).setStyle(style));
 
 function panel() {
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(
-      text(
-        `${panelTitle(`${botName} Ceza Bilgilendirme Paneli`)}\n` +
-          '-# Aşağıdaki butonları kullanarak sunucu üzerindeki aktif cezaların hakkında detaylı bilgi alabilir, cezanın ne zaman biteceğini ve sebebini öğrenebilir, haksız bulursan itiraz edebilirsin.',
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addSectionComponents(
-      row('Cezam Ne Zaman Bitecek?', 'Süreli cezalarının ne zaman sona ereceğini öğren.', IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
-    )
-    .addSeparatorComponents(divider())
-    .addSectionComponents(
-      row('Ceza Sebebim Ne?', 'Hangi sebeple cezalandırıldığını görüntüle.', IDS.sebep, 'Sebebi Öğren', ButtonStyle.Success),
-    )
-    .addSeparatorComponents(divider())
-    .addSectionComponents(
-      row('Cezaya İtiraz Et', 'Cezanın haksız olduğunu düşünüyorsan itiraz için destek talebi aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Danger),
-    );
+  const container = new ContainerBuilder().addTextDisplayComponents(
+    text(
+      `## ${botName} Ceza Bilgilendirme\n` +
+        '-# **Süreyi Öğren**, **Sebebi Öğren** ve **İtiraz Et** butonlarıyla aktif cezalarının süresini ve sebebini öğrenebilir, haksız bulduğun bir cezaya itiraz edebilirsin.',
+    ),
+  );
+  if (config.banner) container.addMediaGalleryComponents(bannerGallery(config.banner));
 
-  if (config.banner) {
-    container
-      .addSeparatorComponents(divider())
-      .addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
-  }
-  return container;
+  return container
+    .addSeparatorComponents(divider())
+    .addSectionComponents(row('Ceza Süresi', 'Süreli cezalarının ne zaman sona ereceğini öğren.', IDS.sure, 'Süreyi Öğren', ButtonStyle.Success))
+    .addSeparatorComponents(divider())
+    .addSectionComponents(row('Ceza Sebebi', 'Hangi sebeple cezalandırıldığını görüntüle.', IDS.sebep, 'Sebebi Öğren', ButtonStyle.Success))
+    .addSeparatorComponents(divider())
+    .addSectionComponents(
+      row('Cezaya İtiraz', 'Cezanın haksız olduğunu düşünüyorsan itiraz için destek talebi aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Danger),
+    );
 }
 
 // Jail kanalına giden bilgilendirme paneli: jail'deki üye diğer kanalları göremediği için #cezalarım paneline
@@ -71,83 +66,88 @@ function jailPanel() {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       text(
-        `${panelTitle(`${botName} Jail Bilgilendirme`)}\n` +
-          "-# Jail'deyken bu kanal dışında sunucudaki hiçbir kanalı göremezsin; süresi dolunca jail kendiliğinden kalkar ve tekrar tüm kanallara erişebilirsin, kalan süreni aşağıdan öğrenebilirsin.",
+        `## ${botName} Jail Bilgilendirme\n` +
+          "-# Jail'deyken bu kanal dışında sunucudaki hiçbir kanalı göremezsin. Süren dolunca jail kendiliğinden kalkar; kalan süreni **Süreyi Öğren** butonuyla öğrenebilirsin.",
       ),
     )
     .addSeparatorComponents(divider())
     .addSectionComponents(
-      row("Ne Zaman Çıkacağım?", "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
+      row('Jail Süresi', "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
     );
 }
 
-const NO_ACTIVE = '✅ Şu an sunucuda aktif bir cezan bulunmuyor.';
+// Liste uzunsa ilk MAX_LIST kayıt gösterilir, kalanı tek satırda belirtilir
+const overflowNote = (total) => (total > MAX_LIST ? `+${total - MAX_LIST} ceza daha var; hepsini /sicil komutuyla görebilirsin.` : null);
 
-// "Cezam Ne Zaman Bitecek?": aktif cezaların kalan süresi
+// Bitiş bilgisi: süresi dolmuş ama kaldırma taraması henüz çalışmamış ceza "sona erecek" demez
+function endText(p) {
+  if (!p.expiresAt) return 'Süresiz, bir yetkili kaldırana kadar sürer.';
+  if (p.expiresAt <= Date.now()) return 'Süresi doldu, birazdan kaldırılacak.';
+  return `Bitiş: <t:${unix(p.expiresAt)}:F> (<t:${unix(p.expiresAt)}:R>)`;
+}
+
+const NO_ACTIVE = () => alert('Şu an aktif bir cezan yok.', null, 'success');
+
+// "Ceza Süresi": aktif cezaların bitiş zamanı. Uyarıların süresi olmadığı için burada listelenmez.
 function sureView(active) {
-  if (!active.length) return notice(NO_ACTIVE, 'success');
-  return pageBlocks({
+  const timed = active.filter((p) => p.type !== 'uyari');
+  if (!timed.length) {
+    return active.length ? alert('Süreli bir cezan yok.', 'Uyarıların süresi olmaz, sicilinde kayıtlı kalır.', 'success') : NO_ACTIVE();
+  }
+  return page({
     title: 'Ceza Sürelerin',
-    sub: 'Sunucuda şu an aktif olan cezalarının ne zaman sona ereceğini aşağıda görebilirsin; süresiz olarak verilen cezalar yetkililer tarafından kaldırılana kadar devam eder.',
+    sub: 'Sunucuda aktif olan cezalarının ne zaman sona ereceğini burada görebilirsin. Süresiz verilen cezalar bir yetkili kaldırana kadar sürer.',
     accent: colors.warning,
-    blocks: active.map((p) => `**${TYPES[p.type].label} #${p.number}**\n-# ${p.expiresAt ? `<t:${unix(p.expiresAt)}:R> sona erecek` : 'Süresiz'}`),
+    blocks: [...timed.slice(0, MAX_LIST).map((p) => `**${label(p)}**\n${endText(p)}`), overflowNote(timed.length)],
   });
 }
 
-// "Ceza Sebebim Ne?": aktif cezaların sebebi
+// "Ceza Sebebi": aktif cezaların sebebi
 function sebepView(active) {
-  if (!active.length) return notice(NO_ACTIVE, 'success');
-  return pageBlocks({
+  if (!active.length) return NO_ACTIVE();
+  return page({
     title: 'Ceza Sebeplerin',
-    sub: 'Sunucuda şu an aktif olan cezalarının hangi sebeple verildiğini aşağıda görebilirsin; cezayı haksız buluyorsan #cezalarım panelindeki itiraz butonunu kullanabilirsin.',
+    sub: 'Sunucuda aktif olan cezalarının hangi sebeple verildiğini burada görebilirsin. Cezayı haksız buluyorsan #cezalarım panelindeki **İtiraz Et** butonunu kullanabilirsin.',
     accent: colors.warning,
-    blocks: active.map((p) => `**${TYPES[p.type].label} #${p.number}**\n${quote(p.reason)}`),
+    blocks: [...active.slice(0, MAX_LIST).map((p) => `**${label(p)}**\n${quote(shorten(p.reason, MAX_REASON))}`), overflowNote(active.length)],
   });
 }
 
-const itirazNoneView = () => notice('✅ İtiraz edebileceğin aktif bir cezan yok.', 'success');
+const itirazNoneView = () => alert('İtiraz edebileceğin aktif bir cezan yok.');
 
-// "Cezaya İtiraz Et": aktif cezalardan birini seçme menüsü
+// "Cezaya İtiraz": aktif cezalardan birini seçme menüsü (en fazla 25 ceza listelenir)
 function itirazPicker(active) {
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      text(
-        '## Cezaya İtiraz Et\n-# Aşağıdaki menüden itiraz etmek istediğin aktif cezayı seç; ardından açılan formda itiraz sebebini yazdığında yetkililer için özel bir destek talebi oluşturulur.',
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('**İtiraz etmek istediğin cezayı seç.**'))
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId(`${IDS.itirazPick}:0`)
-          .setPlaceholder('İtiraz edeceğin cezayı seç')
-          .addOptions(
-            active.map((p) =>
-              new StringSelectMenuOptionBuilder()
-                .setValue(p.id)
-                .setLabel(`${TYPES[p.type].label} #${pad(p.number)}`)
-                .setDescription(shorten(p.reason, 100)),
-            ),
+  return page({
+    title: 'Cezaya İtiraz Et',
+    sub: 'İtiraz etmek istediğin cezayı menüden seç. Ardından açılan formda sebebini yaz; yetkililer için sana özel bir destek talebi oluşturulur ve itirazın orada incelenir.',
+  }).addActionRowComponents(
+    new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(`${IDS.itirazPick}:0`)
+        .setPlaceholder('İtiraz edeceğin cezayı seç')
+        .addOptions(
+          active.slice(0, 25).map((p) =>
+            new StringSelectMenuOptionBuilder().setValue(p.id).setLabel(label(p)).setDescription(shorten(p.reason, 100)),
           ),
-      ),
-    );
+        ),
+    ),
+  );
 }
 
 // Seçilen cezanın itiraz sebebini soran form
 function itirazModal(p) {
   return new ModalBuilder()
     .setCustomId(`${IDS.itirazForm}:${p.id}`)
-    .setTitle(`İtiraz - ${TYPES[p.type].label} #${pad(p.number)}`)
+    .setTitle(`Cezaya İtiraz - ${label(p)}`)
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel('İtiraz Sebebin')
+        .setLabel('Neden itiraz ediyorsun?')
+        .setDescription('İtirazın yetkililer tarafından incelenir.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.itirazReason)
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Bu cezayı neden haksız buluyorsun?')
+            .setPlaceholder('Örn: Bu mesajı ben yazmadım, bir yanlış anlaşılma oldu.')
             .setMinLength(10)
             .setMaxLength(500)
             .setRequired(true),
@@ -155,59 +155,53 @@ function itirazModal(p) {
     );
 }
 
-// Form gönderilince destek talebinin konusu olacak metin
-const itirazTicketReason = (p, sebep) => `Ceza İtirazı (${TYPES[p.type].label} #${pad(p.number)}): ${sebep}`;
+// Form gönderilince destek talebinin konusu olacak kısa metin; itiraz sebebinin kendisi itirazCard'da yer alır
+const itirazTicketReason = (p) => `Ceza İtirazı: ${label(p)}`;
+
+// Cezanın kısa durumu (uyarılarda yok)
+function durumText(p) {
+  if (p.type === 'uyari') return null;
+  if (p.status === 'lifted') return 'Kaldırıldı';
+  if (p.status === 'expired') return 'Süresi doldu';
+  if (!p.expiresAt) return 'Aktif, süresiz';
+  return p.expiresAt <= Date.now() ? 'Süresi doldu' : `Aktif, <t:${unix(p.expiresAt)}:R> bitiyor`;
+}
 
 // İtiraz talebi açılınca alt başlığa giden, cezanın bilgisini gösteren ve yetkiliye onay/red butonu sunan kart.
 // Karar verilmişse butonlar yerine sonucu gösterir.
 function itirazCard(p, sebep, karar) {
-  const durum = p.type === 'uyari' ? null : p.expiresAt ? `<t:${unix(p.expiresAt)}:R> sona erecek` : 'Süresiz';
+  const approved = karar?.sonuc === 'onayla';
+  const container = page({
+    title: 'İtiraz Edilen Ceza',
+    sub: karar
+      ? 'Bu itiraz bir yetkili tarafından incelendi ve karara bağlandı. Cezanın bilgileri, ceza sebebi ve üyenin itiraz sebebi aşağıda kayıtlı kalır.'
+      : 'Üye bir cezaya itiraz etti. Ceza bilgilerini ve iki sebebi inceleyip **İtirazı Onayla** ya da **İtirazı Reddet** butonuyla karar verebilirsin; onaylarsan ceza kaldırılır.',
+    accent: karar ? (approved ? colors.success : colors.danger) : colors.warning,
+    blocks: [
+      fields([
+        '**Ceza Bilgileri**',
+        field('Ceza', label(p)),
+        field('Yetkili', `<@${p.by}>`),
+        field('Tarih', `<t:${unix(p.createdAt)}:F>`),
+        p.duration ? field('Süre', formatDuration(p.duration)) : null,
+        durumText(p) ? field('Durum', durumText(p)) : null,
+      ]),
+      `**Ceza Sebebi**\n${quote(p.reason)}`,
+      `**İtiraz Sebebi**\n${quote(sebep)}`,
+      karar
+        ? fields([
+            `**İtiraz <@${karar.by}> tarafından ${approved ? 'onaylandı' : 'reddedildi'}.**`,
+            approved ? hint('Ceza kaldırıldı.') : p.status === 'active' ? hint('Ceza sürüyor.') : null,
+          ])
+        : null,
+    ],
+  });
+  if (karar) return container;
 
-  const container = new ContainerBuilder()
-    .setAccentColor(karar ? (karar.sonuc === 'onayla' ? colors.success : colors.danger) : colors.warning)
-    .addTextDisplayComponents(
-      text(
-        '## İtiraz Edilen Ceza\n-# Üye aşağıdaki cezaya itiraz etti; cezanın bilgilerini, ceza sebebini ve üyenin itiraz sebebini inceleyip alttaki butonlarla itirazı onaylayabilir ya da reddedebilirsin.',
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        '**Ceza Bilgileri**\n' +
-          [
-            `**Tür:** ${TYPES[p.type].label}`,
-            `**Numara:** #${pad(p.number)}`,
-            `**Veren:** <@${p.by}>`,
-            `**Verilme:** <t:${unix(p.createdAt)}:F>`,
-            p.duration ? `**Süre:** ${formatDuration(p.duration)}` : null,
-            durum ? `**Durum:** ${durum}` : null,
-          ]
-            .filter(Boolean)
-            .join('\n'),
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Ceza Sebebi**\n${quote(p.reason)}`))
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**İtiraz Sebebi**\n${quote(sebep)}`));
-
-  if (karar) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(
-        text(
-          karar.sonuc === 'onayla'
-            ? `✅ **İtiraz <@${karar.by}> tarafından onaylandı, ceza kaldırıldı.**`
-            : `❌ **İtiraz <@${karar.by}> tarafından reddedildi, ceza sürüyor.**`,
-        ),
-      );
-    return container;
-  }
-
-  return container.addSeparatorComponents(divider()).addActionRowComponents(
+  return container.addActionRowComponents(
     new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`${IDS.itirazKarar}:${p.id}:onayla`).setLabel('Onayla, Cezayı Kaldır').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId(`${IDS.itirazKarar}:${p.id}:reddet`).setLabel('Reddet').setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId(`${IDS.itirazKarar}:${p.id}:onayla`).setLabel('İtirazı Onayla').setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(`${IDS.itirazKarar}:${p.id}:reddet`).setLabel('İtirazı Reddet').setStyle(ButtonStyle.Danger),
     ),
   );
 }

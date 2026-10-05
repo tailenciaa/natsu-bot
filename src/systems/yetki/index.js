@@ -1,6 +1,6 @@
-// Elle yetki verme paneli: /yetki-ver ile açılır. Seviye seçilince o seviyenin yetkileri otomatik işaretlenir,
-// istenirse ekstra yetki eklenip çıkarılır. Rolü ayarlanmamış (roleId: null) seviye/yetkiler için rol verilmez.
-// Panel herkese açık gönderilir, ama menü ve butonları sadece yöneticiler kullanabilir.
+// Elle yetki verme paneli: /yetki-ver ile açılır. Rütbe seçilince o rütbenin yetkileri otomatik işaretlenir,
+// istenirse ekstra yetki eklenip çıkarılır. Rolü ayarlanmamış (roleId: null) rütbe/yetkiler için rol verilmez.
+// Panel herkese açık gönderilir (işlemin kaydı kanalda kalsın diye), ama menü ve butonları sadece yöneticiler kullanabilir.
 const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId, staffCommandChannel } = require('../../core/config');
@@ -13,11 +13,14 @@ const ui = require('./ui');
 const commands = [
   new SlashCommandBuilder()
     .setName('yetki-ver')
-    .setDescription('Bir kullanıcıya panelden seviye ve yetki seçerek elle yetki verir.')
+    .setDescription('Bir üyeye rütbe, yetki ve görev rolü seçerek yetki verir.')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Yetki verilecek kullanıcı').setRequired(true)),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Yetki verilecek üyeyi seç.').setRequired(true)),
 ];
+
+// Aynı üyeye aynı anda iki kez yetki verilmesin (hızlı çift tıklama)
+const giving = new Set();
 
 const levelById = (id) => config.levels.find((l) => l.id === id);
 const fetchUser = (interaction, userId) => interaction.client.users.fetch(userId).catch(() => null);
@@ -33,6 +36,9 @@ async function handleCommand(interaction) {
   if (!inStaffChannel(interaction)) return staffChannelError(interaction);
   const user = interaction.options.getUser('kullanici', true);
   if (user.bot) return replyError(interaction, 'Botlara yetki verilemez.');
+  if (!interaction.options.getMember('kullanici')) {
+    return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuya girmiş olması gerekir.');
+  }
   return respond(interaction, ui.staffPanel({ user, levelId: null, permIds: [], dutyIds: [] }), { ephemeral: false });
 }
 
@@ -42,7 +48,7 @@ async function handleLevel(interaction) {
   if (denied) return denied;
   const [, userId] = interaction.customId.split(':');
   const user = await fetchUser(interaction, userId);
-  if (!user) return replyError(interaction, 'Kullanıcı bulunamadı.');
+  if (!user) return replyError(interaction, 'Üye bulunamadı.', 'Üye sunucudan ayrılmış olabilir.');
   const level = levelById(interaction.values[0]);
   return interaction.update({
     components: [ui.staffPanel({ user, levelId: level.id, permIds: [...level.perms], dutyIds: [...level.duties] })],
@@ -56,7 +62,7 @@ async function handlePerms(interaction) {
   if (denied) return denied;
   const [, userId, levelId, dutyMask] = interaction.customId.split(':');
   const user = await fetchUser(interaction, userId);
-  if (!user) return replyError(interaction, 'Kullanıcı bulunamadı.');
+  if (!user) return replyError(interaction, 'Üye bulunamadı.', 'Üye sunucudan ayrılmış olabilir.');
   return interaction.update({
     components: [ui.staffPanel({ user, levelId, permIds: interaction.values, dutyIds: ui.unmask(dutyMask, config.duties) })],
     allowedMentions: { parse: [] },
@@ -69,7 +75,7 @@ async function handleDuties(interaction) {
   if (denied) return denied;
   const [, userId, levelId, permMask] = interaction.customId.split(':');
   const user = await fetchUser(interaction, userId);
-  if (!user) return replyError(interaction, 'Kullanıcı bulunamadı.');
+  if (!user) return replyError(interaction, 'Üye bulunamadı.', 'Üye sunucudan ayrılmış olabilir.');
   return interaction.update({
     components: [ui.staffPanel({ user, levelId, permIds: ui.unmask(permMask, config.perms), dutyIds: interaction.values })],
     allowedMentions: { parse: [] },
@@ -84,26 +90,40 @@ async function handleGive(interaction) {
   const level = levelById(levelId);
   const permIds = ui.unmask(permMask, config.perms);
   const dutyIds = ui.unmask(dutyMask, config.duties);
-  const member = await interaction.guild.members.fetch(userId).catch(() => null);
-  if (!level || !member) return replyError(interaction, 'Kullanıcı sunucuda bulunamadı.');
 
-  const wanted = [level, ...config.perms.filter((p) => permIds.includes(p.id)), ...config.duties.filter((d) => dutyIds.includes(d.id))];
-  // Yetkili Ekibi rolü de verilir: yetkili komutlarını görmek ve sicile bakmak için gerekir
-  const roleIds = [...new Set([basvuruConfig.roles.accept, ...(level.extraRoleIds ?? []), ...wanted.map((item) => item.roleId)].filter(Boolean))];
-  const missingRoles = wanted.some((item) => !item.roleId);
+  if (giving.has(userId)) return replyError(interaction, 'Bu üyenin yetkisi zaten veriliyor.');
+  giving.add(userId);
+  try {
+    // Roller Discord'dan istenip verilirken 3 saniye aşılabilir; önce etkileşim onaylanır
+    await interaction.deferUpdate();
 
-  const added = await member.roles
-    .add(roleIds, `Elle yetki verildi (${interaction.user.username})`)
-    .then(() => true)
-    .catch(() => false);
-  if (!added) return replyError(interaction, 'Roller verilemedi.', 'Botun rolü verilecek rollerin üstünde olmalı.');
+    const member = await interaction.guild.members.fetch(userId).catch(() => null);
+    if (!level || !member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuya girmiş olması gerekir.');
 
-  await interaction.update({
-    components: [ui.staffPanel({ user: member.user, levelId, permIds, dutyIds, done: true, missingRoles, by: interaction.user.id, roleIds })],
-    allowedMentions: { parse: [] },
-  });
+    const wanted = [level, ...config.perms.filter((p) => permIds.includes(p.id)), ...config.duties.filter((d) => dutyIds.includes(d.id))];
+    // Yetkili Ekibi rolü de verilir: yetkili komutlarını görmek ve sicile bakmak için gerekir
+    const roleIds = [...new Set([basvuruConfig.roles.accept, ...(level.extraRoleIds ?? []), ...wanted.map((item) => item.roleId)].filter(Boolean))];
+    const missingRoles = wanted.some((item) => !item.roleId);
 
-  await member.send({ components: [ui.grantDm(interaction.guild.name, { level, permIds, dutyIds, by: interaction.user.id })], flags: core.CV2 }).catch(() => {});
+    const added = await member.roles
+      .add(roleIds, `Elle yetki verildi (${interaction.user.username})`)
+      .then(() => true)
+      .catch(() => false);
+    if (!added) return replyError(interaction, 'Roller verilemedi.', 'Botun rolü verilecek rollerin üstünde olmalı.');
+
+    await interaction.editReply({
+      components: [ui.staffPanel({ user: member.user, levelId, permIds, dutyIds, done: true, missingRoles, by: interaction.user.id, roleIds })],
+      allowedMentions: { parse: [] },
+    });
+
+    const dmSent = await member
+      .send({ components: [ui.grantDm(interaction.guild.name, { level, permIds, dutyIds, by: interaction.user.id })], flags: core.CV2 })
+      .then(() => true)
+      .catch(() => false);
+    if (!dmSent) await respond(interaction, core.alert('Üyeye DM gönderilemedi.', 'DM kutusu kapalı olabilir; yetki yine de verildi.', 'warning'));
+  } finally {
+    giving.delete(userId);
+  }
 }
 
 async function handleCancel(interaction) {
@@ -115,7 +135,7 @@ async function handleCancel(interaction) {
 module.exports = {
   name: 'yetki',
   commands,
-  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında.` } },
+  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında` } },
   slash: { 'yetki-ver': handleCommand },
   events: {
     [Events.ClientReady]: (client) => {

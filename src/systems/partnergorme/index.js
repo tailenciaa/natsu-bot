@@ -15,13 +15,13 @@ function sendPanel(client) {
     channelId: config.channel,
     buttonId: ui.IDS.ver,
     build: ui.panel,
-    image: '', // görsel ek dosya değil, doğrudan URL olarak panelin içinde
+    image: '',
   });
 }
 
 async function handleButton(interaction) {
   if (interaction.member.roles.cache.has(config.role)) {
-    return replyError(interaction, 'Zaten partner kanallarını görebiliyorsun.');
+    return replyError(interaction, 'Zaten partner rolün var.', 'Partner kanallarını görebiliyorsun.');
   }
 
   const added = await interaction.member.roles.add(config.role, 'Partner görme').catch((err) => {
@@ -30,7 +30,7 @@ async function handleButton(interaction) {
   });
   if (!added) return replyError(interaction, 'Rol verilemedi.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, core.alert('Artık partner kanallarını görebiliyorsun!', null, 'success'));
+  return respond(interaction, core.alert('Partner rolün verildi.', 'Partner kanallarını artık görebilirsin.', 'success'));
 }
 
 module.exports = {

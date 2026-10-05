@@ -12,18 +12,18 @@ const commands = [
     .setContexts(InteractionContextType.Guild)
     .setDefaultMemberPermissions(staffPermission)
     .addIntegerOption((o) =>
-      o.setName('sayi').setDescription('Silinecek mesaj sayısı (1-100)').setMinValue(1).setMaxValue(100).setRequired(true),
+      o.setName('sayi').setDescription('Silinecek mesaj sayısını belirtir (1-100).').setMinValue(1).setMaxValue(100).setRequired(true),
     ),
 ];
 
 async function handleSil(interaction) {
   if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageMessages)) {
-    return replyError(interaction, 'Bu komutu kullanmak için "Mesajları Yönet" yetkisi gerekir.');
+    return replyError(interaction, 'Bu komut için Mesajları Yönet yetkisi gerekir.', 'Bu yetki yalnızca sohbet kanallarında geçerlidir; gerekirse bir yöneticiye ulaş.');
   }
   const { channel } = interaction;
   if (!channel?.isTextBased() || !channel.bulkDelete) return replyError(interaction, 'Bu kanalda mesaj silinemez.');
   if (!channel.permissionsFor(interaction.guild.members.me).has(PermissionFlagsBits.ManageMessages)) {
-    return replyError(interaction, 'Botun bu kanalda mesaj silme yetkisi yok.');
+    return replyError(interaction, 'Botun bu kanalda mesaj silme yetkisi yok.', 'Botun Mesajları Yönet iznini kontrol et.');
   }
 
   const amount = interaction.options.getInteger('sayi', true);
@@ -44,7 +44,7 @@ async function handleSil(interaction) {
     interaction,
     core.alert(
       `${deleted.size} mesaj silindi.`,
-      skipped > 0 ? `${skipped} mesaj silinemedi (14 günden eski olabilir).` : null,
+      skipped > 0 ? `Kanalda daha az mesaj vardı ya da ${skipped} mesaj 14 günden eskiydi.` : null,
       'success',
     ),
   );
@@ -53,6 +53,6 @@ async function handleSil(interaction) {
 module.exports = {
   name: 'temizle',
   commands,
-  help: { category: ['genel', 'Genel'], access: { sil: 'Mesajları Yönet yetkisi olanlar' } },
+  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { sil: 'Mesajları Yönet yetkisi olanlar' } },
   slash: { sil: handleSil },
 };

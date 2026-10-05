@@ -26,7 +26,7 @@ async function sendPanel(client) {
   if (config.jailChannel) {
     await syncPanel(client, {
       key: 'cezalarim-jail',
-      label: "Jail Bilgilendirme",
+      label: 'Jail Bilgilendirme',
       channelId: config.jailChannel,
       buttonId: ui.IDS.sure,
       build: ui.jailPanel,
@@ -62,9 +62,12 @@ function handleItirazSubmit(interaction) {
   if (!punishment) return replyError(interaction, 'Bu ceza artık aktif değil.');
   const sebep = interaction.fields.getTextInputValue(ui.IDS.itirazReason).trim();
 
-  return destek.createTicket(interaction, ui.itirazTicketReason(punishment, sebep), async (thread, ticket) => {
+  return destek.createTicket(interaction, ui.itirazTicketReason(punishment), async (thread) => {
     destekStore.updateTicket(thread.id, { itirazPunishmentId: punishment.id, itirazSebep: sebep });
-    await thread.send({ components: [ui.itirazCard(punishment, sebep, null)], flags: core.CV2, allowedMentions: { parse: [] } });
+    // Kart gönderilemese de talep açılmış olur; hata sadece kayda geçer ki üyeye "talebin açıldı" cevabı gitsin
+    await thread
+      .send({ components: [ui.itirazCard(punishment, sebep, null)], flags: core.CV2, allowedMentions: { parse: [] } })
+      .catch((err) => console.error('[cezalarim] İtiraz kartı gönderilemedi:', err.message));
   });
 }
 
@@ -88,11 +91,17 @@ async function handleItirazKarar(interaction) {
     return replyError(interaction, 'Bu ceza zaten sona ermiş veya kaldırılmış.');
   }
 
+  // Karar await'lerden önce ayrılır: aynı anda basan ikinci yetkili yukarıdaki "zaten karar verildi" kontrolüne takılır
+  destekStore.updateTicket(interaction.channelId, { itirazKarar: { sonuc, by: interaction.user.id, pending: true } });
   await interaction.deferUpdate();
 
   if (sonuc === 'onayla') {
-    const result = await moderation.lift(interaction.guild, punishment, interaction.user.id, `İtiraz kabul edildi: ${ticket.itirazSebep}`);
-    if (result.error) return respond(interaction, core.alert(result.error, result.hint, 'danger'));
+    // Denetim kaydı açıklaması en fazla 512 karakter olabilir
+    const result = await moderation.lift(interaction.guild, punishment, interaction.user.id, core.shorten(`İtiraz kabul edildi: ${ticket.itirazSebep}`, 500));
+    if (result.error) {
+      destekStore.updateTicket(interaction.channelId, { itirazKarar: null });
+      return respond(interaction, core.alert(result.error, result.hint, 'danger'));
+    }
   }
 
   destekStore.updateTicket(interaction.channelId, { itirazKarar: { sonuc, by: interaction.user.id } });

@@ -6,7 +6,7 @@ const {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
-const { colors, divider, page } = require('../../core/ui');
+const { colors, divider, page, field, fields, stamp } = require('../../core/ui');
 const { staffCommandChannel } = require('../../core/config');
 const config = require('./config');
 
@@ -25,31 +25,33 @@ const unmask = (value, list) => {
   return list.filter((_, i) => n & (1 << i)).map((item) => item.id);
 };
 
+// Seçili öğelerin adları; hiçbiri seçili değilse "Yok"
+const labelsOf = (list, ids) => list.filter((item) => ids.includes(item.id)).map((item) => item.label).join(', ') || 'Yok';
+
 // state: { user, levelId, permIds, done, missingRoles }. Seçimler buton/menü ID'lerinde taşınır.
 function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, by, roleIds = [] }) {
   const { levels, perms, duties } = config;
   const level = levels.find((l) => l.id === levelId);
-  const labels = (list, ids) => list.filter((item) => ids.includes(item.id)).map((item) => item.label).join(', ') || 'Yok';
-  const summary = [
-    `**Rütbe:** ${level ? level.label : 'Seçilmedi'}`,
-    `**Yetkiler:** ${labels(perms, permIds)}`,
-    `**Görev Rolleri:** ${labels(duties, dutyIds)}`,
-  ].join('\n');
+  const summary = fields([
+    field('Rütbe', level ? level.label : 'Seçilmedi'),
+    field('Yetkiler', labelsOf(perms, permIds)),
+    field('Görev Rolleri', labelsOf(duties, dutyIds)),
+  ]);
 
   const blocks = done
     ? [
-        `**Yeni Yetkili**\n<@${user.id}> artık ekibimizin bir parçası.\n**Yetkiyi Veren:** <@${by}>`,
+        fields(['**Yeni Yetkili**', `<@${user.id}> artık yetkili ekibinde.`, field('Yetkiyi Veren', `<@${by}>`)]),
         `**Verilen Yetkiler**\n${summary}`,
         `**Verilen Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\n-# Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : ''}`,
-        `-# <t:${Math.floor(Date.now() / 1000)}:F>`,
+        stamp(),
       ]
     : [`**Düzenlenen Üye**\n<@${user.id}> için yetki düzenliyorsun.`, `**Seçimler**\n${summary}`];
 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
-      ? 'Seçtiğin rütbe, yetkiler ve görev rolleri üyeye başarıyla tanımlandı; verilen rollerin özeti aşağıda yer alıyor, bu mesaj yetkilendirme işleminin kaydı olarak kanalda kalır.'
-      : 'Rütbe seçtiğinde o rütbenin yetkileri ve görev rolleri otomatik işaretlenir, istersen tek tek ekleme ya da çıkarma yapabilirsin, sonunda Yetkiyi Ver butonuyla seçimini onaylayabilirsin.',
+      ? 'Rütbe, yetkiler ve görev rolleri üyeye tanımlandı; verilen rollerin özeti aşağıda. Bu mesaj, yetkilendirme işleminin kaydı olarak kanalda kalır.'
+      : 'Rütbe seçince o rütbenin yetkileri ve görev rolleri otomatik işaretlenir; istersen tek tek ekleyip çıkarabilir, sonunda **Yetkiyi Ver** butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,
     blocks,
@@ -114,23 +116,22 @@ const guideText = () =>
 
 // Yetki verilen kişiye giden DM: ne verildiği ve nereden başlayacağı
 function grantDm(guildName, { level, permIds, dutyIds, by }) {
-  const labels = (list, ids) => list.filter((item) => ids.includes(item.id)).map((item) => item.label).join(', ') || 'Yok';
   return page({
-    title: 'Ekibe Hoş Geldin!',
-    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın; sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın aşağıda yer alıyor, yeni görevinde başarılar dileriz.`,
+    title: 'Ekibe Hoş Geldin',
+    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın. Sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın aşağıda; yeni görevinde başarılar.`,
     accent: colors.success,
     blocks: [
-      [
+      fields([
         '**Yetki Bilgilerin**',
-        `**Rütbe:** ${level.label}`,
-        `**Yetkiler:** ${labels(config.perms, permIds)}`,
-        `**Görev Rolleri:** ${labels(config.duties, dutyIds)}`,
-        `**Yetkiyi Veren:** <@${by}>`,
-      ].join('\n'),
+        field('Rütbe', level.label),
+        field('Yetkiler', labelsOf(config.perms, permIds)),
+        field('Görev Rolleri', labelsOf(config.duties, dutyIds)),
+        field('Yetkiyi Veren', `<@${by}>`),
+      ]),
       guideText(),
-      `-# ${guildName} - <t:${Math.floor(Date.now() / 1000)}:F>`,
+      stamp(),
     ],
   });
 }
 
-module.exports = { IDS, mask, unmask, guideText, staffPanel, grantDm };
+module.exports = { IDS, unmask, guideText, staffPanel, grantDm };

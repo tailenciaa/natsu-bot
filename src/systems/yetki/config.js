@@ -24,8 +24,8 @@ module.exports = {
   // Görev rolleri: yetkilinin hangi alanda çalıştığını gösteren roller (yetkili ve lider ayrı). Denetleyici gibi
   // yönetici rolleri buraya konmaz.
   duties: [
-    { id: 'ticket', label: 'Ticket Yetkilisi', roleId: '1554237787421548704' },
-    { id: 'ticket-lider', label: 'Ticket Lideri', roleId: '1554239996645613638' },
+    { id: 'ticket', label: 'Talep Yetkilisi', roleId: '1554237787421548704' },
+    { id: 'ticket-lider', label: 'Talep Lideri', roleId: '1554239996645613638' },
     { id: 'sorun', label: 'Sorun Çözücü', roleId: '1544337671340433569' },
     { id: 'sorun-lider', label: 'Sorun Çözücü Lideri', roleId: '1553133497781325954' },
     { id: 'ses', label: 'Ses Yetkilisi', roleId: '1554239999619375274' },
@@ -38,7 +38,7 @@ module.exports = {
     { id: 'partner-lider', label: 'Partner Lideri', roleId: '1554239996058411068' },
     { id: 'oryantasyon', label: 'Oryantasyon Yetkilisi', roleId: '1554240783929049168' },
     { id: 'oryantasyon-lider', label: 'Oryantasyon Lideri', roleId: '1554240783769669663' },
-    { id: 'alim', label: 'Yetkili Alım DM', roleId: '1553398951816863844' },
+    { id: 'alim', label: 'Yetkili Alım Sorumlusu', roleId: '1553398951816863844' },
     { id: 'alim-lider', label: 'Yetkili Alım Lideri', roleId: '1554240783580667954' },
     { id: 'karsilama', label: 'Karşılama Ekibi', roleId: '1555890045599223868' },
   ],
@@ -47,7 +47,7 @@ module.exports = {
   // Her rütbe alttakinin yetkilerini kapsar. starter: oryantasyonda başlangıç seviyesi olarak seçilebilir.
   // extraRoleIds: rütbeyle birlikte verilen takım rolleri (Yönetim Ekibi)
   levels: [
-    { id: '1', label: 'Genin', description: 'Deneme yetkili, adaylık sürecini tamamlar.', roleId: '1554237348940873758', starter: true, perms: ['uyari', 'mesaj'], duties: [] },
+    { id: '1', label: 'Genin', description: 'Deneme yetkilisi; adaylık sürecini tamamlar.', roleId: '1554237348940873758', starter: true, perms: ['uyari', 'mesaj'], duties: [] },
     { id: '2', label: 'Kōhai', description: 'Yeni yetkili, ekibe yeni katılmıştır.', roleId: '1554237348282245161', starter: true, perms: ['uyari', 'mesaj', 'mute'], duties: [] },
     { id: '3', label: 'Chūrai', description: 'Orta seviye yetkili, sohbet ve ses düzenini takip eder.', roleId: '1554237347631997029', starter: true, perms: ['uyari', 'mesaj', 'mute', 'jail', 'ses'], duties: [] },
     { id: '4', label: 'Tsukai', description: 'Yetkili, destek ve sohbet düzeninde görev alır.', roleId: '1554237342917726249', perms: ['uyari', 'mesaj', 'mute', 'jail', 'ses'], duties: ['sorun'] },
