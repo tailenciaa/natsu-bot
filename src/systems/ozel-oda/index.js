@@ -10,6 +10,7 @@ const { ChannelType, Events } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
 const { guildId } = require('../../core/config');
+const { syncPanel } = require('../../core/panel');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -240,6 +241,18 @@ async function handleTransfer(interaction) {
   return interaction.update({ components: [ui.controlPanel(updated, interaction.channel)] });
 }
 
+function sendGuide(client) {
+  if (!config.guideChannel) return;
+  return syncPanel(client, {
+    key: 'ozel-oda-rehber',
+    label: 'Özel oda rehberi',
+    channelId: config.guideChannel,
+    buttonId: ui.GUIDE_TITLE,
+    build: ui.guidePanel,
+    image: '',
+  });
+}
+
 module.exports = {
   name: 'ozel-oda',
   buttons: {
@@ -258,7 +271,10 @@ module.exports = {
     [ui.IDS.transfer, handleTransfer],
   ],
   events: {
-    [Events.ClientReady]: cleanup,
+    [Events.ClientReady]: async (client) => {
+      await cleanup(client);
+      await sendGuide(client);
+    },
     [Events.VoiceStateUpdate]: handleVoiceUpdate,
     [Events.ChannelDelete]: (channel) => store.deleteRoom(channel.id),
   },
