@@ -234,13 +234,17 @@ async function reroll(interaction) {
   return respond(interaction, core.alert(`Çekiliş #${g.no} için yeni kazanan seçildi.`, undefined, 'success'));
 }
 
+async function cancelGiveaway(client, g) {
+  g.status = 'cancelled';
+  store.save();
+  await refreshPanel(client, g);
+}
+
 async function cancel(interaction) {
   const g = getGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.');
-  g.status = 'cancelled';
-  store.save();
-  await refreshPanel(interaction.client, g);
+  await cancelGiveaway(interaction.client, g);
   return respond(interaction, core.alert(`Çekiliş #${g.no} iptal edildi.`, undefined, 'success'));
 }
 
@@ -296,6 +300,92 @@ async function handleLeave(interaction) {
   await refreshPanel(interaction.client, g);
 }
 
+// ── Çekiliş mesajındaki yönetim butonları (sadece yöneticiler) ───────────────────
+
+function adminGiveaway(interaction) {
+  if (!isStaff(interaction)) {
+    replyError(interaction, 'Bu butonu sadece yöneticiler kullanabilir.');
+    return null;
+  }
+  const g = store.byMessage(interaction.message.id);
+  if (!g) replyError(interaction, 'Bu çekilişin kaydı bulunamadı.');
+  return g;
+}
+
+async function handleEditButton(interaction) {
+  const g = adminGiveaway(interaction);
+  if (!g) return;
+  if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler düzenlenebilir.');
+  return interaction.showModal(ui.editModal(g));
+}
+
+async function handleEditSubmit(interaction) {
+  if (!isStaff(interaction)) return replyError(interaction, 'Bu formu sadece yöneticiler kullanabilir.');
+  const g = store.get(Number(interaction.customId.split(':')[1]));
+  if (!g || g.status !== 'active') return replyError(interaction, 'Bu çekiliş artık açık değil.');
+
+  const prize = interaction.fields.getTextInputValue('odul').trim();
+  const description = interaction.fields.getTextInputValue('aciklama').trim();
+  const winnerCount = Number(interaction.fields.getTextInputValue('kazanan').trim());
+  const duration = interaction.fields.getTextInputValue('sure').trim();
+  if (!prize) return replyError(interaction, 'Ödül boş olamaz.');
+  if (!Number.isInteger(winnerCount) || winnerCount < 1 || winnerCount > 20) return replyError(interaction, 'Kazanan sayısı 1 ile 20 arasında olmalı.');
+  let endsAt = g.endsAt;
+  if (duration) {
+    const minutes = parseMinutes(duration);
+    if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) {
+      return replyError(interaction, 'Süre anlaşılamadı.', 'Şöyle yaz: 30dk, 2sa, 1g ya da 1hf (en az 1 dakika, en fazla 30 gün).');
+    }
+    endsAt = Date.now() + minutes * 60 * 1000;
+  }
+
+  Object.assign(g, { prize, description: description || null, winnerCount, endsAt });
+  store.save();
+  // Form çekiliş mesajındaki butondan açıldığı için mesaj doğrudan güncellenir
+  if (interaction.isFromMessage()) return interaction.update({ components: [ui.panel(g)], allowedMentions: { parse: [] } });
+  await refreshPanel(interaction.client, g);
+  return respond(interaction, core.alert('Çekiliş güncellendi.', undefined, 'success'));
+}
+
+async function handleEndButton(interaction) {
+  const g = adminGiveaway(interaction);
+  if (!g) return;
+  if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.');
+  return interaction.reply({ components: [ui.confirm('bitir', g)], flags: core.EPHEMERAL_CV2 });
+}
+
+async function handleCancelButton(interaction) {
+  const g = adminGiveaway(interaction);
+  if (!g) return;
+  if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.');
+  return interaction.reply({ components: [ui.confirm('iptal', g)], flags: core.EPHEMERAL_CV2 });
+}
+
+async function handleConfirm(interaction) {
+  if (!isStaff(interaction)) return replyError(interaction, 'Bu butonu sadece yöneticiler kullanabilir.');
+  const [, action, no] = interaction.customId.split(':');
+  const g = store.get(Number(no));
+  if (!g || g.status !== 'active') return interaction.update({ components: [core.alert('Bu çekiliş artık açık değil.', undefined, 'danger')] });
+  await interaction.deferUpdate();
+  if (action === 'bitir') await finish(interaction.client, g);
+  else await cancelGiveaway(interaction.client, g);
+  return interaction.editReply({ components: [core.alert(action === 'bitir' ? `Çekiliş #${g.no} sonuçlandırıldı.` : `Çekiliş #${g.no} iptal edildi.`, undefined, 'success')] });
+}
+
+async function handleRerollButton(interaction) {
+  const g = adminGiveaway(interaction);
+  if (!g) return;
+  if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.');
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  const ids = await pickWinners(interaction.guild, g, 1);
+  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'));
+  g.winners.push(...ids);
+  store.save();
+  await refreshPanel(interaction.client, g);
+  await announce(interaction.client, g, ids, true);
+  return respond(interaction, core.alert(`Çekiliş #${g.no} için yeni kazanan seçildi.`, undefined, 'success'));
+}
+
 module.exports = {
   name: 'cekilis',
   commands,
@@ -310,8 +400,18 @@ module.exports = {
     },
   },
   slash: { cekilis: handleCommand },
-  buttons: { [ui.IDS.join]: handleJoin },
-  prefixed: [[ui.IDS.leave, handleLeave]],
+  buttons: {
+    [ui.IDS.join]: handleJoin,
+    [ui.IDS.edit]: handleEditButton,
+    [ui.IDS.end]: handleEndButton,
+    [ui.IDS.cancel]: handleCancelButton,
+    [ui.IDS.reroll]: handleRerollButton,
+  },
+  prefixed: [
+    [ui.IDS.leave, handleLeave],
+    [ui.IDS.confirm, handleConfirm],
+    [ui.IDS.form, handleEditSubmit],
+  ],
   events: {
     [Events.ClientReady]: (client) => {
       sweep(client);
