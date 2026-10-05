@@ -40,8 +40,7 @@ function tickVoice(guild) {
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
-  // Rol filtresi ve ayrılan üyelerin ayıklanması üye önbelleğine dayanır
-  guild.members.fetch().catch((err) => console.error('[siralama] Üyeler getirilemedi:', err.message));
+  // Rol filtresi ve ayrılan üyelerin ayıklanması üye önbelleğine dayanır; önbelleği açılışta diğer sistemler doldurur (ikinci bir toplu istek Discord sınırına takılır)
   for (const state of guild.voiceStates.cache.values()) if (countsVoice(state)) voiceSince.set(state.id, Date.now());
   setInterval(() => tickVoice(guild), TICK).unref();
 }
