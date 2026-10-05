@@ -8,9 +8,21 @@ try {
 require('./core/logger');
 const db = require('./core/db');
 
-db.init()
-  .then(() => require('./index'))
-  .catch((err) => {
+async function start() {
+  try {
+    await db.init();
+  } catch (err) {
     console.error('[hata] Veritabanına bağlanılamadı:', err.message);
     process.exit(1);
-  });
+  }
+
+  try {
+    require('./index');
+  } catch (err) {
+    // Botun yüklenmesindeki (sistem dosyaları, ayarlar) hatalar veritabanı hatasıyla karışmasın
+    console.error('[hata] Bot başlatılamadı:', err);
+    process.exit(1);
+  }
+}
+
+start();

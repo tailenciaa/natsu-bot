@@ -36,6 +36,8 @@ const EMPTY = { guilds: {}, tickets: {}, history: {}, ratings: {}, applications:
 const MONGO_URI = process.env.MONGODB_URI?.trim();
 const MONGO_DB = process.env.MONGODB_DB?.trim() || 'kazuki';
 const FLUSH_DELAY = 2000; // ms; art arda gelen kayıtlar tek seferde gönderilir
+const LOCAL_DELAY = 1000; // ms; yerel dosya yazımı da birleştirilir (her mesajda XP kaydı yüzlerce kez tam yazım yapmasın)
+const RETRY_DELAY = 10000; // ms; MongoDB yazımı başarısız olursa yeniden deneme aralığı
 
 const data = { ...EMPTY };
 
@@ -43,7 +45,10 @@ let collection = null; // MongoDB koleksiyonu (bağlıysa)
 let mongoClient = null;
 const lastSaved = new Map(); // alan adı -> MongoDB'ye en son yazılan JSON (sadece değişenleri göndermek için)
 let flushTimer = null;
+let localTimer = null;
 let flushing = Promise.resolve();
+let ready = false; // init() bitmeden save() yazmaz: yüklenmemiş boş veri mevcut db.json'un üstüne yazılmasın
+const unreadable = new Set(); // MongoDB'de okunamayan belgelerin anahtarları; bozuk belgenin üstüne varsayılan değer yazılmaz
 
 function readLocalFile() {
   if (!fs.existsSync(FILE)) return null;
@@ -56,10 +61,12 @@ function readLocalFile() {
 }
 
 function writeLocalFile() {
+  clearTimeout(localTimer);
+  localTimer = null;
   try {
     fs.mkdirSync(path.dirname(FILE), { recursive: true });
     const tmp = `${FILE}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+    fs.writeFileSync(tmp, JSON.stringify(data));
     fs.renameSync(tmp, FILE);
   } catch (err) {
     console.error('[db] db.json yazılamadı:', err.message);
@@ -71,6 +78,7 @@ async function init() {
     const local = readLocalFile();
     if (local) Object.assign(data, local);
     console.log('[db] MONGODB_URI yok, veriler data/db.json dosyasında tutuluyor.');
+    ready = true;
     return;
   }
 
@@ -87,7 +95,8 @@ async function init() {
         data[doc._id] = value;
         lastSaved.set(doc._id, JSON.stringify(value ?? null));
       } catch (err) {
-        console.error(`[db] "${doc._id}" alanı okunamadı:`, err.message);
+        unreadable.add(doc._id);
+        console.error(`[db] "${doc._id}" alanı okunamadı, üzerine yazılmayacak:`, err.message);
       }
     }
     console.log(`[db] MongoDB'ye bağlanıldı, ${docs.length} veri bölümü yüklendi.`);
@@ -100,6 +109,7 @@ async function init() {
       `[db] MongoDB'ye bağlanıldı (boştu). ${local ? 'Yerel db.json içeri aktarıldı.' : 'Boş veritabanı ile başlanıyor.'}`,
     );
   }
+  ready = true;
 }
 
 // Değişen alanları MongoDB'ye yazar
@@ -110,6 +120,7 @@ function flushRemote() {
   flushing = flushing.then(async () => {
     const ops = [];
     for (const [key, value] of Object.entries(data)) {
+      if (unreadable.has(key)) continue;
       const json = JSON.stringify(value ?? null);
       if (lastSaved.get(key) === json) continue;
       ops.push({ key, json, value });
@@ -132,19 +143,22 @@ function flushRemote() {
         else lastSaved.set(key, json);
       }
     } catch (err) {
-      console.error('[db] MongoDB\'ye yazılamadı, bir sonraki kayıtta tekrar denenecek:', err.message);
+      console.error(`[db] MongoDB'ye yazılamadı, ${RETRY_DELAY / 1000} saniye sonra tekrar denenecek:`, err.message);
+      if (!flushTimer) flushTimer = setTimeout(flushRemote, RETRY_DELAY);
     }
   });
   return flushing;
 }
 
 function save() {
-  writeLocalFile();
+  if (!ready) return; // yükleme bitmeden yazılırsa mevcut kayıtların üstüne boş veri yazılırdı
+  if (!localTimer) localTimer = setTimeout(writeLocalFile, LOCAL_DELAY);
   if (collection && !flushTimer) flushTimer = setTimeout(flushRemote, FLUSH_DELAY);
 }
 
 // Kapanışta bekleyen kayıtları gönderip bağlantıyı kapatır
 async function close() {
+  if (ready) writeLocalFile();
   await flushRemote();
   await mongoClient?.close().catch(() => {});
 }

@@ -1,9 +1,10 @@
 // Botun girişi: Discord'a bağlanır, sistemlerin komutlarını yükler ve gelen etkileşimleri ilgili sisteme yönlendirir.
 // Sistemlerin kendisi src/systems altında, her biri ayrı klasörde.
 require('./core/logger');
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const { guildId } = require('./core/config');
-const { replyError } = require('./core/helpers');
+const ui = require('./core/ui');
+const { respond, replyError } = require('./core/helpers');
 const systems = require('./systems');
 // Sıralama ve haftalık aktiflik verileri birikmiş yazmalarla kaydedilir (debounce); bot kapanırken bunlar
 // kaybolmasın diye kapanışta hemen diske yazılır
@@ -12,6 +13,7 @@ const aktifStore = require('./systems/aktif/store');
 const saygiStore = require('./systems/saygi/store');
 
 const UNKNOWN_INTERACTION = 10062;
+const ALREADY_ACKNOWLEDGED = 40060;
 
 const token = process.env.TOKEN?.trim();
 if (!token || token === 'BOT_TOKENINI_BURAYA_YAZ') {
@@ -41,9 +43,11 @@ const client = new Client({
     GatewayIntentBits.AutoModerationExecution,
     GatewayIntentBits.AutoModerationConfiguration,
   ],
+  // Bot açılmadan önce atılmış (önbellekte olmayan) mesajların silinme/düzenlenme olayları da log sistemine ulaşsın
+  partials: [Partials.Message],
 });
 // Her sistem kendi olay dinleyicisini eklediği için varsayılan 10 sınırı sistem sayısı arttıkça aşılıyor
-client.setMaxListeners(30);
+client.setMaxListeners(50);
 
 // Tüm sistemlerin komut ve işleyicileri tek tabloda toplanır
 const commands = systems.flatMap((s) => s.commands ?? []).map((c) => c.toJSON());
@@ -80,8 +84,13 @@ async function route(interaction) {
   if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) {
     return slashHandlers[interaction.commandName]?.(interaction);
   }
-  if (interaction.isButton()) return buttonHandlers[interaction.customId]?.(interaction);
-  if (interaction.isModalSubmit()) return modalHandlers[interaction.customId]?.(interaction);
+  if (interaction.isButton() && buttonHandlers[interaction.customId]) return buttonHandlers[interaction.customId](interaction);
+  if (interaction.isModalSubmit() && modalHandlers[interaction.customId]) return modalHandlers[interaction.customId](interaction);
+
+  // Hiçbir işleyici bulunamadı (kaldırılmış bir özelliğin eski mesajındaki buton gibi): kullanıcı boş yere beklemesin
+  if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
+    return respond(interaction, ui.alert('Bu işlem artık kullanılamıyor.', 'Mesaj eski olabilir; ilgili paneli ya da komutu yeniden kullanabilirsin.', 'warning'));
+  }
 }
 
 client.once(Events.ClientReady, async (c) => {
@@ -94,9 +103,14 @@ client.once(Events.ClientReady, async (c) => {
 // Sistemlerin dinlediği Discord olayları
 for (const system of systems) {
   for (const [event, handler] of Object.entries(system.events ?? {})) {
-    client.on(event, (...args) =>
-      Promise.resolve(handler(...args)).catch((err) => console.error(`[${system.name}] ${event} hatası:`, err)),
-    );
+    // async sarmalayıcı: işleyici senkron fırlatsa da hata yakalanır
+    client.on(event, async (...args) => {
+      try {
+        await handler(...args);
+      } catch (err) {
+        console.error(`[${system.name}] ${event} hatası:`, err);
+      }
+    });
   }
 }
 
@@ -104,14 +118,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     await route(interaction);
   } catch (err) {
+    const name = interaction.customId ?? interaction.commandName;
     // Discord'a 3 saniye içinde yanıt verilemediyse etkileşim geçersiz olur, cevap vermeye çalışmanın anlamı yok
     if (err.code === UNKNOWN_INTERACTION) {
-      const name = interaction.customId ?? interaction.commandName;
       return console.error(`[etkilesim] "${name}" etkileşimine zamanında yanıt verilemedi (bağlantı yavaş olabilir).`);
     }
-    console.error('[etkilesim] Hata:', err);
+    // Etkileşim zaten yanıtlanmışsa (ör. cevap verildikten sonra açılmaya çalışılan form) bir hata mesajı daha göndermeyi denemek
+    // aynı hatayı tekrarlar; sadece kayda geçer
+    if (err.code === ALREADY_ACKNOWLEDGED || err.code === 'InteractionAlreadyReplied') {
+      return console.error(`[etkilesim] "${name}" etkileşimi zaten yanıtlanmıştı:`, err.message);
+    }
+    console.error(`[etkilesim] "${name}" hatası:`, err);
     if (interaction.isRepliable()) {
-      await replyError(interaction, 'Bir hata oluştu.', 'Lütfen daha sonra tekrar dene.').catch(() => {});
+      await replyError(interaction, 'İşlem tamamlanamadı.', 'Birkaç saniye sonra tekrar dene; sorun sürerse bir yetkiliye haber ver.').catch(() => {});
     }
   }
 });
@@ -127,12 +146,16 @@ process.on('unhandledRejection', (err) => console.error('[hata]', err));
 process.on('uncaughtException', (err) => console.error('[hata] Yakalanmamış hata:', err));
 
 // Bot kapanırken (Ctrl+C, servis yeniden başlatma vb.) bekleyen birikmiş kayıtları diske yazar
+let closing = false;
 async function shutdown(signal) {
+  if (closing) return; // art arda gelen sinyaller kapanışı iki kez çalıştırmasın
+  closing = true;
   console.log(`[bot] ${signal} alındı, kapanmadan önce bekleyen veriler kaydediliyor...`);
   siralamaStore.flush();
   aktifStore.flush();
   saygiStore.flush();
   await require('./core/db').close();
+  await client.destroy();
   process.exit(0);
 }
 process.on('SIGINT', () => shutdown('SIGINT'));

@@ -5,8 +5,12 @@ const ui = require('./ui');
 
 // Etkileşimin durumuna göre doğru şekilde CV2 cevap verir.
 // Butonlarda deferUpdate kullanıldığı için orijinal mesajın üzerine yazmamak adına followUp yapılır.
-async function respond(interaction, container, { ephemeral = true, allowedMentions = { parse: [] } } = {}) {
-  if (interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
+// Dikkat: deferReply edilmiş komut ya da deferUpdate edilmiş modal gönderimi (butona bağlı olmayan, deferred) ise cevap
+// editReply ile verilir; yani modalın bağlı olduğu mesajı (varsa) cevabın yeni haliyle DEĞİŞTİRİR. Hata/onay bildirimini
+// ayrı ve sadece kullanana görünen mesaj olarak göstermek istiyorsan önce deferUpdate yapma, ya da interaction.followUp kullan.
+// followUp: true verilirse (ör. deferUpdate yapılmış modal gönderimi) cevap her zaman ayrı bir mesaj olarak gider, mevcut mesajı değiştirmez
+async function respond(interaction, container, { ephemeral = true, allowedMentions = { parse: [] }, followUp = false } = {}) {
+  if (!followUp && interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
     return interaction.editReply({ components: [container], flags: ui.CV2, allowedMentions });
   }
   const payload = { components: [container], flags: ephemeral ? ui.EPHEMERAL_CV2 : ui.CV2, allowedMentions };
@@ -38,9 +42,13 @@ function isMenuOwner(interaction) {
   return !ownerId || ownerId === interaction.user.id;
 }
 
+// Menü sahibi olmayan biri butona/menüye basınca verilen ortak cevap
+const menuOwnerError = (interaction) =>
+  replyError(interaction, 'Bu menüyü sadece komutu kullanan kişi gezebilir.', 'Kendi menün için komutu sen de kullanabilirsin.');
+
 // Yetkili komutları sadece yetkili komut kanalında kullanılır
 const inStaffChannel = (interaction) => !staffCommandChannel || interaction.channelId === staffCommandChannel;
 const staffChannelError = (interaction) =>
   replyError(interaction, `Bu komut sadece <#${staffCommandChannel}> kanalında kullanılabilir.`);
 
-module.exports = { respond, replyError, isStaff, fetchTextChannel, isMenuOwner, inStaffChannel, staffChannelError };
+module.exports = { respond, replyError, isStaff, fetchTextChannel, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
