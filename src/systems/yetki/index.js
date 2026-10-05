@@ -1,7 +1,7 @@
 // Elle yetki verme paneli: /yetki-ver ile açılır. Seviye seçilince o seviyenin yetkileri otomatik işaretlenir,
 // istenirse ekstra yetki eklenip çıkarılır. Rolü ayarlanmamış (roleId: null) seviye/yetkiler için rol verilmez.
 // Panel herkese açık gönderilir, ama menü ve butonları sadece yöneticiler kullanabilir.
-const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { staffCommandChannel } = require('../../core/config');
 const { respond, replyError, inStaffChannel, staffChannelError } = require('../../core/helpers');
@@ -100,8 +100,20 @@ async function handleCancel(interaction) {
   return interaction.update({ components: [core.alert('Yetki verme iptal edildi.', null, 'danger')] });
 }
 
+// Açılışta sunucudaki rollerin adını ve ID'sini loga yazar; yetki/oryantasyon ayarlarına rol ID'si girerken kullanılır
+function listRoles(client) {
+  const guild = client.guilds.cache.get(require('../../core/config').guildId);
+  if (!guild) return;
+  const roles = [...guild.roles.cache.values()].sort((a, b) => b.position - a.position);
+  console.log(`[roller] ${roles.length} rol (üstten alta):`);
+  for (const role of roles) console.log(`[roller] ${role.position} | ${role.name} | ${role.id}${role.managed ? ' | bot/entegrasyon' : ''}`);
+  const me = guild.members.me;
+  console.log(`[roller] Botun en yüksek rolü: ${me?.roles.highest.name} (${me?.roles.highest.position}), Rolleri Yönet: ${me?.permissions.has('ManageRoles')}`);
+}
+
 module.exports = {
   name: 'yetki',
+  events: { [Events.ClientReady]: listRoles },
   commands,
   help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında.` } },
   slash: { 'yetki-ver': handleCommand },
