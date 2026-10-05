@@ -8,7 +8,6 @@ const { Events, PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
-const ratings = require('../degerlendirme');
 const orientation = require('../oryantasyon');
 const config = require('./config');
 const log = require('./log');
@@ -238,13 +237,12 @@ async function notifyStaff(newState) {
   }
 }
 
-// Görüşmeyi bitmiş sayar, kayıt kanalındaki mesajını günceller (başvuran çıkınca ya da karar verilince) ve başvurana
-// görüşmeyi yapan yetkiliyi puanlaması için DM gönderir
+// Görüşmeyi bitmiş sayar ve kayıt kanalındaki mesajını günceller (başvuran çıkınca ya da karar verilince)
+
 async function endMeeting(guild, app) {
   if (!app.meeting?.startedAt || app.meeting.endedAt) return;
   store.updateApplication(app.id, { meeting: { ...app.meeting, endedAt: Date.now() } });
   await log.edit(guild, app.meeting.messageId, ui.meetingLog(app));
-  await ratings.requestForApplication(guild.client, app, 'gorusme', app.meetingBy);
 }
 
 // Görüşmeye çağıran yetkili ve başvuran aynı görüşme kanalına girince görüşme başlamış sayılır ve kayıt kanalına yazılır;

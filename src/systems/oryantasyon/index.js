@@ -424,9 +424,23 @@ async function handleVoiceUpdate(oldState, newState) {
 }
 
 // Açılışta: bot kapalıyken ikisi de kanala girdiyse başlatır, süren oryantasyonların takibini kaldığı yerden sürdürür
+// Alanların roleName'ini sunucudaki role bağlar (bir kere, bot açılırken); bulunamayan alan "rol tanımlanmadı" sayılır
+const normalizeName = (name) => name.toLocaleLowerCase('tr').replace(/\s+/g, ' ').trim();
+async function resolveAreaRoles(guild) {
+  const roles = await guild.roles.fetch().catch(() => guild.roles.cache);
+  for (const area of config.areas) {
+    if (area.roleId || !area.roleName) continue;
+    const wanted = normalizeName(area.roleName);
+    const role = roles.find((r) => normalizeName(r.name) === wanted);
+    if (role) area.roleId = role.id;
+    else console.error(`[oryantasyon] "${area.roleName}" rolü sunucuda bulunamadı (${area.label} alanı).`);
+  }
+}
+
 async function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
+  await resolveAreaRoles(guild);
   for (const app of basvuruStore.inOrientation()) {
     if (app.orientation.status === 'active') await syncPresence(guild, app.id);
     else await tryStart(guild, app);

@@ -12,6 +12,7 @@ const { Events, InteractionContextType, SlashCommandBuilder } = require('discord
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const ratings = require('../degerlendirme');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -317,6 +318,8 @@ async function handleReviewDecision(interaction) {
 
   const requester = await interaction.client.users.fetch(request.requesterId).catch(() => null);
   await requester?.send({ components: [ui.requesterResult(sonuc)], flags: core.CV2 }).catch(() => {});
+  // Talep sahibi kararı veren partner yetkilisini puanlayabilir
+  await ratings.requestForPartner(interaction.client, updated, interaction.user.id).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
 
   if (sonuc === 'onayla') {
     // Onayda güvenilir listeye otomatik eklemiyoruz; yetkili karttaki "Güvenilir Partnerler Listesine Al"

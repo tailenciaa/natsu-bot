@@ -11,8 +11,8 @@ module.exports = {
   // Kategoriye özel değerlendirme kanalı; null ise o kategorinin değerlendirmeleri de yukarıdaki ortak kanala gider
   categoryChannels: {
     destek: null,
-    gorusme: null,
     oryantasyon: null,
+    partner: null,
   },
 
   // Görüşme ses kanalları: lider "Görüşmeye Çağır"a basınca yetkiliye bu kanallardan birine geçmesi söylenir.

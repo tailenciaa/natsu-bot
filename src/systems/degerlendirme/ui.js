@@ -47,6 +47,14 @@ const CATEGORIES = {
     modalTitle: 'Görüşmeyi Puanla',
     placeholder: 'Örn: Çok rahat bir görüşmeydi, sorularımı sabırla cevapladı.',
   },
+  partner: {
+    short: 'Partner',
+    ref: (r) => `Partner Talebi #${pad(r.partnerNumber)}`,
+    handled: (name) => `Partner talebinle ${name} ilgilendi.`,
+    question: 'Partner sürecinde yetkiliden ne kadar memnun kaldın?',
+    modalTitle: 'Partner Sürecini Puanla',
+    placeholder: 'Örn: Talebimi hızlı inceledi ve her şeyi net anlattı.',
+  },
   oryantasyon: {
     short: 'Oryantasyon',
     ref: (r) => `Başvuru #${pad(r.applicationNumber)} oryantasyonu`,
@@ -342,25 +350,26 @@ function meetingDm(rating, guildName) {
     .addTextDisplayComponents(text(`-# ${guildName} - <t:${unix(rating.meetingAt)}:F>`));
 }
 
-// Görüşme ya da oryantasyon bitince başvurana giden puanlama DM'i (destek talepleri kapanış DM'inin altında puanlanır)
+// Oryantasyon, partner talebi (ve eski görüşme kayıtları) sonrası giden puanlama DM'i (destek talepleri kapanış DM'inin altında puanlanır)
 function ratingRequestDm(rating) {
-  // Soru alttaki puanlama bölümünde sorulur; oryantasyonun tebriği ayrı DM'de olduğu için burada tekrar edilmez
-  const oryantasyon = rating.category === 'oryantasyon';
-  return ratingSection(
-    page({
-      title: oryantasyon ? 'Oryantasyonunu Değerlendir' : 'Görüşmeni Değerlendir',
-      sub: oryantasyon
-        ? 'Oryantasyonun tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.'
-        : 'Yetkili alım görüşmen tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, başvurunun sonucundan bağımsız olarak vereceğin geri bildirim bizim için değerli.',
-      accent: colors.primary,
-      blocks: [
-        oryantasyon
-          ? `**Başvuru Bilgileri**\n**Başvuru:** #${pad(rating.applicationNumber)}`
-          : `**Görüşme Bilgileri**\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
-      ],
-    }),
-    rating,
-  );
+  // Soru alttaki puanlama bölümünde sorulur
+  const dm = {
+    oryantasyon: {
+      title: 'Oryantasyonunu Değerlendir',
+      sub: 'Oryantasyonun tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.',
+      block: `**Başvuru Bilgileri**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
+    },
+    partner: {
+      title: 'Partner Sürecini Değerlendir',
+      sub: 'Partner talebin yetkilimiz tarafından sonuçlandırıldı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, geri bildirimin partner sürecimizi geliştirmemize yardımcı olur.',
+      block: `**Talep Bilgileri**\n**Talep:** #${pad(rating.partnerNumber)}`,
+    },
+  }[rating.category] ?? {
+    title: 'Görüşmeni Değerlendir',
+    sub: 'Yetkili alım görüşmen tamamlandı; aşağıdan yetkiliye yıldız vererek puanlayabilirsin, başvurunun sonucundan bağımsız olarak vereceğin geri bildirim bizim için değerli.',
+    block: `**Görüşme Bilgileri**\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
+  };
+  return ratingSection(page({ title: dm.title, sub: dm.sub, accent: colors.primary, blocks: [dm.block] }), rating);
 }
 
 // İtiraz sonuçlanınca itiraz eden yetkiliye giden DM

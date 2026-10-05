@@ -1,6 +1,6 @@
 // Yetkili değerlendirme sistemi: üye DM'den puan ve yorum bırakır, değerlendirme kanalına gider ve yetkilinin siciline
-// işlenir. Değerlendirmeler kategorilere ayrılır: destek talebi kapanınca (destek), yetkili alım görüşmesi bitince
-// (gorusme) ve oryantasyon tamamlanınca (oryantasyon). Değerlendirilen yetkili haksız bulduğu değerlendirmeye şikayet
+// işlenir. Değerlendirmeler kategorilere ayrılır: destek talebi kapanınca (destek), oryantasyon tamamlanınca
+// (oryantasyon) ve partner talebi sonuçlanınca (partner); eski görüşme (gorusme) kayıtları sicilde durur. Değerlendirilen yetkili haksız bulduğu değerlendirmeye şikayet
 // kanalından itiraz edebilir, liderler onaylar / reddeder / görüşmeye çağırır.
 const core = require('../../core/ui');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
@@ -64,6 +64,36 @@ async function requestForApplication(client, app, category, staffId) {
   });
 
   const user = await client.users.fetch(app.userId).catch(() => null);
+  return user?.send({ components: [ui.ratingRequestDm(rating)], flags: core.CV2 }).catch(() => null);
+}
+
+// Partner sistemi talebi sonuçlandırınca çağırır: talep sahibine kararı veren partner yetkilisini puanlama mesajı gönderir.
+// Her talep için bir kez; talep sahibi kendini değerlendiremez.
+async function requestForPartner(client, request, staffId) {
+  const id = `partner-${request.id}`;
+  if (!staffId || staffId === request.requesterId || store.getRating(id)) return null;
+
+  const guild = client.guilds.cache.get(request.guildId);
+  const staff = await client.users.fetch(staffId).catch(() => null);
+  const rating = store.setRating(id, {
+    id,
+    category: 'partner',
+    guildId: request.guildId,
+    guildName: guild?.name ?? 'Sunucu',
+    partnerNumber: request.number,
+    staffId,
+    staffName: staff?.username ?? 'Yetkili',
+    userId: request.requesterId,
+    score: null,
+    comment: '',
+    ratedAt: null,
+    channelId: null,
+    messageId: null,
+    reportedAt: null,
+    reportReason: null,
+  });
+
+  const user = await client.users.fetch(request.requesterId).catch(() => null);
   return user?.send({ components: [ui.ratingRequestDm(rating)], flags: core.CV2 }).catch(() => null);
 }
 
@@ -290,6 +320,7 @@ module.exports = {
   name: 'degerlendirme',
   createPending,
   requestForApplication,
+  requestForPartner,
   removeRating,
   // Puan butonları DM'de de çalışır
   prefixed: [
