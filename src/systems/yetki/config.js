@@ -2,6 +2,13 @@
 // roleId boş (null) olanlar panelde görünür ama rol verilmez; roller ayarlanınca buraya yazılır.
 
 module.exports = {
+  // Yeni yetkiliye giden DM'lerde "Başlarken" bölümünde gösterilen kanallar (yetkili komut kanalı core/config.js'ten gelir)
+  guide: {
+    rules: '1538944989432774746', // yetkili kuralları
+    info: '1538945093921153206', // yetkili bilgilendirme
+    chat: '1538945273378639913', // yetkili sohbet
+  },
+
   // Yetkiler: botun ve Discord'un kontrol ettiği yetki rolleri. Çoğu işaret rolü olarak durur, bot kendi rol kontrolüyle ne
   // yapılabileceğine karar verir (sicil/config.js punishPerms); gerçek Discord izinleri en aşağıda.
   perms: [

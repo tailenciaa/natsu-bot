@@ -103,7 +103,7 @@ async function handleGive(interaction) {
     allowedMentions: { parse: [] },
   });
 
-  await member.send({ components: [ui.grantDm(interaction.guild.name)], flags: core.CV2 }).catch(() => {});
+  await member.send({ components: [ui.grantDm(interaction.guild.name, { level, permIds, dutyIds, by: interaction.user.id })], flags: core.CV2 }).catch(() => {});
 }
 
 async function handleCancel(interaction) {

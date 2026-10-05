@@ -436,12 +436,13 @@ function completedDm(app, guildName) {
     'Ekibe Hoş Geldin!',
     'Oryantasyonu başarıyla tamamladın ve yetkili ekibine katıldın; başlangıç yetkin, görev alanların ve ilk günler için birkaç not aşağıda seni bekliyor, yeni görevinde başarılar dileriz.',
     [
-      `**Tebrikler**\nOryantasyonu başarıyla tamamladın ve artık ${guildName} yetkili ekibinin bir parçasısın!\n-# Oryantasyonunu <@${o.staffId}> verdi.`,
       [
         '**Yetki Bilgilerin**',
         `**Başlangıç Yetkin:** ${o.levelLabel}`,
         `**${o.areaLabels.length > 1 ? 'Görev Alanların' : 'Görev Alanın'}:** ${o.areaLabels.join(', ')}`,
+        `**Oryantasyonu Veren:** <@${o.staffId}>`,
       ].join('\n'),
+      require('../yetki/ui').guideText(),
       '**Seni aramızda görmekten çok mutluyuz!**\n' +
         'Başvurudan oryantasyona kadar gösterdiğin ilgi için teşekkürler. İlk günlerde takıldığın her şeyi ' +
         `<@${o.staffId}> ya da diğer yetkililere sorabilirsin, kimse her şeyi ilk günden bilmez.\n` +

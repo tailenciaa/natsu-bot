@@ -338,7 +338,7 @@ function closeDm(ticketNumber, guildName, rating) {
     sub: 'Destek talebin ekibimiz tarafından sonlandırıldı; başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin, iyi günler dileriz.',
     accent: colors.danger,
     blocks: [
-      `**Talep Bilgileri**\n**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı talebin kapatıldı.\n-# Başka bir konuda yardıma ihtiyacın olursa panelden yeni bir talep açabilirsin.`,
+      `**Talep Bilgileri**\n**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı talebin kapatıldı.`,
     ],
   });
   if (rating) ratingUi.ratingSection(container, rating);

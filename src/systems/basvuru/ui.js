@@ -290,11 +290,8 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
       'Başvuran Seni Bekliyor',
       'Başvuran görüşme kanalına girdi ve seni bekliyor; aşağıdaki butonla kanala geçerek görüşmeyi ya da oryantasyonu hemen başlatabilirsin, başvuru ayrıntıları başvurular kanalında yer alıyor.',
       [
-        `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n` +
-          `-# #${pad(app.number)} numaralı başvuru` +
-          (orientation
-            ? '. Kanala girdiğinde oryantasyon kendiliğinden başlayacak.'
-            : ' için seni bekliyor, kanala geçip görüşmeye başlayabilirsin.'),
+        `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n**Başvuru:** #${pad(app.number)}` +
+          (orientation ? '\n-# Kanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
       ],
       'primary',
     )

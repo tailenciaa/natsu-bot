@@ -7,6 +7,7 @@ const {
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
 const { colors, divider, page } = require('../../core/ui');
+const { staffCommandChannel } = require('../../core/config');
 const config = require('./config');
 
 const IDS = {
@@ -106,14 +107,35 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
   return container;
 }
 
-// Yetki verilen kişiye giden kısa tebrik DM'i
-function grantDm(guildName) {
+// Yeni yetkiliye giden DM'lerin "Başlarken" bölümü: nerede ne yapacağı
+const guideText = () =>
+  [
+    '**Başlarken**',
+    `**Komut Kanalı:** <#${staffCommandChannel}>`,
+    `**Kurallar:** <#${config.guide.rules}>`,
+    `**Bilgilendirme:** <#${config.guide.info}>`,
+    `**Yetkili Sohbet:** <#${config.guide.chat}>`,
+  ].join('\n');
+
+// Yetki verilen kişiye giden DM: ne verildiği ve nereden başlayacağı
+function grantDm(guildName, { level, permIds, dutyIds, by }) {
+  const labels = (list, ids) => list.filter((item) => ids.includes(item.id)).map((item) => item.label).join(', ') || 'Yok';
   return page({
     title: 'Ekibe Hoş Geldin!',
-    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın; sana tanımlanan yetkileri ve rolleri sunucuda görebilirsin, yeni görevinde başarılar dileriz.`,
+    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın; sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın aşağıda yer alıyor, yeni görevinde başarılar dileriz.`,
     accent: colors.success,
-    blocks: [`**Yeni Görevin**\n${guildName} sunucusunda artık yetkili ekibinin bir parçasısın.`],
+    blocks: [
+      [
+        '**Yetki Bilgilerin**',
+        `**Rütbe:** ${level.label}`,
+        `**Yetkiler:** ${labels(config.perms, permIds)}`,
+        `**Görev Rolleri:** ${labels(config.duties, dutyIds)}`,
+        `**Yetkiyi Veren:** <@${by}>`,
+      ].join('\n'),
+      guideText(),
+      `-# ${guildName} - <t:${Math.floor(Date.now() / 1000)}:F>`,
+    ],
   });
 }
 
-module.exports = { IDS, mask, unmask, staffPanel, grantDm };
+module.exports = { IDS, mask, unmask, guideText, staffPanel, grantDm };

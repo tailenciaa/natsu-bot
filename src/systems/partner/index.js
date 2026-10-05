@@ -317,7 +317,7 @@ async function handleReviewDecision(interaction) {
   await interaction.editReply({ components: [ui.reviewCard(updated, { sonuc, by: interaction.user.id })], allowedMentions: { parse: [] } });
 
   const requester = await interaction.client.users.fetch(request.requesterId).catch(() => null);
-  await requester?.send({ components: [ui.requesterResult(sonuc)], flags: core.CV2 }).catch(() => {});
+  await requester?.send({ components: [ui.requesterResult(sonuc, updated, interaction.user.id)], flags: core.CV2 }).catch(() => {});
   // Talep sahibi kararı veren partner yetkilisini puanlayabilir
   await ratings.requestForPartner(interaction.client, updated, interaction.user.id).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
 

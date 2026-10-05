@@ -280,7 +280,7 @@ function postCard(request, trusted, banned) {
     );
 }
 
-const requesterResult = (sonuc, hint) =>
+const requesterResult = (sonuc, request, by) =>
   new ContainerBuilder()
     .setAccentColor(sonuc === 'onayla' ? colors.success : colors.danger)
     .addTextDisplayComponents(
@@ -293,12 +293,10 @@ const requesterResult = (sonuc, hint) =>
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(
-        sonuc === 'onayla'
-          ? '**Sonuç**\n✅ Partner talebin onaylandı, metnin paylaşım kanalına gönderildi!'
-          : `**Sonuç**\n❌ Partner talebin reddedildi.${hint ? `\n-# ${hint}` : ''}`,
-      ),
-    );
+      text(`**Talep Bilgileri**\n**Talep:** #${request.number}\n**Sunucu ID:** \`${request.serverId}\`\n**Değerlendiren:** <@${by}>`),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`-# <t:${Math.floor(Date.now() / 1000)}:F>`));
 
 // /guvenilir-partnerler listesi
 function trustedList(entries) {
