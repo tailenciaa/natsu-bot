@@ -79,12 +79,19 @@ function page({ title, sub, thumbnail, blocks = [], accent }) {
   const header = text(`## ${title}`);
   const container = new ContainerBuilder();
   if (accent) container.setAccentColor(accent);
+  let rest = blocks;
   if (thumbnail) {
-    container.addSectionComponents(new SectionBuilder().addTextDisplayComponents(header).setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail)));
+    // Görselin yanındaki alan boş kalmasın diye ilk blok başlıkla birlikte görselin yanına konur
+    const section = new SectionBuilder().addTextDisplayComponents(header).setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbnail));
+    if (blocks.length) {
+      section.addTextDisplayComponents(text(blocks[0]));
+      rest = blocks.slice(1);
+    }
+    container.addSectionComponents(section);
   } else {
     container.addTextDisplayComponents(header);
   }
-  for (const block of blocks) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));
+  for (const block of rest) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));
   return container;
 }
 
