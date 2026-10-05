@@ -10,33 +10,25 @@ const TITLE = `${botName} Sesli Kanallar`;
 function blocks() {
   const c = config.channels;
   const perks = Object.entries(config.perks)
-    .map(([level, perk]) => `<@&${seviye.roles.ses[level]}>: ${perk}`)
+    .map(([level, perk]) => `<@&${seviye.roles.ses[level]}> - ${perk}`)
     .join('\n');
   return [
-    '**Sesli kanallar**\n' +
-      '**Genel odalar:** Sesli Kanallar kategorisindeki odalara istediğin zaman girip sohbet edebilirsin.\n' +
-      `**Özel oda:** <#${c.createRoom}> kanalına girince sana ait bir oda açılır, nasıl yönetileceği <#${c.roomGuide}> kanalında anlatılıyor.\n` +
-      `**Kalıcı odalar:** <#${c.permanentRooms}> kanalından kalıcı odalar hakkında bilgi alabilirsin.`,
-    '**Ses seviyesi**\n' +
-      '**XP:** Sesli kanalda geçen her dakika 6 XP kazandırır, mesaj seviyenden ayrı birikir.\n' +
-      '**Roller:** Her 5 seviyede yeni bir ses rolü kazanırsın.\n' +
-      '**Komutlar:** `/seviye`, `/profil` ve `/siralama` ile seviyeni ve sıralamanı görürsün.',
-    `**Ses rolleri ve ayrıcalıkları**\n${perks}`,
-    '**Yayın ve ekran paylaşımı**\n' +
-      `**Yayın yetkisi:** <#${c.stream}> kanalındaki butonla yayın yetkisini alabilirsin.\n` +
-      '**Ses seviyesi:** 15. seviye ses rolü de yayın açma hakkı verir.',
-    '**Haftanın ses aktifleri**\n' +
+    '**Sesli Kanallar**\n' +
+      `Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin. Sana ait bir oda için <#${c.createRoom}> kanalına gir, odanı nasıl yöneteceğin <#${c.roomGuide}> kanalında anlatılıyor. Kalıcı odalar için <#${c.permanentRooms}> kanalına bakabilirsin.`,
+    '**Ses Seviyesi**\n' +
+      'Sesli kanalda geçen her dakika 6 XP kazandırır ve mesaj seviyenden ayrı birikir. Her 5 seviyede yeni bir ses rolü kazanırsın, seviyeni `/seviye` ve `/siralama` ile görebilirsin.',
+    `**Ses Rolleri**\n${perks}`,
+    '**Yayın**\n' +
+      `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından yayın yetkisini alabilirsin, 15. seviye ses rolü de yayın hakkı verir.`,
+    '**Haftanın Ses Aktifleri**\n' +
       `Her pazartesi geçen haftanın en çok seste kalan üyesi <#${c.weekly}> kanalında ilan edilir ve <@&${config.roles.weeklyVoice}> rolünü alır.`,
-    '**Sesli kanal kuralları**\n' +
-      '**Rahatsızlık:** Troll dahil rahatsızlık veren her davranış yasaktır.\n' +
-      '**Küfür:** Sesli kanallarda da küfür yasaktır.\n' +
-      '**Bas ve bağırma:** Bas açıp bağırmak, mikrofonla ortamı domine etmek yasaktır.\n' +
-      '**Ses paneli:** Müzik botlarını ve ses panelini troll amaçlı kullanmak yasaktır.\n' +
-      '**Özel odalar:** Kuralları çiğneyen isimler kullanmak ve sürekli gir-çık yapmak yasaktır.\n' +
-      '**Yayın:** Yayında gösterdiğin her şeyde de bu kurallar geçerlidir.',
-    '**Sorun yaşarsan**\n' +
-      `Sesli kanalda rahatsız edildiysen <#${config.channels.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.\n` +
-      `-# Kuralların tam metni <#${config.channels.rules}> kanalında.`,
+    '**Sesli Kanal Kuralları**\n' +
+      'Troll dahil rahatsızlık veren her davranış ve küfür yasaktır.\n' +
+      'Bas açıp bağırmak, mikrofonla ortamı domine etmek yasaktır.\n' +
+      'Müzik botlarını ve ses panelini troll amaçlı kullanmak yasaktır.\n' +
+      'Özel odalarda kuralları çiğneyen isimler kullanmak ve sürekli gir-çık yapmak yasaktır.\n' +
+      'Yayında gösterdiğin her şeyde de bu kurallar geçerlidir.\n' +
+      `-# Sorun yaşarsan <#${c.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.`,
   ];
 }
 
