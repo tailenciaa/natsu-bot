@@ -3,11 +3,11 @@
 // kazananları aynı kanalda duyurur. Sunucudan ayrılmış üyeler ve botlar kazanamaz. Bitiş her 15 saniyede kontrol edilir,
 // bot kapalıyken süresi dolan çekilişler açılışta hemen sonuçlanır. Duyuru etiketi (rol, @everyone, @here) config.js'teki
 // ping ayarına bağlıdır; kapalıyken (test) hiç etiket atılmaz.
-// Komutlar sadece yöneticilerindir ve yetkili komut kanalında kullanılır.
+// Komutlar sadece yöneticilerindir ve her kanalda kullanılabilir.
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isStaff, fetchTextChannel, inStaffChannel, staffChannelError } = require('../../core/helpers');
+const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const logSystem = require('../log');
 const config = require('./config');
 const store = require('./store');
@@ -259,7 +259,6 @@ async function list(interaction) {
 
 async function handleCommand(interaction) {
   if (!isStaff(interaction)) return replyError(interaction, 'Bu komutu sadece yöneticiler kullanabilir.');
-  if (!inStaffChannel(interaction)) return staffChannelError(interaction);
   const sub = interaction.options.getSubcommand();
   if (sub === 'olustur') return create(interaction);
   if (sub === 'bitir') return end(interaction);
