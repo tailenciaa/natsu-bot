@@ -211,7 +211,7 @@ async function create(interaction) {
     interaction,
     core.alert(
       `Çekiliş #${g.no} başlatıldı.`,
-      `${target.toString()} kanalına gönderildi, bitiş <t:${core.unix(g.endsAt)}:R>. ${pinged ? 'Etiket mesajı atıldı.' : 'Etiket mesajı kapalı (test modu), kimse etiketlenmedi.'}`,
+      `${target.toString()} kanalına gönderildi, bitiş <t:${core.unix(g.endsAt)}:R>. ${pinged ? 'Etiket mesajı atıldı.' : 'Etiket mesajı kapalı, kimse etiketlenmedi.'}`,
       'success',
     ),
   );

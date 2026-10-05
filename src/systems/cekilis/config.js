@@ -3,10 +3,10 @@ module.exports = {
   // Çekilişlerin gönderildiği kanal (komutta "kanal" seçilirse o kullanılır)
   channel: '1538533903130828851',
 
-  // Çekiliş mesajının altında yapılan duyuru etiketi. enabled: false iken hiçbir etiket atılmaz (test için).
-  // Gerçek çekilişlere geçmek için enabled: true yapıp botu yeniden başlatmak yeterli.
+  // Çekiliş mesajının altında yapılan duyuru etiketi (Çekiliş Bildirimi rolü, @everyone, @here).
+  // enabled: false yapılırsa hiçbir etiket atılmaz (test için).
   ping: {
-    enabled: false,
+    enabled: true,
     roleId: '1555890045066543154',
     everyone: true,
     here: true,
