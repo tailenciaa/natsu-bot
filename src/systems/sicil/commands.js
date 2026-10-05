@@ -1,8 +1,8 @@
 // Hızlı ceza komutları: /uyari, /mute, /unmute, /jail, /unjail, /ban, /unban, /ceza-kaldir, /ceza-sil.
 // Sicildeki "Ceza Ver" akışıyla aynı motoru (moderation.js) kullanır; tek fark bu komutların sonucu doğrudan
 // yetkili komut kanalına, herkese açık ve tek adımda gönderilmesidir. Sadece yetkili komut kanalında çalışır.
-const { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
-const { staffCommandChannel } = require('../../core/config');
+const { InteractionContextType, MessageFlags, SlashCommandBuilder } = require('discord.js');
+const { staffCommandChannel, staffPermission } = require('../../core/config');
 const { inStaffChannel } = require('../../core/helpers');
 const config = require('./config');
 const moderation = require('./moderation');
@@ -37,24 +37,24 @@ const liftCommand = (name, description, permission) =>
     .addStringOption(reasonOpt(false));
 
 const commands = [
-  punishCommand('uyari', 'Bir kullanıcıya uyarı verir.', PermissionFlagsBits.ModerateMembers, null),
-  punishCommand('mute', 'Bir kullanıcıyı belirtilen süre boyunca susturur.', PermissionFlagsBits.ModerateMembers, true),
-  liftCommand('unmute', 'Bir kullanıcının susturma cezasını kaldırır.', PermissionFlagsBits.ModerateMembers),
-  punishCommand('jail', "Bir kullanıcıyı jail'e atar.", PermissionFlagsBits.ModerateMembers, false),
-  liftCommand('unjail', "Bir kullanıcıyı jail'den çıkarır.", PermissionFlagsBits.ModerateMembers),
-  punishCommand('ban', 'Bir kullanıcıyı sunucudan yasaklar.', PermissionFlagsBits.BanMembers, false),
-  liftCommand('unban', 'Bir kullanıcının yasağını kaldırır.', PermissionFlagsBits.BanMembers),
+  punishCommand('uyari', 'Bir kullanıcıya uyarı verir.', staffPermission, null),
+  punishCommand('mute', 'Bir kullanıcıyı belirtilen süre boyunca susturur.', staffPermission, true),
+  liftCommand('unmute', 'Bir kullanıcının susturma cezasını kaldırır.', staffPermission),
+  punishCommand('jail', "Bir kullanıcıyı jail'e atar.", staffPermission, false),
+  liftCommand('unjail', "Bir kullanıcıyı jail'den çıkarır.", staffPermission),
+  punishCommand('ban', 'Bir kullanıcıyı sunucudan yasaklar.', staffPermission, false),
+  liftCommand('unban', 'Bir kullanıcının yasağını kaldırır.', staffPermission),
   new SlashCommandBuilder()
     .setName('ceza-kaldir')
     .setDescription('Numarasıyla, sürmekte olan bir cezayı kaldırır.')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .setDefaultMemberPermissions(staffPermission)
     .setContexts(InteractionContextType.Guild)
     .addIntegerOption(numberOpt)
     .addStringOption(reasonOpt(false)),
   new SlashCommandBuilder()
     .setName('ceza-sil')
     .setDescription('Numarasıyla, bir ceza kaydını sicilden tamamen siler.')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+    .setDefaultMemberPermissions(staffPermission)
     .setContexts(InteractionContextType.Guild)
     .addIntegerOption(numberOpt)
     .addStringOption(reasonOpt(true)),

@@ -4,6 +4,7 @@
 const { PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
 const { data, save } = require('../../core/db');
+const yetkiConfig = require('../yetki/config');
 const config = require('./config');
 const store = require('./store');
 const logSystem = require('../log');
@@ -59,11 +60,14 @@ async function syncRestrictions(guild, userId) {
   }
 }
 
-// Yetkilinin bu türde ceza verme izni var mı
+// Yetkilinin bu türde ceza verme izni var mı: yetki rollerinden birine (config.punishPerms) sahip olması yeter;
+// yönetici ve Discord'da Zaman Aşımı / Yasakla izni olanlar da yapabilir
 function canPunish(member, type) {
   const perms = member?.permissions;
   if (!perms) return false;
   if (perms.has(PermissionFlagsBits.Administrator)) return true;
+  const roleIds = (config.punishPerms[type] ?? []).map((id) => yetkiConfig.perms.find((p) => p.id === id)?.roleId).filter(Boolean);
+  if (roleIds.some((id) => member.roles.cache.has(id))) return true;
   return type === 'ban' ? perms.has(PermissionFlagsBits.BanMembers) : perms.has(PermissionFlagsBits.ModerateMembers);
 }
 
