@@ -441,18 +441,6 @@ async function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
   await resolveAreaRoles(guild);
-  // GEÇİCİ DÖKÜM (silinecek)
-  try {
-    const roles = await guild.roles.fetch();
-    const interesting = new Set(['1554240782897119292','1554240782024704010','1554240781508681889','1544337671340433569','1554240782024573048','1554239999111864410','1553398951816863844','1554237348940873758','1554237348282245161','1554237347631997029','1554237341768482816','1555890043992940614',guild.id]);
-    console.log('DUMP-ME', guild.members.me.permissions.bitfield.toString(), guild.members.me.roles.highest.position);
-    for (const r of [...roles.values()].sort((a, b) => b.position - a.position)) console.log(`DUMP-ROLE|${r.id}|${r.name}|${r.position}|${r.managed ? 'M' : ''}|${r.permissions.has('Administrator') ? 'ADMIN' : r.permissions.toArray().join(',')}`);
-    const chans = await guild.channels.fetch();
-    for (const c of [...chans.values()].filter(Boolean).sort((a, b) => a.rawPosition - b.rawPosition)) {
-      const ow = [...(c.permissionOverwrites?.cache.values() ?? [])].filter((o) => interesting.has(o.id)).map((o) => `${o.id}:+${o.allow.toArray().join('/')}:-${o.deny.toArray().join('/')}`).join(';');
-      console.log(`DUMP-CH|${c.id}|${c.type}|${c.name}|${c.parentId ?? ''}|${ow}`);
-    }
-  } catch (e) { console.log('DUMP-ERR', e.message); }
   for (const app of basvuruStore.inOrientation()) {
     if (app.orientation.status === 'active') await syncPresence(guild, app.id);
     else await tryStart(guild, app);

@@ -1,10 +1,12 @@
 // Elle yetki verme paneli: /yetki-ver ile açılır. Seviye seçilince o seviyenin yetkileri otomatik işaretlenir,
 // istenirse ekstra yetki eklenip çıkarılır. Rolü ayarlanmamış (roleId: null) seviye/yetkiler için rol verilmez.
 // Panel herkese açık gönderilir, ama menü ve butonları sadece yöneticiler kullanabilir.
-const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
-const { staffCommandChannel } = require('../../core/config');
+const { guildId, staffCommandChannel } = require('../../core/config');
 const { respond, replyError, inStaffChannel, staffChannelError } = require('../../core/helpers');
+const basvuruConfig = require('../basvuru/config');
+const access = require('./access');
 const config = require('./config');
 const ui = require('./ui');
 
@@ -73,8 +75,9 @@ async function handleGive(interaction) {
 
   const selectedPerms = config.perms.filter((p) => permIds.includes(p.id));
   const wanted = [level, ...selectedPerms];
-  const roleIds = wanted.map((item) => item.roleId).filter(Boolean);
-  const missingRoles = roleIds.length < wanted.length;
+  // Yetkili Ekibi rolü de verilir: yetkili komutlarını görmek ve sicile bakmak için gerekir
+  const roleIds = [basvuruConfig.roles.accept, ...wanted.map((item) => item.roleId)].filter(Boolean);
+  const missingRoles = wanted.some((item) => !item.roleId);
 
   if (roleIds.length) {
     const added = await member.roles
@@ -105,6 +108,12 @@ module.exports = {
   commands,
   help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında.` } },
   slash: { 'yetki-ver': handleCommand },
+  events: {
+    [Events.ClientReady]: (client) => {
+      const guild = client.guilds.cache.get(guildId);
+      if (guild) access.sync(guild).catch((err) => console.error('[yetki] Yetki izinleri ayarlanamadı:', err.message));
+    },
+  },
   buttons: { [ui.IDS.cancel]: handleCancel },
   prefixed: [
     [ui.IDS.level, handleLevel],

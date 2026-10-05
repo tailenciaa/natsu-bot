@@ -2,6 +2,7 @@
 // Discord toplu silmede 14 günden eski mesajları silemez ve tek seferde en fazla 100 mesaj siler.
 const { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
+const { staffPermission } = require('../../core/config');
 const { respond, replyError } = require('../../core/helpers');
 
 const commands = [
@@ -9,7 +10,7 @@ const commands = [
     .setName('sil')
     .setDescription('Bu kanalda belirttiğin sayıda mesajı siler.')
     .setContexts(InteractionContextType.Guild)
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
+    .setDefaultMemberPermissions(staffPermission)
     .addIntegerOption((o) =>
       o.setName('sayi').setDescription('Silinecek mesaj sayısı (1-100)').setMinValue(1).setMaxValue(100).setRequired(true),
     ),
