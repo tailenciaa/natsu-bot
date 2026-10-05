@@ -12,7 +12,7 @@ function blockText(block) {
   const parts = [];
   if (block.heading) parts.push(`**${block.heading}**`);
   if (block.text) parts.push(block.text);
-  if (block.items) parts.push(block.items.map((item) => (block.plain ? item : `- ${item}`)).join('\n'));
+  if (block.items) parts.push(block.items.map((item) => item).join('\n'));
   if (block.note) parts.push(`-# ${block.note}`);
   return parts.join('\n');
 }

@@ -21,6 +21,7 @@ const IDS = {
   reroll: 'cekilis-yeniden',
   confirm: 'cekilis-onay',
   form: 'cekilis-form',
+  create: 'cekilis-yeni', // cekilis-yeni:<kanalID>:<rolID|0>
 };
 
 const PANEL_SUB =
@@ -30,11 +31,11 @@ const mentions = (ids) => ids.map((id) => `<@${id}>`).join(', ');
 
 // Çekiliş mesajı: açıkken katıl butonu, bitince kazananlar ve devre dışı buton
 function panel(g) {
-  const info = [];
-  if (g.status === 'active') info.push(`- **Bitiş:** <t:${unix(g.endsAt)}:R> (<t:${unix(g.endsAt)}:f>)`);
-  if (g.status === 'ended') info.push(`- **Bitti:** <t:${unix(g.endsAt)}:f>`);
-  info.push(`- **Kazanan sayısı:** ${g.winnerCount}`, `- **Katılımcı sayısı:** ${g.participants.length}`, `- **Düzenleyen:** <@${g.hostId}>`);
-  if (g.roleId) info.push(`- **Katılım şartı:** <@&${g.roleId}> rolüne sahip olmak`);
+  const info = [`**Kazanacak kişi:** ${g.winnerCount} kişi`, `**Katılan kişi:** ${g.participants.length} kişi`];
+  if (g.status === 'active') info.push(`**Bitiş:** <t:${unix(g.endsAt)}:R> (<t:${unix(g.endsAt)}:f>)`);
+  if (g.status === 'ended') info.push(`**Bitti:** <t:${unix(g.endsAt)}:f>`);
+  if (g.roleId) info.push(`**Katılım şartı:** <@&${g.roleId}> rolüne sahip olmak`);
+  info.push(`**Düzenleyen:** <@${g.hostId}>`);
 
   const blocks = [`**Ödül**\n${g.prize}`];
   if (g.description) blocks.push(`**Açıklama**\n${g.description}`);
@@ -43,7 +44,7 @@ function panel(g) {
 
   const label = { active: `Katıl (${g.participants.length})`, ended: `Çekiliş Bitti (${g.participants.length} katılımcı)`, cancelled: 'Çekiliş İptal Edildi' }[g.status];
   const container = page({
-    title: g.status === 'cancelled' ? 'Çekiliş İptal Edildi' : g.status === 'ended' ? 'Çekiliş Sona Erdi' : 'Çekiliş',
+    title: `Çekiliş #${g.no}${g.status === 'cancelled' ? ' İptal Edildi' : g.status === 'ended' ? ' Sona Erdi' : ''}`,
     sub: PANEL_SUB,
     accent: g.status === 'cancelled' ? colors.danger : undefined,
     blocks,
@@ -63,6 +64,25 @@ function panel(g) {
     row.addComponents(button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary));
   }
   return container.addActionRowComponents(row);
+}
+
+// Çekiliş oluşturma formu (/cekilis baslat ile açılır); kanal ve rol form numarasında taşınır
+function createModal(channelId, roleId) {
+  const field = (label, id, style, extra = {}) =>
+    new LabelBuilder()
+      .setLabel(label)
+      .setTextInputComponent(
+        new TextInputBuilder().setCustomId(id).setStyle(style).setValue(extra.value ?? '').setRequired(Boolean(extra.required)).setMaxLength(extra.max ?? 100).setPlaceholder(extra.placeholder ?? ''),
+      );
+  return new ModalBuilder()
+    .setCustomId(`${IDS.create}:${channelId}:${roleId ?? 0}`)
+    .setTitle('Çekiliş Oluştur')
+    .addLabelComponents(
+      field('Ödül', 'odul', TextInputStyle.Short, { required: true, placeholder: 'Örn: 1 Aylık Discord Nitro' }),
+      field('Açıklama', 'aciklama', TextInputStyle.Paragraph, { max: 300, placeholder: 'İsteğe bağlı: ödül ya da çekiliş hakkında kısa bilgi' }),
+      field('Kazanan Sayısı', 'kazanan', TextInputStyle.Short, { required: true, max: 2, value: '1' }),
+      field('Süre', 'sure', TextInputStyle.Short, { required: true, max: 6, placeholder: 'Örn: 30dk, 2sa, 1g, 1hf (dakika, saat, gün, hafta)' }),
+    );
 }
 
 // Düzenleme formu: ödül, açıklama, kazanan sayısı ve isteğe bağlı yeni süre
@@ -100,10 +120,10 @@ function confirm(action, g) {
 function winners(g, ids, reroll = false) {
   const url = messageUrl(guildId, g.channelId, g.messageId);
   return page({
-    title: reroll ? 'Yeni Kazanan Seçildi' : 'Çekiliş Sona Erdi',
+    title: reroll ? `Çekiliş #${g.no} Yeni Kazanan` : `Çekiliş #${g.no} Sona Erdi`,
     sub: 'Çekilişe katılanlar arasından kazananlar rastgele seçildi; tebrikler! Ödülünü almak için yetkililerle iletişime geçebilirsin, çekiliş mesajına gitmek için aşağıdaki bağlantıyı kullan.',
     blocks: [
-      `**${g.prize}**\n- **Kazananlar:** ${mentions(ids)}\n- **Katılımcı sayısı:** ${g.participants.length}\n- **Çekiliş:** [mesaja git](${url})`,
+      `**${g.prize}**\n**Kazananlar:** ${mentions(ids)}\n**Katılımcı sayısı:** ${g.participants.length}\n**Çekiliş:** [mesaja git](${url})`,
     ],
   });
 }
@@ -118,4 +138,4 @@ function joined(g) {
   );
 }
 
-module.exports = { IDS, panel, editModal, confirm, winners, noWinner, joined };
+module.exports = { IDS, panel, createModal, editModal, confirm, winners, noWinner, joined };

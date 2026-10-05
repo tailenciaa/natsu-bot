@@ -1,4 +1,4 @@
-// Çekiliş sistemi: /cekilis olustur ile ödüllü çekiliş açılır; çekiliş mesajındaki butona basan üye katılır (tekrar
+// Çekiliş sistemi: /cekilis baslat ile ödüllü çekiliş açılır; çekiliş mesajındaki butona basan üye katılır (tekrar
 // basınca ayrılma seçeneği çıkar). Süre dolunca bot katılanlar arasından rastgele kazananları seçer, mesajı günceller ve
 // kazananları aynı kanalda duyurur. Sunucudan ayrılmış üyeler ve botlar kazanamaz. Bitiş her 15 saniyede kontrol edilir,
 // bot kapalıyken süresi dolan çekilişler açılışta hemen sonuçlanır. Duyuru etiketi (rol, @everyone, @here) config.js'teki
@@ -24,12 +24,8 @@ const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((s) =>
       s
-        .setName('olustur')
-        .setDescription('Yeni bir çekiliş başlatır.')
-        .addStringOption((o) => o.setName('odul').setDescription('Çekilişin ödülü').setMaxLength(100).setRequired(true))
-        .addStringOption((o) => o.setName('sure').setDescription('Süre: 30dk, 2sa, 1g, 1hf (dakika, saat, gün, hafta)').setRequired(true))
-        .addStringOption((o) => o.setName('aciklama').setDescription('Çekilişle ilgili kısa açıklama (isteğe bağlı)').setMaxLength(300))
-        .addIntegerOption((o) => o.setName('kazanan').setDescription('Kazanan sayısı (varsayılan 1)').setMinValue(1).setMaxValue(20))
+        .setName('baslat')
+        .setDescription('Yeni bir çekiliş başlatır; ödül, süre ve kazanan sayısı açılan formda girilir.')
         .addChannelOption((o) =>
           o.setName('kanal').setDescription('Çekilişin gönderileceği kanal').addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement),
         )
@@ -137,30 +133,46 @@ async function sweep(client) {
 
 // ── Komutlar ────────────────────────────────────────────────────────────────────
 
-async function create(interaction) {
-  const minutes = parseMinutes(interaction.options.getString('sure', true));
-  if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) {
-    return replyError(interaction, 'Süre anlaşılamadı.', 'Şöyle yaz: 30dk, 2sa, 1g ya da 1hf (en az 1 dakika, en fazla 30 gün).');
-  }
+// /cekilis baslat: kanal ve rol kontrol edilip bilgilerin girileceği form açılır
+async function start(interaction) {
   if (store.active().length >= config.maxActive) return replyError(interaction, `En fazla ${config.maxActive} çekiliş aynı anda açık olabilir.`);
-
   const target = interaction.options.getChannel('kanal') ?? (config.channel ? await fetchTextChannel(interaction.guild, config.channel) : null);
   if (!target) return replyError(interaction, 'Çekiliş kanalı seçilmedi.', 'Komutta "kanal" seçeneğiyle çekilişin gönderileceği kanalı seç.');
   if (!target.permissionsFor(interaction.guild.members.me)?.has(['ViewChannel', 'SendMessages'])) {
     return replyError(interaction, 'Botun bu kanala mesaj gönderme yetkisi yok.');
   }
+  return interaction.showModal(ui.createModal(target.id, interaction.options.getRole('rol')?.id));
+}
+
+// Form gönderilince çekiliş oluşturulup kanala gönderilir
+async function create(interaction) {
+  if (!isStaff(interaction)) return replyError(interaction, 'Bu formu sadece yöneticiler kullanabilir.');
+  const [, channelId, rawRole] = interaction.customId.split(':');
+  const roleId = rawRole && rawRole !== '0' ? rawRole : null;
+  const field = (id) => interaction.fields.getTextInputValue(id).trim();
+
+  const prize = field('odul');
+  const winnerCount = Number(field('kazanan'));
+  const minutes = parseMinutes(field('sure'));
+  if (!prize) return replyError(interaction, 'Ödül boş olamaz.');
+  if (!Number.isInteger(winnerCount) || winnerCount < 1 || winnerCount > 20) return replyError(interaction, 'Kazanan sayısı 1 ile 20 arasında olmalı.');
+  if (!minutes || minutes < config.minMinutes || minutes > config.maxMinutes) {
+    return replyError(interaction, 'Süre anlaşılamadı.', 'Şöyle yaz: 30dk, 2sa, 1g ya da 1hf (en az 1 dakika, en fazla 30 gün).');
+  }
+  if (store.active().length >= config.maxActive) return replyError(interaction, `En fazla ${config.maxActive} çekiliş aynı anda açık olabilir.`);
+  const target = await fetchTextChannel(interaction.guild, channelId);
+  if (!target) return replyError(interaction, 'Çekiliş kanalı bulunamadı.');
 
   await interaction.deferReply({ flags: core.EPHEMERAL });
-  const role = interaction.options.getRole('rol');
   const g = store.create({
     channelId: target.id,
     messageId: null,
-    prize: interaction.options.getString('odul', true).trim(),
-    description: interaction.options.getString('aciklama')?.trim() || null,
-    winnerCount: interaction.options.getInteger('kazanan') ?? 1,
+    prize,
+    description: field('aciklama') || null,
+    winnerCount,
     endsAt: Date.now() + minutes * 60 * 1000,
     hostId: interaction.user.id,
-    roleId: role?.id ?? null,
+    roleId,
   });
 
   const message = await target.send({ components: [ui.panel(g)], flags: core.CV2, allowedMentions: { parse: [] } }).catch((err) => {
@@ -251,7 +263,7 @@ async function cancel(interaction) {
 async function list(interaction) {
   const active = store.active();
   const body = active.length
-    ? active.map((g) => `- **#${g.no} ${g.prize}:** <#${g.channelId}>, bitiş <t:${core.unix(g.endsAt)}:R>, ${g.participants.length} katılımcı`).join('\n')
+    ? active.map((g) => `**#${g.no} ${g.prize}:** <#${g.channelId}>, bitiş <t:${core.unix(g.endsAt)}:R>, ${g.participants.length} katılımcı`).join('\n')
     : 'Şu an açık çekiliş yok.';
   return respond(
     interaction,
@@ -266,7 +278,7 @@ async function list(interaction) {
 async function handleCommand(interaction) {
   if (!isStaff(interaction)) return replyError(interaction, 'Bu komutu sadece yöneticiler kullanabilir.');
   const sub = interaction.options.getSubcommand();
-  if (sub === 'olustur') return create(interaction);
+  if (sub === 'baslat') return start(interaction);
   if (sub === 'bitir') return end(interaction);
   if (sub === 'yeniden-cek') return reroll(interaction);
   if (sub === 'iptal') return cancel(interaction);
@@ -392,7 +404,7 @@ module.exports = {
   help: {
     category: ['cekilis', 'Çekiliş'],
     access: {
-      'cekilis olustur': 'Yöneticiler',
+      'cekilis baslat': 'Yöneticiler',
       'cekilis bitir': 'Yöneticiler',
       'cekilis yeniden-cek': 'Yöneticiler',
       'cekilis iptal': 'Yöneticiler',
@@ -411,6 +423,7 @@ module.exports = {
     [ui.IDS.leave, handleLeave],
     [ui.IDS.confirm, handleConfirm],
     [ui.IDS.form, handleEditSubmit],
+    [ui.IDS.create, create],
   ],
   events: {
     [Events.ClientReady]: (client) => {

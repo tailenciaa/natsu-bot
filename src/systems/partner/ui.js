@@ -77,8 +77,8 @@ function startPromptBase(button) {
     .addTextDisplayComponents(
       text(
         '**Oto Partner Nasıl Çalışır?**\n' +
-          '- Sunucu ID\'ni ve partner metnini gönderirsin.\n' +
-          '- Yetkili onaylayınca metnin otomatik paylaşılır.\n' +
+          'Sunucu ID\'ni ve partner metnini gönderirsin.\n' +
+          'Yetkili onaylayınca metnin otomatik paylaşılır.\n' +
           '-# İstersen butona basmadan bir yetkilinin seninle ilgilenmesini de bekleyebilirsin.',
       ),
     )
@@ -106,7 +106,7 @@ function startPromptSuccess() {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('**Sıradaki Adım**\n- Şartlarını kabul etmek için DM\'ini kontrol et.'))
+    .addTextDisplayComponents(text('**Sıradaki Adım**\nŞartlarını kabul etmek için DM\'ini kontrol et.'))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -209,7 +209,7 @@ function reviewCard(request, decided) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**Talep Bilgileri**\n- **Gönderen:** <@${request.requesterId}>\n- **Sunucu ID:** \`${request.serverId}\`${decided ? '' : `\n-# <@&${config.roles.staff}>, yeni bir partner talebi var.`}`),
+      text(`**Talep Bilgileri**\n**Gönderen:** <@${request.requesterId}>\n**Sunucu ID:** \`${request.serverId}\`${decided ? '' : `\n-# <@&${config.roles.staff}>, yeni bir partner talebi var.`}`),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(request.text, 1000))}`));
@@ -257,7 +257,7 @@ function postCard(request, trusted, banned) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Tanıtım Metni**\n${sanitize(request.text)}\n-# @everyone ve @here bu kanalda bildirim göndermez.`))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Paylaşım**\n- **Paylaşan:** <@${request.requesterId}>\n- **Tarih:** <t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
+    .addTextDisplayComponents(text(`**Paylaşım**\n**Paylaşan:** <@${request.requesterId}>\n**Tarih:** <t:${unix(request.decidedAt ?? request.createdAt)}:f>`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -295,8 +295,8 @@ const requesterResult = (sonuc, hint) =>
     .addTextDisplayComponents(
       text(
         sonuc === 'onayla'
-          ? '**Sonuç**\n- ✅ Partner talebin onaylandı, metnin paylaşım kanalına gönderildi!'
-          : `**Sonuç**\n- ❌ Partner talebin reddedildi.${hint ? `\n-# ${hint}` : ''}`,
+          ? '**Sonuç**\n✅ Partner talebin onaylandı, metnin paylaşım kanalına gönderildi!'
+          : `**Sonuç**\n❌ Partner talebin reddedildi.${hint ? `\n-# ${hint}` : ''}`,
       ),
     );
 
@@ -313,7 +313,7 @@ function trustedList(entries) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Liste Durumu**\n- **Toplam:** ${entries.length} sunucu\n-# Detay ve işlemler için aşağıdan bir partner seç.`))
+    .addTextDisplayComponents(text(`**Liste Durumu**\n**Toplam:** ${entries.length} sunucu\n-# Detay ve işlemler için aşağıdan bir partner seç.`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -411,9 +411,9 @@ function trustedListPanel(entries) {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(
       text(
         `**Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
-          `- **Partner Yetkilisi:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
-          `- **Eklenme:** <t:${unix(entry.addedAt)}:D>\n` +
-          `- **Ekleyen:** <@${entry.addedBy}>`,
+          `**Partner Yetkilisi:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
+          `**Eklenme:** <t:${unix(entry.addedAt)}:D>\n` +
+          `**Ekleyen:** <@${entry.addedBy}>`,
       ),
     );
 
@@ -445,10 +445,10 @@ function trustedDetail(entry) {
     .addTextDisplayComponents(
       text(
         '**Kayıt Bilgileri**\n' +
-          `- **Eklenme:** <t:${unix(entry.addedAt)}:F>\n` +
-          `- **Ekleyen:** <@${entry.addedBy}>\n` +
-          `- **İletişim:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
-          `- **Partner Durumu:** ${isBusy(entry) ? 'Meşgul' : 'Müsait'}`,
+          `**Eklenme:** <t:${unix(entry.addedAt)}:F>\n` +
+          `**Ekleyen:** <@${entry.addedBy}>\n` +
+          `**İletişim:** ${entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor'}\n` +
+          `**Partner Durumu:** ${isBusy(entry) ? 'Meşgul' : 'Müsait'}`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -490,7 +490,7 @@ function staffSelect(trustedId, members, statusOf) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('**Yetkili Seçimi**\n- Bu teklifle hangi partner yetkilisi ilgilensin?'))
+    .addTextDisplayComponents(text('**Yetkili Seçimi**\nBu teklifle hangi partner yetkilisi ilgilensin?'))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -525,8 +525,8 @@ function assignedOfferDm(entry, guildName) {
     .addTextDisplayComponents(
       text(
         '**Teklif Bilgileri**\n' +
-          `- **Teklif eden sunucu:** **${guildName}**\n` +
-          `- **Sizin sunucunuz:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
+          `**Teklif eden sunucu:** **${guildName}**\n` +
+          `**Sizin sunucunuz:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
           '-# Kabul edersen mevcut partner metnini inceleyip onaylayacak ya da düzenleyeceksin.',
       ),
     )
@@ -679,17 +679,17 @@ function partnerPanel(entry, guildName) {
     .addTextDisplayComponents(
       text(
         '**Partner Bilgileri**\n' +
-          `- **Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
-          `- **Partnerlik:** <t:${unix(entry.addedAt)}:D>\n` +
-          `- **Durum:** ${busy ? 'Meşgul' : 'Müsait'}`,
+          `**Sunucu:** \`${entry.serverId ?? 'bilinmiyor'}\`\n` +
+          `**Partnerlik:** <t:${unix(entry.addedAt)}:D>\n` +
+          `**Durum:** ${busy ? 'Meşgul' : 'Müsait'}`,
       ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
         '**Neler Yapabilirsin?**\n' +
-          `- **Müsaitlik:** Meşgul seçersen yetkililerimiz ${BUSY_DAYS} gün boyunca sana teklif göndermez.\n` +
-          '- **Teklif:** Yeni partner metnini buradan gönderirsin; yetkilimiz onaylayınca otomatik paylaşılır.',
+          `**Müsaitlik:** Meşgul seçersen yetkililerimiz ${BUSY_DAYS} gün boyunca sana teklif göndermez.\n` +
+          '**Teklif:** Yeni partner metnini buradan gönderirsin; yetkilimiz onaylayınca otomatik paylaşılır.',
       ),
     )
     .addActionRowComponents(

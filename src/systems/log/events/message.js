@@ -97,7 +97,7 @@ function bulkDetails(messages, first) {
   const rows = list.slice(0, 15).map((m) => {
     const time = `<t:${Math.floor(m.createdTimestamp / 1000)}:T>`;
     const body = m.partial || !m.content ? '(içerik yok)' : m.content.replace(/\s+/g, ' ').slice(0, 60);
-    return `- ${time} ${m.author ? `<@${m.author.id}>` : 'bilinmiyor'}: ${body}`;
+    return `${time} ${m.author ? `<@${m.author.id}>` : 'bilinmiyor'}: ${body}`;
   });
   const authors = [...new Set(list.map((m) => m.author?.id).filter(Boolean))];
   return [

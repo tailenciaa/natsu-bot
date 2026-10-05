@@ -61,7 +61,7 @@ function controlPanel(room, channel) {
     sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini bu panelden yönetebilir; odadaki üyeleri atabilir, yasaklayabilir ya da odanın sahipliğini başka birine devredebilirsin.',
     accent: locked ? colors.danger : colors.primary,
     blocks: [
-      `**Oda Bilgisi**\n- **Sahip:** <@${room.ownerId}>\n- **Durum:** ${locked ? 'Kilitli' : 'Açık'}\n- **Görünürlük:** ${hidden ? 'Gizli' : 'Görünür'}\n- **Kişi Limiti:** ${channel.userLimit || 'Sınırsız'}\n-# Paneli sadece oda sahibi kullanabilir.`,
+      `**Oda Bilgisi**\n**Sahip:** <@${room.ownerId}>\n**Durum:** ${locked ? 'Kilitli' : 'Açık'}\n**Görünürlük:** ${hidden ? 'Gizli' : 'Görünür'}\n**Kişi Limiti:** ${channel.userLimit || 'Sınırsız'}\n-# Paneli sadece oda sahibi kullanabilir.`,
     ],
   })
     .addSeparatorComponents(divider())
@@ -136,10 +136,10 @@ const GUIDE_TITLE = 'Özel Oda Rehberi';
 function guidePanel() {
   const { createChannelId } = require('./config');
   const blocks = [
-      `**Oda nasıl açılır?**\n- **Katıl:** <#${createChannelId}> kanalına girdiğinde senin için otomatik olarak kendi ses kanalın açılır ve içine alınırsın.\n- **İsim:** Odanın adı görünen adından oluşturulur, istediğin zaman değiştirebilirsin.\n- **Kontrol paneli:** Odanın kendi yazı sohbetine oda ayarlarını yönettiğin panel gönderilir.`,
-      `**Oda sahibi neler yapabilir?**\n- **Kilitle / Aç:** Kilitliyken yeni kimse odaya katılamaz, içeridekiler kalmaya devam eder.\n- **Gizle / Göster:** Gizliyken oda kanal listesinde sadece içindekilere görünür.\n- **Kişi Limiti:** Odaya girebilecek en fazla kişi sayısını belirler, 0 sınırsız demektir.\n- **İsim Değiştir:** Odanın adını istediğin gibi değiştirir.`,
-      `**Kullanıcı yönetimi**\n- **Kullanıcı At:** Seçtiğin kişiyi odadan çıkarır, istediği zaman tekrar girebilir.\n- **Kullanıcı Yasakla:** Seçtiğin kişiyi çıkarır ve oda silinene kadar tekrar girmesini engeller.\n- **Sahipliği Devret:** Odanın yönetimini odadaki başka bir üyeye verir.\n- **Not:** Menüler sadece o an odada bulunan üyeleri listeler.`,
-      `**Bilmen gerekenler**\n- **Kontrol:** Paneli sadece oda sahibi kullanabilir.\n- **Bekleme:** Spam olmaması için panel işlemleri arasında kısa bir bekleme vardır, isim ve limit değişikliğinde bu süre biraz daha uzundur.\n- **Silinme:** Odada kimse kalmayınca oda kendiliğinden silinir.\n- **Yeni oda:** Oluştur kanalına her girişinde yeni bir oda açılır.`,
+      `**Oda nasıl açılır?**\n**Katıl:** <#${createChannelId}> kanalına girdiğinde senin için otomatik olarak kendi ses kanalın açılır ve içine alınırsın.\n**İsim:** Odanın adı görünen adından oluşturulur, istediğin zaman değiştirebilirsin.\n**Kontrol paneli:** Odanın kendi yazı sohbetine oda ayarlarını yönettiğin panel gönderilir.`,
+      `**Oda sahibi neler yapabilir?**\n**Kilitle / Aç:** Kilitliyken yeni kimse odaya katılamaz, içeridekiler kalmaya devam eder.\n**Gizle / Göster:** Gizliyken oda kanal listesinde sadece içindekilere görünür.\n**Kişi Limiti:** Odaya girebilecek en fazla kişi sayısını belirler, 0 sınırsız demektir.\n**İsim Değiştir:** Odanın adını istediğin gibi değiştirir.`,
+      `**Kullanıcı yönetimi**\n**Kullanıcı At:** Seçtiğin kişiyi odadan çıkarır, istediği zaman tekrar girebilir.\n**Kullanıcı Yasakla:** Seçtiğin kişiyi çıkarır ve oda silinene kadar tekrar girmesini engeller.\n**Sahipliği Devret:** Odanın yönetimini odadaki başka bir üyeye verir.\n**Not:** Menüler sadece o an odada bulunan üyeleri listeler.`,
+      `**Bilmen gerekenler**\n**Kontrol:** Paneli sadece oda sahibi kullanabilir.\n**Bekleme:** Spam olmaması için panel işlemleri arasında kısa bir bekleme vardır, isim ve limit değişikliğinde bu süre biraz daha uzundur.\n**Silinme:** Odada kimse kalmayınca oda kendiliğinden silinir.\n**Yeni oda:** Oluştur kanalına her girişinde yeni bir oda açılır.`,
   ];
   const container = page({
     title: GUIDE_TITLE,

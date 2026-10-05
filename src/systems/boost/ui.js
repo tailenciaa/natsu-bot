@@ -90,7 +90,7 @@ function panel(guild) {
     title: `${botName} Booster İşlemleri`,
     sub: 'Bu panel sadece sunucuyu takviye eden (boost basan) üyeler içindir; isim ve rol ayrıcalıkları takviyen sürdüğü sürece geçerlidir, takviyen bitince otomatik geri alınır.',
     thumbnail: guild?.iconURL({ size: 256 }),
-    blocks: [`**Booster Olmanın Avantajları**\n${PERKS.map((p) => `- ${p}`).join('\n')}`],
+    blocks: [`**Booster Olmanın Avantajları**\n${PERKS.map((p) => `${p}`).join('\n')}`],
   });
 
   if (config.banner) {
@@ -104,7 +104,7 @@ function panel(guild) {
   return container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe]) => `- **${title}:** ${describe()}`).join('\n')}`),
+      text(`**İşlem Seçenekleri**\n${ACTIONS.map(([title, describe]) => `**${title}:** ${describe()}`).join('\n')}`),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(

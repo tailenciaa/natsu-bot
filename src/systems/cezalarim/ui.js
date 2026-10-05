@@ -175,12 +175,12 @@ function itirazCard(p, sebep, karar) {
       text(
         '**Ceza Bilgileri**\n' +
           [
-            `- **Tür:** ${TYPES[p.type].label}`,
-            `- **Numara:** #${pad(p.number)}`,
-            `- **Veren:** <@${p.by}>`,
-            `- **Verilme:** <t:${unix(p.createdAt)}:F>`,
-            p.duration ? `- **Süre:** ${formatDuration(p.duration)}` : null,
-            durum ? `- **Durum:** ${durum}` : null,
+            `**Tür:** ${TYPES[p.type].label}`,
+            `**Numara:** #${pad(p.number)}`,
+            `**Veren:** <@${p.by}>`,
+            `**Verilme:** <t:${unix(p.createdAt)}:F>`,
+            p.duration ? `**Süre:** ${formatDuration(p.duration)}` : null,
+            durum ? `**Durum:** ${durum}` : null,
           ]
             .filter(Boolean)
             .join('\n'),

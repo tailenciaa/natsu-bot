@@ -35,16 +35,16 @@ function entry(color, title, lines, details) {
 }
 
 // "Detaylı Bilgi" butonuna basınca sadece basana görünen cevap: olayın tam zamanı, ilgili kişi/kanal ID'leri ve ek ayrıntılar
-const label = (line) => (line.startsWith('**') ? `- ${line}` : line);
+
 function detail(meta, categoryLabel) {
   const at = Math.floor(meta.at / 1000);
-  const body = (meta.details.length ? meta.details : meta.lines).map(label).join('\n');
+  const body = (meta.details.length ? meta.details : meta.lines).join('\n');
   const users = [...new Set([...meta.lines.join('\n').matchAll(/<@!?(\d{15,})>/g)].map((m) => m[1]))];
   const channels = [...new Set([...meta.lines.join('\n').matchAll(/<#(\d{15,})>/g)].map((m) => m[1]))];
-  const ids = [...users.map((id) => `- **Kullanıcı ID:** \`${id}\``), ...channels.map((id) => `- **Kanal ID:** \`${id}\``)];
+  const ids = [...users.map((id) => `**Kullanıcı ID:** \`${id}\``), ...channels.map((id) => `**Kanal ID:** \`${id}\``)];
 
   const blocks = [
-    `**${meta.title}**\n- **Kategori:** ${categoryLabel}\n- **Tarih:** <t:${at}:D>\n- **Saat:** <t:${at}:T> (<t:${at}:R>)`,
+    `**${meta.title}**\n**Kategori:** ${categoryLabel}\n**Tarih:** <t:${at}:D>\n**Saat:** <t:${at}:T> (<t:${at}:R>)`,
     `**Ayrıntılar**\n${body}`.slice(0, 2800),
   ];
   if (ids.length) blocks.push(`**İlgili ID'ler**\n${ids.slice(0, 8).join('\n')}`);
@@ -73,7 +73,7 @@ function panel() {
     accent: colors.primary,
     blocks: [
       '**Nasıl Kullanılır?**\n' +
-        '- Aradığın logu kanala girip aramak yerine aşağıdan seçebilirsin.\n' +
+        'Aradığın logu kanala girip aramak yerine aşağıdan seçebilirsin.\n' +
         '-# Bir kategori seçince o logun bulunduğu alt başlığa giden bir bağlantı gelir.',
     ],
   })
@@ -116,10 +116,10 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
   const blocks = [
     `**Kurulum Durumu**\n**${ready}/${rows.length} log alt başlığı kurulu${panelUrl ? '' : ', panel gönderilmemiş'}.**`,
     '**Kanallar**\n' +
-      `- **Ana log kanalı:** <#${mainId}>\n` +
-      `- **Log paneli kanalı:** <#${panelId}>\n` +
-      `- **Panel:** ${panelUrl ? `✅ [mesaja git](${panelUrl})` : '❌ gönderilmemiş'}`,
-    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `- ${category.emoji} **${category.label}:** ${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')}`,
+      `**Ana log kanalı:** <#${mainId}>\n` +
+      `**Log paneli kanalı:** <#${panelId}>\n` +
+      `**Panel:** ${panelUrl ? `✅ [mesaja git](${panelUrl})` : '❌ gönderilmemiş'}`,
+    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `${category.emoji} **${category.label}:** ${thread ? `✅ <#${thread.id}>` : '❌ kurulu değil'}`).join('\n')}`,
   ];
   if (note) blocks.push(`**Son İşlem**\n${note}`);
 

@@ -202,9 +202,9 @@ function claimRequest(ticket) {
     blocks: [
       [
         '**Talep Bilgileri**',
-        `- **Talep Sahibi:** <@${ticket.ownerId}>`,
-        `- **Açılış:** <t:${unix(ticket.createdAt)}:R>`,
-        status ? `- **Durum:** ${status}` : null,
+        `**Talep Sahibi:** <@${ticket.ownerId}>`,
+        `**Açılış:** <t:${unix(ticket.createdAt)}:R>`,
+        status ? `**Durum:** ${status}` : null,
         waiting ? `-# <@&${ticket.staffRoleId}>, bekleyen yeni bir talep var. Talebi ilk üstlenen yetkili ilgilenir.` : null,
       ]
         .filter(Boolean)
@@ -243,7 +243,7 @@ function ticketCreated(channel) {
     title: 'Talebin Açıldı',
     sub: 'Destek talebin başarıyla oluşturuldu ve ekibe haber verildi; bir yetkili talebini üstlendiğinde sana bildirim gelir, aşağıdaki butonla talebine doğrudan gidebilirsin.',
     accent: colors.success,
-    blocks: [`**Talep Bilgileri**\n- **Talep:** <#${channel.id}>\n-# Ekibe haber verildi, bir yetkili talebini üstlendiğinde bildirim alacaksın.`],
+    blocks: [`**Talep Bilgileri**\n**Talep:** <#${channel.id}>\n-# Ekibe haber verildi, bir yetkili talebini üstlendiğinde bildirim alacaksın.`],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -298,9 +298,9 @@ function openLog(ticket, channel, owner) {
     blocks: [
       [
         '**Talep Bilgileri**',
-        `- **Talep:** <#${channel.id}>`,
-        `- **Açan:** <@${owner.id}> (\`${owner.username}\`)`,
-        `- **Tarih:** <t:${unix(ticket.createdAt)}:F>`,
+        `**Talep:** <#${channel.id}>`,
+        `**Açan:** <@${owner.id}> (\`${owner.username}\`)`,
+        `**Tarih:** <t:${unix(ticket.createdAt)}:F>`,
       ].join('\n'),
       `**Konu**\n${quote(ticket.reason)}`,
     ],
@@ -315,12 +315,12 @@ function closeLog(ticket, closedBy, fileName) {
     blocks: [
       [
         '**Talep Bilgileri**',
-        `- **Talep:** <#${ticket.threadId}>`,
-        `- **Talep Sahibi:** <@${ticket.ownerId}>`,
-        `- **Kapatan:** <@${closedBy.id}>`,
-        `- **Üstlenen:** ${ticket.claimedBy ? `<@${ticket.claimedBy}>` : 'Yok'}`,
-        `- **Açılış:** <t:${unix(ticket.createdAt)}:F>`,
-        `- **Kapanış:** <t:${unix(Date.now())}:F>`,
+        `**Talep:** <#${ticket.threadId}>`,
+        `**Talep Sahibi:** <@${ticket.ownerId}>`,
+        `**Kapatan:** <@${closedBy.id}>`,
+        `**Üstlenen:** ${ticket.claimedBy ? `<@${ticket.claimedBy}>` : 'Yok'}`,
+        `**Açılış:** <t:${unix(ticket.createdAt)}:F>`,
+        `**Kapanış:** <t:${unix(Date.now())}:F>`,
       ].join('\n'),
       `**Konu**\n${quote(ticket.reason)}`,
       reasonText(ticket.closeReason),

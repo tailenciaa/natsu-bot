@@ -78,9 +78,9 @@ function punishmentState(p) {
 
 const durationLabel = (p) => (p.type === 'uyari' ? null : p.duration ? formatDuration(p.duration) : 'Süresiz');
 
-// Maddeler: "- **Başlık:** değer (ek)", Discord'un madde işaretiyle
+// Maddeler: "**Başlık:** değer (ek)", Discord'un madde işaretiyle
 const code = (value) => `\`${value}\``;
-const stat = (label, value, extra) => `- **${label}:** ${value}${extra ? ` (${extra})` : ''}`;
+const stat = (label, value, extra) => `**${label}:** ${value}${extra ? ` (${extra})` : ''}`;
 const box = (lines) => lines.filter(Boolean).map((line) => `> ${line}`).join('\n');
 
 // Tablolar: kod bloğunda sabit genişlikli sütunlar; uzun yazılar "…" ile kısaltılır, satır kaymaz.
@@ -246,8 +246,8 @@ function sicil(view) {
       .addTextDisplayComponents(
         text(
           '**Sayfa Bilgisi**\n' +
-            `- Toplam **${items.length}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
-            `- Sayfa: ${code(`${page + 1} / ${pageCount}`)}`,
+            `Toplam **${items.length}** kayıt arasından **${start + 1}-${start + pageItems.length}** arası gösteriliyor.\n` +
+            `Sayfa: ${code(`${page + 1} / ${pageCount}`)}`,
         ),
       )
       .addActionRowComponents(
