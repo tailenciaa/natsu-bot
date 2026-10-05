@@ -19,6 +19,7 @@ const config = require('./config');
 
 const CV2 = MessageFlags.IsComponentsV2;
 const EPHEMERAL = MessageFlags.Ephemeral;
+const SILENT_CV2 = MessageFlags.IsComponentsV2 | MessageFlags.SuppressNotifications;
 const EPHEMERAL_CV2 = MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral;
 
 // Panellerin varsayılan görseli
@@ -152,6 +153,7 @@ module.exports = {
   CV2,
   EPHEMERAL,
   EPHEMERAL_CV2,
+  SILENT_CV2,
   DEFAULT_BANNER,
   colors: config.colors,
   text,
