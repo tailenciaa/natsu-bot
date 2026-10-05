@@ -1,9 +1,10 @@
 // Hızlı ceza komutları: /uyari, /mute, /unmute, /jail, /unjail, /ban, /unban, /ceza-kaldir, /ceza-sil.
 // Sicildeki "Ceza Ver" akışıyla aynı motoru (moderation.js) kullanır; tek fark bu komutların sonucu doğrudan
 // yetkili komut kanalına, herkese açık ve tek adımda gönderilmesidir. Sadece yetkili komut kanalında çalışır.
-const { InteractionContextType, MessageFlags, SlashCommandBuilder } = require('discord.js');
+const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const { staffCommandChannel, staffPermission } = require('../../core/config');
-const { inStaffChannel } = require('../../core/helpers');
+const core = require('../../core/ui');
+const { inStaffChannel, respond, replyError } = require('../../core/helpers');
 const config = require('./config');
 const moderation = require('./moderation');
 const store = require('./store');
@@ -60,13 +61,11 @@ const commands = [
     .addStringOption(reasonOpt(true)),
 ];
 
-// Bu komutların tüm mesajları (sonuç ve hata) düz metin, Components V2 kullanılmaz
-const quickError = (interaction, message, hint) =>
-  interaction.reply({ content: ui.commandError(message, hint), flags: MessageFlags.Ephemeral, allowedMentions: { parse: [] } });
+// Bu komutların mesajları Components V2: hatalar sadece komutu kullanana görünür, sonuçlar herkese açık gönderilir
+const quickError = (interaction, message, hint) => replyError(interaction, message, hint);
 const quickStaffChannelError = (interaction) => quickError(interaction, `Bu komut sadece <#${staffCommandChannel}> kanalında kullanılabilir.`);
-const errorReply = (interaction, result) =>
-  interaction.editReply({ content: ui.commandError(result.error, result.hint), allowedMentions: { parse: [] } });
-const successReply = (interaction, content) => interaction.editReply({ content, allowedMentions: { parse: [] } });
+const errorReply = (interaction, result) => respond(interaction, core.alert(result.error, result.hint, 'danger'), { ephemeral: false });
+const successReply = (interaction, container) => respond(interaction, container, { ephemeral: false });
 
 // /uyari, /mute, /jail, /ban
 async function runPunish(interaction, type) {
@@ -96,7 +95,7 @@ async function runLift(interaction, type) {
 
   await interaction.deferReply();
   const result = await moderation.lift(interaction.guild, punishment, interaction.user.id, reason);
-  return result.error ? errorReply(interaction, result) : successReply(interaction, ui.commandLift(result.punishment));
+  return result.error ? errorReply(interaction, result) : successReply(interaction, ui.commandLift(result.punishment, interaction.user.id, reason));
 }
 
 // Ceza numarasından kaydı bulur (id "sunucu-numara" şeklinde kurulur)
@@ -117,7 +116,7 @@ async function handleCezaKaldir(interaction) {
 
   await interaction.deferReply();
   const result = await moderation.lift(interaction.guild, punishment, interaction.user.id, reason);
-  return result.error ? errorReply(interaction, result) : successReply(interaction, ui.commandLift(result.punishment));
+  return result.error ? errorReply(interaction, result) : successReply(interaction, ui.commandLift(result.punishment, interaction.user.id, reason));
 }
 
 // /ceza-sil numara sebep
@@ -130,7 +129,7 @@ async function handleCezaSil(interaction) {
 
   await interaction.deferReply();
   const result = await moderation.remove(interaction.guild, punishment, interaction.user.id, reason);
-  return result.error ? errorReply(interaction, result) : successReply(interaction, ui.commandDelete(result.punishment));
+  return result.error ? errorReply(interaction, result) : successReply(interaction, ui.commandDelete(result.punishment, interaction.user.id, reason));
 }
 
 const staffText = (label) => `${label} verme yetkisi olanlar, sadece <#${staffCommandChannel}> kanalında.`;

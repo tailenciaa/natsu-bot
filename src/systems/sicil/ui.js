@@ -499,21 +499,50 @@ function extendDm(p, extra, guildName) {
   });
 }
 
-// Hızlı ceza komutlarının (/ban, /jail, /mute, /uyari...) herkese açık sonuç mesajları; düz metin (Components V2 değil)
-const numTag = (p) => `Ceza Numarası: #${pad(p.number)}`;
+// Hızlı ceza komutlarının (/ban, /jail, /mute, /uyari...) herkese açık sonuç mesajları ve hata mesajı (Components V2)
+const userLine = (p) => `**Kullanıcı:** <@${p.userId}>`;
 
 function commandResult(p) {
-  const parts = [numTag(p)];
-  if (p.duration) parts.push(`Süre: ${formatDuration(p.duration)}`);
-  return `Başarıyla <@${p.userId}> isimli kullanıcıya **"${p.reason}"** sebebiyle **"${TYPES[p.type].label}"** işlemi uygulandı. (${code(parts.join(', '))})`;
+  const t = TYPES[p.type];
+  const duration = durationLabel(p);
+  return pageBlocks({
+    title: `${t.label} Uygulandı`,
+    sub: 'İşlem başarıyla uygulandı ve kullanıcının sicil kaydına işlendi; cezanın türü, süresi ve sebebi aşağıda yer alıyor, kayda sicil komutundan ya da ceza numarasıyla ulaşılabilir.',
+    accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
+    blocks: [
+      [userLine(p), `**Yetkili:** <@${p.by}>`, `**Ceza:** ${t.label}`, duration ? `**Süre:** ${duration}` : null, p.expiresAt ? `**Bitiş:** <t:${unix(p.expiresAt)}:R>` : null]
+        .filter(Boolean)
+        .join('\n'),
+      `**Sebep**\n${quote(p.reason)}`,
+      `-# Ceza #${pad(p.number)} - <t:${unix(p.createdAt)}:F>`,
+    ],
+  });
 }
 
-const commandLift = (p) => `Başarıyla <@${p.userId}> kullanıcısının **"${TYPES[p.type].label}"** cezası kaldırıldı. (${code(numTag(p))})`;
+function commandLift(p, byId, reason) {
+  return pageBlocks({
+    title: `${TYPES[p.type].label} Kaldırıldı`,
+    sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi; kaldıran yetkili ve kaldırma sebebi aşağıda yer alıyor.',
+    accent: colors.success,
+    blocks: [
+      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${pad(p.number)}`].join('\n'),
+      `**Sebep**\n${quote(reason)}`,
+      `-# <t:${unix(Date.now())}:F>`,
+    ],
+  });
+}
 
-const commandDelete = (p) => `**${TYPES[p.type].label} #${pad(p.number)}** kaydı sicilden silindi.`;
-
-// Hızlı ceza komutlarının hata mesajı; düz metin
-const commandError = (message, hint) => `**${message}**${hint ? `\n-# ${hint}` : ''}`;
+function commandDelete(p, byId, reason) {
+  return pageBlocks({
+    title: 'Ceza Kaydı Silindi',
+    sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek; silinen kaydın bilgisi ile silen yetkili ve sebep aşağıda yer alıyor.',
+    blocks: [
+      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${pad(p.number)}`].join('\n'),
+      `**Sebep**\n${quote(reason)}`,
+      `-# <t:${unix(Date.now())}:F>`,
+    ],
+  });
+}
 
 module.exports = {
   IDS,
@@ -535,5 +564,4 @@ module.exports = {
   commandResult,
   commandLift,
   commandDelete,
-  commandError,
 };
