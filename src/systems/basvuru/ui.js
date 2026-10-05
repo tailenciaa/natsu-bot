@@ -145,7 +145,7 @@ function applicationNotice(app, applicantUser) {
   if (app.note) status += `\n${quote(app.note)}`;
 
   const previous = app.previous?.total
-    ? `${app.previous.total} başvuru${app.previous.rejected ? `・${app.previous.rejected} reddedildi` : ''}`
+    ? `${app.previous.total} başvuru${app.previous.rejected ? ` - ${app.previous.rejected} reddedildi` : ''}`
     : 'Yok';
 
   const role = app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : '';
@@ -260,7 +260,7 @@ function resultDm(app, guildName, reapplyAt) {
       (reapplyAt ? ` <t:${unix(reapplyAt)}:D> tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
   ];
   if (app.note) blocks.push(`**Sebep**\n${quote(app.note)}`);
-  blocks.push(`-# ${guildName}・<t:${unix(app.reviewedAt)}:F>`);
+  blocks.push(`-# ${guildName} - <t:${unix(app.reviewedAt)}:F>`);
 
   return card(
     'Başvurun Sonuçlandı',
@@ -280,7 +280,7 @@ function meetingDm(app, guildName, voice) {
     'warning',
   );
   if (voice) voiceSection(container, app, voice);
-  return withFooter(container, `-# ${guildName}・<t:${unix(app.meetingAt)}:F>`);
+  return withFooter(container, `-# ${guildName} - <t:${unix(app.meetingAt)}:F>`);
 }
 
 // Başvuran bir görüşme kanalına girince başvuruyla ilgilenen yetkiliye giden DM (görüşme ya da oryantasyon için)
@@ -304,7 +304,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
           new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
         ),
       ),
-    `-# ${guildName}・<t:${unix(Date.now())}:F>`,
+    `-# ${guildName} - <t:${unix(Date.now())}:F>`,
   );
 }
 
@@ -314,14 +314,14 @@ function meetingLog(app) {
   const ended = Boolean(m.endedAt);
   const duration = ended ? Math.max(1, Math.round((m.endedAt - m.startedAt) / 60000)) : 0;
   return card(
-    ended ? `Görüşme Tamamlandı・Başvuru #${pad(app.number)}` : `Görüşme Başladı・Başvuru #${pad(app.number)}`,
+    ended ? `Görüşme Tamamlandı - Başvuru #${pad(app.number)}` : `Görüşme Başladı - Başvuru #${pad(app.number)}`,
     'Başvuranla yapılan sesli görüşmenin kayıt kanalındaki özeti; görüşme başlayınca gönderilir, bitince bu mesaj güncellenir ve görüşmenin süresi ile kanalı burada saklanır.',
     [
       ended
         ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +
           `-# <#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
         : `**Görüşme**\n<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.\n` +
-          `-# Başlangıç <t:${unix(m.startedAt)}:t>・Görüşme bitince bu mesaj güncellenir.`,
+          `-# Başlangıç <t:${unix(m.startedAt)}:t> - Görüşme bitince bu mesaj güncellenir.`,
     ],
     ended ? 'success' : 'primary',
   );

@@ -19,7 +19,7 @@ module.exports = [
   },
   {
     key: 'uye',
-    label: 'Giriş・Çıkış Logları',
+    label: 'Giriş / Çıkış Logları',
     emoji: '👋',
     threadName: '👋・giriş-çıkış',
     description: 'Sunucuya katılan (hangi davetle geldiği) ve ayrılan üyeler',

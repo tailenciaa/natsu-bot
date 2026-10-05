@@ -114,7 +114,7 @@ function ratingModal(rating, score) {
 function ratingNotice(rating, staffUser) {
   const removed = rating.reportStatus === 'approved' || Boolean(rating.removedAt);
   const disputed = !removed && Boolean(rating.reportedAt) && (rating.reportStatus ?? 'pending') === 'pending';
-  const score = `${stars(rating.score)}・${SCORE_LABELS[rating.score]}`;
+  const score = `${stars(rating.score)} - ${SCORE_LABELS[rating.score]}`;
 
   let title;
   let sub;
@@ -243,7 +243,7 @@ function replyDm(rating, guildName) {
     blocks: [
       `**Yorum Bilgileri**\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n-# ${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
       `**Yetkilinin Yorumu**\n${quote(rating.staffReply)}`,
-      `-# ${guildName}・<t:${unix(rating.repliedAt)}:F>`,
+      `-# ${guildName} - <t:${unix(rating.repliedAt)}:F>`,
     ],
   });
 }
@@ -339,7 +339,7 @@ function meetingDm(rating, guildName) {
   })
     .addActionRowComponents(new ActionRowBuilder().addComponents(buttons))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${guildName}・<t:${unix(rating.meetingAt)}:F>`));
+    .addTextDisplayComponents(text(`-# ${guildName} - <t:${unix(rating.meetingAt)}:F>`));
 }
 
 // Görüşme ya da oryantasyon bitince başvurana giden puanlama DM'i (destek talepleri kapanış DM'inin altında puanlanır)
@@ -376,7 +376,7 @@ function reviewDm(rating, guildName) {
       approved
         ? `**Sonuç**\nDeğerlendirme sicilinden kaldırıldı.\n-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
         : `**Sonuç**\nDeğerlendirme sicilinde kalmaya devam ediyor.\n-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
-      `-# ${guildName}・<t:${unix(rating.reviewedAt)}:F>`,
+      `-# ${guildName} - <t:${unix(rating.reviewedAt)}:F>`,
     ],
   });
 }

@@ -93,7 +93,7 @@ module.exports = {
           ]
         },
         {
-          "heading": "Yönetim Ekibi・<@&1555890044768624662>",
+          "heading": "Yönetim Ekibi - <@&1555890044768624662>",
           "items": [
             "<@&1554237337993486377>: Yöneticidir, sunucunun işleyişinden ve yetkililerden sorumludur.",
             "<@&1554237339100774490>: Asistan yöneticidir, yönetime destek olur.",
@@ -111,7 +111,7 @@ module.exports = {
           ]
         },
         {
-          "heading": "Yetkili Ekibi・<@&1555890043992940614>",
+          "heading": "Yetkili Ekibi - <@&1555890043992940614>",
           "items": [
             "<@&1554237347631997029>: Orta seviye yetkilidir, sohbet ve ses düzenini takip eder.",
             "<@&1554237348282245161>: Yeni yetkilidir, ekibe yeni katılmıştır.",

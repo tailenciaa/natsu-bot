@@ -220,7 +220,7 @@ function claimRequest(ticket) {
 // Üstlenme mesajına yanıt olarak gider; talep bilgilerini tekrar etmez, "Talebe Git" o mesaja götürür.
 function claimReminder(ticket) {
   return page({
-    title: `Hatırlatma・Talep #${pad(ticket.number)}`,
+    title: `Hatırlatma - Talep #${pad(ticket.number)}`,
     sub: 'Talep sahibi üstlenilmeyi beklediği için ekibe hatırlatma gönderdi; butonla talebin üstlenme mesajına gidip talebi üstlenebilir ve üyeyle ilgilenmeye başlayabilirsiniz.',
     accent: colors.warning,
     blocks: [`**Hatırlatma**\n<@&${ticket.staffRoleId}>, <@${ticket.ownerId}> hâlâ bir yetkili bekliyor!\n-# Butonla talebin üstlenme mesajına gidebilirsin.`],

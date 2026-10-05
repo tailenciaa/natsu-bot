@@ -111,7 +111,7 @@ function summaryLines(app, endedAt) {
   const told = topics.filter((s) => !o.skipped.includes(s.id)).length;
   return [
     `**${areas.length > 1 ? 'Görev Alanları' : 'Görev Alanı'}:** ${areaLabels(app) || 'Seçilmedi'}`,
-    `**Anlatılan Konular:** ${told}/${topics.length}${o.skipped.length ? `・Bildiği için geçilen: ${skippedTitles(app)}` : ''}`,
+    `**Anlatılan Konular:** ${told}/${topics.length}${o.skipped.length ? ` - Bildiği için geçilen: ${skippedTitles(app)}` : ''}`,
     `**Oryantasyon Süresi:** ${minutes(o.startedAt, endedAt)} dakika`,
   ];
 }
@@ -177,7 +177,7 @@ function panel(app, applicantUser) {
   blocks.push(`**${step.title}**\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);
 
   const container = card(
-    `Oryantasyon・Başvuru #${pad(app.number)}`,
+    `Oryantasyon - Başvuru #${pad(app.number)}`,
     'Görüşme kanalının sohbetinde adım adım ilerleyen oryantasyon paneli; adımları oryantasyonu veren yetkili ilerletir, alan seçimini başvuran da yapabilir ve süreç buradan yönetilir.',
     blocks,
     presence ? 'warning' : 'primary',
@@ -222,7 +222,7 @@ function panel(app, applicantUser) {
     .addTextDisplayComponents(
       text(
         // Alan seçimini kimin yapacağı o adımın metninde yazıyor
-        `-# Adımları <@${o.staffId}> ilerletir・Başlangıç <t:${unix(o.startedAt)}:R>`,
+        `-# Adımları <@${o.staffId}> ilerletir - Başlangıç <t:${unix(o.startedAt)}:R>`,
       ),
     );
 }
@@ -268,7 +268,7 @@ function presenceText(app) {
   if (o.applicantAwaySince) {
     lines.push(
       `**<@${app.userId}> kanaldan ayrıldı.** <t:${unix(o.applicantAwaySince + p.applicantGraceMinutes * MINUTE)}:R> dönmezse oryantasyon iptal edilecek.\n` +
-        `-# Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves}・${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
+        `-# Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves} - ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
     );
   }
   if (o.staffNeeded) {
@@ -292,7 +292,7 @@ function orientationLog(app) {
   const o = app.orientation;
   const { steps } = config;
 
-  const lines = [`**Adım:** ${o.step + 1}/${steps.length}・${steps[o.step].title}\n${progress(o.step, steps.length)}`];
+  const lines = [`**Adım:** ${o.step + 1}/${steps.length} - ${steps[o.step].title}\n${progress(o.step, steps.length)}`];
   if (o.areas.length) lines.push(`**${o.areas.length > 1 ? 'Görev Alanları' : 'Görev Alanı'}:** ${areaLabels(app)}`);
   if (o.skipped.length) lines.push(`**Bildiği için geçilen:** ${skippedTitles(app)}`);
   if (o.transfers.length) lines.push(`**Aktarımlar:** ${o.transfers.map((t) => `<@${t.from}> → <@${t.to}>`).join(', ')}`);
@@ -300,13 +300,13 @@ function orientationLog(app) {
 
   const presence = presenceText(app);
   const blocks = [
-    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.\n-# Başlangıç <t:${unix(o.startedAt)}:t>・Adımlar ilerledikçe bu mesaj güncellenir.`,
+    `**Oryantasyon**\n<@${o.staffId}>, <@${app.userId}> için <#${o.channelId}> kanalında oryantasyon veriyor.\n-# Başlangıç <t:${unix(o.startedAt)}:t> - Adımlar ilerledikçe bu mesaj güncellenir.`,
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
   blocks.push(lines.join('\n'));
 
   const container = card(
-    `Oryantasyon Sürüyor・Başvuru #${pad(app.number)}`,
+    `Oryantasyon Sürüyor - Başvuru #${pad(app.number)}`,
     'Oryantasyonun kayıt kanalındaki canlı özeti; adımlar ilerledikçe bu mesaj kendiliğinden güncellenir ve oryantasyon bitince sonuç mesajına dönüşür, süreci buradan takip edebilirsin.',
     blocks,
     presence ? 'warning' : 'primary',
@@ -327,14 +327,14 @@ function orientationResult(app) {
   const o = app.orientation;
   if (o.status === 'cancelled') {
     return card(
-      `Oryantasyon İptal Edildi・Başvuru #${pad(app.number)}`,
+      `Oryantasyon İptal Edildi - Başvuru #${pad(app.number)}`,
       'Bu başvurunun oryantasyonu sonlandırıldı ve görüşme kanalları başvurana kilitlendi; iptalin kim tarafından ve hangi sebeple yapıldığı aşağıda, varsa başvuru cezasıyla birlikte yer alıyor.',
       [`**İptal**\n${cancelHeadline(app)}`, `**Sebep**\n${quote(o.cancelReason)}${penaltyText(app)}`, `-# <t:${unix(o.finishedAt)}:F>`],
       'danger',
     );
   }
   return card(
-    `Oryantasyon Tamamlandı・Başvuru #${pad(app.number)}`,
+    `Oryantasyon Tamamlandı - Başvuru #${pad(app.number)}`,
     'Bu başvurunun oryantasyonu başarıyla tamamlandı ve görüşme kanalları başvurana kilitlendi; yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti aşağıda yer alıyor.',
     [
       `**Yeni Yetkili**\n<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı!\n-# Oryantasyonu <@${o.staffId}> verdi.`,
@@ -372,7 +372,7 @@ function approvedDm(app, guildName, channelId) {
       ),
       voiceButtons(app.guildId, channelId),
     ),
-    `-# ${guildName}・<t:${unix(app.reviewedAt)}:F>`,
+    `-# ${guildName} - <t:${unix(app.reviewedAt)}:F>`,
   );
 }
 
@@ -406,7 +406,7 @@ function staffDm(app, guildName, channelId, transferredBy, tookOver) {
       ),
       voiceButtons(app.guildId, target),
     ),
-    `-# ${guildName}・<t:${unix(Date.now())}:F>`,
+    `-# ${guildName} - <t:${unix(Date.now())}:F>`,
   );
 }
 
@@ -427,7 +427,7 @@ function completedDm(app, guildName) {
         'Başvurudan oryantasyona kadar gösterdiğin ilgi için teşekkürler. İlk günlerde takıldığın her şeyi ' +
         `<@${o.staffId}> ya da diğer yetkililere sorabilirsin, kimse her şeyi ilk günden bilmez.\n` +
         '-# Unutma: yetkili olmak bir ayrıcalık değil, bir sorumluluk. Yeni görevinde başarılar!',
-      `-# ${guildName}・<t:${unix(o.finishedAt)}:F>`,
+      `-# ${guildName} - <t:${unix(o.finishedAt)}:F>`,
     ],
     'success',
   );
@@ -444,7 +444,7 @@ function cancelledDm(app, guildName) {
         (o.cancelledBy ? `-# <@${o.cancelledBy}> oryantasyonu sonlandırdı.` : '-# Oryantasyon otomatik olarak sonlandırıldı.'),
       `**Sebep**\n${quote(o.cancelReason)}` +
         (app.penaltyUntil ? `\n-# Bu yüzden <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamazsın.` : ''),
-      `-# ${guildName}・<t:${unix(o.finishedAt)}:F>`,
+      `-# ${guildName} - <t:${unix(o.finishedAt)}:F>`,
     ],
     'danger',
   );
@@ -461,12 +461,12 @@ function takeoverNotice(app, state) {
     const step = config.steps[o.step];
     return withRow(
       card(
-        `Oryantasyon İçin Yetkili Bekleniyor・${title}`,
+        `Oryantasyon İçin Yetkili Bekleniyor - ${title}`,
         sub,
         [
           `**Durum**\n${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> oryantasyonun ortasında <#${o.channelId}> kanalında bekliyor.\n` +
             `-# <@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
-            `Oryantasyon ${o.step + 1}/${config.steps.length}・${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
+            `Oryantasyon ${o.step + 1}/${config.steps.length} - ${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
         ],
         'warning',
       ),
@@ -478,7 +478,7 @@ function takeoverNotice(app, state) {
   }
   if (state === 'returned') {
     return card(
-      `Yetkili Geri Döndü・${title}`,
+      `Yetkili Geri Döndü - ${title}`,
       sub,
       [`**Durum**\n<@${o.staffId}> kanala geri döndü, oryantasyon devam ediyor.\n-# Artık yetkili beklenmiyor.`],
       'success',
@@ -487,13 +487,13 @@ function takeoverNotice(app, state) {
   if (state === 'taken') {
     const from = o.transfers.at(-1)?.from;
     return card(
-      `Oryantasyon Devralındı・${title}`,
+      `Oryantasyon Devralındı - ${title}`,
       sub,
       [`**Durum**\n<@${o.staffId}> oryantasyonu devraldı.\n-# ${from ? `<@${from}> ayrıldıktan sonra ` : ''}kalınan adımdan devam edilecek.`],
       'success',
     );
   }
-  return card(`Oryantasyon Sona Erdi・${title}`, sub, ['**Durum**\n-# Artık yetkili beklenmiyor.']);
+  return card(`Oryantasyon Sona Erdi - ${title}`, sub, ['**Durum**\n-# Artık yetkili beklenmiyor.']);
 }
 
 // Panel başka kanala taşınınca eski kanaldaki panelin yerine kalan not
@@ -568,7 +568,7 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
       ),
     );
   }
-  return withFooter(container, `-# ${guildName}・Başvuru #${pad(app.number)}`);
+  return withFooter(container, `-# ${guildName} - Başvuru #${pad(app.number)}`);
 }
 
 // "Başka Yetkiliye Aktar" ile açılan, sadece butona basanın gördüğü seçim menüsü

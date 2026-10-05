@@ -36,11 +36,11 @@ module.exports = {
       description: 'Destek taleplerini üstlenir, üyelerin sorunlarını çözer.',
       roleId: '1544337671340433569',
       info:
-        '• Talep kanalına düşen **Yeni Destek Talebi** mesajındaki **Talebi Üstlen** ile talebi alırsın.\n' +
-        '• Üyeye kısa sürede dönüş yap, kibar ve anlaşılır ol; teknik terimlerle boğma.\n' +
-        '• Çözemediğin bir konuda talebi bekletme, üst yetkiliye danış.\n' +
-        '• Sorun bitince **Talebi Kapat** ile doğru sebebi seçerek kapat.\n' +
-        '• Talep kapanınca üye sana puan verir ve siciline işlenir; haksız bulduğun puana itiraz edebilirsin.',
+        '- Talep kanalına düşen **Yeni Destek Talebi** mesajındaki **Talebi Üstlen** ile talebi alırsın.\n' +
+        '- Üyeye kısa sürede dönüş yap, kibar ve anlaşılır ol; teknik terimlerle boğma.\n' +
+        '- Çözemediğin bir konuda talebi bekletme, üst yetkiliye danış.\n' +
+        '- Sorun bitince **Talebi Kapat** ile doğru sebebi seçerek kapat.\n' +
+        '- Talep kapanınca üye sana puan verir ve siciline işlenir; haksız bulduğun puana itiraz edebilirsin.',
     },
     {
       id: 'sohbet',
@@ -48,10 +48,10 @@ module.exports = {
       description: 'Yazılı kanalları takip eder, kural ihlallerine müdahale eder.',
       roleId: null,
       info:
-        '• Sohbet kanallarını düzenli takip et; spam, küfür, reklam ve rahatsız edici içeriği sil.\n' +
-        '• Hafif ihlalde önce uyar, tekrar ederse zaman aşımı uygula.\n' +
-        '• Tartışma büyüyorsa taraf tutmadan konuyu kapat, gerekirse kişileri ayrı ayrı uyar.\n' +
-        '• Ceza vermeden önce mutlaka ekran görüntüsü al.',
+        '- Sohbet kanallarını düzenli takip et; spam, küfür, reklam ve rahatsız edici içeriği sil.\n' +
+        '- Hafif ihlalde önce uyar, tekrar ederse zaman aşımı uygula.\n' +
+        '- Tartışma büyüyorsa taraf tutmadan konuyu kapat, gerekirse kişileri ayrı ayrı uyar.\n' +
+        '- Ceza vermeden önce mutlaka ekran görüntüsü al.',
     },
     {
       id: 'ses',
@@ -59,10 +59,10 @@ module.exports = {
       description: 'Ses kanallarını gezer, sesli sohbetteki düzeni sağlar.',
       roleId: null,
       info:
-        '• Ses kanallarını ara ara gez; mikrofon spamı, bağırma ve ses efekti kötüye kullanımını takip et.\n' +
-        '• Rahatsızlık veren üyeyi önce uyar, devam ederse sustur ya da kanaldan çıkar.\n' +
-        '• Sesli ihlallerde mümkünse kayıt ya da tanık bilgisi al.\n' +
-        '• Özel odalara izinsiz girme, sadece şikayet varsa müdahale et.',
+        '- Ses kanallarını ara ara gez; mikrofon spamı, bağırma ve ses efekti kötüye kullanımını takip et.\n' +
+        '- Rahatsızlık veren üyeyi önce uyar, devam ederse sustur ya da kanaldan çıkar.\n' +
+        '- Sesli ihlallerde mümkünse kayıt ya da tanık bilgisi al.\n' +
+        '- Özel odalara izinsiz girme, sadece şikayet varsa müdahale et.',
     },
     {
       id: 'kayit',
@@ -70,9 +70,9 @@ module.exports = {
       description: 'Yeni gelen üyeleri karşılar, sunucuya ısınmalarını sağlar.',
       roleId: null,
       info:
-        '• Sunucuya yeni katılanları sıcak bir dille karşıla, kanalları ve kuralları kısaca tanıt.\n' +
-        '• Sahte ya da yeni açılmış şüpheli hesapları üst yetkiliye bildir.\n' +
-        '• Yeni üyelerin sorularını sabırla cevapla; ilk izlenim sunucunun yüzüdür.',
+        '- Sunucuya yeni katılanları sıcak bir dille karşıla, kanalları ve kuralları kısaca tanıt.\n' +
+        '- Sahte ya da yeni açılmış şüpheli hesapları üst yetkiliye bildir.\n' +
+        '- Yeni üyelerin sorularını sabırla cevapla; ilk izlenim sunucunun yüzüdür.',
     },
     {
       id: 'etkinlik',
@@ -80,10 +80,10 @@ module.exports = {
       description: 'Anime izleme partileri, oyun geceleri ve çekilişler düzenler.',
       roleId: null,
       info:
-        '• Anime izleme partileri, oyun geceleri, quizler ve çekilişler planla.\n' +
-        '• Etkinliği önceden duyur, saatini ve kurallarını net yaz.\n' +
-        '• Etkinlik sırasında düzeni sağla, sonunda katılımcılara teşekkür et.\n' +
-        '• Ödüllü etkinliklerde kazananı adil ve şeffaf şekilde belirle.',
+        '- Anime izleme partileri, oyun geceleri, quizler ve çekilişler planla.\n' +
+        '- Etkinliği önceden duyur, saatini ve kurallarını net yaz.\n' +
+        '- Etkinlik sırasında düzeni sağla, sonunda katılımcılara teşekkür et.\n' +
+        '- Ödüllü etkinliklerde kazananı adil ve şeffaf şekilde belirle.',
     },
     {
       id: 'icerik',
@@ -91,9 +91,9 @@ module.exports = {
       description: 'Anime paylaşımları, duyurular ve sunucu görselleri hazırlar.',
       roleId: null,
       info:
-        '• Anime haberleri, öneriler ve paylaşım kanallarını canlı tut.\n' +
-        '• Duyuru ve etkinlik görsellerini sunucunun temasına uygun hazırla.\n' +
-        '• Başkasına ait içeriği paylaşırken kaynak belirt; +18 ve spoiler kurallarına dikkat et.',
+        '- Anime haberleri, öneriler ve paylaşım kanallarını canlı tut.\n' +
+        '- Duyuru ve etkinlik görsellerini sunucunun temasına uygun hazırla.\n' +
+        '- Başkasına ait içeriği paylaşırken kaynak belirt; +18 ve spoiler kurallarına dikkat et.',
     },
   ],
 
@@ -105,11 +105,11 @@ module.exports = {
       body:
         '**{aday}, başvurun onaylandı ve ekibe katılmana tek adım kaldı!**\n' +
         'Bu oryantasyonda {yetkili} sana adım adım yetkililiği anlatacak:\n' +
-        '• Sunucu kuralları ve nasıl uygulandığı\n' +
-        '• Bir yetkilinin nasıl davranması gerektiği\n' +
-        '• Ceza sistemi ve komutlar\n' +
-        '• Botun yetkili sistemleri\n' +
-        '• Görev alanını seçmen ve alanının detayları\n' +
+        '- Sunucu kuralları ve nasıl uygulandığı\n' +
+        '- Bir yetkilinin nasıl davranması gerektiği\n' +
+        '- Ceza sistemi ve komutlar\n' +
+        '- Botun yetkili sistemleri\n' +
+        '- Görev alanını seçmen ve alanının detayları\n' +
         '-# Bildiğin bir konu olursa söyle, o adım atlanabilir. Aklına takılan her şeyi sormaktan çekinme.',
     },
     {
@@ -119,31 +119,31 @@ module.exports = {
       body:
         'Yetkili olarak kuralları hem uygulayacak hem de herkesten önce sen uyacaksın.\n' +
         '**Temel kurallar**\n' +
-        '• **Saygısızlık:** Küfür, hakaret, aşağılama ve kışkırtma yasak.\n' +
-        '• **Ayrımcılık:** Irk, din, cinsiyet ve cinsel yönelim üzerinden ayrımcılık kesinlikle yasak.\n' +
-        '• **Spam:** Spam, flood, gereksiz etiket ve büyük harfle yazma yasak.\n' +
-        '• **Reklam:** Sunucu, sosyal medya ya da DM üzerinden reklam yasak.\n' +
-        '• **+18 içerik:** +18, kan ve vahşet içeren ya da rahatsız edici içerik yasak.\n' +
-        '• **Kişisel bilgi:** İsim, adres, fotoğraf gibi kişisel bilgi paylaşmak yasak.\n' +
-        '• **Spoiler:** Anime spoilerları sadece ilgili kanalda ve spoiler etiketiyle paylaşılır.\n' +
+        '- **Saygısızlık:** Küfür, hakaret, aşağılama ve kışkırtma yasak.\n' +
+        '- **Ayrımcılık:** Irk, din, cinsiyet ve cinsel yönelim üzerinden ayrımcılık kesinlikle yasak.\n' +
+        '- **Spam:** Spam, flood, gereksiz etiket ve büyük harfle yazma yasak.\n' +
+        '- **Reklam:** Sunucu, sosyal medya ya da DM üzerinden reklam yasak.\n' +
+        '- **+18 içerik:** +18, kan ve vahşet içeren ya da rahatsız edici içerik yasak.\n' +
+        '- **Kişisel bilgi:** İsim, adres, fotoğraf gibi kişisel bilgi paylaşmak yasak.\n' +
+        '- **Spoiler:** Anime spoilerları sadece ilgili kanalda ve spoiler etiketiyle paylaşılır.\n' +
         '**Uygularken**\n' +
-        '• Kuralların tam metni kurallar kanalında, oradaki her maddeyi bilmen gerekiyor.\n' +
-        '• Kuralda açıkça yazmayan durumlarda sağduyunu kullan ve üst yetkiliye danış.',
+        '- Kuralların tam metni kurallar kanalında, oradaki her maddeyi bilmen gerekiyor.\n' +
+        '- Kuralda açıkça yazmayan durumlarda sağduyunu kullan ve üst yetkiliye danış.',
     },
     {
       id: 'davranis',
       title: 'Bir Yetkili Nasıl Davranmalı',
       skippable: true,
       body:
-        '• **Tarafsız ol:** Arkadaşın da olsa kural herkese aynı uygulanır.\n' +
-        '• **Sakin kal:** Üyeyle tartışmaya girme; gerginleşirsen konuyu başka bir yetkiliye devret.\n' +
-        '• **Önce uyar:** Hafif ihlallerde önce uyarı, tekrar ederse ceza.\n' +
-        '• **Kanıt al:** Ceza vermeden önce ekran görüntüsü al, gerektiğinde açıklayabilmelisin.\n' +
-        '• **Gizlilik:** Yetkili kanallarında konuşulanlar, şikayetler ve kişisel bilgiler dışarı taşınmaz.\n' +
-        '• **Yetkini kötüye kullanma:** Kişisel sorunlar için ceza vermek, izinsiz rol vermek ya da almak yasak.\n' +
-        '• **Hiyerarşiye uy:** Başka bir yetkilinin verdiği cezayı kendi başına kaldırma, önce onunla konuş.\n' +
-        '• **Aktif ol:** Bir süre ortada olamayacaksan üst yetkiliye haber ver.\n' +
-        '• **Örnek ol:** Sohbette üslubun sunucunun yüzüdür; kurallara en çok senin uyman beklenir.',
+        '- **Tarafsız ol:** Arkadaşın da olsa kural herkese aynı uygulanır.\n' +
+        '- **Sakin kal:** Üyeyle tartışmaya girme; gerginleşirsen konuyu başka bir yetkiliye devret.\n' +
+        '- **Önce uyar:** Hafif ihlallerde önce uyarı, tekrar ederse ceza.\n' +
+        '- **Kanıt al:** Ceza vermeden önce ekran görüntüsü al, gerektiğinde açıklayabilmelisin.\n' +
+        '- **Gizlilik:** Yetkili kanallarında konuşulanlar, şikayetler ve kişisel bilgiler dışarı taşınmaz.\n' +
+        '- **Yetkini kötüye kullanma:** Kişisel sorunlar için ceza vermek, izinsiz rol vermek ya da almak yasak.\n' +
+        '- **Hiyerarşiye uy:** Başka bir yetkilinin verdiği cezayı kendi başına kaldırma, önce onunla konuş.\n' +
+        '- **Aktif ol:** Bir süre ortada olamayacaksan üst yetkiliye haber ver.\n' +
+        '- **Örnek ol:** Sohbette üslubun sunucunun yüzüdür; kurallara en çok senin uyman beklenir.',
     },
     {
       id: 'ceza',
@@ -156,15 +156,15 @@ module.exports = {
         '3. Jail: roller alınır, jail rolü verilir\n' +
         '4. Yasaklama: ağır ya da sürekli tekrarlanan ihlaller\n' +
         '**Nasıl uygulanır**\n' +
-        '• Discord\'un kendi "Zaman Aşımı"/"At"/"Yasakla" menüleri değil, **botun kendi komutları** kullanılır: `/uyari`, `/mute`, `/jail`, `/ban`.\n' +
-        '• Kaldırma: `/unmute`, `/unjail`, `/unban` ya da numarayla `/ceza-kaldir`; yanlış verilen ceza `/ceza-sil` ile sicilden silinir.\n' +
-        '• Bir kullanıcının sicilini ve aktif cezalarını `/sicil` ile görebilirsin, cezayı da oradaki **Ceza Ver** butonuyla verebilirsin.\n' +
-        `• Bu komutlar sadece <#${staffCommandChannel}> kanalında çalışır.\n` +
+        '- Discord\'un kendi "Zaman Aşımı"/"At"/"Yasakla" menüleri değil, **botun kendi komutları** kullanılır: `/uyari`, `/mute`, `/jail`, `/ban`.\n' +
+        '- Kaldırma: `/unmute`, `/unjail`, `/unban` ya da numarayla `/ceza-kaldir`; yanlış verilen ceza `/ceza-sil` ile sicilden silinir.\n' +
+        '- Bir kullanıcının sicilini ve aktif cezalarını `/sicil` ile görebilirsin, cezayı da oradaki **Ceza Ver** butonuyla verebilirsin.\n' +
+        `- Bu komutlar sadece <#${staffCommandChannel}> kanalında çalışır.\n` +
         '**Dikkat**\n' +
-        '• Her cezada sebebi açık yaz; "kural ihlali" gibi belirsiz sebepler yazma.\n' +
-        '• Jail ve yasaklamadan önce mümkünse üst yetkiliye danış.\n' +
-        '• Seviyenin izin vermediği cezayı başka yoldan uygulamaya çalışma.\n' +
-        '• Kendi verdiğin cezanın itirazına sen bakmazsın.',
+        '- Her cezada sebebi açık yaz; "kural ihlali" gibi belirsiz sebepler yazma.\n' +
+        '- Jail ve yasaklamadan önce mümkünse üst yetkiliye danış.\n' +
+        '- Seviyenin izin vermediği cezayı başka yoldan uygulamaya çalışma.\n' +
+        '- Kendi verdiğin cezanın itirazına sen bakmazsın.',
     },
     {
       id: 'sistemler',
@@ -172,15 +172,15 @@ module.exports = {
       skippable: true,
       body:
         '**Destek Talepleri**\n' +
-        '• Üye panelden talep açınca talep kanalına bildirim düşer; **Talebi Üstlen** ile talep senin olur.\n' +
-        '• İş bitince **Talebi Kapat** ile sebep seçerek kapatırsın.\n' +
+        '- Üye panelden talep açınca talep kanalına bildirim düşer; **Talebi Üstlen** ile talep senin olur.\n' +
+        '- İş bitince **Talebi Kapat** ile sebep seçerek kapatırsın.\n' +
         '**Değerlendirme**\n' +
-        '• Talep kapanınca üye sana 1-5 yıldız verir, değerlendirme kanalına düşer ve siciline işlenir.\n' +
-        '• **Yorum Ekle** ile değerlendirmeye yanıt verebilir, haksız bulursan **İtiraz Et** ile liderlere iletebilirsin.\n' +
+        '- Talep kapanınca üye sana 1-5 yıldız verir, değerlendirme kanalına düşer ve siciline işlenir.\n' +
+        '- **Yorum Ekle** ile değerlendirmeye yanıt verebilir, haksız bulursan **İtiraz Et** ile liderlere iletebilirsin.\n' +
         '**Sicil**\n' +
-        '• `/sicil` ile kendi puanını, taleplerini ve geçmişini görebilirsin.\n' +
+        '- `/sicil` ile kendi puanını, taleplerini ve geçmişini görebilirsin.\n' +
         '**Yardım**\n' +
-        '• `/yardim` ile botun tüm komutlarını ve kimlerin kullanabileceğini görebilirsin.',
+        '- `/yardim` ile botun tüm komutlarını ve kimlerin kullanabileceğini görebilirsin.',
     },
     {
       id: 'alan',

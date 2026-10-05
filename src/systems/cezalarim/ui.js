@@ -139,7 +139,7 @@ function itirazPicker(active) {
 function itirazModal(p) {
   return new ModalBuilder()
     .setCustomId(`${IDS.itirazForm}:${p.id}`)
-    .setTitle(`İtiraz・${TYPES[p.type].label} #${pad(p.number)}`)
+    .setTitle(`İtiraz - ${TYPES[p.type].label} #${pad(p.number)}`)
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('İtiraz Sebebin')

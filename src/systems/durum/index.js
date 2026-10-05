@@ -41,7 +41,7 @@ async function update(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
 
-  const text = `❄️ ${guild.name}・${await detail(client, guild)}`;
+  const text = `❄️ ${guild.name} - ${await detail(client, guild)}`;
   if (text === lastText) return;
   lastText = text;
   client.user.setPresence({ activities: [{ name: text, type: config.type }], status: 'online' });
