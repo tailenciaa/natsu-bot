@@ -161,11 +161,18 @@ function handleVoiceUpdate(oldState, newState) {
 
 const messageCooldown = new Map();
 
+const lastContent = new Map(); // kullanıcı -> XP kazandıran son mesajın metni
+
 function handleMessage(message) {
   if (message.guildId !== guildId || message.author.bot || message.webhookId) return;
+  // Anlamsız kısa mesajlar ve bir öncekiyle aynı mesaj XP vermez (sadece "a", "." ya da kopyala-yapıştır spam'i)
+  const content = message.content.trim().toLowerCase();
+  if (content.length < 3 && !message.attachments.size) return;
+  if (content && lastContent.get(message.author.id) === content) return;
   const last = messageCooldown.get(message.author.id) ?? 0;
   if (message.createdTimestamp - last < config.message.cooldownSeconds * 1000) return;
   messageCooldown.set(message.author.id, message.createdTimestamp);
+  lastContent.set(message.author.id, content);
 
   const { xpMin, xpMax } = config.message;
   const amount = xpMin + Math.floor(Math.random() * (xpMax - xpMin + 1));
