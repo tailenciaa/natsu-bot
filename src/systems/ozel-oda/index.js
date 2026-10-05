@@ -280,9 +280,11 @@ async function handleTransfer(interaction) {
     return replyError(interaction, 'Sahipliği sadece odanda bulunan bir üyeye devredebilirsin.', 'Odada bulunan bir üye seç.');
   }
 
+  // Kayıt aynı nesne üzerinde güncellendiği için eski sahip güncellemeden önce alınır
+  const previousOwnerId = room.ownerId;
   const updated = store.updateRoom(interaction.channelId, { ownerId: targetId });
   // Giriş ve görme izni yeni sahibe geçer, eski sahibin ayrı izni kalkar
-  await interaction.channel.permissionOverwrites.delete(room.ownerId).catch(logFailure('Eski sahibin izni kaldırılamadı'));
+  await interaction.channel.permissionOverwrites.delete(previousOwnerId).catch(logFailure('Eski sahibin izni kaldırılamadı'));
   await interaction.channel.permissionOverwrites.edit(targetId, { ViewChannel: true, Connect: true }).catch(logFailure('Yeni sahibe izin verilemedi'));
   return redraw(interaction, updated);
 }
