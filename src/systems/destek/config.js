@@ -1,6 +1,6 @@
 // Destek sistemi ayarları. ID değiştirince botu yeniden başlatmak yeterli.
 
-const { botName, panelTitle } = require('../../core/config');
+const { botName } = require('../../core/config');
 
 module.exports = {
   // Panel görseli (doğrudan URL)
@@ -21,11 +21,9 @@ module.exports = {
   },
 
   panel: {
-    title: panelTitle(`${botName} Destek Sistemi`),
-    description:
-      '**Bir sorunla mı karşılaştın?** Sağdaki butondan talep oluştur ve sorununu kısaca anlat. Destek ekibimiz en kısa sürede seninle ilgilenecek.',
+    title: `${botName} Destek Sistemi`,
     buttonLabel: 'Talep Oluştur',
-    footer: '-# Gereksiz veya asılsız açılan talepler yaptırım uygulanmasına neden olabilir.',
+    footer: 'Gereksiz veya asılsız açılan talepler yaptırım uygulanmasına neden olabilir.',
   },
 
   // Talep kapatılırken formda seçilen sebepler

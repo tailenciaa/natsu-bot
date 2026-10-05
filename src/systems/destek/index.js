@@ -28,19 +28,19 @@ const closing = new Set();
 const commands = [
   new SlashCommandBuilder()
     .setName('destek')
-    .setDescription('Destek talebi işlemleri')
+    .setDescription('Destek talebindeki üyeleri yönetir.')
     .setContexts(InteractionContextType.Guild)
     .addSubcommand((s) =>
       s
         .setName('ekle')
         .setDescription('Bulunduğun destek talebine bir kullanıcı ekler.')
-        .addUserOption((o) => o.setName('kullanici').setDescription('Eklenecek kullanıcı').setRequired(true)),
+        .addUserOption((o) => o.setName('kullanici').setDescription('Talebe eklenecek üyeyi seç.').setRequired(true)),
     )
     .addSubcommand((s) =>
       s
         .setName('cikar')
         .setDescription('Bulunduğun destek talebinden bir kullanıcıyı çıkarır.')
-        .addUserOption((o) => o.setName('kullanici').setDescription('Çıkarılacak kullanıcı').setRequired(true)),
+        .addUserOption((o) => o.setName('kullanici').setDescription('Talepten çıkarılacak üyeyi seç.').setRequired(true)),
     ),
 ];
 
@@ -172,42 +172,51 @@ async function createTicket(interaction, reason, afterCreate) {
       autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
       reason: `Destek talebi #${core.pad(number)} - ${user.username}`,
     });
-    await thread.members.add(user.id);
-    await removeThreadNotice(parent, thread.id);
+    let ticket;
+    try {
+      await thread.members.add(user.id);
+      await removeThreadNotice(parent, thread.id);
 
-    const ticket = store.setTicket(thread.id, {
-      guildId: guild.id,
-      threadId: thread.id,
-      ownerId: user.id,
-      staffRoleId: config.roles.staff,
-      claimChannelId: claimChannel.id,
-      number,
-      reason,
-      createdAt: Date.now(),
-      notified: false,
-      greeted: false,
-      claimedBy: null,
-      closedBy: null,
-      panelMessageId: null,
-      claimMessages: { main: null, reminder: null },
-    });
+      ticket = store.setTicket(thread.id, {
+        guildId: guild.id,
+        threadId: thread.id,
+        ownerId: user.id,
+        staffRoleId: config.roles.staff,
+        claimChannelId: claimChannel.id,
+        number,
+        reason,
+        createdAt: Date.now(),
+        notified: false,
+        greeted: false,
+        claimedBy: null,
+        closedBy: null,
+        panelMessageId: null,
+        claimMessages: { main: null, reminder: null },
+      });
 
-    const panelMessage = await thread.send({
-      components: [ui.ticketPanel(ticket)],
-      flags: core.CV2,
-      allowedMentions: { users: [user.id] },
-    });
-    const claimMessage = await claimChannel.send({
-      components: [ui.claimRequest(ticket)],
-      flags: core.CV2,
-      allowedMentions: { roles: [config.roles.staff] },
-    });
-    store.updateTicket(thread.id, {
-      panelMessageId: panelMessage.id,
-      claimMessages: { main: claimMessage.id, reminder: null },
-    });
+      const panelMessage = await thread.send({
+        components: [ui.ticketPanel(ticket)],
+        flags: core.CV2,
+        allowedMentions: { parse: [] },
+      });
+      const claimMessage = await claimChannel.send({
+        components: [ui.claimRequest(ticket)],
+        flags: core.CV2,
+        allowedMentions: { roles: [config.roles.staff] },
+      });
+      store.updateTicket(thread.id, {
+        panelMessageId: panelMessage.id,
+        claimMessages: { main: claimMessage.id, reminder: null },
+      });
 
-    if (afterCreate) await afterCreate(thread, store.getTicket(thread.id));
+      if (afterCreate) await afterCreate(thread, store.getTicket(thread.id));
+    } catch (err) {
+      // Yarım kalan talep ortada kalmasın: alt başlık ve kayıt temizlenir, üye yeniden deneyebilir
+      console.error('[destek] Talep oluşturulurken hata, talep geri alındı:', err);
+      store.deleteTicket(thread.id);
+      await thread.delete('Talep oluşturulamadı').catch(() => {});
+      return replyError(interaction, 'Talebin oluşturulamadı.', 'Birkaç dakika sonra yeniden dene.');
+    }
 
     await respond(interaction, ui.ticketCreated(thread));
 
@@ -252,6 +261,7 @@ async function handleClaim(interaction) {
     return replyError(interaction, 'Bu talep silinmiş.');
   }
   try {
+    if (thread.archived) await thread.setArchived(false);
     await thread.members.add(interaction.user.id);
   } catch (err) {
     store.updateTicket(threadId, { claimedBy: null });
@@ -285,7 +295,7 @@ async function handleGreet(interaction) {
 
   // Selam mesajı bilerek CV2 değil, düz mesaj olarak gönderilir
   await interaction.channel.send({
-    content: `**<@${ticket.claimedBy}>, <@${ticket.ownerId}> sana selam gönderdi! 👋**`,
+    content: `**<@${ticket.claimedBy}>, <@${ticket.ownerId}> sana selam gönderdi!**`,
     allowedMentions: { users: [ticket.claimedBy] },
   });
 }
@@ -311,12 +321,19 @@ async function handleNotify(interaction) {
     return replyError(interaction, 'Talep kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
   }
 
-  const reminder = await claimChannel.send({
-    components: [ui.claimReminder(ticket)],
-    flags: core.CV2,
-    reply: { messageReference: ticket.claimMessages.main, failIfNotExists: false },
-    allowedMentions: { roles: [ticket.staffRoleId], repliedUser: false },
-  });
+  let reminder;
+  try {
+    reminder = await claimChannel.send({
+      components: [ui.claimReminder(ticket)],
+      flags: core.CV2,
+      reply: { messageReference: ticket.claimMessages.main, failIfNotExists: false },
+      allowedMentions: { roles: [ticket.staffRoleId], repliedUser: false },
+    });
+  } catch (err) {
+    console.error('[destek] Hatırlatma gönderilemedi:', err.message);
+    store.updateTicket(interaction.channelId, { notified: false });
+    return replyError(interaction, 'Hatırlatma gönderilemedi.', 'Birkaç saniye sonra yeniden dene.');
+  }
   store.updateTicket(interaction.channelId, { claimMessages: { ...ticket.claimMessages, reminder: reminder.id } });
 
   await interaction.editReply({ components: [ui.ticketPanel(ticket)], allowedMentions: { parse: [] } });
@@ -357,8 +374,15 @@ async function handleCloseSubmit(interaction) {
     note: interaction.fields.getTextInputValue(ui.IDS.closeNote).trim(),
   };
 
-  await respond(interaction, core.alert('Talep kapatılıyor...', null, 'danger'));
-  await closeTicket(interaction.channel, interaction.user, closeReason);
+  // closeTicket kilidini (closing) ilk await'ten önce eşzamanlı alır; aynı anda gelen ikinci form kapatmayı tekrarlamaz
+  const closed = closeTicket(interaction.channel, interaction.user, closeReason);
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await closed;
+  await interaction.editReply({
+    components: [core.alert('Talep kapatıldı.', 'Alt başlık kilitlendi ve arşivlendi.', 'success')],
+    flags: core.CV2,
+    allowedMentions: { parse: [] },
+  });
 }
 
 // Talep silinmez: kayıt alınır, yönetici olmayan herkes çıkarılır, alt başlık kilitlenip arşivlenir.
@@ -368,46 +392,55 @@ async function closeTicket(channel, closedBy, closeReason) {
   if (!ticket || closing.has(channel.id)) return;
   closing.add(channel.id);
 
+  // Her adım kendi hatasını yakalar: biri (ör. konuşma kaydı ya da DM) başarısız olsa da talep kilitlenip arşivlenir
+  const step = async (name, run) => {
+    try {
+      return await run();
+    } catch (err) {
+      console.error(`[destek] Talep #${core.pad(ticket.number)} kapanışında "${name}" adımı başarısız:`, err.message);
+      return null;
+    }
+  };
+
   try {
     store.updateTicket(channel.id, { closedBy: closedBy.id, closeReason });
-    await refreshClaimMessage(channel.guild, ticket);
-    await refreshTicketPanel(channel, ticket);
-
-    await channel.send({
-      components: [ui.ticketClosed(ticket)],
-      flags: core.CV2,
-      allowedMentions: { parse: [] },
+    await step('talep mesajları', async () => {
+      await refreshClaimMessage(channel.guild, ticket);
+      await refreshTicketPanel(channel, ticket);
     });
+    await step('kapanış mesajı', () =>
+      channel.send({ components: [ui.ticketClosed(ticket)], flags: core.CV2, allowedMentions: { parse: [] } }),
+    );
 
-    const owner = await channel.client.users.fetch(ticket.ownerId).catch(() => null);
+    const owner = await step('talep sahibi', () => channel.client.users.fetch(ticket.ownerId));
 
     // Log kanalı ayarlıysa kapanış logu ve konuşma kaydı oraya gider
     const logChannel = await fetchTextChannel(channel.guild, config.channels.log);
     if (logChannel) {
-      const transcript = await buildTranscript(channel, ticket, owner);
-      const fileName = `destek-${core.pad(ticket.number)}.txt`;
-      await logChannel
-        .send({
-          components: [ui.closeLog(ticket, closedBy, fileName)],
+      await step('kapanış logu', async () => {
+        const transcript = await buildTranscript(channel, ticket, owner);
+        const fileName = `destek-${core.pad(ticket.number)}.txt`;
+        await logChannel.send({
+          components: [ui.closeLog(ticket, closedBy, fileName, owner)],
           files: [new AttachmentBuilder(transcript, { name: fileName })],
           flags: core.CV2,
           allowedMentions: { parse: [] },
-        })
-        .catch((err) => console.error('[destek] Kapanış logu gönderilemedi:', err.message));
+        });
+      });
     }
 
     // Talep sahibine kısa bilgi ve yetkiliyi değerlendirme isteği gider (DM'si kapalıysa kayda geçip devam edilir)
-    const rating = await ratings.createPending(channel.client, ticket);
+    const rating = await step('değerlendirme', () => ratings.createPending(channel.client, ticket));
     await owner
       ?.send({ components: [ui.closeDm(ticket.number, channel.guild.name, rating)], flags: core.CV2 })
       .catch((err) =>
         console.error(`[destek] Talep #${core.pad(ticket.number)} sahibine DM gönderilemedi (DM kapalı olabilir):`, err.message),
       );
 
-    await removeRegularMembers(channel, ticket);
-    await channel.edit({ locked: true, archived: true, reason: `Destek talebi kapatıldı (${closedBy.username})` });
-  } catch (err) {
-    console.error('[destek] Talep kapatılırken hata:', err);
+    await step('üyeleri çıkarma', () => removeRegularMembers(channel, ticket));
+    await step('kilitleme', () =>
+      channel.edit({ locked: true, archived: true, reason: `Destek talebi kapatıldı (${closedBy.username})` }),
+    );
   } finally {
     // Kapanan talep silinmez, sicilde görünmesi için geçmişe taşınır
     store.archiveTicket(channel.id);
@@ -440,7 +473,12 @@ async function handleMemberCommand(interaction) {
 
   const addedIds = new Set(ticket.addedIds ?? []);
   if (action === 'ekle') {
-    await channel.members.add(target.id);
+    try {
+      await channel.members.add(target.id);
+    } catch (err) {
+      console.error('[destek] Üye talebe eklenemedi:', err.message);
+      return replyError(interaction, 'Üye talebe eklenemedi.', 'Üyenin sunucuda olduğundan emin ol.');
+    }
     store.updateTicket(channel.id, { addedIds: [...addedIds.add(target.id)] });
     return respond(interaction, core.alert(`<@${target.id}> bu destek talebine eklendi.`, null, 'success'), {
       ephemeral: false,
@@ -449,7 +487,12 @@ async function handleMemberCommand(interaction) {
   }
 
   if (target.id === ticket.ownerId) return replyError(interaction, 'Talep sahibi talepten çıkarılamaz.');
-  await channel.members.remove(target.id);
+  try {
+    await channel.members.remove(target.id);
+  } catch (err) {
+    console.error('[destek] Üye talepten çıkarılamadı:', err.message);
+    return replyError(interaction, 'Üye talepten çıkarılamadı.', 'Üyenin bu talepte olduğundan emin ol.');
+  }
   addedIds.delete(target.id);
   store.updateTicket(channel.id, { addedIds: [...addedIds] });
   return respond(interaction, core.alert(`<@${target.id}> bu destek talebinden çıkarıldı.`, null, 'danger'), {

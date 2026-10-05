@@ -3,21 +3,19 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   FileBuilder,
   LabelBuilder,
-  MediaGalleryBuilder,
-  MediaGalleryItemBuilder,
   ModalBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, messageUrl, page } = require('../../core/ui');
+const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
+
+const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, stamp } = core;
 
 const IDS = {
   create: 'destek:olustur',
@@ -35,27 +33,21 @@ const IDS = {
 // Log kanalı kapalıysa konuşma kaydı kimseye gitmez, mesajlarda bahsedilmez
 const logEnabled = () => Boolean(config.channels.log);
 
-// Kapanış mesajı ve logda aynı şekilde görünen kapatma sebebi bölümü
-const reasonText = ({ label, note }) => `**Kapatma Sebebi**\n${label}${note ? `\n${quote(note)}` : ''}`;
+// Kapatma sebebi bölümü: kapanış mesajında, logda ve DM'de aynı görünür
+const reasonText = (closeReason) =>
+  closeReason ? fields(['**Kapatma Sebebi**', closeReason.label, closeReason.note ? quote(closeReason.note) : null]) : null;
+
+// Log satırlarındaki kişi: etiket ve (biliniyorsa) kullanıcı adı
+const personText = (id, user) => `<@${id}>${user ? ` (\`${user.username}\`)` : ''}`;
 
 function panel() {
-  const container = new ContainerBuilder().addSectionComponents(
-    new SectionBuilder()
-      .addTextDisplayComponents(
-        text(
-          `${config.panel.title}\n` +
-            '-# Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda sağdaki butonu kullanarak destek talebi oluşturabilirsin; destek ekibimiz talebini inceleyip en kısa sürede seninle ilgilenir.',
-        ),
-      )
-      .setButtonAccessory(new ButtonBuilder().setCustomId(IDS.create).setLabel(config.panel.buttonLabel).setStyle(ButtonStyle.Primary)),
-  );
-
-  if (config.banner) {
-    const url = /^https?:\/\//.test(config.banner) ? config.banner : `attachment://${config.banner}`;
-    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(url)));
-  }
-
-  return container;
+  return core.panel({
+    title: config.panel.title,
+    sub: '**Talep Oluştur** butonuyla destek talebi açabilirsin. Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda talebini yaz; destek ekibimiz inceleyip en kısa sürede seninle ilgilenir.',
+    button: { id: IDS.create, label: config.panel.buttonLabel },
+    image: config.banner,
+    note: config.panel.footer,
+  });
 }
 
 function ticketModal() {
@@ -70,7 +62,7 @@ function ticketModal() {
           new TextInputBuilder()
             .setCustomId(IDS.reason)
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Örn: Sunucuya girerken bir hata alıyorum...')
+            .setPlaceholder('Örn: Sunucuya girerken bir hata alıyorum.')
             .setMinLength(5)
             .setMaxLength(1000)
             .setRequired(true),
@@ -78,42 +70,33 @@ function ticketModal() {
     );
 }
 
-// Talep alt başlığında üyenin gördüğü mesaj.
+// Talep alt başlığında üyenin gördüğü mesaj; talep ilerledikçe güncellenir.
 // Yetkili rolü burada etiketlenmez: özel alt başlıkta etiketlenen herkes alt başlığa eklenir.
 function ticketPanel(ticket) {
-  const waiting = !ticket.claimedBy && !ticket.closedBy;
-
+  let sub;
   let status;
   let color;
-  // Kimin kapattığı ve sebebi ayrı "Talep Kapatıldı" mesajında, burada sadece kilit bilgisi
   if (ticket.closedBy) {
-    status = 'Talep kilitlendi ve arşivlendi.\n-# Artık bu kanala mesaj gönderilemez.';
+    sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi talebin kapatıldığı ayrı mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir.';
+    status = '**Talep kapatıldı.**\n-# Alt başlık kilitlendi ve arşivlendi.';
     color = colors.danger;
   } else if (ticket.claimedBy) {
-    status = `<@${ticket.claimedBy}> talebinle ilgileniyor.`;
+    sub = 'Talebini üstlenen yetkili bu kanalda seninle ilgilenir. Sorununu buradan yazmaya devam edebilir, ekran görüntüsü ekleyebilirsin; işin bittiğinde **Talebi Kapat** butonuyla talebi kapatabilirsin.';
+    status = `**<@${ticket.claimedBy}> talebinle ilgileniyor.**`;
     color = colors.success;
   } else {
-    status =
-      'Bir yetkilinin talebini üstlenmesi bekleniyor...\n' +
-      (ticket.notified
-        ? '-# Ekibe hatırlatma gönderildi, kısa süre içinde bir yetkili seninle ilgilenecek.'
-        : '-# Uzun süre yanıt alamazsan **Hatırlat** butonuyla ekibe bir kez daha haber verebilirsin.');
+    sub = ticket.notified
+      ? 'Bir yetkili talebini üstlenene kadar sorununu ayrıntılı yazabilir, varsa ekran görüntüsü ekleyebilirsin. Yetkili gelince bu kanalda seninle ilgilenir; vazgeçersen **Talebi Kapat** butonuyla talebi kapatabilirsin.'
+      : 'Bir yetkili talebini üstlenene kadar sorununu ayrıntılı yazabilir, varsa ekran görüntüsü ekleyebilirsin. Uzun süre yanıt alamazsan **Hatırlat** butonuyla ekibe haber verebilirsin.';
+    status = `**Bir yetkili bekleniyor.**${ticket.notified ? '\n-# Ekibe hatırlatma gönderildi.' : ''}`;
     color = colors.warning;
   }
 
-  const container = page({
-    title: `Destek Talebi #${pad(ticket.number)}`,
-    sub: 'Talebin destek ekibimize ulaştı; bir yetkili talebini üstlenene kadar sorununu ayrıntılı şekilde yazabilir, varsa ekran görüntüsü ekleyebilir ve gerekirse aşağıdaki butonlardan faydalanabilirsin.',
-    accent: color,
-    blocks: [
-      `**Hoş Geldin**\n<@${ticket.ownerId}>, talebin ekibimize ulaştı.\n-# Beklerken sorununu ayrıntılı şekilde yazabilir, varsa ekran görüntüsü ekleyebilirsin.`,
-      `**Talep Durumu**\n${status}`,
-    ],
-  });
+  const container = page({ title: `Destek Talebi #${pad(ticket.number)}`, sub, accent: color, blocks: [status] });
 
   if (!ticket.closedBy) {
     const row = new ActionRowBuilder();
-    if (waiting) {
+    if (!ticket.claimedBy) {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(IDS.notify)
@@ -123,70 +106,71 @@ function ticketPanel(ticket) {
       );
     }
     row.addComponents(new ButtonBuilder().setCustomId(IDS.close).setStyle(ButtonStyle.Danger).setLabel('Talebi Kapat'));
-    container.addSeparatorComponents(divider()).addActionRowComponents(row);
+    container.addActionRowComponents(row);
   }
 
-  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# <t:${unix(ticket.createdAt)}:F>`));
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(ticket.createdAt)));
 }
 
-// Talep üstlenilince alt başlığa giden mesaj: üyeyi etiketler, buradan yetkiliyi bir kez selamlayabilir.
-// Kimin üstlendiği üstteki talep mesajında yazdığı için burada tekrar edilmez.
+// Talep üstlenilince alt başlığa giden mesaj: üyeyi etiketler, üye buradan yetkiliyi bir kez selamlayabilir.
+// Kimin üstlendiği talep mesajında yazdığı için burada tekrar edilmez.
 function claimedNotice(ticket) {
-  return page({
-    title: 'Yetkilin Geldi',
-    sub: 'Talebini üstlenen yetkili artık seninle ilgileniyor; sorununu anlatmaya başlayabilir, işin bitince aşağıdaki butonla yetkiliyi bir kez selamlayabilirsin.',
-    accent: colors.success,
-    blocks: [`**Bilgilendirme**\n<@${ticket.ownerId}>, yetkilin geldi!\n-# Sorununu anlatmaya başlayabilirsin.`],
-  })
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(IDS.greet)
-          .setStyle(ButtonStyle.Primary)
-          .setLabel(ticket.greeted ? 'Selam Verildi' : 'Selam Ver')
-          .setDisabled(Boolean(ticket.greeted)),
-      ),
-    );
+  return alert(
+    `<@${ticket.ownerId}>, talebin üstlenildi.`,
+    ticket.greeted
+      ? 'Sorununu bu kanala yazabilirsin.'
+      : 'Sorununu bu kanala yazabilirsin; yetkiliye **Selam Ver** butonuyla selam gönderebilirsin.',
+    'success',
+  ).addActionRowComponents(
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(IDS.greet)
+        .setStyle(ButtonStyle.Primary)
+        .setLabel(ticket.greeted ? 'Selam Verildi' : 'Selam Ver')
+        .setDisabled(Boolean(ticket.greeted)),
+    ),
+  );
 }
 
-// Talep kapatılınca alt başlığa giden mesaj (kilit bilgisi üstteki talep mesajında olduğu için tekrar edilmez)
+// Talep kapatılınca alt başlığa giden mesaj (kilit bilgisi talep mesajında olduğu için tekrar edilmez)
 function ticketClosed(ticket) {
   return page({
     title: 'Talep Kapatıldı',
-    sub: 'Bu destek talebi sonlandırıldı ve alt başlık kilitlendi; kapatma sebebi aşağıda yer alıyor. Yeni bir sorunun olursa destek panelinden yeniden talep oluşturabilirsin.',
+    sub: 'Talebin kapanış bilgisi burada yer alır: kimin kapattığı ve seçilen sebep. Başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin.',
     accent: colors.danger,
     blocks: [
-      `**Kapatma Bilgisi**\nBu talep <@${ticket.closedBy}> tarafından kapatıldı.` + (logEnabled() ? '\n-# Konuşma kaydı ekibe iletildi.' : ''),
+      fields([`**Talebi <@${ticket.closedBy}> kapattı.**`, logEnabled() ? '-# Konuşma kaydı ekibe iletildi.' : null]),
       reasonText(ticket.closeReason),
     ],
   });
 }
 
-// Talep kanalına giden "Yeni Destek Talebi" mesajı, butona ilk basan yetkili talebi üstlenir
-// Beklerken başlık zaten "bekleyen talep var" dediği için ayrıca durum yazılmaz; üstlenilince ya da kapanınca
-// başlık sadeleşir, durum satırı çıkar.
+// Yetkili talep kanalındaki "Yeni Destek Talebi" mesajı, butona ilk basan yetkili talebi üstlenir.
+// Sicil bu mesajı butonsuz (sadece bağlantı butonlarıyla) gösterdiği için metinler butona atıf yapmaz.
 function claimRequest(ticket) {
   const waiting = !ticket.claimedBy && !ticket.closedBy;
 
-  let status = null;
-  let color = colors.primary;
+  let sub;
+  let color;
   if (ticket.closedBy) {
-    status = `<@${ticket.closedBy}> kapattı`;
+    sub = 'Talep kapatıldı ve alt başlık kilitlendi. Kimin kapattığı ve kapanış sebebi bu mesajda güncellenir; **Talebe Git** butonuyla alt başlığa ulaşabilirsin.';
     color = colors.danger;
   } else if (ticket.claimedBy) {
-    status = `<@${ticket.claimedBy}> ilgileniyor`;
+    sub = 'Talep üstlenildi ve yetkili üyeyle ilgileniyor. Talebin son durumu bu mesajda güncellenir; konuşmanın tamamına **Talebe Git** butonuyla ulaşabilirsin.';
     color = colors.success;
+  } else {
+    sub = 'Bir üye destek talebi oluşturdu ve bir yetkili bekliyor. Talebi ilk üstlenen yetkili üyeyle ilgilenir; üyenin yazdığı konu ve talep bilgileri bu mesajda yer alır.';
+    color = colors.warning;
   }
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`${IDS.claim}:${ticket.threadId}`)
-      .setStyle(ButtonStyle.Success)
+      .setStyle(ticket.closedBy ? ButtonStyle.Secondary : ButtonStyle.Success)
       .setLabel(ticket.closedBy ? 'Kapatıldı' : ticket.claimedBy ? 'Üstlenildi' : 'Talebi Üstlen')
-      .setDisabled(Boolean(ticket.claimedBy || ticket.closedBy)),
+      .setDisabled(!waiting),
   );
-  if (ticket.claimedBy || ticket.closedBy) {
+  if (!waiting) {
     row.addComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
@@ -196,61 +180,41 @@ function claimRequest(ticket) {
   }
 
   return page({
-    title: waiting ? `Yeni Destek Talebi #${pad(ticket.number)}` : `Destek Talebi #${pad(ticket.number)}`,
-    sub: 'Bir üye destek talebi oluşturdu; talebin bilgileri ve konusu aşağıda yer alıyor. Butona basarak talebi ilk üstlenen yetkili üyeyle ilgilenir, talep üstlenildikten sonra durum buradan takip edilir.',
+    title: `${waiting ? 'Yeni ' : ''}Destek Talebi #${pad(ticket.number)}`,
+    sub,
     accent: color,
     blocks: [
-      [
+      fields([
         '**Talep Bilgileri**',
-        `**Talep Sahibi:** <@${ticket.ownerId}>`,
-        `**Açılış:** <t:${unix(ticket.createdAt)}:R>`,
-        status ? `**Durum:** ${status}` : null,
-        waiting ? `-# <@&${ticket.staffRoleId}>, bekleyen yeni bir talep var. Talebi ilk üstlenen yetkili ilgilenir.` : null,
-      ]
-        .filter(Boolean)
-        .join('\n'),
+        field('Talep Sahibi', `<@${ticket.ownerId}>`),
+        field('Açılış', `<t:${unix(ticket.createdAt)}:R>`),
+        ticket.claimedBy ? field('Üstlenen', `<@${ticket.claimedBy}>`) : null,
+        ticket.closedBy ? field('Kapatan', `<@${ticket.closedBy}>`) : null,
+        ticket.closedBy && ticket.closeReason ? field('Kapatma Sebebi', ticket.closeReason.label) : null,
+        waiting ? `-# <@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
+      ]),
       `**Konu**\n${quote(ticket.reason)}`,
     ],
-  })
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(row);
+  }).addActionRowComponents(row);
 }
 
-// Üye "Hatırlat"a basınca talep kanalına giden hatırlatma.
-// Üstlenme mesajına yanıt olarak gider; talep bilgilerini tekrar etmez, "Talebe Git" o mesaja götürür.
+// Üye "Hatırlat"a basınca yetkili kanalına giden hatırlatma: üstlenme mesajına yanıt olarak gider,
+// talebin bilgileri orada olduğu için sadece yeni olanı söyler.
 function claimReminder(ticket) {
-  return page({
-    title: `Hatırlatma - Talep #${pad(ticket.number)}`,
-    sub: 'Talep sahibi üstlenilmeyi beklediği için ekibe hatırlatma gönderdi; butonla talebin üstlenme mesajına gidip talebi üstlenebilir ve üyeyle ilgilenmeye başlayabilirsiniz.',
-    accent: colors.warning,
-    blocks: [`**Hatırlatma**\n<@&${ticket.staffRoleId}>, <@${ticket.ownerId}> hâlâ bir yetkili bekliyor!\n-# Butonla talebin üstlenme mesajına gidebilirsin.`],
-  })
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Link)
-          .setLabel('Talebe Git')
-          .setURL(messageUrl(ticket.guildId, ticket.claimChannelId, ticket.claimMessages.main)),
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# <t:${unix(Date.now())}:F>`));
+  return alert(`<@&${ticket.staffRoleId}>, <@${ticket.ownerId}> hâlâ bir yetkili bekliyor.`, null, 'warning').addActionRowComponents(
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel('Talebe Git')
+        .setURL(messageUrl(ticket.guildId, ticket.claimChannelId, ticket.claimMessages.main)),
+    ),
+  );
 }
 
 function ticketCreated(channel) {
-  return page({
-    title: 'Talebin Açıldı',
-    sub: 'Destek talebin başarıyla oluşturuldu ve ekibe haber verildi; bir yetkili talebini üstlendiğinde sana bildirim gelir, aşağıdaki butonla talebine doğrudan gidebilirsin.',
-    accent: colors.success,
-    blocks: [`**Talep Bilgileri**\n**Talep:** <#${channel.id}>\n-# Ekibe haber verildi, bir yetkili talebini üstlendiğinde bildirim alacaksın.`],
-  })
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Talebe Git').setURL(channel.url),
-      ),
-    );
+  return alert('Talebin açıldı.', 'Bir yetkili üstlendiğinde sana bildirim gelecek.', 'success').addActionRowComponents(
+    new ActionRowBuilder().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Talebe Git').setURL(channel.url)),
+  );
 }
 
 // "Talebi Kapat" ile açılan form: sebep seçilir, istenirse not yazılır. Formu göndermek onay yerine geçer.
@@ -258,13 +222,11 @@ function closeModal() {
   return new ModalBuilder()
     .setCustomId(IDS.closeModal)
     .setTitle('Talebi Kapat')
-    .addTextDisplayComponents(
-      text(`Talep kilitlenip arşivlenecek${logEnabled() ? ', konuşma kaydı ekibe iletilecek' : ''}.`),
-    )
+    .addTextDisplayComponents(text(`Talep kilitlenip arşivlenecek${logEnabled() ? '; konuşma kaydı ekibe iletilecek' : ''}.`))
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('Talep nasıl sonuçlandı?')
-        .setDescription('Kapatma sebebini seç.')
+        .setDescription('Seçtiğin sebep kapanış mesajında görünür.')
         .setStringSelectMenuComponent(
           new StringSelectMenuBuilder()
             .setCustomId(IDS.closeReason)
@@ -277,8 +239,8 @@ function closeModal() {
             ),
         ),
       new LabelBuilder()
-        .setLabel('Not')
-        .setDescription('İsteğe bağlı, kısa bir açıklama ekleyebilirsin.')
+        .setLabel('Eklemek istediğin bir not var mı?')
+        .setDescription('İsteğe bağlı, kısa bir açıklama yazabilirsin.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.closeNote)
@@ -293,35 +255,36 @@ function closeModal() {
 function openLog(ticket, channel, owner) {
   return page({
     title: `Talep Açıldı #${pad(ticket.number)}`,
-    sub: 'Bir üye yeni bir destek talebi açtı; talebi açan kişi, talebin bulunduğu alt başlık ve belirtilen konu bu kayıtta tutulur, talep kapandığında ayrıca kapanış kaydı eklenir.',
+    sub: 'Bir üye yeni bir destek talebi açtı. Talebi açan üye, alt başlık ve üyenin yazdığı konu bu kayıtta yer alır; talep kapanınca ayrı bir kapanış kaydı eklenir.',
     accent: colors.success,
     blocks: [
-      [
+      fields([
         '**Talep Bilgileri**',
-        `**Talep:** <#${channel.id}>`,
-        `**Açan:** <@${owner.id}> (\`${owner.username}\`)`,
-        `**Tarih:** <t:${unix(ticket.createdAt)}:F>`,
-      ].join('\n'),
+        field('Talep', `<#${channel.id}>`),
+        field('Talep Sahibi', personText(owner.id, owner)),
+        field('Açılış', `<t:${unix(ticket.createdAt)}:F>`),
+      ]),
       `**Konu**\n${quote(ticket.reason)}`,
     ],
   });
 }
 
-function closeLog(ticket, closedBy, fileName) {
+// owner: talep sahibinin kullanıcı nesnesi (alınamadıysa null, o zaman sadece etiket gösterilir)
+function closeLog(ticket, closedBy, fileName, owner) {
   return page({
     title: `Talep Kapatıldı #${pad(ticket.number)}`,
-    sub: 'Bir destek talebi kapatıldı; talebi açan, üstlenen ve kapatan kişiler, zaman bilgileri, konu ve kapatma sebebi bu kayıtta tutulur, konuşmanın tamamı ekteki dosyada yer alır.',
+    sub: 'Bir destek talebi kapatıldı. İlgili kişiler, zamanlar, konu ve kapatma sebebi bu kayıtta yer alır; konuşmanın tamamı ekteki dosyadadır.',
     accent: colors.danger,
     blocks: [
-      [
+      fields([
         '**Talep Bilgileri**',
-        `**Talep:** <#${ticket.threadId}>`,
-        `**Talep Sahibi:** <@${ticket.ownerId}>`,
-        `**Kapatan:** <@${closedBy.id}>`,
-        `**Üstlenen:** ${ticket.claimedBy ? `<@${ticket.claimedBy}>` : 'Yok'}`,
-        `**Açılış:** <t:${unix(ticket.createdAt)}:F>`,
-        `**Kapanış:** <t:${unix(Date.now())}:F>`,
-      ].join('\n'),
+        field('Talep', `<#${ticket.threadId}>`),
+        field('Talep Sahibi', personText(ticket.ownerId, owner)),
+        field('Üstlenen', ticket.claimedBy ? `<@${ticket.claimedBy}>` : 'Yok'),
+        field('Kapatan', personText(closedBy.id, closedBy)),
+        field('Açılış', `<t:${unix(ticket.createdAt)}:F>`),
+        field('Kapanış', `<t:${unix(Date.now())}:F>`),
+      ]),
       `**Konu**\n${quote(ticket.reason)}`,
       reasonText(ticket.closeReason),
     ],
@@ -331,15 +294,14 @@ function closeLog(ticket, closedBy, fileName) {
 }
 
 // Talep sahibine giden kısa "talebin kapatıldı" DM'i.
-// Değerlendirme sistemi bir değerlendirme oluşturduysa altına yetkiliyi puanlama bölümü eklenir.
+// Değerlendirme sistemi bir değerlendirme oluşturduysa altına yetkiliyi puanlama bölümü eklenir; puan verilince
+// değerlendirme sistemi bu DM'i aynı imzayla yeniden çizer.
 function closeDm(ticketNumber, guildName, rating) {
   const container = page({
     title: 'Talebin Kapatıldı',
-    sub: 'Destek talebin ekibimiz tarafından sonlandırıldı; başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin, iyi günler dileriz.',
+    sub: 'Destek ekibimizle yaptığın görüşme sona erdi. Aynı konuda ya da başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin.',
     accent: colors.danger,
-    blocks: [
-      `**Talep Bilgileri**\n**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı talebin kapatıldı.`,
-    ],
+    blocks: [`**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı destek talebin kapatıldı.`],
   });
   if (rating) ratingUi.ratingSection(container, rating);
   return container;
