@@ -29,6 +29,9 @@ function categories() {
   return Object.fromEntries([...ordered, ...rest]);
 }
 
+// Erişim metninin sonundaki "sadece <#kanal> kanalında" kısmı her komutta tekrarlanmasın diye sekme başına bir kez gösterilir
+const CHANNEL_TAIL = /,? sadece <#(d+)> kanalında$/;
+
 // Kategorideki komutları üretir; komut adı tıklanabilir olur, zorunlu seçenekler düz, isteğe bağlılar [köşeli] yazılır
 function entriesFor(guild, category) {
   const entries = [];
@@ -44,12 +47,14 @@ function entriesFor(guild, category) {
         : [{ path: command.name, description: command.description, options: command.options ?? [] }];
 
       for (const variant of variants) {
-        const access = system.help.access[variant.path];
-        if (!access) continue;
+        const rawAccess = system.help.access[variant.path];
+        if (!rawAccess) continue;
+        const tail = CHANNEL_TAIL.exec(rawAccess);
+        const access = tail ? rawAccess.replace(CHANNEL_TAIL, '') : rawAccess;
 
         const name = id ? `</${variant.path}:${id}>` : `\`/${variant.path}\``;
         const options = variant.options.map((o) => `\`${o.required ? o.name : `[${o.name}]`}\``).join(' ');
-        entries.push({ description: variant.description, usage: `${name} ${options}`.trim(), access });
+        entries.push({ description: variant.description, usage: `${name} ${options}`.trim(), access, channelId: tail?.[1] ?? null });
       }
     }
   }
@@ -58,12 +63,15 @@ function entriesFor(guild, category) {
 }
 
 function menu(interaction, tab) {
+  const entries = entriesFor(interaction.guild, tab);
+  const channelId = entries.find((entry) => entry.channelId)?.channelId;
   return ui.helpMenu({
     botName,
     avatarUrl: interaction.client.user.displayAvatarURL({ size: 256 }),
     categories: categories(),
     tab,
-    entries: entriesFor(interaction.guild, tab),
+    entries,
+    note: channelId ? `Bu sekmedeki yetkili komutları sadece <#${channelId}> kanalında kullanılabilir.` : null,
   });
 }
 

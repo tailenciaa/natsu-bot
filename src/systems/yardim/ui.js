@@ -3,8 +3,8 @@ const { colors, page, tabRow, divider, text } = require('../../core/ui');
 
 const IDS = { navigate: 'yardim' }; // yardim:<kategori>
 
-// view: { botName, avatarUrl, categories: { anahtar: ad }, tab, entries: [{ description, usage, access }] }
-function helpMenu({ botName, avatarUrl, categories, tab, entries }) {
+// view: { botName, avatarUrl, categories: { anahtar: ad }, tab, entries: [{ description, usage, access }], note: sekmenin ortak notu }
+function helpMenu({ botName, avatarUrl, categories, tab, entries, note }) {
   const container = page({
     title: 'Yardım Menüsü',
     sub: `${botName} komutlarını kategorilere göre buradan görebilirsin; kategori butonlarıyla sekme değiştirir, komutun adına tıklayarak komutu hemen çalıştırırsın.`,
@@ -25,7 +25,8 @@ function helpMenu({ botName, avatarUrl, categories, tab, entries }) {
   // Girdinin son satırı küçük yazı olmaz (olursa otomatik düzenleme onu ayrı bölüp çizgi koyar)
   const accesses = [...new Set(entries.map((entry) => entry.access))];
   const shared = entries.length > 1 && accesses.length === 1 ? accesses[0] : null;
-  if (shared) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Kimler kullanabilir:** ${shared}`));
+  const common = [shared ? `**Kimler kullanabilir:** ${shared}` : null, note].filter(Boolean).join('\n');
+  if (common) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(common));
   for (const entry of entries) {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(
       text(`**${entry.description}**\n${entry.usage}${shared ? '' : `\nKimler kullanabilir: ${entry.access}`}`),
