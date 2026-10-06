@@ -18,8 +18,9 @@ function blockText(block) {
 }
 
 // Her bölümün başlığının altındaki açıklama bilerek uzun yazılır (iki satıra yayılır): mesajın genişliği en uzun
-// satıra göre belirlendiği için böylece bütün mesajlar aynı ve en geniş boyutta görünür, boşluk bırakmaya gerek kalmaz
-const titleText = (section) => `### ${section.title}\n-# ${section.sub}`;
+// satıra göre belirlendiği için böylece bütün mesajlar aynı ve en geniş boyutta görünür, boşluk bırakmaya gerek kalmaz.
+// Normal yazıyla gösterilir (küçük gri yazı değil); içerik metni onaylı tasarım olduğu için değiştirilmez.
+const titleText = (section) => `### ${section.title}\n${section.sub}`;
 
 // Her bölüm için bir container üretir; ilk container panel başlığı ve görselle başlar
 function messages() {
