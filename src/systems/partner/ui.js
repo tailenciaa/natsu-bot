@@ -196,7 +196,7 @@ function reviewCard(request, decided) {
       head(
         `Oto Partner Talebi #${request.number}`,
         decided
-          ? 'Bu talep bir yetkili tarafından değerlendirildi. Talebin ayrıntıları ve verilen karar kayıt olarak burada kalır, başka bir işlem yapmana gerek yok.'
+          ? 'Bu talep **bir yetkili tarafından değerlendirildi**. Talebin ayrıntıları ve verilen karar kayıt olarak burada kalır, **başka bir işlem yapmana gerek yok**.'
           : 'Bir üye oto partner talebi gönderdi. Sunucu bilgilerini ve partner metnini inceleyip **Onayla** ya da **Reddet** butonuyla karar verebilirsin; troll bir talepse **Yasaklıya Al** ile sunucuyu yasaklayabilirsin.',
       ),
     )
@@ -247,7 +247,7 @@ function postCard(request, trusted, banned) {
     .addTextDisplayComponents(
       head(
         `Partner \`${serverLabel(request)}\``,
-        'Partner olduğumuz sunucunun tanıtım metni bu kartta yer alıyor; ilgini çekerse sunucuya katılabilirsin. Yetkililer karttaki butonlarla partneri güvenilir listeye alabilir ya da yönetebilir.',
+        'Partner olduğumuz sunucunun tanıtım metni bu kartta yer alıyor; ilgini çekerse sunucuya katılabilirsin. Yetkililer karttaki butonlarla partneri **güvenilir listeye alabilir** ya da yönetebilir.',
       ),
     )
     .addSeparatorComponents(divider())
