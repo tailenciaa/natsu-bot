@@ -110,8 +110,8 @@ function startPromptSuccess(alreadyAccepted = false) {
       head(
         'Partner Talebin Gönderildi',
         alreadyAccepted
-          ? 'Şartları daha önce kabul ettiğin için talebin doğrudan yetkili incelemesine gönderildi. Sonucu DM kutundan öğreneceksin.'
-          : "Talebin kaydedildi. Yetkililere iletilebilmesi için partner şartlarını kabul etmen gerekiyor; şartlar DM kutuna gönderildi, DM'lerin kapalıysa önce açmalısın.",
+          ? 'Şartları daha önce kabul ettiğin için talebin doğrudan **yetkili incelemesine gönderildi**. Sonucu DM kutundan öğreneceksin.'
+          : "Talebin kaydedildi. Yetkililere iletilebilmesi için **partner şartlarını kabul etmen gerekiyor**; şartlar DM kutuna gönderildi, DM'lerin kapalıysa önce açmalısın.",
       ),
     )
     .addSeparatorComponents(divider())
@@ -165,7 +165,7 @@ function termsDm(acceptCustomId) {
     .addTextDisplayComponents(
       head(
         'Partner Şartları',
-        'Partnerliğin düzenli ve karşılıklı yürüyebilmesi için şartları okuyup kabul etmen gerekiyor. Kabul etmeden partner metnin paylaşılmayacak.',
+        'Partnerliğin düzenli ve karşılıklı yürüyebilmesi için **şartları okuyup kabul etmen gerekiyor**. Kabul etmeden **partner metnin paylaşılmayacak**.',
       ),
     )
     .addSeparatorComponents(divider())
