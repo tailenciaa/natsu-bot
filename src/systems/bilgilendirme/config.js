@@ -64,38 +64,8 @@ module.exports = {
       "title": "Yetkili Ekibi",
       "blocks": [
         {
-          "heading": "Yönetim",
-          "items": [
-            "<@&1538519594501931109>: Sunucunun asıl **kurucu rolüdür**, alınamaz. En üst düzey yöneticidir, son kararı verir.",
-            "<@&1538519682552692856>: **Üst yöneticidir**, kurucularla birlikte en geniş yetkilere sahiptir.",
-            "<@&1538946630370332692>: **Kıdemli yöneticidir**, yönetim kadrosuna liderlik eder."
-          ]
-        },
-        {
-          "heading": "Yönetim Ekibi - <@&1555890044768624662>",
-          "items": [
-            "<@&1554237337993486377>: **Yöneticidir**, sunucunun işleyişinden ve yetkililerden sorumludur.",
-            "<@&1554237339100774490>: **Asistan yöneticidir**, yönetime destek olur.",
-            "<@&1554237339671208077>: **Üst moderatördür**, moderasyonda daha büyük sorumluluk üstlenir.",
-            "<@&1554237340321448038>: **Moderatördür**, düzeni sağlar ve üyeleri yönlendirir."
-          ]
-        },
-        {
-          "heading": "Üst Yetkililer",
-          "items": [
-            "<@&1554237341768482816>: **Üst yetkilidir**, yetkili ekibine yol gösterir.",
-            "<@&1554237342296969216>: **Deneyimli yetkilidir**, düzenin sürdürülmesinde görev alır.",
-            "<@&1554237786809307206>: **Yetkilidir**, sunucu düzeninde aktif rol oynar.",
-            "<@&1554237342917726249>: **Yetkilidir**, destek ve sohbet düzeninde görev alır."
-          ]
-        },
-        {
-          "heading": "Yetkili Ekibi - <@&1555890043992940614>",
-          "items": [
-            "<@&1554237347631997029>: **Orta seviye yetkilidir**, sohbet ve ses düzenini takip eder.",
-            "<@&1554237348282245161>: **Yeni yetkilidir**, ekibe yeni katılmıştır.",
-            "<@&1554237348940873758>: **Deneme yetkilidir**, adaylık sürecini tamamlar."
-          ]
+          "heading": "Yetkili Rolleri",
+          "text": "**Yönetim**\n<@&1538519594501931109>: Sunucunun asıl **kurucu rolüdür**, alınamaz. En üst düzey yöneticidir, son kararı verir.\n<@&1538519682552692856>: **Üst yöneticidir**, kurucularla birlikte en geniş yetkilere sahiptir.\n<@&1538946630370332692>: **Kıdemli yöneticidir**, yönetim kadrosuna liderlik eder.\n\n**Yönetim Ekibi** - <@&1555890044768624662>\n<@&1554237337993486377>: **Yöneticidir**, sunucunun işleyişinden ve yetkililerden sorumludur.\n<@&1554237339100774490>: **Asistan yöneticidir**, yönetime destek olur.\n<@&1554237339671208077>: **Üst moderatördür**, moderasyonda daha büyük sorumluluk üstlenir.\n<@&1554237340321448038>: **Moderatördür**, düzeni sağlar ve üyeleri yönlendirir.\n\n**Üst Yetkililer**\n<@&1554237341768482816>: **Üst yetkilidir**, yetkili ekibine yol gösterir.\n<@&1554237342296969216>: **Deneyimli yetkilidir**, düzenin sürdürülmesinde görev alır.\n<@&1554237786809307206>: **Yetkilidir**, sunucu düzeninde aktif rol oynar.\n<@&1554237342917726249>: **Yetkilidir**, destek ve sohbet düzeninde görev alır.\n\n**Yetkili Ekibi** - <@&1555890043992940614>\n<@&1554237347631997029>: **Orta seviye yetkilidir**, sohbet ve ses düzenini takip eder.\n<@&1554237348282245161>: **Yeni yetkilidir**, ekibe yeni katılmıştır.\n<@&1554237348940873758>: **Deneme yetkilidir**, adaylık sürecini tamamlar."
         },
         {
           "heading": "Görev Rolleri",
@@ -114,19 +84,7 @@ module.exports = {
         },
         {
           "heading": "Yetkili Olmak İstersen",
-          "text": "<#1538544076910104636> kanalındaki **Başvur** butonuna bas ve formu doldur: adın ve yaşın, günlük aktifliğin, deneyimin ve neden katılmak istediğin sorulur."
-        },
-        {
-          "heading": "Başvuru Süreci",
-          "items": [
-            "`1.` Başvurun <@&1553398951816863844> ekibi tarafından incelenir, sonuç sana **DM** ile iletilir.",
-            "`2.` Uygun bulunursan bir ses kanalında **mülakata** çağrılırsın.",
-            "`3.` Mülakat olumluysa **oryantasyon** yapılır: kurallar, ceza sistemi, komutlar ve yetkili davranışı anlatılır.",
-            "`4.` Görev alanını seçersin: Destek Talepleri, Sorun Çözücü, Oryantasyon, Sohbet Moderasyonu, Ses Moderasyonu, Etkinlik, Partner ya da Karşılama."
-          ],
-          "plain": true
-        },
-        {
+          "text": "<#1538544076910104636> kanalındaki **Başvur** butonuna bas ve formu doldur: adın ve yaşın, günlük aktifliğin, deneyimin ve neden katılmak istediğin sorulur.\n`1.` Başvurun <@&1553398951816863844> ekibi tarafından incelenir, sonuç sana **DM** ile iletilir.\n`2.` Uygun bulunursan bir ses kanalında **mülakata** çağrılırsın.\n`3.` Mülakat olumluysa **oryantasyon** yapılır: kurallar, ceza sistemi, komutlar ve yetkili davranışı anlatılır.\n`4.` Görev alanını seçersin: Destek Talepleri, Sorun Çözücü, Oryantasyon, Sohbet Moderasyonu, Ses Moderasyonu, Etkinlik, Partner ya da Karşılama.",
           "note": "**Reddedilirsen 7 gün sonra** tekrar başvurabilirsin."
         }
       ],
