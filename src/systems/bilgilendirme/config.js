@@ -61,7 +61,7 @@ module.exports = {
       ]
     },
     {
-      "title": "Yönetim ve Yetkili Rolleri",
+      "title": "Yetkili Ekibi",
       "blocks": [
         {
           "heading": "Yönetim",
