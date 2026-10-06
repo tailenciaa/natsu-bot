@@ -173,9 +173,30 @@ module.exports = {
         },
         {
           "note": "**Haftalık roller her pazartesi yenilenir**, yeni birinci rolü bir öncekinden alır."
+        },
+        {
+          "heading": "Booster Ayrıcalıkları",
+          "items": [
+            "Çekiliş ve etkinliklerde **önceliklisin**.",
+            "Özel rolünle diğer üyelerden **üstte, ayrı grupta** görünürsün.",
+            "**Kendine özel rol** oluşturabilirsin (adı, rengi ve emojisi senin).",
+            "Sunucuya **kendi emojini ve çıkartmanı** ekleyebilirsin.",
+            "Sunucudaki **takma adını** değiştirebilirsin.",
+            "**Dosya ve bağlantı** gönderebilirsin.",
+            "Başka sunucuların **emoji ve çıkartmalarını** kullanabilirsin.",
+            "Sesli kanallarda **ses panelini** kullanabilirsin."
+          ]
+        },
+        {
+          "heading": "Booster - Nasıl kullanılır?",
+          "text": "<#1538534459836473366> kanalındaki **Booster İşlemleri** panelinden butonlarla yaparsın. Takviye edenlere <#1538534176276619264> kanalında teşekkür edilir. **Takviyen bitince** isim ve rol avantajları geri alınır."
+        },
+        {
+          "heading": "Sunucu etiketi",
+          "text": "Kazuki etiketini profilinde gösterirsen <@&1554403288424644738> rolünü alırsın ve <#1538944779298275368> kanalında teşekkür edilir."
         }
       ],
-      "sub": "Üyelere verilen genel, ödül, bildirim ve ceza rollerinin neler olduğunu, her rolün nasıl kazanıldığını ve ne işe yaradığını buradan görebilirsin."
+      "sub": "Üyelere verilen genel, ödül, bildirim ve ceza rollerinin neler olduğunu; **sunucuyu takviye eden üyelerin kazandığı ayrıcalıkları** ve sunucu etiketinin ne işe yaradığını buradan görebilirsin."
     },
     {
       "title": "Seviye Sistemi",
