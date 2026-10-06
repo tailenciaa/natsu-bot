@@ -429,21 +429,14 @@ module.exports = {
         {
           "heading": "Sunucuda yapılanlar kayıt altında mı?",
           "text": "**Evet.** Silinen ve düzenlenen mesajlar, ses kanalı hareketleri, giriş-çıkışlar ve yetkili işlemleri yönetim ekibi tarafından **log olarak** tutulur. Bu, kural ihlallerinde adil karar verilebilmesi içindir."
-        }
-      ],
-      "sub": "Yeni gelen üyelerin en çok merak ettiği soruları ve cevaplarını burada topladık; aklına takılan bir şey olursa önce buraya göz atmanı öneririz."
-    },
-    {
-      "title": "Yönetim Ekibinden Bir Mesaj",
-      "blocks": [
-        {
-          "text": "Şu an bu mesajı okuyan sen, sunucuyu sevdiysen ve kaynaşmak istiyorsan sohbete sadece **\"merhaba\"** yazman yeterli. Seni rahatlatmak ve yönlendirmek bizim görevimiz. **Bu sunucu kimsenin değil, üyelerin.**"
         },
         {
+          "heading": "Yönetim Ekibinden",
+          "text": "Şu an bu mesajı okuyan sen, sunucuyu sevdiysen ve kaynaşmak istiyorsan sohbete sadece **\"merhaba\"** yazman yeterli. Seni rahatlatmak ve yönlendirmek bizim görevimiz. **Bu sunucu kimsenin değil, üyelerin.**",
           "note": "Bir sorun yaşarsan hiçbir zorluk çekmeden <#1538535372588326973> kanalıyla bize ulaşabilirsin. Ekibe katılmak istersen <#1538544076910104636> kanalından başvurabilirsin. **İyi eğlenceler!**"
         }
       ],
-      "sub": "Yönetim ekibi olarak seni sunucumuzda görmekten mutluluk duyuyoruz; yaşayabileceğin her türlü durumda sana nasıl yardımcı olabileceğimizi anlatıyoruz."
+      "sub": "Yeni gelen üyelerin en çok merak ettiği soruları ve cevaplarını, en altta da **yönetim ekibinden kısa bir mesajı** burada bulabilirsin."
     }
   ],
 };
