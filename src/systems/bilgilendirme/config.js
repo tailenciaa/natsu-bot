@@ -412,28 +412,6 @@ module.exports = {
       ]
     },
     {
-      "title": "Yetkili Olmak İstersen",
-      "blocks": [
-        {
-          "text": "<#1538544076910104636> kanalındaki **Başvur** butonuna bas ve formu doldur: adın ve yaşın, günlük aktifliğin, deneyimin ve neden katılmak istediğin sorulur."
-        },
-        {
-          "heading": "Süreç",
-          "items": [
-            "`1.` Başvurun <@&1553398951816863844> ekibi tarafından incelenir, sonuç sana **DM** ile iletilir.",
-            "`2.` Uygun bulunursan bir ses kanalında **mülakata** çağrılırsın.",
-            "`3.` Mülakat olumluysa **oryantasyon** yapılır: kurallar, ceza sistemi, komutlar ve yetkili davranışı anlatılır.",
-            "`4.` Görev alanını seçersin: Destek Talepleri, Sorun Çözücü, Oryantasyon, Sohbet Moderasyonu, Ses Moderasyonu, Etkinlik, Partner ya da Karşılama."
-          ],
-          "plain": true
-        },
-        {
-          "note": "**Reddedilirsen 7 gün sonra** tekrar başvurabilirsin."
-        }
-      ],
-      "sub": "Yetkili ekibine katılmak istiyorsan başvurunun nasıl yapıldığını, mülakat ve oryantasyon sürecinin nasıl işlediğini ve hangi görev alanlarını seçebileceğini anlatıyoruz."
-    },
-    {
       "title": "Sık Sorulan Sorular",
       "blocks": [
         {
