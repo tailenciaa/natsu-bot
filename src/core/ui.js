@@ -81,8 +81,9 @@ const bannerGallery = (url) => new MediaGalleryBuilder().addItems(new MediaGalle
 
 // STANDART PANEL: başlık ve açıklama solda, istenirse buton sağda (section aksesuarı), altında afiş ve küçük not.
 // button: { id, label, style } ; image: afiş bağlantısı ya da dosya adı ; note: en alttaki not (normal yazı, çizgiyle ayrılır)
+// sub: başlığın hemen altındaki açıklama, normal yazı (önemli sözcükler çağıran tarafından kalın yazılır)
 function panel({ title, sub, button, image, note, thumbnail }) {
-  const header = text(`## ${title}${hasValue(sub) ? `\n-# ${sub}` : ''}`);
+  const header = text(`## ${title}${hasValue(sub) ? `\n${sub}` : ''}`);
   const container = new ContainerBuilder();
   const section = new SectionBuilder().addTextDisplayComponents(header);
   if (button) {
