@@ -22,18 +22,19 @@ function table(guild, ranking) {
   });
 }
 
-// results: [{ userId, value }] geçen haftanın ilk 5'i, büyükten küçüğe sıralı
+// results: [{ userId, value }] geçen haftanın ilk 5'i, büyükten küçüğe sıralı; sadece birinci duyurulur
 function weeklyAnnounce(guild, results, roleId) {
-  const lines = results.map(({ userId, value }, i) => `${i + 1}. <@${userId}> » \`${value} saygınlık\``);
-  const blocks = [`**En Çok Saygınlık Kazananlar**\n${lines.join('\n')}`];
-  if (results[0]) {
-    blocks.push(`**Kazanılan Rol**\n<@${results[0].userId}> ${roleId ? `<@&${roleId}>` : 'Haftanın Saygın Üyesi'} rolünü aldı.`);
-  }
+  const winner = results[0] ?? null;
+  const roleText = roleId ? `<@&${roleId}>` : 'Haftanın Saygın Üyesi';
   return page({
     title: 'Haftanın Saygın Üyesi',
-    sub: 'Geçen hafta en çok saygınlık kazanan üyeleri açıklıyoruz; birinci olan üye haftanın en saygın üyesi olur ve rolünü bir sonraki pazartesiye kadar taşır.',
     thumbnail: guild?.iconURL({ size: 256 }),
-    blocks,
+    blocks: [
+      'Geçen hafta **en çok saygınlık kazanan üyeyi** açıklıyoruz; **haftanın en saygın üyesi** bu ödülü kazanır ve rolünü **bir sonraki pazartesiye kadar** taşır.',
+      winner
+        ? `**Tebrikler <@${winner.userId}>!**\nBu hafta **${winner.value} saygınlık** toplayarak **haftanın en saygın üyesi** oldun ve ${roleText} rolünü kazandın.`
+        : '**Henüz Kazanan Yok**\nGeçen hafta kimse saygınlık kazanmadı.',
+    ],
   });
 }
 
