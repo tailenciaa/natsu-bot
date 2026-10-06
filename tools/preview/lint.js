@@ -268,8 +268,9 @@ function lint(norm) {
       if (shown.length > 28) warn('baslik-uzun', s.path, `## başlığı ${shown.length} karakter (hedef en çok 28): "${shown}"`);
     }
 
-    // Küçük gri yazı (-#) sadece başlığın hemen altındaki açıklamada, zaman damgasında ve sayfa bilgisinde kullanılır;
-    // diğer her şey normal boyutta yazılır (aşırı gri yazı okunmaz)
+    // Küçük gri yazı (-#) başlığın hemen altındaki açıklamada ASLA kullanılmaz (o açıklama her zaman normal boyutta,
+    // önemli sözcükleri kalın yazılır); gri yazı yalnızca mesajın en altında, zaman damgası, sayfa bilgisi ve
+    // sıralama listesinin 4. sıradan sonraki satırlarında kullanılır (aşırı gri yazı okunmaz)
     {
       const rows = s.value.split('\n');
       rows.forEach((line, i) => {
@@ -281,7 +282,8 @@ function lint(norm) {
         const footer = /<t:\d+:[A-Za-z]>/.test(line) || /^-# .* - (Başvuru|Talep|Ceza) #\d+$/.test(line); // zaman damgalı ya da vaka kimlikli alt satır
         const empty = /(yok|bulunmuyor)\.$/.test(line); // boş durum satırı ("-# Ceza kaydı yok.")
         const compact = /^### /.test(rows[0]) && i === 2; // kısa bildirim kartı (### başlık, kalın cümle, gri teşekkür; ör. etiket teşekkürü)
-        if (!underTitle && !stamp && !pager && !rank && !footer && !empty && !compact) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
+        if (underTitle) err('kucuk-yazi', s.path, `Başlığın hemen altındaki açıklama gri (-#) olamaz, normal yazı olmalı: ${line.slice(0, 60)}`);
+        else if (!stamp && !pager && !rank && !footer && !empty && !compact) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
       });
     }
     const noCode = stripCode(s.value);
