@@ -111,12 +111,29 @@ module.exports = {
             "<@&1554237780736090112>: Yetkili ekibini **denetler**.",
             "<@&1555890045599223868>: Yeni gelen üyeleri **karşılar**."
           ]
+        },
+        {
+          "heading": "Yetkili Olmak İstersen",
+          "text": "<#1538544076910104636> kanalındaki **Başvur** butonuna bas ve formu doldur: adın ve yaşın, günlük aktifliğin, deneyimin ve neden katılmak istediğin sorulur."
+        },
+        {
+          "heading": "Başvuru Süreci",
+          "items": [
+            "`1.` Başvurun <@&1553398951816863844> ekibi tarafından incelenir, sonuç sana **DM** ile iletilir.",
+            "`2.` Uygun bulunursan bir ses kanalında **mülakata** çağrılırsın.",
+            "`3.` Mülakat olumluysa **oryantasyon** yapılır: kurallar, ceza sistemi, komutlar ve yetkili davranışı anlatılır.",
+            "`4.` Görev alanını seçersin: Destek Talepleri, Sorun Çözücü, Oryantasyon, Sohbet Moderasyonu, Ses Moderasyonu, Etkinlik, Partner ya da Karşılama."
+          ],
+          "plain": true
+        },
+        {
+          "note": "**Reddedilirsen 7 gün sonra** tekrar başvurabilirsin."
         }
       ],
-      "sub": "Sunucuyu yöneten ve düzeni sağlayan ekibin kimlerden oluştuğunu, hangi rolün ne işe yaradığını ve hangi görevlerin kimler tarafından üstlenildiğini buradan öğrenebilirsin."
+      "sub": "Sunucuyu yöneten ve düzeni sağlayan ekibin kimlerden oluştuğunu, hangi rolün ne işe yaradığını ve **yetkili ekibine nasıl katılabileceğini** buradan öğrenebilirsin."
     },
     {
-      "title": "Diğer Roller",
+      "title": "Roller ve Ayrıcalıklar",
       "blocks": [
         {
           "heading": "Genel",
