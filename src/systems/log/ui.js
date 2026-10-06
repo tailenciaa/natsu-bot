@@ -67,17 +67,15 @@ function panel() {
       ),
     );
 
-  // Panel yalnızca bu mesaj için: başlığın altında normal yazıyla tek açıklama, sonra çizgi, menü, çizgi
-  return new ContainerBuilder()
-    .setAccentColor(colors.primary)
-    .addTextDisplayComponents(
-      text(
-        `## ${botName} Log Paneli\nAşağıdaki menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.`,
-      ),
-    )
+  // Panel yalnızca bu mesaj için: başlık, çizgi, açıklama, çizgi, menü
+  return page({
+    title: `${botName} Log Paneli`,
+    blocks: [
+      'Aşağıdaki menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
+    ],
+  })
     .addSeparatorComponents(divider())
-    .addActionRowComponents(new ActionRowBuilder().addComponents(select))
-    .addSeparatorComponents(divider());
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select));
 }
 
 // Panelden kategori seçilince gelen, alt başlığa giden bağlantı butonlu kısa cevap
