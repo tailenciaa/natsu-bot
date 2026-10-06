@@ -1,14 +1,22 @@
 // Haftanın aktifleri: mesaj, ses ve yayın (ekran paylaşımı) süresi haftalık olarak ayrı ayrı sayılır. Her hafta
 // pazartesi, geçen haftanın üç kategorisinin de birincisi #haftalık kanalına duyurulur ve kategorisine özel rol
 // verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi verilir.
-const { Events } = require('discord.js');
+const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel, stillMember } = require('../../core/helpers');
+const { fetchTextChannel, respond, stillMember } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
 const { weekKey, previousWeekKey } = require('./week');
+
+const commands = [
+  new SlashCommandBuilder()
+    .setName('aktif-onizleme')
+    .setDescription('Haftanın aktifleri duyurusunun önizlemesini sadece sana gösterir.')
+    .setContexts(InteractionContextType.Guild)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+];
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
 const TICK = 60 * 1000;
@@ -120,6 +128,13 @@ async function announceWeek(guild, target) {
   );
 }
 
+// /aktif-onizleme: bu haftanın şu ana kadarki durumuna göre duyurunun örneğini sadece komutu kullanana gösterir
+async function handlePreview(interaction) {
+  const results = {};
+  for (const kind of ['ses', 'mesaj', 'yayin']) results[kind] = topUsers(interaction.guild, store.totals(kind, weekKey()));
+  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results));
+}
+
 // Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar
 async function checkWeeklyAnnounce(guild) {
   const target = previousWeekKey(Date.now());
@@ -146,8 +161,9 @@ function handleReady(client) {
 
 module.exports = {
   name: 'aktif',
-  commands: [],
-  help: { category: ['siralama', 'Sıralama'], access: {} },
+  commands,
+  help: { category: ['siralama', 'Sıralama'], access: { 'aktif-onizleme': 'Yöneticiler' } },
+  slash: { 'aktif-onizleme': handlePreview },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.VoiceStateUpdate]: handleVoiceUpdate,
