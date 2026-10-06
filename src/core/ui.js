@@ -136,13 +136,14 @@ function panelMessage(texts, buttonId, image) {
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(texts.footer));
 }
 
-// STANDART SAYFA DÜZENİ (duyurular, tablolar, bilgi panelleri): başlık, altında iki satıra yayılan gri açıklama,
-// sonra çizgiyle ayrılmış bloklar. Mesajın genişliği en uzun satıra göre belirlendiği için "sub" bilerek uzun
-// (en az ~140 karakter) yazılır; böylece bütün mesajlar aynı ve en geniş boyutta görünür, boşluk bırakmaya gerek kalmaz.
+// STANDART SAYFA DÜZENİ (duyurular, tablolar, bilgi panelleri): başlık, altında iki satıra yayılan normal yazılı açıklama
+// (önemli sözcükler kalın), sonra çizgiyle ayrılmış bloklar. Mesajın genişliği en uzun satıra göre belirlendiği için "sub"
+// bilerek uzun (en az ~140 karakter) yazılır; böylece bütün mesajlar aynı ve en geniş boyutta görünür, boşluk bırakmaya gerek kalmaz.
+// Küçük gri yazı (-#) burada KULLANILMAZ; sadece mesajın en altında, çizgiyle ayrılmış olarak (zaman damgası, sayfa bilgisi vb.) kullanılır.
 // Etiketler (<@&rol>) karakter sayısına dahil sayılmaz, uzunluğu sade metinle sağla.
 // blocks: her biri ayrı bir metin bloğu (ör. "**Alt Başlık**\nsatırlar"), thumbnail: sağ üstteki küçük görsel (isteğe bağlı)
 function page({ title, sub, thumbnail, blocks = [], accent }) {
-  const header = text(`## ${title}${hasValue(sub) ? `\n-# ${sub}` : ''}`);
+  const header = text(`## ${title}${hasValue(sub) ? `\n${sub}` : ''}`);
   const container = new ContainerBuilder();
   if (accent) container.setAccentColor(accent);
   if (thumbnail) {
