@@ -1,6 +1,5 @@
 // Haftanın aktifleri duyurusu: ses, mesaj ve yayın kategorilerinde ilk 5'i gösteren liste, sıralama panelinin düzeninde
 const { page } = require('../../core/ui');
-const config = require('./config');
 
 const number = (n) => n.toLocaleString('tr-TR');
 
