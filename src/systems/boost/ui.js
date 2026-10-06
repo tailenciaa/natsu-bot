@@ -40,7 +40,7 @@ function thanksDm(guildName, panelChannelId, perks) {
   const panelLine = panelChannelId ? `<#${panelChannelId}> kanalındaki panelden` : 'Booster İşlemleri panelinden';
   return page({
     title: 'Takviyen İçin Teşekkürler',
-    sub: `${guildName} sunucusunu takviye ettiğin için çok teşekkür ederiz; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir ve bu mesajdaki bilgilerle hepsini kullanabilirsin.`,
+    sub: `${guildName} sunucusunu takviye ettiğin için **çok teşekkür ederiz**; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir ve bu mesajdaki bilgilerle hepsini kullanabilirsin.`,
     blocks: [
       `**Panelden yapabileceklerin**\n${panelLine} takma adını değiştirebilir ve kendi renginde, emojinde bir rol oluşturabilirsin.\nTakma ad ve rol takviyen bitince geri alınır.`,
       `**Emoji ve çıkartma**\nEmoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullanabilirsin.\nHakların: **${perks.emoji} emoji**, **${perks.sticker} çıkartma**.`,
@@ -52,7 +52,7 @@ function thanksDm(guildName, panelChannelId, perks) {
 function channelThanks(user) {
   return page({
     title: 'Yeni Takviye',
-    sub: 'Sunucumuzu takviye ederek bize destek olan üyelerimize buradan teşekkür ediyoruz; takviye edenler özel rol ve panel avantajlarından faydalanabilir ve topluluğumuzu büyütür.',
+    sub: 'Sunucumuzu takviye ederek bize destek olan üyelerimize buradan **teşekkür ediyoruz**; takviye edenler özel rol ve panel avantajlarından faydalanabilir ve topluluğumuzu büyütür.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [`**<@${user.id}> sunucuyu takviye etti, teşekkür ederiz.**`],
   });
@@ -88,7 +88,7 @@ function optionLines() {
 function panel(guild) {
   const container = page({
     title: 'Booster İşlemleri',
-    sub: 'Bu panel sadece sunucuyu takviye eden üyeler içindir. Takviye ederek takma adını değiştirebilir, sana özel rol oluşturabilir veya diğer booster ayrıcalıklarından yararlanabilirsin.',
+    sub: '**Bu panel sadece sunucuyu takviye eden üyeler içindir.** Takviye ederek takma adını değiştirebilir, sana özel rol oluşturabilir veya diğer booster ayrıcalıklarından yararlanabilirsin.',
     thumbnail: guild?.iconURL({ size: 256 }),
     blocks: [`**Booster Olmanın Avantajları**\n${perkLines().join('\n')}`],
   });
