@@ -109,15 +109,8 @@ module.exports = {
       "title": "Seviye Sistemi",
       "blocks": [
         {
-          "text": "Sohbet ederek ve sesli kanallarda vakit geçirerek seviye atlarsın. Mesaj ve ses seviyen **ayrı ayrı** birikir, her **5 seviyede bir** yeni rol kazanırsın (5'ten 100'e)."
-        },
-        {
-          "heading": "Nasıl kazanılır?",
-          "items": [
-            "**Mesaj:** Her mesaj **15-25 XP** verir, spam olmasın diye **60 saniyede bir** sayılır.",
-            "**Ses:** Sesli kanalda geçen her **dakika 6 XP** verir.",
-            "Seviye atladığında <#1538534603902554182> kanalında duyurulur."
-          ]
+          "heading": "Nasıl Çalışır?",
+          "text": "Sohbet ederek ve sesli kanallarda vakit geçirerek seviye atlarsın. Mesaj ve ses seviyen **ayrı ayrı** birikir, her **5 seviyede bir** yeni rol kazanırsın (5'ten 100'e).\n**Mesaj:** Her mesaj **15-25 XP** verir, spam olmasın diye **60 saniyede bir** sayılır.\n**Ses:** Sesli kanalda geçen her **dakika 6 XP** verir.\nSeviye atladığında <#1538534603902554182> kanalında duyurulur.\nHer pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
         },
         {
           "heading": "Komutlar",
@@ -128,10 +121,6 @@ module.exports = {
             "`/saygi-ver`: Bir üyeye **+1 saygınlık** verirsin (**24 saatte bir**).",
             "`/saygi-siralama`: Tüm zamanların saygınlık tablosu."
           ]
-        },
-        {
-          "heading": "Haftanın aktifleri",
-          "text": "Her pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
         },
         {
           "heading": "Metin Seviye Rolleri",
