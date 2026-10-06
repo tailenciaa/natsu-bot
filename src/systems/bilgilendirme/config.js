@@ -43,28 +43,6 @@ module.exports = {
       "sub": "Sunucumuzun kim tarafından, ne zaman, neden ve hangi amaçla kurulduğunu; burada seni neler beklediğini ve neleri hedeflediğimizi kısaca öğrenebilirsin."
     },
     {
-      "title": "Anime ve Manga Nedir?",
-      "sub": "Anime ya da manga ilk kez karşına çıkıyorsa merak etme; bu kelimelerin ne anlama geldiğini ve burada anime izlemeden de nasıl eğlenebileceğini anlatıyoruz.",
-      "blocks": [
-        {
-          "heading": "Anime",
-          "text": "Japonya'da üretilen, çizimle yapılmış **dizi ve filmlerdir**. Aksiyon, komedi, romantizm, korku, spor, günlük yaşam gibi her tarzdan anime var."
-        },
-        {
-          "heading": "Manga",
-          "text": "Animelerin çoğunun çıkış noktası olan **Japon çizgi romanlarıdır**, sağdan sola okunur."
-        },
-        {
-          "heading": "Spoiler",
-          "text": "Bir animenin ya da mangasının sürprizini henüz izlememiş veya okumamış birine söylemektir. Bu yüzden spoiler içeren mesajlar **etiketlenmeden paylaşılamaz**."
-        },
-        {
-          "heading": "Anime izlemiyorum, ne yapacağım?",
-          "text": "Merak etme, <#1538536247138590801> kanalında sohbet edebilir, oyun kanallarına ve sesli odalara katılabilirsin. \"Ne izleyeyim?\" diye sorarsan üyeler **öneri verir**."
-        }
-      ]
-    },
-    {
       "title": "Yeni Katıldıysan",
       "sub": "Sunucuya yeni katıldıysan ne yapman gerektiğini adım adım anlatıyoruz; kuralları okuyup sohbete katılman ve gerekirse destek alman çok kısa sürüyor.",
       "blocks": [
