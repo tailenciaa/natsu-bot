@@ -340,7 +340,7 @@ const serverBannedDm = (reason) =>
 const renewalCancelledLog = (entry, staffId, reason) =>
   noticeCard(
     'Teklif İptal Edildi',
-    'Teklifte bulunma süreci atanan yetkili tarafından iptal edildi. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
+    'Teklifte bulunma süreci atanan yetkili tarafından **iptal edildi**. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
     ['**Teklif Bilgileri**', field('Sunucu ID', `\`${serverLabel(entry)}\``), field('Yetkili', `<@${staffId}>`)],
     reason,
   );
@@ -360,7 +360,7 @@ function trustedList(entries, page = 0) {
     .addTextDisplayComponents(
       head(
         'Güvenilir Partnerler',
-        'Sürekli partner olduğumuz güvenilir sunucuların listesi. Menüden bir sunucu seçerek ekleme tarihini, partner yetkililerini, metnini ve yapabileceğin işlemleri görebilirsin.',
+        '**Sürekli partner olduğumuz güvenilir sunucuların listesi.** Menüden bir sunucu seçerek ekleme tarihini, partner yetkililerini, metnini ve yapabileceğin işlemleri görebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -456,7 +456,7 @@ function trustedListPanel(entries) {
   const container = new ContainerBuilder().addTextDisplayComponents(
     head(
       'Güvenilir Partnerler',
-      'Bu kanalda sürekli partner olduğumuz sunucular ve o sunucuların partner yetkilileri listelenir. Liste her ekleme ya da çıkarmada bu mesaj düzenlenerek güncel tutulur.',
+      'Bu kanalda sürekli partner olduğumuz sunucular ve o sunucuların partner yetkilileri listelenir. Liste her ekleme ya da çıkarmada **bu mesaj düzenlenerek güncel tutulur**.',
     ),
   );
 
