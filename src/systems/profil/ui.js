@@ -88,7 +88,7 @@ const colorModal = (current) =>
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Vurgu rengi (hex kod)')
-        .setDescription('Çubuklar, halka ve unvan bu renkte çizilir, boş bırakırsan temanın rengi kullanılır.')
+        .setDescription('Çubuklar, halka ve unvan bu renkte çizilir; boş bırakırsan temanın rengi kullanılır.')
         .setTextInputComponent(input('renk', TextInputStyle.Short, 7, current.color ? `#${current.color.toString(16).padStart(6, '0')}` : null, 'Örn: #ff5599')),
     ]);
 
@@ -99,7 +99,7 @@ const bannerModal = (current) =>
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Görsel bağlantısı')
-        .setDescription('https ile başlayan bir görsel bağlantısı gir, boş bırakırsan tema gradyanı kullanılır.')
+        .setDescription('https ile başlayan bir görsel bağlantısı gir; boş bırakırsan tema gradyanı kullanılır.')
         .setTextInputComponent(input('kapak', TextInputStyle.Short, 400, current.banner, 'Örn: https://i.imgur.com/ornek.png')),
     ]);
 

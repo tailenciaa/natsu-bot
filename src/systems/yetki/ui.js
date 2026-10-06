@@ -40,18 +40,18 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
 
   const blocks = done
     ? [
-        fields(['**Yeni Yetkili**', `<@${user.id}> artık yetkili ekibinde.`, field('Yetkiyi Veren', `<@${by}>`)]),
+        fields(['**Yeni Yetkili**', `<@${user.id}> artık **yetkili ekibinde.**`, field('Yetkiyi Veren', `<@${by}>`)]),
         `**Verilen Yetkiler**\n${summary}`,
-        `**Verilen Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\n-# Bazı yetkilerin rolü henüz ayarlanmadığı için o roller verilmedi.' : ''}`,
+        `**Verilen Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\nBazı yetkilerin **rolü henüz ayarlanmadığı** için o roller verilmedi.' : ''}`,
         stamp(),
       ]
-    : [`**Düzenlenen Üye**\n<@${user.id}> için yetki düzenliyorsun.`, `**Seçimler**\n${summary}`];
+    : [`**Düzenlenen Üye**\n<@${user.id}> için **yetki düzenliyorsun.**`, `**Seçimler**\n${summary}`];
 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
       ? 'Rütbe, yetkiler ve görev rolleri üyeye tanımlandı; verilen rollerin özeti aşağıda. Bu mesaj, yetkilendirme işleminin kaydı olarak kanalda kalır.'
-      : 'Rütbe seçince o rütbenin yetkileri ve görev rolleri otomatik işaretlenir; istersen tek tek ekleyip çıkarabilir, sonunda **Yetkiyi Ver** butonuyla seçimini onaylayabilirsin.',
+      : 'Rütbe seçince o rütbenin yetkileri ve görev rolleri otomatik işaretlenir; istersen bunları tek tek düzenleyebilir, sonunda **Yetkiyi Ver** butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,
     blocks,
@@ -111,8 +111,13 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
 
 // Yeni yetkiliye giden DM'lerin "Başlarken" bölümü: nerede ne yapacağı
 const guideText = () =>
-  '**Başlarken**\n' +
-  `Yetkili komutlarını <#${staffCommandChannel}> kanalında kullanabilirsin. Kuralları <#${config.guide.rules}>, işleyişi <#${config.guide.info}> kanalından okuyabilir, ekiple <#${config.guide.chat}> kanalında konuşabilirsin.`;
+  fields([
+    '**Başlarken**',
+    field('Komutlar', `Yetkili komutlarını <#${staffCommandChannel}> kanalında kullanabilirsin.`),
+    field('Kurallar', `Yetkili kurallarını <#${config.guide.rules}> kanalından okuyabilirsin.`),
+    field('İşleyiş', `Yetkili işleyişini <#${config.guide.info}> kanalından öğrenebilirsin.`),
+    field('Sohbet', `Ekiple <#${config.guide.chat}> kanalında konuşabilirsin.`),
+  ]);
 
 // Yetki verilen kişiye giden DM: ne verildiği ve nereden başlayacağı
 function grantDm(guildName, { level, permIds, dutyIds, by }) {

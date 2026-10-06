@@ -74,13 +74,13 @@ function ratingSection(container, rating) {
   if (rating.score) {
     // Puan verilince DM yeşile döner
     return container.setAccentColor(colors.success).addTextDisplayComponents(
-      text(`**Geri bildirimin için teşekkürler!**\n-# **${rating.staffName}** yetkilisine ${stars(rating.score)} verdin.`),
+      text(`**Geri bildirimin için teşekkürler!**\n**${rating.staffName}** yetkilisine ${stars(rating.score)} verdin.`),
     );
   }
   const category = categoryOf(rating);
   return container
     .addTextDisplayComponents(
-      text(`**${category.handled(rating.staffName)}**\n-# ${category.question} Yıldızlardan birini seçerek puan verebilirsin.`),
+      text(`**${category.handled(rating.staffName)}**\n${category.question} Yıldızlardan birini seçerek puan verebilirsin.`),
     )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -133,12 +133,12 @@ function ratingNotice(rating, staffUser) {
     status =
       `**Durum**\n<@${rating.staffId}> yetkilisinin aldığı değerlendirme geçersiz sayıldı.\n` +
       (rating.removedAt
-        ? `-# <@${rating.removedBy}> değerlendirmeyi sicilden kaldırdı.`
-        : `-# <@${rating.reviewedBy}> itirazı onayladı, değerlendirme sicilden çıkarıldı.`);
+        ? `<@${rating.removedBy}> değerlendirmeyi sicilden kaldırdı.`
+        : `<@${rating.reviewedBy}> itirazı onayladı, değerlendirme sicilden çıkarıldı.`);
   } else if (disputed) {
     title = 'İtiraz Edilen Değerlendirme';
     sub = 'Değerlendirilen yetkili bu puana itiraz etti ve itiraz liderlere iletildi; inceleme sonuçlanana kadar değerlendirme sicilde bekler, karar verildiğinde bu mesaj güncellenir.';
-    status = `**Durum**\n<@${rating.staffId}> bu değerlendirmeye itiraz etti.\n-# İtiraz liderler tarafından inceleniyor.`;
+    status = `**Durum**\n<@${rating.staffId}> bu değerlendirmeye itiraz etti.\nİtiraz liderler tarafından inceleniyor.`;
   } else {
     // Değerlendirmenin nereden geldiği "Kaynak" satırında
     title = 'Yeni Değerlendirme';
@@ -154,7 +154,7 @@ function ratingNotice(rating, staffUser) {
       `**Değerlendiren:** <@${rating.userId}>`,
       `**Kaynak:** ${refText(rating)}`,
     ].join('\n'),
-    rating.comment ? `**Yorum**\n${quote(rating.comment)}` : '**Yorum**\n-# Yorum bırakılmadı.',
+    rating.comment ? `**Yorum**\n${quote(rating.comment)}` : '**Yorum**\nYorum bırakılmadı.',
   ];
   if (rating.staffReply) blocks.push(`**Yetkili Yorumu**\n${quote(rating.staffReply)}`);
 
@@ -249,7 +249,7 @@ function replyDm(rating, guildName) {
     sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye bir yorum ekledi; yetkilinin yazdığı yorumu ve hangi hizmet için verdiğin puanı aşağıda görebilirsin.',
     accent: colors.success,
     blocks: [
-      `**Yorum Bilgileri**\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n-# ${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
+      `**Yorum Bilgileri**\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
       `**Yetkilinin Yorumu**\n${quote(rating.staffReply)}`,
       `-# ${guildName} - <t:${unix(rating.repliedAt)}:F>`,
     ],
@@ -263,17 +263,17 @@ function ratingComplaint(rating) {
   let status;
   let color;
   if (rating.reportStatus === 'approved') {
-    status = `**Durum: Onaylandı**\n-# <@${rating.reviewedBy}> itirazı haklı buldu, değerlendirme sicilden kaldırıldı.`;
+    status = `**Durum: Onaylandı**\n<@${rating.reviewedBy}> itirazı haklı buldu, değerlendirme sicilden kaldırıldı.`;
     color = colors.success;
   } else if (rating.reportStatus === 'rejected') {
-    status = `**Durum: Reddedildi**\n-# <@${rating.reviewedBy}> itirazı reddetti, değerlendirme sicilde kalıyor.`;
+    status = `**Durum: Reddedildi**\n<@${rating.reviewedBy}> itirazı reddetti, değerlendirme sicilde kalıyor.`;
     color = colors.danger;
   } else if (rating.meetingBy) {
     const where = rating.meetingChannelId ? `, <#${rating.meetingChannelId}> kanalında bekliyor` : '';
-    status = `**Durum: Görüşme bekleniyor**\n-# <@${rating.meetingBy}> yetkiliyi görüşmeye çağırdı${where}.`;
+    status = `**Durum: Görüşme bekleniyor**\n<@${rating.meetingBy}> yetkiliyi görüşmeye çağırdı${where}.`;
     color = colors.primary;
   } else {
-    status = '**Durum: İnceleniyor**\n-# Onaylanırsa değerlendirme yetkilinin sicilinden kaldırılır.';
+    status = '**Durum: İnceleniyor**\nOnaylanırsa değerlendirme yetkilinin sicilinden kaldırılır.';
     color = colors.warning;
   }
 
@@ -308,8 +308,8 @@ function ratingComplaint(rating) {
     blocks: [
       '**İtiraz Bilgileri**\n' +
         `${rating.leaderRoleId ? `<@&${rating.leaderRoleId}>, ` : ''}<@${rating.staffId}> aldığı bir değerlendirmeye itiraz etti.\n` +
-        `-# <@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
-      `**Değerlendirme**\n**Kaynak:** ${refText(rating)}\n**Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : '-# Yorum bırakılmadı.'}`,
+        `<@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
+      `**Değerlendirme**\n**Kaynak:** ${refText(rating)}\n**Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : 'Yorum bırakılmadı.'}`,
       `**İtiraz Sebebi**\n${quote(rating.reportReason)}`,
       status,
     ],
@@ -338,7 +338,7 @@ function meetingDm(rating, guildName) {
     blocks: [
       '**Görüşme Bilgileri**\n' +
         `<@${rating.meetingBy}> itirazın hakkında seninle sesli bir görüşme yapmak istiyor.\n` +
-        `-# ${refText(rating)} için aldığın değerlendirmeye yaptığın itiraz için görüşme yapılacak.`,
+        `${refText(rating)} için aldığın değerlendirmeye yaptığın itiraz için görüşme yapılacak.`,
       '**Nereye Geçmelisin?**\n' +
         (waitingIn
           ? `<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor!`
@@ -385,8 +385,8 @@ function reviewDm(rating, guildName) {
     accent: approved ? colors.success : colors.danger,
     blocks: [
       approved
-        ? `**Sonuç**\nDeğerlendirme sicilinden kaldırıldı.\n-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
-        : `**Sonuç**\nDeğerlendirme sicilinde kalmaya devam ediyor.\n-# ${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
+        ? `**Sonuç**\nDeğerlendirme sicilinden kaldırıldı.\n${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
+        : `**Sonuç**\nDeğerlendirme sicilinde kalmaya devam ediyor.\n${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
       `-# ${guildName} - <t:${unix(rating.reviewedAt)}:F>`,
     ],
   });

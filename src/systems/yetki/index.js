@@ -120,7 +120,7 @@ async function handleGive(interaction) {
       .send({ components: [ui.grantDm(interaction.guild.name, { level, permIds, dutyIds, by: interaction.user.id })], flags: core.CV2 })
       .then(() => true)
       .catch(() => false);
-    if (!dmSent) await respond(interaction, core.alert('Üyeye DM gönderilemedi.', 'DM kutusu kapalı olabilir; yetki yine de verildi.', 'warning'));
+    if (!dmSent) await respond(interaction, core.alert('Üyeye DM gönderilemedi.', 'DM kutusu kapalı olabilir; **yetki yine de verildi.**', 'warning'));
   } finally {
     giving.delete(userId);
   }

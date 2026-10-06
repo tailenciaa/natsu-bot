@@ -81,19 +81,19 @@ async function checkImage(url) {
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(5000), redirect: 'error' });
     res.body?.cancel().catch(() => {});
-    if (!res.ok) return 'Bağlantı açılamadı, görselin herkese açık olduğundan emin ol.';
-    if (!/^image\/(png|jpe?g|gif|webp)/i.test(res.headers.get('content-type') ?? '')) return 'Bağlantı PNG, JPG, GIF ya da WebP bir görsele gitmeli.';
-    if (Number(res.headers.get('content-length') ?? 0) > MAX_IMAGE_BYTES) return 'Görsel en fazla 8 MB olabilir.';
+    if (!res.ok) return 'Bağlantı açılamadı. Görselin **herkese açık** olduğundan emin ol.';
+    if (!/^image\/(png|jpe?g|gif|webp)/i.test(res.headers.get('content-type') ?? '')) return 'Bağlantı **PNG, JPG, GIF** ya da **WebP** biçiminde bir görsele gitmeli.';
+    if (Number(res.headers.get('content-length') ?? 0) > MAX_IMAGE_BYTES) return 'Görsel en fazla **8 MB** olabilir.';
     return null;
   } catch {
-    return 'Bağlantı açılamadı, adresi kontrol edip tekrar dene.';
+    return 'Bağlantı açılamadı. Adresi kontrol edip tekrar dene.';
   }
 }
 
 // Bütün düzenleme düğmeleri, tema menüsü ve formlar profil-ayar:<eylem> ile gelir; sadece profil sahibi kullanabilir
 async function handleSettings(interaction) {
   if (!isMenuOwner(interaction)) {
-    return replyError(interaction, 'Sadece kendi profilini düzenleyebilirsin.', '/profil yazarak kendi profilini açabilirsin.');
+    return replyError(interaction, 'Sadece kendi profilini düzenleyebilirsin.', '**/profil** yazarak kendi profilini açıp düzenleyebilirsin.');
   }
   const action = interaction.customId.split(':')[1];
   const current = store.get(interaction.user.id);
@@ -126,16 +126,16 @@ async function handleSettings(interaction) {
     case 'renk-form': {
       const value = interaction.fields.getTextInputValue('renk').trim();
       const match = COLOR.exec(value);
-      if (value && !match) return replyError(interaction, 'Renk kodu geçersiz.', 'Altı haneli bir hex kod yaz, örneğin #ff5599.');
+      if (value && !match) return replyError(interaction, 'Renk kodu geçersiz.', '**Altı haneli** bir hex kod yaz, örneğin **#ff5599**.');
       const color = match ? parseInt(match[1], 16) : null;
-      if (color === 0) return replyError(interaction, 'Siyah renk kartta okunmaz.', 'Biraz daha açık bir renk dene, örneğin #ff5599.');
+      if (color === 0) return replyError(interaction, 'Siyah renk kartta okunmaz.', 'Biraz daha açık bir renk dene, örneğin **#ff5599**.');
       await interaction.deferUpdate();
       store.set(interaction.user.id, { color });
       return refresh(interaction);
     }
     case 'kapak-form': {
       const value = interaction.fields.getTextInputValue('kapak').trim();
-      if (value && !isImageUrl(value)) return replyError(interaction, 'Görsel bağlantısı geçersiz.', 'Bağlantı https ile başlayan, herkese açık bir görsel adresi olmalı.');
+      if (value && !isImageUrl(value)) return replyError(interaction, 'Görsel bağlantısı geçersiz.', 'Bağlantı **https** ile başlayan, herkese açık bir görsel adresi olmalı.');
       await interaction.deferUpdate();
       const problem = value ? await checkImage(value) : null;
       if (problem) return replyError(interaction, 'Kapak görseli kaydedilmedi.', problem);

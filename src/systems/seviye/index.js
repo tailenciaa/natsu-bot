@@ -204,16 +204,16 @@ function handleMessage(message) {
 // etiket görünür ama kimseye bildirim gitmez, sonuç sadece yöneticiye gösterilir
 async function sendTestAnnounce(interaction) {
   if (!interaction.memberPermissions?.has('Administrator')) {
-    return replyError(interaction, 'Test duyurusunu sadece yöneticiler gönderebilir.', 'Kendi seviyeni görmek için komutu test seçeneği olmadan kullan.');
+    return replyError(interaction, 'Test duyurusunu sadece yöneticiler gönderebilir.', 'Kendi seviyeni görmek için komutu **test** seçeneği olmadan kullan.');
   }
   await interaction.deferReply({ flags: core.EPHEMERAL });
   const channel = await fetchTextChannel(interaction.guild, config.channel);
-  if (!channel) return replyError(interaction, 'Duyuru kanalı bulunamadı.', 'Kanalın silinmediğinden ve botun görebildiğinden emin ol.');
+  if (!channel) return replyError(interaction, 'Duyuru kanalı bulunamadı.', 'Kanalın **silinmediğinden** ve botun görebildiğinden emin ol.');
   const roleId = config.roles.mesaj[15];
   const role = roleId ? (interaction.guild.roles.cache.get(roleId) ?? null) : null;
   const sent = await sendLevelUp(channel, interaction.user, 'mesaj', 15, role, { ping: false });
-  if (!sent) return replyError(interaction, 'Örnek duyuru gönderilemedi.', 'Botun duyuru kanalında mesaj ve dosya gönderme izni olmalı.');
-  return respond(interaction, core.alert('Örnek duyuru gönderildi.', `<#${channel.id}> kanalına bakabilirsin, kimseye bildirim gitmedi.`, 'success'));
+  if (!sent) return replyError(interaction, 'Örnek duyuru gönderilemedi.', 'Botun duyuru kanalında **mesaj** ve **dosya gönderme** izni olmalı.');
+  return respond(interaction, core.alert('Örnek duyuru gönderildi.', `<#${channel.id}> kanalına bakabilirsin. **Kimseye bildirim gitmedi.**`, 'success'));
 }
 
 // /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta

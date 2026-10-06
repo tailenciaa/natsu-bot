@@ -22,7 +22,7 @@ function section(kind, entries) {
   const meta = KIND_META[kind];
   const lines = entries.length
     ? entries.map(({ userId, value }, i) => `${i + 1}. <@${userId}> » \`${meta.format(value)}\``)
-    : ['-# Geçen hafta bu kategoride kayıt yok.'];
+    : ['Geçen hafta bu kategoride kayıt yok.'];
   return `**${meta.title}**\n${lines.join('\n')}`;
 }
 

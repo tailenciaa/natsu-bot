@@ -40,7 +40,7 @@ const panel = () =>
     note: config.panel.footer,
   });
 
-// "Başvuru Yap" ile açılan form; sorular config.js'ten gelir
+// "Başvur" butonuyla açılan form; sorular config.js'ten gelir
 function applicationModal() {
   return new ModalBuilder()
     .setCustomId(IDS.applyModal)
@@ -67,28 +67,30 @@ function orientationStatus(app) {
   const o = app.orientation;
   if (o.status === 'waiting') {
     return [
-      `**Durum: Oryantasyon bekleniyor**\n-# <@${app.reviewedBy}> onayladı, oryantasyonu <@${o.staffId}> verecek. ` +
-        'İkisi aynı görüşme kanalına girince oryantasyon kendiliğinden başlar.',
+      `**Durum: Oryantasyon bekleniyor**\n<@${app.reviewedBy}> onayladı, oryantasyonu <@${o.staffId}> verecek. ` +
+        'İkisi aynı görüşme kanalına girince **oryantasyon kendiliğinden başlar.**',
       colors.primary,
     ];
   }
   if (o.status === 'active') {
-    const waiting = o.staffNeeded ? '\n-# Yetkili ayrıldı, oryantasyonu devralacak başka bir yetkili bekleniyor.' : '';
+    const waiting = o.staffNeeded ? '\n**Yetkili ayrıldı,** oryantasyonu devralacak başka bir yetkili bekleniyor.' : '';
     return [
-      `**Durum: Oryantasyonda**\n-# <@${o.staffId}> şu an <#${o.channelId}> kanalında oryantasyon veriyor.${waiting}`,
+      `**Durum: Oryantasyonda**\n<@${o.staffId}> şu an <#${o.channelId}> kanalında oryantasyon veriyor.${waiting}`,
       o.staffNeeded ? colors.warning : colors.primary,
     ];
   }
   if (o.status === 'completed') {
     return [
-      `**Durum: Ekibe katıldı**\n-# <@${o.staffId}> oryantasyonu tamamladı, **${o.levelLabel}** yetkisiyle ekibe başladı.\n` +
-        `-# ${o.areaLabels.length > 1 ? 'Görev alanları' : 'Görev alanı'}: ${o.areaLabels.join(', ')}`,
+      `**Durum: Ekibe katıldı**\n<@${o.staffId}> oryantasyonu tamamladı, **${o.levelLabel}** yetkisiyle ekibe başladı.\n` +
+        `**${o.areaLabels.length > 1 ? 'Görev alanları' : 'Görev alanı'}:** ${o.areaLabels.join(', ')}`,
       colors.success,
     ];
   }
-  const by = o.cancelledBy ? `<@${o.cancelledBy}> iptal etti.` : 'Otomatik olarak iptal edildi.';
-  const penalty = app.penaltyUntil ? `\n-# Başvuru cezası: <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamaz.` : '';
-  return [`**Durum: Oryantasyon iptal edildi**\n-# ${by}\n${quote(o.cancelReason)}${penalty}`, colors.danger];
+  const by = o.cancelledBy ? `<@${o.cancelledBy}> iptal etti.` : '**Otomatik olarak** iptal edildi.';
+  const penalty = app.penaltyUntil
+    ? `\n**Başvuru cezası:** başvuran <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamaz.`
+    : '';
+  return [`**Durum: Oryantasyon iptal edildi**\n${by}\n${quote(o.cancelReason)}${penalty}`, colors.danger];
 }
 
 // Sicil gibi yerlerde görünen kısa durum
@@ -114,21 +116,21 @@ function applicationNotice(app, applicantUser) {
     const role = app.acceptRoleId
       ? app.roleGiven
         ? ` <@&${app.acceptRoleId}> rolü verildi.`
-        : ' Rol verilemedi, elle verilmesi gerekiyor.'
+        : ' **Rol verilemedi,** elle verilmesi gerekiyor.'
       : '';
-    status = `**Durum: Onaylandı**\n-# <@${app.reviewedBy}> onayladı.${role}`;
+    status = `**Durum: Onaylandı**\n<@${app.reviewedBy}> onayladı.${role}`;
     color = colors.success;
   } else if (app.status === 'rejected') {
-    status = `**Durum: Reddedildi**\n-# <@${app.reviewedBy}> reddetti.`;
+    status = `**Durum: Reddedildi**\n<@${app.reviewedBy}> başvuruyu reddetti.`;
     color = colors.danger;
   } else if (app.meetingBy) {
     const where = app.meetingChannelId ? `, <#${app.meetingChannelId}> kanalında bekliyor` : '';
     status =
-      `**Durum: Görüşme bekleniyor**\n-# <@${app.meetingBy}> başvuranı görüşmeye çağırdı${where}.\n` +
-      '-# Başvuruyla o ilgileniyor, kararı da o verecek.';
+      `**Durum: Görüşme bekleniyor**\n<@${app.meetingBy}> başvuranı görüşmeye çağırdı${where}.\n` +
+      'Başvuruyla **o ilgileniyor,** kararı da o verecek.';
     color = colors.primary;
   } else {
-    status = '**Durum: İnceleniyor**\n-# Karar verildiğinde sonuç başvurana DM ile iletilir.';
+    status = '**Durum: İnceleniyor**\nKarar verildiğinde sonuç başvurana **DM ile** iletilir.';
     color = colors.warning;
   }
   if (app.note) status += `\n${quote(app.note)}`;
@@ -150,7 +152,7 @@ function applicationNotice(app, applicantUser) {
     pending ? `Yeni Başvuru #${pad(app.number)}` : `Başvuru #${pad(app.number)}`,
     pending
       ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip başvuruyu onaylayabilir, reddedebilir ya da başvuranı sesli mülakata çağırabilirsin; karar başvurana DM ile iletilir.'
-      : 'Bu başvurunun bilgileri, cevapları ve güncel durumu burada listelenir. Başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenerek son durumu gösterir.',
+      : 'Bu başvurunun bilgileri, cevapları ve güncel durumu burada listelenir. Başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenir ve son durumu gösterir.',
     [
       `**Başvuran**\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
       `**Cevaplar**\n${answersText(app.answers)}`,
@@ -185,8 +187,8 @@ function applicationNotice(app, applicantUser) {
 function reviewModal(app, action) {
   const approve = action === 'onay';
   const approveInfo =
-    'Başvuru sana atanacak ve oryantasyonu sen vereceksin. Başvurana ve sana DM ile boş bir görüşme kanalı bildirilecek; ' +
-    'ikiniz de kanala girince oryantasyon kendiliğinden başlar. Roller oryantasyon sonunda verilir.';
+    'Başvuru sana atanacak ve **oryantasyonu sen vereceksin.** Başvurana ve sana DM ile boş bir görüşme kanalı bildirilecek; ' +
+    'ikiniz de kanala girince oryantasyon kendiliğinden başlar. **Roller oryantasyon sonunda** verilir.';
   return new ModalBuilder()
     .setCustomId(`${IDS.reviewModal}:${app.id}:${action}`)
     .setTitle(approve ? 'Başvuruyu Onayla' : 'Başvuruyu Reddet')
@@ -194,12 +196,12 @@ function reviewModal(app, action) {
       text(
         approve
           ? `**#${pad(app.number)} numaralı başvuruyu onaylıyorsun.**\n${approveInfo}`
-          : `**#${pad(app.number)} numaralı başvuruyu reddediyorsun.**\nYazdığın sebep başvurana DM ile iletilecek.`,
+          : `**#${pad(app.number)} numaralı başvuruyu reddediyorsun.**\nYazdığın sebep başvurana **DM ile** iletilecek.`,
       ),
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel(approve ? 'Not' : 'Red sebebi')
+        .setLabel(approve ? 'Not' : 'Ret sebebi')
         .setDescription(approve ? 'İsteğe bağlı, başvurana iletilir.' : 'Başvurana iletilir.')
         .setTextInputComponent(
           new TextInputBuilder()
@@ -216,11 +218,11 @@ function reviewModal(app, action) {
 const channelUrl = (guildId, channelId) => `https://discord.com/channels/${guildId}/${channelId}`;
 
 // DM'lerdeki görüşme ses kanalı bölümü.
-// voice: { staffId, waitingIn, until } — waitingIn: yetkilinin şu an beklediği kanal (yoksa null), until: erişimin kapanacağı zaman.
+// voice: { staffId, waitingIn, until }: waitingIn yetkilinin şu an beklediği kanal (yoksa null), until erişimin kapanacağı zaman.
 // Yetkili bir kanalda bekliyorsa o kanala, beklemiyorsa üç kanala da katılma butonu çıkar.
 function voiceSection(container, app, voice) {
   const expiry =
-    'Görüşme kanalları senin için açıldı. Mülakat bitip kanaldan ayrıldığında tekrar kapanacak ' +
+    '**Görüşme kanalları senin için açıldı.** Mülakat bitip kanaldan ayrıldığında tekrar kapanır ' +
     `(hiç katılmazsan <t:${unix(voice.until)}:R> kendiliğinden kapanır).`;
   const buttons = voice.waitingIn
     ? [new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, voice.waitingIn))]
@@ -233,8 +235,8 @@ function voiceSection(container, app, voice) {
     .addTextDisplayComponents(
       text(
         voice.waitingIn
-          ? `**Görüşme Kanalı**\n<@${voice.staffId}> mülakat için seni şu an <#${voice.waitingIn}> kanalında bekliyor!\n-# ${expiry}`
-          : `**Görüşme Kanalı**\nMülakat için aşağıdaki ses kanallarından birine katılabilirsin.\n-# ${expiry}`,
+          ? `**Görüşme Kanalı**\n<@${voice.staffId}> mülakat için seni şu an <#${voice.waitingIn}> kanalında **bekliyor.**\n${expiry}`
+          : `**Görüşme Kanalı**\nMülakat için butonlardaki **ses kanallarından birine** katılabilirsin.\n${expiry}`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -244,28 +246,28 @@ function voiceSection(container, app, voice) {
 // Reddedilen başvurana giden sonuç DM'si (onaylanana oryantasyon sistemi kendi DM'ini gönderir)
 function resultDm(app, guildName, reapplyAt) {
   const blocks = [
-    `**Başvuru Sonucu**\nBaşvurun bu sefer olumlu sonuçlanmadı.\n` +
-      `-# #${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> değerlendirdi.` +
-      (reapplyAt ? ` <t:${unix(reapplyAt)}:D> tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
+    `**Başvuru Sonucu**\nBaşvurun bu sefer **olumlu sonuçlanmadı.**\n` +
+      `#${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> değerlendirdi.` +
+      (reapplyAt ? ` **<t:${unix(reapplyAt)}:D>** tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
   ];
   if (app.note) blocks.push(`**Sebep**\n${quote(app.note)}`);
-  blocks.push(`-# ${guildName} - <t:${unix(app.reviewedAt)}:F>`);
+  blocks.push(`${guildName} - <t:${unix(app.reviewedAt)}:F>`);
 
   return card(
     'Başvurun Sonuçlandı',
-    'Yetkili başvurun incelendi ve sonuçlandı. Kararı veren yetkili, varsa belirtilen sebep ve yeniden başvurabileceğin tarih aşağıda; ilgin için teşekkür ederiz.',
+    'Yetkili başvurun incelendi ve sonuçlandı. Kararı veren yetkili, varsa belirtilen sebep ve yeniden başvurabileceğin tarih bu mesajda yer alıyor; ilgin için teşekkür ederiz.',
     blocks,
     'danger',
   );
 }
 
 // "Görüşmeye Çağır" ile başvurana giden DM: yetkili bir ses kanalındaysa "seni X kanalında bekliyor",
-// değilse "kanallardan birine geç" der. Ses kanalları açılamadıysa (voice yok) sadece görüşme çağrısı gider.
+// değilse "kanallardan birine geç" der. Ses kanalları açılamadıysa (voice yok) sadece görüşme daveti gider.
 function meetingDm(app, guildName, voice) {
   const container = card(
     'Mülakata Davet Edildin',
     'Yetkili başvurun hakkında seninle sesli bir görüşme yapmak istiyor. Mülakat için hangi ses kanalına katılman gerektiği ve kanal erişiminin ne zaman kapanacağı bu mesajda yazıyor.',
-    [`**Davet**\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n-# #${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
+    [`**Davet**\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n#${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
     'warning',
   );
   if (voice) voiceSection(container, app, voice);
@@ -280,7 +282,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
       'Başvuran görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.',
       [
         `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n**Başvuru:** #${pad(app.number)}` +
-          (orientation ? '\n-# Kanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
+          (orientation ? '\nKanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
       ],
       'primary',
     )
@@ -305,9 +307,9 @@ function meetingLog(app) {
     [
       ended
         ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +
-          `-# <#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
+          `<#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
         : `**Görüşme**\n<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.\n` +
-          `-# Başlangıç <t:${unix(m.startedAt)}:t> - Görüşme bitince bu mesaj güncellenir.`,
+          `Başlangıç <t:${unix(m.startedAt)}:t> - Görüşme bitince bu mesaj güncellenir.`,
     ],
     ended ? 'success' : 'primary',
   );

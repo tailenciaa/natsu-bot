@@ -61,18 +61,18 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
   // Liste
   const lines = pageItems.map(({ userId, value }, i) => {
     const rank = start + i + 1;
-    const size = current === 0 && rank <= 3 ? PODIUM[rank - 1] : '-# ';
+    const size = current === 0 && rank <= 3 ? PODIUM[rank - 1] : '';
     return `${size}${rank}. <@${userId}> » \`${formatValue(type, value)}\`${userId === viewerId ? ' **(Sen)**' : ''}`;
   });
   // Komutu kullanan bu sayfada yoksa sırası en altta gösterilir
   const viewerRank = ranking.findIndex((r) => r.userId === viewerId);
   if (viewerRank !== -1 && (viewerRank < start || viewerRank >= start + PAGE_SIZE)) {
-    lines.push(`-# ${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Sen)**`);
+    lines.push(`${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Sen)**`);
   }
 
   const listBlock = lines.length
     ? lines.join('\n')
-    : `**Henüz kayıt yok.**\n-# ${role ? 'Bu rolde bu dönemde sayılan üye yok.' : 'Bu dönemde sayılan bir mesaj ya da ses süresi yok.'}`;
+    : `**Henüz kayıt yok.**\n${role ? 'Bu rolde bu dönemde sayılan üye yok.' : 'Bu dönemde sayılan bir mesaj ya da ses süresi yok.'}`;
 
   const container = pageLayout({
     title: 'Sıralama',

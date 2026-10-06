@@ -126,20 +126,20 @@ module.exports = {
       nextLabel: 'Başla',
       body:
         '**{aday}, başvurun onaylandı ve ekibe katılmana tek adım kaldı!**\n' +
-        'Bu oryantasyonda {yetkili} sana adım adım yetkililiği anlatacak:\n' +
-        'Sunucu kuralları ve nasıl uygulandığı\n' +
-        'Bir yetkilinin nasıl davranması gerektiği\n' +
-        'Ceza sistemi ve komutlar\n' +
-        'Botun yetkili sistemleri\n' +
-        'Görev alanını seçmen ve alanının detayları\n' +
-        '-# Bildiğin bir konu olursa söyle, o adım atlanabilir. Aklına takılan her şeyi sormaktan çekinme.',
+        'Bu oryantasyonda {yetkili} sana yetkililiği adım adım anlatacak:\n' +
+        '- Sunucu kuralları ve nasıl uygulandığı\n' +
+        '- Bir yetkilinin nasıl davranması gerektiği\n' +
+        '- Ceza sistemi ve komutlar\n' +
+        '- Botun yetkili sistemleri\n' +
+        '- Görev alanını seçmen ve alanının detayları\n\n' +
+        '**Bildiğin bir konu olursa söyle, o adım atlanabilir.** Aklına takılan her şeyi sormaktan çekinme.',
     },
     {
       id: 'kurallar',
       title: 'Sunucu Kuralları',
       skippable: true,
       body:
-        'Yetkili olarak kuralları hem uygulayacak hem de herkesten önce sen uyacaksın.\n' +
+        '**Yetkili olarak kuralları hem uygulayacak hem de herkesten önce sen uyacaksın.**\n\n' +
         '**Temel kurallar**\n' +
         '**Saygısızlık:** Küfür, hakaret, aşağılama ve kışkırtma yasak.\n' +
         '**Ayrımcılık:** Irk, din, cinsiyet ve cinsel yönelim üzerinden ayrımcılık kesinlikle yasak.\n' +
@@ -147,10 +147,10 @@ module.exports = {
         '**Reklam:** Sunucu, sosyal medya ya da DM üzerinden reklam yasak.\n' +
         '**+18 içerik:** +18, kan ve vahşet içeren ya da rahatsız edici içerik yasak.\n' +
         '**Kişisel bilgi:** İsim, adres, fotoğraf gibi kişisel bilgi paylaşmak yasak.\n' +
-        '**Spoiler:** Anime spoilerları sadece ilgili kanalda ve spoiler etiketiyle paylaşılır.\n' +
+        '**Spoiler:** Anime spoiler\'ları sadece ilgili kanalda ve spoiler etiketiyle paylaşılır.\n\n' +
         '**Uygularken**\n' +
-        'Kuralların tam metni kurallar kanalında, oradaki her maddeyi bilmen gerekiyor.\n' +
-        'Kuralda açıkça yazmayan durumlarda sağduyunu kullan ve üst yetkiliye danış.',
+        'Kuralların tam metni kurallar kanalında; **oradaki her maddeyi bilmen gerekir.**\n' +
+        'Kuralda açıkça yazılmayan durumlarda **sağduyunu kullan** ve üst yetkiliye danış.',
     },
     {
       id: 'davranis',

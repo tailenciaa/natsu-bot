@@ -19,7 +19,7 @@ function blocks() {
     '**Ses Seviyesi**\n' +
       `Sesli kanalda geçen her dakika ${seviye.voice.xpPerMinute} XP kazandırır ve mesaj seviyenden ayrı birikir. Her 5 seviyede yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
     `**Ses Rolleri**\n${early}`,
-    `**Üst Seviye Ses Rolleri**\n${late}\n-# Aradaki seviyelerde (35, 45, 55...) sadece rolünü kazanırsın.`,
+    `**Üst Seviye Ses Rolleri**\n${late}\nAradaki seviyelerde (35, 45, 55...) sadece rolünü kazanırsın.`,
     '**Yayın**\n' +
       `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından yayın yetkisini alabilirsin, 15. seviye ses rolü de yayın hakkı verir.`,
     '**Haftanın Ses Aktifleri**\n' +
@@ -30,7 +30,7 @@ function blocks() {
       'Müzik botlarını ve ses panelini troll amaçlı kullanmak yasaktır.\n' +
       'Özel odalarda kuralları çiğneyen isimler kullanmak ve sürekli gir-çık yapmak yasaktır.\n' +
       'Yayında gösterdiğin her şeyde de bu kurallar geçerlidir.\n' +
-      `-# Sorun yaşarsan <#${c.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.`,
+      `Sorun yaşarsan <#${c.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.`,
   ];
 }
 

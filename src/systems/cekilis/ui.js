@@ -31,7 +31,7 @@ const noWinnerReason = (g) => (g.participants.length ? 'Katılanların hiçbiri 
 const SUB = {
   active:
     'Katıl butonuna basarak çekilişe katılabilirsin; süre dolunca katılanlar arasından kazananlar rastgele seçilip bu kanalda duyurulur, butona tekrar basarak katılımdan ayrılabilirsin.',
-  ended: 'Çekiliş sona erdi; kazananlar katılanlar arasından rastgele seçilip duyuruldu, katılım kapandı ve gerekirse yönetici yeniden kazanan çekebilir.',
+  ended: 'Çekiliş sona erdi; kazananlar katılanlar arasından rastgele seçilip duyuruldu, katılım kapandı ve gerekirse bir yönetici yeniden kazanan çekebilir.',
   cancelled: 'Bu çekiliş düzenleyen tarafından iptal edildi ve kazanan seçilmedi; katılım kapandı, yeni çekilişleri bu kanaldan takip edebilirsin.',
 };
 
@@ -123,7 +123,7 @@ function confirm(action, g) {
   const end = action === 'bitir';
   return alert(
     end ? `Çekiliş #${g.no} şimdi bitirilsin mi?` : `Çekiliş #${g.no} iptal edilsin mi?`,
-    end ? 'Süre beklenmeden kazananlar hemen seçilip duyurulur.' : 'Kazanan seçilmeden çekiliş kapatılır, geri alınamaz.',
+    end ? 'Süre beklenmeden **kazananlar hemen seçilip duyurulur**.' : 'Kazanan seçilmeden çekiliş kapatılır, **geri alınamaz**.',
     'warning',
   ).addActionRowComponents(
     new ActionRowBuilder().addComponents(
@@ -137,7 +137,7 @@ function confirm(action, g) {
 
 // Süre dolunca (ya da yeniden çekilince) çekiliş mesajına yanıt olarak giden kazanan duyurusu; panelin tekrarı değil, sadece kutlama
 function winners(g, ids, reroll = false) {
-  return alert(`Tebrikler ${mentions(ids)}!`, `${g.prize}${reroll ? ' (yeniden çekiliş)' : ''}`, 'success');
+  return alert(`Tebrikler ${mentions(ids)}!`, `Kazanılan ödül: ${g.prize}${reroll ? ' (yeniden çekiliş)' : ''}`, 'success');
 }
 
 // Kazanan çıkmadıysa kanala giden kısa bildirim
@@ -145,7 +145,7 @@ const noWinner = (g) => alert('Çekilişte kazanan çıkmadı.', `${g.prize}: ${
 
 // Katılmış üyenin butona tekrar basınca gördüğü, ayrılma butonlu cevap
 function joined(g) {
-  return alert('Bu çekilişe zaten katıldın.', '**Katılımdan Ayrıl** butonuyla çekilişten çıkabilirsin.', 'success').addActionRowComponents(
+  return alert('Bu çekilişe zaten katıldın.', 'Çekilişten çıkmak istersen **Katılımdan Ayrıl** butonuna bas.', 'success').addActionRowComponents(
     new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`${IDS.leave}:${g.no}`).setLabel('Katılımdan Ayrıl').setStyle(ButtonStyle.Danger)),
   );
 }

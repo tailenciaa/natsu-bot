@@ -17,7 +17,7 @@ const IDS = { select: 'logpanel', setup: 'logkur', detail: 'logdetay' }; // logp
 // Bir log girdisinin kutusu: başlık, uzun gri açıklama, çizgiyle ayrılmış kalın başlıklı bilgi bloğu (null/boş satırlar
 // atlanır) ve en altta zaman damgası. Bütün log girdileri aynı genişlikte görünsün diye açıklama bilerek uzun tutulur.
 const ENTRY_SUB =
-  'Sunucuda gerçekleşen bu olay ilgili log kategorisine otomatik olarak kaydedildi; olayı kimin yaptığı, nerede gerçekleştiği ve ayrıntıları aşağıdaki bilgilerde yer alıyor.';
+  'Sunucuda gerçekleşen bu olay ilgili log kategorisine otomatik olarak kaydedildi; olayı kimin yaptığını, nerede gerçekleştiğini ve diğer ayrıntıları bu bilgilerde görebilirsin.';
 
 // details: butona basınca gösterilecek ek satırlar (mesaj ID'si, gönderilme zamanı vb.); verilmezse olay satırları gösterilir
 function entry(color, title, lines, details) {
@@ -69,12 +69,12 @@ function panel() {
 
   return page({
     title: `${botName} Log Paneli`,
-    sub: 'Sunucudaki bütün olay kayıtlarına tek yerden ulaşabilirsin; aşağıdaki menüden bir kategori seçtiğinde o logun tutulduğu alt başlığa giden bir bağlantı gönderilir.',
+    sub: 'Sunucudaki bütün olay kayıtlarına tek yerden ulaşabilirsin; kayıtlar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış olarak ayrı alt başlıklarda tutulur.',
     accent: colors.primary,
     blocks: [
       '**Nasıl Kullanılır?**\n' +
-        'Aradığın logu kanala girip aramak yerine aşağıdan seçebilirsin.\n' +
-        '-# Bir kategori seçince o logun bulunduğu alt başlığa giden bir bağlantı gelir.',
+        'Aşağıdaki menüden **bir log kategorisi seç**.\n' +
+        'Sana o logun bulunduğu **alt başlığa giden bağlantı** gelir; kanalda aramana gerek kalmaz.',
     ],
   })
     .addSeparatorComponents(divider())
@@ -90,7 +90,7 @@ function jumpLink(category, thread) {
         .addTextDisplayComponents(
           text(
             `## ${category.label}\n` +
-              '-# Seçtiğin log kategorisinin tutulduğu alt başlık hazır; yanındaki butona basarak doğrudan o alt başlığa gidebilir ve ilgili olay kayıtlarını orada inceleyebilirsin.',
+              '-# Seçtiğin log kategorisinin alt başlığı hazır; yanındaki butona basarak doğrudan o alt başlığa gidebilir ve ilgili olay kayıtlarını orada inceleyebilirsin.',
           ),
         )
         .setButtonAccessory(
@@ -101,7 +101,7 @@ function jumpLink(category, thread) {
         ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Kategori Açıklaması**\n-# ${category.description}`));
+    .addTextDisplayComponents(text(`**Kategori Açıklaması**\n${category.description}`));
 }
 
 const button = (action, label, style, disabled = false) =>
@@ -118,7 +118,7 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
     '**Kanallar**\n' +
       `**Ana log kanalı:** <#${mainId}>\n` +
       `**Log paneli kanalı:** <#${panelId}>\n` +
-      `**Panel:** ${panelUrl ? `[mesaja git](${panelUrl})` : 'gönderilmemiş'}`,
+      `**Panel:** ${panelUrl ? `[Mesaja git](${panelUrl})` : 'gönderilmemiş'}`,
     `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n')}`,
   ];
   if (note) blocks.push(`**Son İşlem**\n${note}`);
@@ -143,10 +143,13 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
 // Sıfırlama onayı: alt başlıklar eski loglarıyla birlikte silineceği için sorulur
 function resetConfirm() {
   return page({
-    title: 'Log Alt Başlıkları Sıfırlansın mı?',
-    sub: 'Bu işlem bütün log alt başlıklarını silip yeniden açar; alt başlıkların içindeki eski loglar da silineceği için işlem geri alınamaz, devam etmeden önce iyice emin olmalısın.',
+    title: 'Loglar Sıfırlansın mı?',
+    sub: 'Bu işlem bütün log alt başlıklarını silip yeniden açar; alt başlıkların içindeki eski loglar da silineceği için devam etmeden önce ne yapacağından emin olmalısın.',
     accent: colors.danger,
-    blocks: ['**Uyarı**\nTüm log alt başlıkları silinip yeniden açılsın mı?\n-# Alt başlıkların içindeki eski loglar da silinir, geri alınamaz.'],
+    blocks: [
+      '**Uyarı**\n**Tüm eski loglar kalıcı olarak silinir** ve bu işlem **geri alınamaz.**\n' +
+        'Onaylıyorsan **Evet, Sıfırla** butonuna bas; vazgeçmek için **Vazgeç** butonuna bas.',
+    ],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(

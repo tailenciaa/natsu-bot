@@ -37,7 +37,7 @@ async function handleMessageDelete(message) {
     ui.entry('danger', 'Mesaj Silindi', [
       `**Kullanıcı:** ${message.author ? `<@${message.author.id}>` : 'bilinmiyor'}`,
       `**Kanal:** <#${message.channelId}>`,
-      content ? `**İçerik:**\n${core.quote(trim(content))}` : '-# İçerik önbellekte yoktu, gösterilemiyor.',
+      content ? `**İçerik:**\n${core.quote(trim(content))}` : '**İçerik:** önbellekte yoktu, gösterilemiyor.',
       message.attachments?.size ? `**Ekler:** ${message.attachments.map((a) => a.name).join(', ')}` : null,
       by,
     ], [
@@ -46,7 +46,7 @@ async function handleMessageDelete(message) {
       `**Silindiği zaman:** ${stamp(Date.now())}`,
       `**Kanal:** <#${message.channelId}>`,
       `**Mesaj ID:** \`${message.id}\``,
-      content ? `**İçerik:**\n${core.quote(content.slice(0, 1200))}` : '-# İçerik önbellekte yoktu, gösterilemiyor.',
+      content ? `**İçerik:**\n${core.quote(content.slice(0, 1200))}` : '**İçerik:** önbellekte yoktu, gösterilemiyor.',
       message.attachments?.size ? `**Ekler:** ${message.attachments.map((a) => a.url).join('\n')}` : null,
       by,
     ]),
@@ -109,7 +109,7 @@ function bulkDetails(messages, first) {
     `**Silinen mesaj sayısı:** ${messages.size}`,
     list.length ? `**En eski mesaj:** ${stamp(list[0].createdTimestamp)}\n**En yeni mesaj:** ${stamp(list.at(-1).createdTimestamp)}` : null,
     authors.length ? `**Mesaj sahipleri:** ${authors.slice(0, 10).map((id) => `<@${id}>`).join(', ')}${authors.length > 10 ? ` +${authors.length - 10}` : ''}` : null,
-    rows.length ? `**Mesajlar:**\n${rows.join('\n')}${list.length > rows.length ? `\n-# +${list.length - rows.length} mesaj daha` : ''}` : null,
+    rows.length ? `**Mesajlar:**\n${rows.join('\n')}${list.length > rows.length ? `\n**+${list.length - rows.length}** mesaj daha` : ''}` : null,
   ];
 }
 

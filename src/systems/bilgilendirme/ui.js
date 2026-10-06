@@ -13,7 +13,7 @@ function blockText(block) {
   if (block.heading) parts.push(`**${block.heading}**`);
   if (block.text) parts.push(block.text);
   if (block.items) parts.push(block.items.join('\n'));
-  if (block.note) parts.push(`-# ${block.note}`);
+  if (block.note) parts.push(`${block.note}`);
   return parts.join('\n');
 }
 

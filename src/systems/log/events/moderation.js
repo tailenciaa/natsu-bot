@@ -19,9 +19,10 @@ async function handleBanAdd(ban) {
   await engine.send(
     ban.client,
     'ban',
-    ui.entry('danger', 'Üye Yasaklandı (bot dışından)', [
+    ui.entry('danger', 'Üye Yasaklandı', [
       `**Kullanıcı:** ${ban.user.tag} (${ban.user.id})`,
-      found?.executor ? `**Yetkili:** <@${found.executor.id}>` : '-# Yetkili tespit edilemedi',
+      '**Kaynak:** bot dışından',
+      found?.executor ? `**Yetkili:** <@${found.executor.id}>` : '**Yetkili:** tespit edilemedi',
       found?.reason ? `**Sebep:** ${found.reason}` : null,
     ]),
   );
@@ -33,8 +34,9 @@ async function handleBanRemove(ban) {
   await engine.send(
     ban.client,
     'ban',
-    ui.entry('success', 'Yasak Kaldırıldı (bot dışından)', [
+    ui.entry('success', 'Yasak Kaldırıldı', [
       `**Kullanıcı:** ${ban.user.tag} (${ban.user.id})`,
+      '**Kaynak:** bot dışından',
       found?.executor ? `**Yetkili:** <@${found.executor.id}>` : null,
     ]),
   );
@@ -50,16 +52,17 @@ async function checkManualTimeout(oldMember, newMember) {
     await engine.send(
       newMember.client,
       'susturma',
-      ui.entry('danger', 'Üye Susturuldu (bot dışından)', [
+      ui.entry('danger', 'Üye Susturuldu', [
         `**Kullanıcı:** <@${newMember.id}>`,
-        `**Süre:** <t:${Math.floor(until / 1000)}:R>'a kadar`,
+        '**Kaynak:** bot dışından',
+        `**Bitiş:** <t:${Math.floor(until / 1000)}:F> (<t:${Math.floor(until / 1000)}:R>)`,
       ]),
     );
   } else if (!until) {
     await engine.send(
       newMember.client,
       'susturma',
-      ui.entry('success', 'Susturma Kaldırıldı (bot dışından)', [`**Kullanıcı:** <@${newMember.id}>`]),
+      ui.entry('success', 'Susturma Kaldırıldı', [`**Kullanıcı:** <@${newMember.id}>`, '**Kaynak:** bot dışından']),
     );
   }
 }
@@ -80,7 +83,7 @@ async function handleAutoModExecution(execution) {
       `**Kural:** ${rule?.name ?? execution.ruleId}`,
       `**İşlem:** ${ACTIONS[execution.action.type] ?? 'bilinmiyor'}`,
       execution.matchedKeyword ? `**Eşleşen:** ${execution.matchedKeyword}` : null,
-      execution.content ? `**Mesaj:**\n> ${execution.content.slice(0, 300)}` : null,
+      execution.content ? `**Mesaj:**\n> ${execution.content.slice(0, 300).split('\n').join('\n> ')}` : null,
     ]),
   );
 }

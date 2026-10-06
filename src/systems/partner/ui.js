@@ -88,11 +88,12 @@ function startPrompt(authorId) {
     .addTextDisplayComponents(
       text(
         '**Oto Partner Nasıl Çalışır?**\n' +
-          "Sunucu ID'ni ve partner metnini gönderirsin.\n" +
-          'Yetkili onaylayınca metnin otomatik paylaşılır.\n' +
-          '-# İstersen butona basmadan bir yetkilinin seninle ilgilenmesini de bekleyebilirsin.',
+          "**Sunucu ID'ni** ve **partner metnini** gönderirsin.\n" +
+          'Yetkili onaylayınca metnin **otomatik paylaşılır**.',
       ),
     )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('İstersen butona basmadan bir **yetkilinin seninle ilgilenmesini** de bekleyebilirsin.'))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -115,7 +116,11 @@ function startPromptSuccess(alreadyAccepted = false) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(alreadyAccepted ? '**Sıradaki Adım**\nYetkililerin kararını bekle.' : '**Sıradaki Adım**\nDM kutundaki mesajda **Şartları Kabul Ediyorum** butonuna bas.'),
+      text(
+        alreadyAccepted
+          ? '**Sıradaki Adım**\nYetkililerin **kararını bekle**.'
+          : '**Sıradaki Adım**\nDM kutundaki mesajda **Şartları Kabul Ediyorum** butonuna bas.',
+      ),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -167,13 +172,14 @@ function termsDm(acceptCustomId) {
     .addTextDisplayComponents(
       text(
         '**Şartlar**\n' +
-          '1. Reklam metni Discord kurallarına aykırı içerik barındıramaz.\n' +
-          '2. Sunucular karşılıklı olarak aynı gün içinde birbirini paylaşır.\n' +
-          '3. Onaylanan reklam metni değiştirilemez, değişiklik için yeni talep açılması gerekir.\n' +
-          '4. Kurallara uymayan partnerlikler yetkililerce tek taraflı sonlandırılabilir.\n' +
-          '-# Devam edersen bu şartları kabul etmiş sayılırsın.',
+          '1. Reklam metni **Discord kurallarına** aykırı içerik barındıramaz.\n' +
+          '2. Sunucular karşılıklı olarak **aynı gün içinde** birbirini paylaşır.\n' +
+          '3. Onaylanan reklam metni **değiştirilemez**; değişiklik için yeni talep açılması gerekir.\n' +
+          '4. Kurallara uymayan partnerlikler yetkililerce **tek taraflı sonlandırılabilir**.',
       ),
     )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('Devam edersen bu şartları **kabul etmiş sayılırsın**.'))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -201,7 +207,7 @@ function reviewCard(request, decided) {
           '**Talep Bilgileri**',
           field('Gönderen', `<@${request.requesterId}>`),
           field('Sunucu ID', `\`${request.serverId}\``),
-          decided ? null : `-# <@&${config.roles.staff}>, yeni bir partner talebi var.`,
+          decided ? null : `<@&${config.roles.staff}>, **yeni bir partner talebi** var.`,
         ]),
       ),
     )
@@ -211,10 +217,10 @@ function reviewCard(request, decided) {
   if (decided) {
     const verdict =
       decided.sonuc === 'onayla'
-        ? `<@${decided.by}> onayladı, paylaşım kanalına gönderildi.`
+        ? `<@${decided.by}> talebi **onayladı**; metin paylaşım kanalına gönderildi.`
         : decided.banned
-          ? `<@${decided.by}> reddetti ve sunucuyu yasaklı listesine aldı.`
-          : `<@${decided.by}> reddetti.`;
+          ? `<@${decided.by}> talebi **reddetti** ve sunucuyu **yasaklı listesine** aldı.`
+          : `<@${decided.by}> talebi **reddetti**.`;
     return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Karar**\n${verdict}`));
   }
 
@@ -240,13 +246,13 @@ function postCard(request, trusted, banned) {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        `Partner - \`${serverLabel(request)}\``,
+        `Partner \`${serverLabel(request)}\``,
         'Partner olduğumuz sunucunun tanıtım metni bu kartta yer alıyor; ilgini çekerse sunucuya katılabilirsin. Yetkililer karttaki butonlarla partneri güvenilir listeye alabilir ya da yönetebilir.',
       ),
     )
     .addSeparatorComponents(divider())
     // Bir mesajdaki toplam metin 4000 karakteri geçemez; kayıtlı metin tam kalır, kartta çok uzunsa kırpılır
-    .addTextDisplayComponents(text(`**Tanıtım Metni**\n${shorten(sanitize(request.text), 2800)}\n-# @everyone ve @here bu kanalda bildirim göndermez.`));
+    .addTextDisplayComponents(text(`**Tanıtım Metni**\n${shorten(sanitize(request.text), 2800)}`));
 
   const files = request.files ?? [];
   const images = files.filter((f) => f.image);
@@ -359,7 +365,7 @@ function trustedList(entries, page = 0) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Liste Durumu**', field('Toplam', `${entries.length} sunucu`), pageCount > 1 ? `-# Sayfa ${current + 1} / ${pageCount}` : null])),
+      text(fields(['**Liste Durumu**', field('Toplam', `**${entries.length}** sunucu`), pageCount > 1 ? `-# Sayfa ${current + 1} / ${pageCount}` : null])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -393,7 +399,7 @@ function trustedAddModal(requestId, messageId) {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('Karşı Sunucunun Partner Yetkilisi')
-        .setDescription('Bizim değil, karşı sunucununki. Birden fazlaysa virgül ya da yeni satırla ayır.')
+        .setDescription('Karşı sunucunun yetkilisinin kullanıcı ID\'si; birden fazlaysa virgül ya da yeni satırla ayır.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.contactId)
@@ -405,8 +411,8 @@ function trustedAddModal(requestId, messageId) {
     );
 }
 
-// Bir güvenilir kaydın işlem butonları: Teklifte Bulun (eylem) ve yönetim butonları (Listeden Çıkar, Yetkili
-// işlemleri) ayrı satırlarda. Teklifte Bulun sadece yetkili varsa anlamlı; Listeden Çıkar sadece partner lideri,
+// Bir güvenilir kaydın işlem butonları: Teklifte Bul (eylem) ve yönetim butonları (Listeden Çıkar, Yetkili
+// işlemleri) ayrı satırlarda. Teklifte Bul sadece yetkili varsa anlamlı; Listeden Çıkar sadece partner lideri,
 // diğerleri partner yetkilileri içindir (yetki kontrolü index.js'de yapılır)
 function trustedActionRow(entry) {
   const hasContacts = Boolean(entry.contactIds?.length);
@@ -415,7 +421,7 @@ function trustedActionRow(entry) {
   if (hasContacts) {
     rows.push(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bulun').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bul').setStyle(ButtonStyle.Primary),
       ),
     );
   }
@@ -484,11 +490,11 @@ function trustedListPanel(entries) {
   if (shown < entries.length) {
     container
       .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`-# +${entries.length - shown} sunucu daha var; hepsini /guvenilir-partnerler komutuyla görebilirsin.`));
+      .addTextDisplayComponents(text(`**+${entries.length - shown} sunucu daha var.** Hepsini \`/guvenilir-partnerler\` komutuyla görebilirsin.`));
   } else if (entries.length > QUICK_ACTION_LIMIT) {
     container
       .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`-# İşlem butonları ilk ${QUICK_ACTION_LIMIT} sunucu için gösterilir; diğerleri için /guvenilir-partnerler komutunu kullan.`));
+      .addTextDisplayComponents(text(`İşlem butonları **ilk ${QUICK_ACTION_LIMIT} sunucu** için gösterilir; diğerleri için \`/guvenilir-partnerler\` komutunu kullan.`));
   }
 
   return container;
@@ -510,7 +516,7 @@ function trustedDetail(entry) {
           '**Kayıt Bilgileri**',
           field('Eklenme', `<t:${unix(entry.addedAt)}:F>`),
           field('Ekleyen', `<@${entry.addedBy}>`),
-          field('İletişim', contactsText(entry)),
+          field('Partner Yetkilisi', contactsText(entry)),
           field('Partner Durumu', isBusy(entry) ? 'Meşgul' : 'Müsait'),
         ]),
       ),
@@ -542,18 +548,24 @@ function contactModal(trustedId, currentIds) {
     );
 }
 
-// Teklifte Bulun'a basınca: o an hangi yetkilinin bu yenilemeyle ilgileneceğini seçtiren menü (sadece basan kişiye görünür)
+// Teklifte Bul'a basınca: o an hangi yetkilinin bu yenilemeyle ilgileneceğini seçtiren menü (sadece basan kişiye görünür)
 function staffSelect(trustedId, members, statusOf) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         'Yetkili Seç',
-        'Teklifte bulunma sürecini yürütecek partner yetkilisini seçersin. Seçilen yetkiliye DM gider; partner metnini inceleyip onaylaması ya da düzenlemesi istenir.',
+        'Teklifte bulunma sürecini yürütecek partner yetkilisini seçmelisin. Seçilen yetkiliye DM gider; partner metnini inceleyip onaylaması ya da düzenlemesi istenir.',
       ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Yetkili Seçimi**', 'Bu teklifle hangi partner yetkilisi ilgilensin?', members.length > 25 ? '-# Menüde ilk 25 yetkili listelenir.' : null])),
+      text(
+        fields([
+          '**Yetkili Seçimi**',
+          'Bu teklifle **hangi partner yetkilisinin** ilgileneceğini menüden seç.',
+          members.length > 25 ? 'Menüde **ilk 25 yetkili** listelenir.' : null,
+        ]),
+      ),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -581,7 +593,7 @@ function assignedOfferDm(entry, startedBy) {
     .addTextDisplayComponents(
       head(
         'Partner Yenileme Teklifi',
-        'Bir yetkilimiz, güvenilir partner kaydındaki metnin yenilenmesi için seni atadı. Kabul edersen metni inceleyip onaylayabilir, düzenleyebilir ya da teklifi iptal edebilirsin.',
+        'Bir yetkili, güvenilir partner kaydındaki metnin yenilenmesi için seni atadı. Kabul edersen metni inceleyip onaylayabilir, düzenleyebilir ya da teklifi iptal edebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -689,6 +701,7 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   // Bizim metni
   container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Bizim Sunucumuz**\n${config.ourAdText}`));
 
+
   if (ourJumpUrl && ourJumpUrl !== partnerJumpUrl) {
     container.addActionRowComponents(
       new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(ourJumpUrl).setLabel('Partner Kanalına Git').setStyle(ButtonStyle.Link)),
@@ -745,7 +758,8 @@ function partnerPanel(entry, guildName) {
     .addTextDisplayComponents(
       text(
         '**Neler Yapabilirsin?**\n' +
-          `Meşgul seçersen yetkililerimiz ${BUSY_DAYS} gün boyunca sana teklif göndermez. Yeni partner metnini buradan gönderebilirsin, yetkilimiz onaylayınca otomatik paylaşılır.`,
+          `**Meşgul** seçersen yetkililerimiz **${BUSY_DAYS} gün** boyunca sana teklif göndermez.\n` +
+          'Yeni partner metnini **Teklif Gönder** butonuyla iletebilirsin; yetkilimiz onaylayınca **otomatik paylaşılır**.',
       ),
     )
     .addActionRowComponents(
@@ -764,7 +778,7 @@ function partnerPanel(entry, guildName) {
     );
 }
 
-// Partner Paneli'ndeki "Partnerlik Teklifi Gönder" formu: sunucu ID kayıttan bilindiği için sadece metin istenir
+// Partner Paneli'ndeki "Teklif Gönder" formu: sunucu ID kayıttan bilindiği için sadece metin istenir
 function panelOfferModal(trustedId) {
   return new ModalBuilder()
     .setCustomId(`${IDS.panelOfferModal}:${trustedId}`)

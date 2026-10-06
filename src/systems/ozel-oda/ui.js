@@ -47,7 +47,8 @@ function controlPanel(room, channel, state = {}) {
     sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini bu panelden yönetebilir; odadaki üyeleri atabilir, yasaklayabilir ya da odanın sahipliğini başka birine devredebilirsin.',
     accent: locked ? colors.danger : colors.primary,
     blocks: [
-      `**Oda Bilgisi**\n**Sahip:** <@${room.ownerId}>\n**Kişi limiti:** ${channel.userLimit || 'Sınırsız'}\n**Durum:** ${locked ? 'Kilitli' : 'Açık'}, ${hidden ? 'gizli' : 'görünür'}\n-# Paneli sadece oda sahibi kullanabilir.`,
+      `**Oda Bilgisi**\n**Sahip:** <@${room.ownerId}>\n**Kişi limiti:** ${channel.userLimit || 'Sınırsız'}\n**Durum:** ${locked ? 'Kilitli' : 'Açık'}, ${hidden ? 'gizli' : 'görünür'}`,
+      'Bu paneli sadece **oda sahibi** kullanabilir.',
     ],
   })
     .addSeparatorComponents(divider())
@@ -106,10 +107,10 @@ const GUIDE_TITLE = 'Özel Oda Rehberi';
 // #özel-oda-rehberi kanalına giden bilgi paneli: odanın nasıl açıldığı ve kontrol panelinin ne yaptığı
 function guidePanel() {
   const blocks = [
-    `**Oda nasıl açılır?**\n<#${config.createChannelId}> kanalına girdiğinde senin için kendi ses kanalın açılır.\nOdanın adı görünen adından oluşur, istediğin zaman değiştirebilirsin.\n-# Ayarlar odanın yazı sohbetindeki panelden yapılır.`,
-    '**Oda sahibi neler yapabilir?**\nOdayı kilitleyerek yeni girişleri durdurabilir, gizleyerek kanal listesinden saklayabilirsin.\nKişi limitini ve odanın adını değiştirebilirsin.\n-# Kişi limiti 0 ise oda sınırsızdır.',
-    '**Üye yönetimi**\nSeçtiğin üyeyi odadan atabilir ya da oda silinene kadar tekrar girmesini engelleyebilirsin.\nSahipliği başka bir üyeye devredebilirsin.',
-    '**Bilmen gerekenler**\nPaneli sadece oda sahibi kullanabilir.\nİşlemler arasında kısa bir bekleme vardır.\nOdada kimse kalmayınca oda silinir.\n-# Oluştur kanalına her girişinde yeni bir oda açılır.',
+    `**Oda nasıl açılır?**\n<#${config.createChannelId}> kanalına girdiğinde senin için **kendi ses kanalın** açılır.\nOdanın adı görünen adından oluşur, istediğin zaman değiştirebilirsin.\nAyarları odanın yazı sohbetindeki **kontrol panelinden** yaparsın.`,
+    '**Oda sahibi neler yapabilir?**\nOdayı **kilitleyerek** yeni girişleri durdurabilir, **gizleyerek** kanal listesinden saklayabilirsin.\nKişi limitini ve odanın adını değiştirebilirsin; kişi limiti **0** ise oda sınırsızdır.',
+    '**Üye yönetimi**\nSeçtiğin üyeyi odadan **atabilir** ya da oda silinene kadar tekrar girmesini **engelleyebilirsin**.\nSahipliği başka bir üyeye **devredebilirsin**.',
+    `**Bilmen gerekenler**\nPaneli sadece **oda sahibi** kullanabilir.\nİşlemler arasında kısa bir bekleme vardır.\nOdada kimse kalmayınca **oda silinir**.\n<#${config.createChannelId}> kanalına her girişinde yeni bir oda açılır.`,
   ];
   const container = page({
     title: GUIDE_TITLE,

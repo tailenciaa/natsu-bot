@@ -78,7 +78,7 @@ function ticketPanel(ticket) {
   let color;
   if (ticket.closedBy) {
     sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi talebin kapatıldığı ayrı mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir.';
-    status = '**Talep kapatıldı.**\n-# Alt başlık kilitlendi ve arşivlendi.';
+    status = '**Talep kapatıldı.**\nAlt başlık kilitlendi ve arşivlendi.';
     color = colors.danger;
   } else if (ticket.claimedBy) {
     sub = 'Talebini üstlenen yetkili bu kanalda seninle ilgilenir. Sorununu buradan yazmaya devam edebilir, ekran görüntüsü ekleyebilirsin; işin bittiğinde **Talebi Kapat** butonuyla talebi kapatabilirsin.';
@@ -88,7 +88,7 @@ function ticketPanel(ticket) {
     sub = ticket.notified
       ? 'Bir yetkili talebini üstlenene kadar sorununu ayrıntılı yazabilir, varsa ekran görüntüsü ekleyebilirsin. Yetkili gelince bu kanalda seninle ilgilenir; vazgeçersen **Talebi Kapat** butonuyla talebi kapatabilirsin.'
       : 'Bir yetkili talebini üstlenene kadar sorununu ayrıntılı yazabilir, varsa ekran görüntüsü ekleyebilirsin. Uzun süre yanıt alamazsan **Hatırlat** butonuyla ekibe haber verebilirsin.';
-    status = `**Bir yetkili bekleniyor.**${ticket.notified ? '\n-# Ekibe hatırlatma gönderildi.' : ''}`;
+    status = `**Bir yetkili bekleniyor.**${ticket.notified ? '\nEkibe hatırlatma gönderildi.' : ''}`;
     color = colors.warning;
   }
 
@@ -139,7 +139,7 @@ function ticketClosed(ticket) {
     sub: 'Talebin kapanış bilgisi burada yer alır: kimin kapattığı ve seçilen sebep. Başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin.',
     accent: colors.danger,
     blocks: [
-      fields([`**Talebi <@${ticket.closedBy}> kapattı.**`, logEnabled() ? '-# Konuşma kaydı ekibe iletildi.' : null]),
+      fields([`**Talebi <@${ticket.closedBy}> kapattı.**`, logEnabled() ? 'Konuşma kaydı ekibe iletildi.' : null]),
       reasonText(ticket.closeReason),
     ],
   });
@@ -191,7 +191,7 @@ function claimRequest(ticket) {
         ticket.claimedBy ? field('Üstlenen', `<@${ticket.claimedBy}>`) : null,
         ticket.closedBy ? field('Kapatan', `<@${ticket.closedBy}>`) : null,
         ticket.closedBy && ticket.closeReason ? field('Kapatma Sebebi', ticket.closeReason.label) : null,
-        waiting ? `-# <@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
+        waiting ? `<@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
       ]),
       `**Konu**\n${quote(ticket.reason)}`,
     ],

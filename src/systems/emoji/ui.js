@@ -25,7 +25,7 @@ function pickPanel(emojis) {
   const container = page({
     title: 'Emojileri Sunucuya Ekle',
     sub: 'Seçtiğin mesajdaki özel emojileri sunucuna ekleyebilirsin; eklemek istediklerini menüden seç, seçtiğin anda emojiler sunucuya eklenir ve hemen kullanılabilir.',
-    blocks: [`**Mesajda ${emojis.length} emoji bulundu.**${notes.length ? `\n${notes.map((n) => `-# ${n}`).join('\n')}` : ''}`],
+    blocks: [`**Mesajda ${emojis.length} emoji bulundu.**${notes.length ? `\n${notes.map((n) => `${n}`).join('\n')}` : ''}`],
   });
   return container
     .addSeparatorComponents(divider())
@@ -62,7 +62,7 @@ function result(added, failed) {
   if (added.length) blocks.push(`**Eklenen Emojiler**\n${added.map((e) => `${e} \`:${e.name}:\``).join('\n')}`);
   if (failed.length) {
     const lines = failed.slice(0, MAX_FAILED_SHOWN).map((f) => `\`${shorten(f.name, 40)}\`: ${f.reason}`);
-    if (failed.length > MAX_FAILED_SHOWN) lines.push(`-# Ve ${failed.length - MAX_FAILED_SHOWN} tane daha.`);
+    if (failed.length > MAX_FAILED_SHOWN) lines.push(`Ve ${failed.length - MAX_FAILED_SHOWN} tane daha.`);
     blocks.push(`**Eklenemeyenler**\n${lines.join('\n')}`);
   }
   return page({

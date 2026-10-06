@@ -28,7 +28,7 @@ async function handleTake(interaction) {
   });
   if (!added) return replyError(interaction, 'Rol verilemedi.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, core.alert('Yayın yetkin verildi.', 'Artık sesli kanallarda yayın açabilirsin.', 'success'));
+  return respond(interaction, core.alert('Yayın yetkin verildi.', 'Artık sesli kanallarda **yayın açabilirsin.**', 'success'));
 }
 
 async function handleLeave(interaction) {

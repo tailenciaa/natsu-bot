@@ -13,12 +13,12 @@ function given(giverId, targetId, newTotal) {
 function table(guild, ranking) {
   const lines = ranking
     .slice(0, PAGE_SIZE)
-    .map(({ userId, value }, i) => `${i < 3 ? PODIUM[i] : '-# '}${i + 1}. <@${userId}> » \`${value} saygınlık\``);
+    .map(({ userId, value }, i) => `${i < 3 ? PODIUM[i] : ''}${i + 1}. <@${userId}> » \`${value} saygınlık\``);
   return page({
     title: 'Saygınlık Tablosu',
     sub: 'Sunucuda bugüne kadar en çok saygınlık kazanan üyeleri tüm zamanların toplamına göre sıraladık; sen de `/saygi-ver` ile ya da mesajına `+rep @üye` yazarak +1 saygınlık verebilirsin.',
     thumbnail: guild.iconURL({ size: 256 }),
-    blocks: [lines.length ? lines.join('\n') : '**Henüz kayıt yok.**\n-# İlk saygınlığı sen ver.'],
+    blocks: [lines.length ? lines.join('\n') : '**Henüz kayıt yok.**\nİlk saygınlığı sen ver.'],
   });
 }
 

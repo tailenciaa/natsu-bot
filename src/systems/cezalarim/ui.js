@@ -44,19 +44,19 @@ function panel() {
   const container = new ContainerBuilder().addTextDisplayComponents(
     text(
       `## ${botName} Ceza Bilgilendirme\n` +
-        '-# **Süreyi Öğren**, **Sebebi Öğren** ve **İtiraz Et** butonlarıyla aktif cezalarının süresini ve sebebini öğrenebilir, haksız bulduğun bir cezaya itiraz edebilirsin.',
+        'Aktif cezalarının süresini **Süreyi Öğren**, sebebini **Sebebi Öğren** butonuyla öğrenebilir, haksız bulduğun bir cezaya **İtiraz Et** butonuyla itiraz edebilirsin.',
     ),
   );
   if (config.banner) container.addMediaGalleryComponents(bannerGallery(config.banner));
 
   return container
     .addSeparatorComponents(divider())
-    .addSectionComponents(row('Ceza Süresi', 'Süreli cezalarının ne zaman sona ereceğini öğren.', IDS.sure, 'Süreyi Öğren', ButtonStyle.Success))
+    .addSectionComponents(row('Ceza Süresi', 'Süreli cezalarının **ne zaman sona ereceğini** öğren.', IDS.sure, 'Süreyi Öğren', ButtonStyle.Success))
     .addSeparatorComponents(divider())
-    .addSectionComponents(row('Ceza Sebebi', 'Hangi sebeple cezalandırıldığını görüntüle.', IDS.sebep, 'Sebebi Öğren', ButtonStyle.Success))
+    .addSectionComponents(row('Ceza Sebebi', '**Hangi sebeple** cezalandırıldığını görüntüle.', IDS.sebep, 'Sebebi Öğren', ButtonStyle.Success))
     .addSeparatorComponents(divider())
     .addSectionComponents(
-      row('Cezaya İtiraz', 'Cezanın haksız olduğunu düşünüyorsan itiraz için destek talebi aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Danger),
+      row('Cezaya İtiraz', 'Cezanın haksız olduğunu düşünüyorsan itiraz için **destek talebi** aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Danger),
     );
 }
 
@@ -67,23 +67,23 @@ function jailPanel() {
     .addTextDisplayComponents(
       text(
         `## ${botName} Jail Bilgilendirme\n` +
-          "-# Jail'deyken bu kanal dışında sunucudaki hiçbir kanalı göremezsin. Süren dolunca jail kendiliğinden kalkar; kalan süreni **Süreyi Öğren** butonuyla öğrenebilirsin.",
+          "Jail'deyken bu kanal dışında sunucudaki hiçbir kanalı göremezsin. Süren dolunca Jail kendiliğinden kalkar; kalan süreni **Süreyi Öğren** butonuyla öğrenebilirsin.",
       ),
     )
     .addSeparatorComponents(divider())
     .addSectionComponents(
-      row('Jail Süresi', "Jail'inin ve varsa diğer aktif cezalarının ne zaman sona ereceğini öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
+      row('Jail Süresi', "Jail'inin ve varsa diğer aktif cezalarının **ne zaman sona ereceğini** öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
     );
 }
 
 // Liste uzunsa ilk MAX_LIST kayıt gösterilir, kalanı tek satırda belirtilir
-const overflowNote = (total) => (total > MAX_LIST ? `+${total - MAX_LIST} ceza daha var; hepsini /sicil komutuyla görebilirsin.` : null);
+const overflowNote = (total) => (total > MAX_LIST ? `**+${total - MAX_LIST} ceza daha var.** Hepsini **/sicil** komutuyla görebilirsin.` : null);
 
 // Bitiş bilgisi: süresi dolmuş ama kaldırma taraması henüz çalışmamış ceza "sona erecek" demez
 function endText(p) {
-  if (!p.expiresAt) return 'Süresiz, bir yetkili kaldırana kadar sürer.';
-  if (p.expiresAt <= Date.now()) return 'Süresi doldu, birazdan kaldırılacak.';
-  return `Bitiş: <t:${unix(p.expiresAt)}:F> (<t:${unix(p.expiresAt)}:R>)`;
+  if (!p.expiresAt) return '**Süresiz**, bir yetkili kaldırana kadar sürer.';
+  if (p.expiresAt <= Date.now()) return '**Süresi doldu**, birazdan kaldırılacak.';
+  return `**Bitiş:** <t:${unix(p.expiresAt)}:F> (<t:${unix(p.expiresAt)}:R>)`;
 }
 
 const NO_ACTIVE = () => alert('Şu an aktif bir cezan yok.', null, 'success');
@@ -92,7 +92,7 @@ const NO_ACTIVE = () => alert('Şu an aktif bir cezan yok.', null, 'success');
 function sureView(active) {
   const timed = active.filter((p) => p.type !== 'uyari');
   if (!timed.length) {
-    return active.length ? alert('Süreli bir cezan yok.', 'Uyarıların süresi olmaz, sicilinde kayıtlı kalır.', 'success') : NO_ACTIVE();
+    return active.length ? alert('Süreli bir cezan yok.', 'Uyarıların **süresi olmaz**, sicilinde kayıtlı kalır.', 'success') : NO_ACTIVE();
   }
   return page({
     title: 'Ceza Sürelerin',
@@ -107,19 +107,19 @@ function sebepView(active) {
   if (!active.length) return NO_ACTIVE();
   return page({
     title: 'Ceza Sebeplerin',
-    sub: 'Sunucuda aktif olan cezalarının hangi sebeple verildiğini burada görebilirsin. Cezayı haksız buluyorsan #cezalarım panelindeki **İtiraz Et** butonunu kullanabilirsin.',
+    sub: `Sunucuda aktif olan cezalarının hangi sebeple verildiğini burada görebilirsin. Cezayı haksız buluyorsan <#${config.channel}> kanalındaki panelden **İtiraz Et** butonunu kullanabilirsin.`,
     accent: colors.warning,
     blocks: [...active.slice(0, MAX_LIST).map((p) => `**${label(p)}**\n${quote(shorten(p.reason, MAX_REASON))}`), overflowNote(active.length)],
   });
 }
 
-const itirazNoneView = () => alert('İtiraz edebileceğin aktif bir cezan yok.');
+const itirazNoneView = () => alert('İtiraz edebileceğin aktif bir cezan yok.', 'İtiraz yalnızca **aktif** cezalar için yapılabilir.');
 
 // "Cezaya İtiraz": aktif cezalardan birini seçme menüsü (en fazla 25 ceza listelenir)
 function itirazPicker(active) {
   return page({
     title: 'Cezaya İtiraz Et',
-    sub: 'İtiraz etmek istediğin cezayı menüden seç. Ardından açılan formda sebebini yaz; yetkililer için sana özel bir destek talebi oluşturulur ve itirazın orada incelenir.',
+    sub: 'İtiraz etmek istediğin cezayı menüden seç. Ardından açılan formda sebebini yaz; sana özel bir destek talebi açılır ve itirazın yetkililer tarafından orada incelenir.',
   }).addActionRowComponents(
     new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
@@ -174,7 +174,7 @@ function itirazCard(p, sebep, karar) {
   const container = page({
     title: 'İtiraz Edilen Ceza',
     sub: karar
-      ? 'Bu itiraz bir yetkili tarafından incelendi ve karara bağlandı. Cezanın bilgileri, ceza sebebi ve üyenin itiraz sebebi aşağıda kayıtlı kalır.'
+      ? 'Bu itiraz bir yetkili tarafından incelendi ve karara bağlandı. Cezanın bilgileri, ceza sebebi ve üyenin itiraz sebebi bu mesajda kayıtlı kalır.'
       : 'Üye bir cezaya itiraz etti. Ceza bilgilerini ve iki sebebi inceleyip **İtirazı Onayla** ya da **İtirazı Reddet** butonuyla karar verebilirsin; onaylarsan ceza kaldırılır.',
     accent: karar ? (approved ? colors.success : colors.danger) : colors.warning,
     blocks: [
@@ -191,7 +191,7 @@ function itirazCard(p, sebep, karar) {
       karar
         ? fields([
             `**İtiraz <@${karar.by}> tarafından ${approved ? 'onaylandı' : 'reddedildi'}.**`,
-            approved ? hint('Ceza kaldırıldı ve sicilden silindi, ceza puanı düşürüldü.') : p.status === 'active' ? hint('Ceza sürüyor.') : null,
+            approved ? hint('Ceza **kaldırıldı** ve sicilden silindi, ceza puanı düşürüldü.') : p.status === 'active' ? hint('Ceza **sürmeye devam ediyor.**') : null,
           ])
         : null,
     ],

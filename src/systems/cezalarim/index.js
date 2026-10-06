@@ -71,7 +71,7 @@ function handleItirazSubmit(interaction) {
   });
 }
 
-// "Onayla, Cezayı Kaldır" / "Reddet": sadece ilgili ceza türünü kaldırma yetkisi olanlar karar verebilir
+// "İtirazı Onayla" / "İtirazı Reddet": sadece ilgili ceza türünü kaldırma yetkisi olanlar karar verebilir
 async function handleItirazKarar(interaction) {
   const rest = interaction.customId.slice(ui.IDS.itirazKarar.length + 1);
   const sep = rest.lastIndexOf(':');

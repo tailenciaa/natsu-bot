@@ -89,7 +89,7 @@ module.exports = ({ mock, ui, src }) => {
     { id: 'basvurular', title: 'Sicil: Başvurular', where: '/sicil, Başvurular sekmesi', visibility: 'public', kind: 'message', build: () => view({ tab: 'basvurular' }) },
     { id: 'degerlendirmeler', title: 'Sicil: Değerlendirmeler', where: '/sicil, Değerlendirmeler sekmesi', visibility: 'public', kind: 'message', build: () => view({ tab: 'puan' }) },
     { id: 'degerlendirmeler-bos', title: 'Sicil: Değerlendirmeler, boş', where: '/sicil, değerlendirme yok', visibility: 'public', kind: 'message', build: () => view({ tab: 'puan', ratings: [] }) },
-    { id: 'islem-sonucu', title: 'Sicil: işlem sonucu başlıkta', where: 'Ceza verildikten sonra güncellenen sicil', visibility: 'public', kind: 'message', build: () => view({ banner: '**Susturma verildi - Ceza #15**\n-# 3 gün sonra kendiliğinden kalkacak.' }) },
+    { id: 'islem-sonucu', title: 'Sicil: işlem sonucu başlıkta', where: 'Ceza verildikten sonra güncellenen sicil', visibility: 'public', kind: 'message', build: () => view({ banner: '**Susturma verildi - Ceza #15**\n3 gün sonra kendiliğinden kalkacak.' }) },
 
     { id: 'detay-aktif-sureli', title: 'Ceza detayı: aktif susturma (yetkili)', where: 'Sicil menüsünden ceza seçince', visibility: 'ephemeral', kind: 'message', build: () => detail(punishment({ extensions: [{ by: staff.id, at: Date.now(), added: mock.DAY }] })) },
     { id: 'detay-uyari', title: 'Ceza detayı: uyarı', where: 'Sicil menüsünden ceza seçince', visibility: 'ephemeral', kind: 'message', build: () => detail(punishment({ type: 'uyari', duration: null, expiresAt: null })) },

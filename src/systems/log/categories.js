@@ -8,21 +8,21 @@ module.exports = [
     label: 'Mesaj Logları',
     emoji: '📝',
     threadName: '📝・mesaj-logları',
-    description: 'Silinen ve düzenlenen mesajlar',
+    description: 'Silinen, toplu silinen ve düzenlenen mesajlar',
   },
   {
     key: 'ses',
     label: 'Ses Logları',
     emoji: '🔊',
     threadName: '🔊・ses-logları',
-    description: 'Ses kanalına giriş/çıkış/taşınma, susturma, sağırlaştırma, yayın ve kamera',
+    description: 'Ses kanalına giriş, çıkış ve taşınma; susturma, sağırlaştırma, yayın ve kamera',
   },
   {
     key: 'uye',
     label: 'Giriş / Çıkış Logları',
     emoji: '👋',
     threadName: '👋・giriş-çıkış',
-    description: 'Sunucuya katılan (hangi davetle geldiği) ve ayrılan üyeler',
+    description: 'Sunucuya katılan (hangi davetle geldiği) ve sunucudan ayrılan üyeler',
   },
   {
     key: 'isim',
@@ -36,7 +36,7 @@ module.exports = [
     label: 'Rol Logları',
     emoji: '🏷️',
     threadName: '🏷️・rol-logları',
-    description: 'Rol oluşturma, silme, düzenleme ve üyelere rol verilip alınması',
+    description: 'Rol oluşturma, silme, düzenleme ve üyelere rol verilmesi ya da alınması',
   },
   {
     key: 'kanal',
@@ -96,10 +96,10 @@ module.exports = [
   },
   {
     key: 'boost',
-    label: 'Boost Logları',
+    label: 'Takviye Logları',
     emoji: '💎',
     threadName: '💎・boost-logları',
-    description: 'Sunucu takviyesi başlama ve bitme',
+    description: 'Sunucu takviyesinin başlaması ve sona ermesi',
   },
   {
     key: 'bot',

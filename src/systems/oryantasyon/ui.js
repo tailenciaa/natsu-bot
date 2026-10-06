@@ -170,7 +170,7 @@ function levelText(app) {
 function missingRolesText(app) {
   const { missing } = plannedRoles(app);
   if (!missing.length) return null;
-  return `-# Not: ${missing.join(', ')} için henüz rol tanımlanmadı, yetki verilirken ${missing.length > 1 ? 'bu roller' : 'bu rol'} atlanacak.`;
+  return `Not: ${missing.join(', ')} için henüz rol tanımlanmadı, yetki verilirken ${missing.length > 1 ? 'bu roller' : 'bu rol'} atlanacak.`;
 }
 
 // Görüşme kanalının sohbetindeki oryantasyon paneli. Adımları oryantasyonu veren yetkili ilerletir,
@@ -246,7 +246,7 @@ function completedPanel(app, applicantUser) {
     'Oryantasyon Tamamlandı',
     'Oryantasyon tamamlandı ve başvuru sonuçlandı. Yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti bu mesajda yer alıyor.',
     [
-      `**Yeni Yetkili**\n<@${app.userId}> artık yetkili ekibinin bir parçası.\n-# Oryantasyonu <@${o.staffId}> verdi, #${pad(app.number)} numaralı başvuru sonuçlandı.`,
+      `**Yeni Yetkili**\n<@${app.userId}> artık yetkili ekibinin bir parçası.\nOryantasyonu <@${o.staffId}> verdi, #${pad(app.number)} numaralı başvuru sonuçlandı.`,
       `**Özet**\n${[`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
@@ -261,7 +261,7 @@ const cancelHeadline = (app) =>
     ? `<@${app.orientation.cancelledBy}>, <@${app.userId}> için verilen oryantasyonu iptal etti.`
     : `<@${app.userId}> için verilen oryantasyon otomatik olarak iptal edildi.`;
 const penaltyText = (app) =>
-  app.penaltyUntil ? `\n-# Başvuru cezası: <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamaz.` : '';
+  app.penaltyUntil ? `\nBaşvuru cezası: <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamaz.` : '';
 
 function cancelledPanel(app) {
   const o = app.orientation;
@@ -281,13 +281,13 @@ function presenceText(app) {
   if (o.applicantAwaySince) {
     lines.push(
       `**<@${app.userId}> kanaldan ayrıldı.** <t:${unix(o.applicantAwaySince + p.applicantGraceMinutes * MINUTE)}:R> dönmezse oryantasyon iptal edilecek.\n` +
-        `-# Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves} - ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
+        `Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves} - ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
     );
   }
   if (o.staffNeeded) {
     lines.push(
       `**Yetkili bekleniyor.** <@${o.staffId}> kanaldan ayrıldı ve geri dönmedi.\n` +
-        '-# Başvurular kanalındaki mesajdan başka bir yetkili oryantasyonu devralabilir.',
+        'Başvurular kanalındaki mesajdan başka bir yetkili oryantasyonu devralabilir.',
     );
   } else if (o.staffAwaySince && o.staffJoining) {
     lines.push(`**<@${o.staffId}> oryantasyonu devraldı, kanala gelmesi bekleniyor.**`);
@@ -350,7 +350,7 @@ function orientationResult(app) {
     'Oryantasyon Tamamlandı',
     'Bu başvurunun oryantasyonu tamamlandı ve görüşme kanalları başvurana kilitlendi. Yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti bu mesajda yer alıyor.',
     [
-      `**Yeni Yetkili - Başvuru #${pad(app.number)}**\n<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı.\n-# Oryantasyonu <@${o.staffId}> verdi.`,
+      `**Yeni Yetkili - Başvuru #${pad(app.number)}**\n<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı.\nOryantasyonu <@${o.staffId}> verdi.`,
       `**Özet**\n${[`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
@@ -362,17 +362,17 @@ function orientationResult(app) {
 function approvedDm(app, guildName, channelId) {
   const o = app.orientation;
   const blocks = [
-    `**Başvuru Durumu**\nTebrikler, son aşamaya geçtin: oryantasyon!\n-# #${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> onayladı. Oryantasyonunu <@${o.staffId}> verecek.`,
+    `**Başvuru Durumu**\nTebrikler, son aşamaya geçtin: oryantasyon!\n#${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> onayladı. Oryantasyonunu <@${o.staffId}> verecek.`,
   ];
   if (app.note) blocks.push(`**Not**\n${quote(app.note)}`);
   blocks.push(
     o.status === 'active'
-      ? `**Oryantasyon**\nOryantasyonun <#${o.channelId}> kanalında başladı.\n-# Adımlar kanalın sohbetindeki panelden ilerliyor.`
+      ? `**Oryantasyon**\nOryantasyonun <#${o.channelId}> kanalında başladı.\nAdımlar kanalın sohbetindeki panelden ilerliyor.`
       : '**Oryantasyon**\n' +
           (channelId
             ? `Oryantasyon için <#${channelId}> kanalına geç.\n`
             : 'Oryantasyon için görüşme kanallarından boş olanına geç.\n') +
-          `-# <@${o.staffId}> ile aynı kanala girdiğinde oryantasyon kendiliğinden başlar, bot kanalın sohbetine adım adım ilerleyen bir panel atar. Kanallar senin için açıldı.`,
+          `<@${o.staffId}> ile aynı kanala girdiğinde oryantasyon kendiliğinden başlar, bot kanalın sohbetine adım adım ilerleyen bir panel atar. Kanallar senin için açıldı.`,
   );
 
   return withFooter(
@@ -398,16 +398,16 @@ function staffDm(app, guildName, channelId, transferredBy, tookOver) {
 
   const voice = active
     ? `Oryantasyon <#${o.channelId}> kanalında sürüyor, kanala geç.\n` +
-      `-# Paneldeki butonları artık sen kullanabilirsin, kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edersin.`
+      `Paneldeki butonları artık sen kullanabilirsin, kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edersin.`
     : (channelId ? `<#${channelId}> kanalına geç.\n` : 'Görüşme kanallarından boş olanına geç.\n') +
-      '-# Başvuranla aynı kanala girdiğinde oryantasyon kendiliğinden başlar, panel kanalın sohbetine gelir. ' +
+      'Başvuranla aynı kanala girdiğinde oryantasyon kendiliğinden başlar, panel kanalın sohbetine gelir. ' +
       'Adımları sen ilerletirsin; başvuranın bildiği konuları **Biliyor, Atla** ile geçebilirsin.';
 
   const reason = tookOver
-    ? `-# <@${transferredBy}> kanaldan ayrıldığı için #${pad(app.number)} numaralı başvurunun oryantasyonunu devraldın.`
+    ? `<@${transferredBy}> kanaldan ayrıldığı için #${pad(app.number)} numaralı başvurunun oryantasyonunu devraldın.`
     : transferredBy
-      ? `-# <@${transferredBy}>, #${pad(app.number)} numaralı başvurunun oryantasyonunu sana aktardı.`
-      : `-# #${pad(app.number)} numaralı başvuruyu onayladın, başvurana da DM ile haber verildi.`;
+      ? `<@${transferredBy}>, #${pad(app.number)} numaralı başvurunun oryantasyonunu sana aktardı.`
+      : `#${pad(app.number)} numaralı başvuruyu onayladın, başvurana da DM ile haber verildi.`;
 
   return withFooter(
     withRow(
@@ -440,7 +440,7 @@ function completedDm(app, guildName) {
       '**Seni aramızda görmekten çok mutluyuz!**\n' +
         'Başvurudan oryantasyona kadar gösterdiğin ilgi için teşekkürler. İlk günlerde takıldığın her şeyi ' +
         `<@${o.staffId}> ya da diğer yetkililere sorabilirsin, kimse her şeyi ilk günden bilmez.\n` +
-        '-# Unutma: yetkili olmak bir ayrıcalık değil, bir sorumluluk.',
+        'Unutma: yetkili olmak bir ayrıcalık değil, bir sorumluluk.',
       `-# ${guildName} - <t:${unix(o.finishedAt)}:F>`,
     ],
     'success',
@@ -455,9 +455,9 @@ function cancelledDm(app, guildName) {
     'Başvurunun oryantasyonu sonlandırıldı. İptalin kim tarafından ve hangi sebeple yapıldığı, varsa yeniden başvuru yapabileceğin tarih aşağıda; sorularında yetkililere ulaşabilirsin.',
     [
       `**Başvuru Durumu**\n#${pad(app.number)} numaralı başvurunun oryantasyonu iptal edildi.\n` +
-        (o.cancelledBy ? `-# <@${o.cancelledBy}> oryantasyonu sonlandırdı.` : '-# Oryantasyon otomatik olarak sonlandırıldı.'),
+        (o.cancelledBy ? `<@${o.cancelledBy}> oryantasyonu sonlandırdı.` : 'Oryantasyon otomatik olarak sonlandırıldı.'),
       `**Sebep**\n${quote(o.cancelReason)}` +
-        (app.penaltyUntil ? `\n-# Bu yüzden <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamazsın.` : ''),
+        (app.penaltyUntil ? `\nBu yüzden <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamazsın.` : ''),
       `-# ${guildName} - <t:${unix(o.finishedAt)}:F>`,
     ],
     'danger',
@@ -478,7 +478,7 @@ function takeoverNotice(app, state) {
         'Oryantasyon sırasında yetkili kanaldan ayrılıp dönmezse bu mesaj başvurular kanalına düşer; oryantasyonu başka bir yetkili buradan devralabilir.',
         [
           `${heading}\n${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> oryantasyonun ortasında <#${o.channelId}> kanalında bekliyor.\n` +
-            `-# <@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
+            `<@${o.staffId}> kanaldan ayrıldı ve ${config.presence.staffGraceMinutes} dakika içinde dönmedi. ` +
             `Oryantasyon ${o.step + 1}/${config.steps.length} - ${step.title} adımında kaldı; devralan yetkili buradan devam eder.`,
         ],
         'warning',
@@ -502,7 +502,7 @@ function takeoverNotice(app, state) {
     return card(
       'Oryantasyon Devralındı',
       `Oryantasyonu başka bir yetkili devraldı ve kaldığı adımdan devam edecek. ${record}`,
-      [`${heading}\n**<@${o.staffId}> oryantasyonu devraldı.**\n-# ${from ? `<@${from}> ayrıldıktan sonra ` : ''}kalınan adımdan devam edilecek.`],
+      [`${heading}\n**<@${o.staffId}> oryantasyonu devraldı.**\n${from ? `<@${from}> ayrıldıktan sonra ` : ''}kalınan adımdan devam edilecek.`],
       'success',
     );
   }
@@ -535,30 +535,30 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
 
   const texts = {
     applicantLeft: toApplicant
-      ? ['Oryantasyondan Ayrıldın', `**Oryantasyonun sürerken <#${o.channelId}> kanalından ayrıldın.**\n-# ${at(o.applicantAwaySince, p.applicantGraceMinutes)} dönmezsen oryantasyonun iptal edilecek. ${leaves}`, 'warning', o.channelId]
-      : ['Başvuran Ayrıldı', `**<@${app.userId}> oryantasyon sırasında kanaldan ayrıldı.**\n-# ${at(o.applicantAwaySince, p.applicantGraceMinutes)} dönmezse oryantasyon otomatik iptal edilecek. Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves}`, 'warning'],
+      ? ['Oryantasyondan Ayrıldın', `**Oryantasyonun sürerken <#${o.channelId}> kanalından ayrıldın.**\n${at(o.applicantAwaySince, p.applicantGraceMinutes)} dönmezsen oryantasyonun iptal edilecek. ${leaves}`, 'warning', o.channelId]
+      : ['Başvuran Ayrıldı', `**<@${app.userId}> oryantasyon sırasında kanaldan ayrıldı.**\n${at(o.applicantAwaySince, p.applicantGraceMinutes)} dönmezse oryantasyon otomatik iptal edilecek. Ayrılma: ${o.applicantLeaves}/${p.maxApplicantLeaves}`, 'warning'],
     applicantBack: toApplicant
       ? ['Oryantasyon Devam Ediyor', '**Kanala geri döndün, oryantasyonun kaldığı yerden devam ediyor.**', 'success']
       : ['Başvuran Geri Döndü', `**<@${app.userId}> kanala geri döndü, oryantasyona devam edebilirsin.**`, 'success'],
     staffLeft: toApplicant
-      ? ['Yetkilin Ayrıldı', `**<@${o.staffId}> kanaldan ayrıldı, lütfen kanalda bekle.**\n-# ${at(o.staffAwaySince, p.staffGraceMinutes)} dönmezse başka bir yetkili oryantasyonunu devralacak.`, 'warning']
-      : ['Oryantasyondan Ayrıldın', `**<@${app.userId}> ile oryantasyon sürerken <#${o.channelId}> kanalından ayrıldın.**\n-# ${at(o.staffAwaySince, p.staffGraceMinutes)} dönmezsen oryantasyon başka yetkililere açılacak.`, 'warning', o.channelId],
+      ? ['Yetkilin Ayrıldı', `**<@${o.staffId}> kanaldan ayrıldı, lütfen kanalda bekle.**\n${at(o.staffAwaySince, p.staffGraceMinutes)} dönmezse başka bir yetkili oryantasyonunu devralacak.`, 'warning']
+      : ['Oryantasyondan Ayrıldın', `**<@${app.userId}> ile oryantasyon sürerken <#${o.channelId}> kanalından ayrıldın.**\n${at(o.staffAwaySince, p.staffGraceMinutes)} dönmezsen oryantasyon başka yetkililere açılacak.`, 'warning', o.channelId],
     staffBack: toApplicant
       ? ['Yetkilin Geri Döndü', `**<@${o.staffId}> kanala geri döndü, oryantasyonun devam ediyor.**`, 'success']
       : ['Oryantasyon Devam Ediyor', '**Kanala geri döndün, oryantasyona kaldığın yerden devam edebilirsin.**', 'success'],
     staffJoined: toApplicant ? ['Yetkilin Geldi', `**<@${o.staffId}> kanala geldi, oryantasyonun devam ediyor.**`, 'success'] : null,
     staffNeeded: toApplicant
-      ? ['Başka Yetkili Çağrıldı', `**<@${o.staffId}> geri dönmedi, oryantasyonun için başka bir yetkili çağrıldı.**\n-# Kanalda beklemeye devam et, bir yetkili devraldığında haber vereceğiz.`, 'warning']
+      ? ['Başka Yetkili Çağrıldı', `**<@${o.staffId}> geri dönmedi, oryantasyonun için başka bir yetkili çağrıldı.**\nKanalda beklemeye devam et, bir yetkili devraldığında haber vereceğiz.`, 'warning']
       : null,
     takenOver: toApplicant
-      ? ['Oryantasyonun Devralındı', `**<@${o.staffId}> oryantasyonunu devraldı.**\n-# Birazdan kanala gelecek, kaldığın adımdan devam edeceksiniz.`, 'primary']
+      ? ['Oryantasyonun Devralındı', `**<@${o.staffId}> oryantasyonunu devraldı.**\nBirazdan kanala gelecek, kaldığın adımdan devam edeceksiniz.`, 'primary']
       : null,
     staffWaiting: toApplicant
-      ? ['Yetkilin Seni Bekliyor', `**<@${o.staffId}> oryantasyon için <#${channelId}> kanalına girdi, seni bekliyor.**\n-# Kanala girdiğinde oryantasyon kendiliğinden başlayacak.`, 'primary', channelId]
+      ? ['Yetkilin Seni Bekliyor', `**<@${o.staffId}> oryantasyon için <#${channelId}> kanalına girdi, seni bekliyor.**\nKanala girdiğinde oryantasyon kendiliğinden başlayacak.`, 'primary', channelId]
       : null,
     autoCancelled: toApplicant
       ? null
-      : ['Oryantasyon İptal Edildi', `**<@${app.userId}> için verdiğin oryantasyon otomatik olarak iptal edildi.**\n-# ${o.cancelReason}`, 'danger'],
+      : ['Oryantasyon İptal Edildi', `**<@${app.userId}> için verdiğin oryantasyon otomatik olarak iptal edildi.**\n${o.cancelReason}`, 'danger'],
   };
 
   const entry = texts[kind];
@@ -591,7 +591,7 @@ function transferPicker(app) {
       'Oryantasyonu Aktar',
       'Oryantasyonu başka bir yetkiliye devretmek için menüden birini seç. Yeni yetkiliye DM ile haber verilir ve oryantasyon kalınan adımdan kesintisiz devam eder.',
       [
-        `**Yeni Yetkili**\nOryantasyonu kime aktarmak istiyorsun?\n-# Sadece ${[app.reviewerRoleId, ...basvuruConfig.roles.orientation].filter(Boolean).map((id) => `<@&${id}>`).join(', ')} rolündekiler seçilebilir.`,
+        `**Yeni Yetkili**\nOryantasyonu kime aktarmak istiyorsun?\nSadece ${[app.reviewerRoleId, ...basvuruConfig.roles.orientation].filter(Boolean).map((id) => `<@&${id}>`).join(', ')} rolündekiler seçilebilir.`,
       ],
       'primary',
     ),
@@ -609,7 +609,7 @@ function transferNotice(app, fromId) {
     'Oryantasyonu veren yetkili değişti. Yeni yetkili panelden oryantasyonu kalınan adımdan sürdürür; başvuran kanalda beklemeye devam edebilir.',
     [
       `**<@${o.staffId}>, oryantasyon sana aktarıldı.**\n` +
-        `-# <@${fromId}> aktardı; kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edebilirsin.`,
+        `<@${fromId}> aktardı; kalınan adımdan (${o.step + 1}/${config.steps.length}) devam edebilirsin.`,
     ],
     'primary',
   );

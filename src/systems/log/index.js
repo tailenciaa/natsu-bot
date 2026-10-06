@@ -1,4 +1,4 @@
-// Log sistemi: sunucudaki ve botteki olayların (mesaj, ses, üye, moderasyon, sunucu, boost) kaydı ana log
+// Log sistemi: sunucudaki ve bottaki olayların (mesaj, ses, üye, moderasyon, sunucu, boost) kaydı ana log
 // kanalının altındaki kategori alt başlıklarına mesaj olarak atılır. Log paneli kanalındaki menüden bir kategori
 // seçilince o alt başlığa giden bağlantı gelir; kanala girip aramaya gerek kalmaz.
 // Dosyalar: categories.js (kategori listesi), engine.js (alt başlık açma ve gönderme), events/ (olay dinleyicileri).
@@ -95,13 +95,13 @@ async function handleSetupButton(interaction) {
 
   if (action === 'setup') {
     await engine.ensureAllThreads(client);
-    note = 'Eksik alt başlıklar kuruldu.';
+    note = '**Eksik alt başlıklar** kuruldu.';
   } else if (action === 'resetyes') {
     for (const { key } of categories) await engine.resetThread(client, key).catch((err) => console.error(`[log] "${key}" sıfırlanamadı:`, err.message));
-    note = 'Tüm alt başlıklar silinip yeniden açıldı.';
+    note = '**Tüm alt başlıklar** silinip yeniden açıldı.';
   } else if (action === 'panel') {
     await syncLogPanel(client, true);
-    note = 'Panel log paneli kanalına gönderildi.';
+    note = '**Panel**, log paneli kanalına gönderildi.';
   }
 
   return interaction.editReply({ components: [await setupView(guild, note)], flags: core.CV2 });
@@ -116,7 +116,7 @@ async function handleSelect(interaction) {
   const thread = await engine.ensureThread(interaction.client, category.key);
   if (!thread) {
     return interaction.editReply({
-      components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun ana log kanalında alt başlık açma yetkisini kontrol et.', 'danger')],
+      components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun ana log kanalında **alt başlık açma yetkisi** olduğundan emin ol.', 'danger')],
       flags: core.CV2,
     });
   }
@@ -127,7 +127,7 @@ async function handleSelect(interaction) {
 async function handleDetail(interaction) {
   const meta = store.getDetail(interaction.message.id);
   if (!meta) {
-    return replyError(interaction, 'Bu logun detayı artık saklanmıyor.', 'Detaylar sadece en son kayıtlar için tutulur.');
+    return replyError(interaction, 'Bu logun detayı artık saklanmıyor.', 'Detaylar sadece **en son 600 kayıt** için tutulur.');
   }
   const category = categories.find((c) => c.key === meta.category);
   await interaction.deferReply({ flags: core.EPHEMERAL });

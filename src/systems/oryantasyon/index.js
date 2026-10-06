@@ -406,7 +406,7 @@ async function begin(interaction, app) {
 
   await respond(
     interaction,
-    core.notice(`**Başvuru onaylandı, oryantasyonu sen vereceksin.**\n${lines.map((l) => `-# ${l}`).join('\n')}`, access && applicantSent ? 'success' : 'warning'),
+    core.notice(`**Başvuru onaylandı, oryantasyonu sen vereceksin.**\n${lines.map((l) => `${l}`).join('\n')}`, access && applicantSent ? 'success' : 'warning'),
   );
 }
 
@@ -556,7 +556,7 @@ async function handleCancel(interaction, app) {
     sent ? 'Başvurana sebep DM ile iletildi.' : "Başvuranın DM'si kapalı, sebebi kendisine ayrıca iletmen gerekiyor.",
     `Görüşme kanalları başvurana kilitlendi${kicked ? `, ${basvuruConfig.disconnectDelaySeconds} saniye içinde kanaldan çıkarılacak` : ''}.`,
   ];
-  await followUp(interaction, core.notice(`**Oryantasyon iptal edildi.**\n${notes.map((n) => `-# ${n}`).join('\n')}`, sent ? 'success' : 'warning'));
+  await followUp(interaction, core.notice(`**Oryantasyon iptal edildi.**\n${notes.map((n) => `${n}`).join('\n')}`, sent ? 'success' : 'warning'));
 }
 
 // "Yetki Ver": seviye ve alan rollerini verir, oryantasyonu tamamlar, başvurana tebrik DM'i gönderir

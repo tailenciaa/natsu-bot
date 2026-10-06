@@ -23,7 +23,7 @@ module.exports = {
   panel: {
     title: `${botName} Destek Sistemi`,
     buttonLabel: 'Talep Oluştur',
-    footer: 'Gereksiz veya asılsız açılan talepler yaptırım uygulanmasına neden olabilir.',
+    footer: '**Gereksiz veya asılsız** açılan talepler **yaptırım** uygulanmasına neden olabilir.',
   },
 
   // Talep kapatılırken formda seçilen sebepler
