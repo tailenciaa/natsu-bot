@@ -27,13 +27,13 @@ function weeklyAnnounce(guild, results, roleId) {
   const winner = results[0] ?? null;
   const roleText = roleId ? `<@&${roleId}>` : 'Haftanın Saygın Üyesi';
   return page({
-    title: 'Haftanın Saygın Üyesi',
+    title: 'Haftanın En Saygın Kişisi',
     thumbnail: guild?.iconURL({ size: 256 }),
     blocks: [
-      'Geçen hafta **en çok saygınlık kazanan üyeyi** açıklıyoruz; **haftanın en saygın üyesi** bu ödülü kazanır ve rolünü **bir sonraki pazartesiye kadar** taşır.',
       winner
-        ? `**Tebrikler <@${winner.userId}>!**\nBu hafta **${winner.value} saygınlık** toplayarak **haftanın en saygın üyesi** oldun ve ${roleText} rolünü kazandın.`
+        ? fields([field('Kişi', `<@${winner.userId}>`), field('Toplam Saygınlık', `${winner.value}`), field('Ödül', `${roleText} rolü`)])
         : '**Henüz Kazanan Yok**\nGeçen hafta kimse saygınlık kazanmadı.',
+      'Geçen hafta **en çok saygınlık kazanan üyeyi** açıklıyoruz; **haftanın en saygın üyesi** bu ödülü kazanır ve rolünü **bir sonraki pazartesiye kadar** taşır.',
     ],
   });
 }
