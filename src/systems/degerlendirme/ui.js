@@ -246,7 +246,7 @@ function replyModal(rating) {
 function replyDm(rating, guildName) {
   return page({
     title: 'Değerlendirmene Yorum Geldi',
-    sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye bir yorum ekledi; yetkilinin yazdığı yorumu ve hangi hizmet için verdiğin puanı aşağıda görebilirsin.',
+    sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye **bir yorum ekledi**; yetkilinin yazdığı yorumu ve hangi hizmet için verdiğin puanı aşağıda görebilirsin.',
     accent: colors.success,
     blocks: [
       `**Yorum Bilgileri**\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
@@ -380,8 +380,8 @@ function reviewDm(rating, guildName) {
   return page({
     title: approved ? 'İtirazın Kabul Edildi' : 'İtirazın Reddedildi',
     sub: approved
-      ? 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve haklı bulundu; ilgili değerlendirme artık sicilinde yer almıyor ve puan ortalamanı etkilemiyor.'
-      : 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve reddedildi; ilgili değerlendirme sicilinde yer almaya devam ediyor ve puan ortalamana dahil ediliyor.',
+      ? 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve **haklı bulundu**; ilgili değerlendirme artık sicilinde yer almıyor ve puan ortalamanı etkilemiyor.'
+      : 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve **reddedildi**; ilgili değerlendirme sicilinde yer almaya devam ediyor ve puan ortalamana dahil ediliyor.',
     accent: approved ? colors.success : colors.danger,
     blocks: [
       approved
