@@ -145,7 +145,7 @@ function header(user, tab, hasItems) {
   return new SectionBuilder()
     .addTextDisplayComponents(
       text(
-        `## Kullanıcı Sicili\n-# <@${user.id}> kullanıcısının ${HEADINGS[tab]} buradan ulaşabilirsin. Bölümler arasında butonlarla geçiş yapabilirsin${hasItems ? '; listeden bir kaydın ayrıntılarını da açabilirsin' : '; bu bölümde henüz gösterilecek bir kayıt yok'}.`,
+        `## Kullanıcı Sicili\n<@${user.id}> kullanıcısının ${HEADINGS[tab]} buradan ulaşabilirsin. Bölümler arasında **butonlarla geçiş** yapabilirsin${hasItems ? '; listeden bir kaydın ayrıntılarını da açabilirsin' : '; bu bölümde henüz gösterilecek bir kayıt yok'}.`,
       ),
     )
     .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 })));
