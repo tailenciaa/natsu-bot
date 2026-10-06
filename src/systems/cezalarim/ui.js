@@ -96,7 +96,7 @@ function sureView(active) {
   }
   return page({
     title: 'Ceza Sürelerin',
-    sub: 'Sunucuda aktif olan cezalarının ne zaman sona ereceğini burada görebilirsin. Süresiz verilen cezalar bir yetkili kaldırana kadar sürer.',
+    sub: 'Sunucuda aktif olan cezalarının **ne zaman sona ereceğini** burada görebilirsin. Süresiz verilen cezalar bir yetkili kaldırana kadar sürer.',
     accent: colors.warning,
     blocks: [...timed.slice(0, MAX_LIST).map((p) => `**${label(p)}**\n${endText(p)}`), overflowNote(timed.length)],
   });
@@ -119,7 +119,7 @@ const itirazNoneView = () => alert('İtiraz edebileceğin aktif bir cezan yok.',
 function itirazPicker(active) {
   return page({
     title: 'Cezaya İtiraz Et',
-    sub: 'İtiraz etmek istediğin cezayı menüden seç. Ardından açılan formda sebebini yaz; sana özel bir destek talebi açılır ve itirazın yetkililer tarafından orada incelenir.',
+    sub: '**İtiraz etmek istediğin cezayı menüden seç.** Ardından açılan formda sebebini yaz; sana özel bir destek talebi açılır ve itirazın yetkililer tarafından orada incelenir.',
     blocks: ['**Ceza Seçimi**\nİtiraz etmek istediğin **aktif cezayı** menüden seç.'],
   }).addActionRowComponents(
     new ActionRowBuilder().addComponents(
@@ -175,7 +175,7 @@ function itirazCard(p, sebep, karar) {
   const container = page({
     title: 'İtiraz Edilen Ceza',
     sub: karar
-      ? 'Bu itiraz bir yetkili tarafından incelendi ve karara bağlandı. Cezanın bilgileri, ceza sebebi ve üyenin itiraz sebebi bu mesajda kayıtlı kalır.'
+      ? 'Bu itiraz **bir yetkili tarafından incelendi ve karara bağlandı**. Cezanın bilgileri, ceza sebebi ve üyenin itiraz sebebi bu mesajda kayıtlı kalır.'
       : 'Üye bir cezaya itiraz etti. Ceza bilgilerini ve iki sebebi inceleyip **İtirazı Onayla** ya da **İtirazı Reddet** butonuyla karar verebilirsin; onaylarsan ceza kaldırılır.',
     accent: karar ? (approved ? colors.success : colors.danger) : colors.warning,
     blocks: [
