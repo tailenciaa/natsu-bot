@@ -77,7 +77,7 @@ function ticketPanel(ticket) {
   let status;
   let color;
   if (ticket.closedBy) {
-    sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi talebin kapatıldığı ayrı mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir.';
+    sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir.';
     status = '**Talep kapatıldı.**\nAlt başlık kilitlendi ve arşivlendi.';
     color = colors.danger;
   } else if (ticket.claimedBy) {

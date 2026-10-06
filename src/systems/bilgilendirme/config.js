@@ -31,9 +31,9 @@ module.exports = {
         {
           "heading": "Hedefimiz",
           "items": [
-            "Herkesin kendini güvende hissettiği, **kavgasız ve toksiksiz** bir ortam",
-            "Sorun yaşayan kişinin hızlıca çözüm bulabildiği bir **destek ekibi**",
-            "Aktif üyenin görüldüğü ve **ödüllendirildiği** bir topluluk"
+            "Herkesin kendini güvende hissettiği, **kavgasız ve toksiksiz** bir ortam.",
+            "Sorun yaşayan kişinin hızlıca çözüm bulabildiği bir **destek ekibi**.",
+            "Aktif üyenin görüldüğü ve **ödüllendirildiği** bir topluluk."
           ]
         },
         {
@@ -123,7 +123,7 @@ module.exports = {
           "heading": "Görev Rolleri",
           "items": [
             "<@&1544337671340433569> <@&1553133497781325954>: **Destek taleplerini** üstlenir ve sorunları çözer.",
-            "<@&1554237787421548704> <@&1554239996645613638>: Destek talepleriyle ilgilenir.",
+            "<@&1554237787421548704> <@&1554239996645613638>: **Destek talepleriyle** ilgilenir.",
             "<@&1554239999619375274> <@&1554239998214152222>: **Sesli kanalların** düzenini sağlar.",
             "<@&1554239997559705720> <@&1554240000177078322>: **Sohbet kanallarının** düzenini sağlar.",
             "<@&1554240000529539083> <@&1554239995412488304>: **Etkinlikleri** planlar ve yönetir.",
@@ -272,14 +272,14 @@ module.exports = {
         {
           "heading": "Ayrıcalıklar",
           "items": [
-            "Çekiliş ve etkinliklerde **önceliklisin**",
-            "Özel rolünle diğer üyelerden **üstte, ayrı grupta** görünürsün",
-            "**Kendine özel rol** oluşturursun (adı, rengi ve emojisi senin)",
-            "Sunucuya **kendi emojini ve çıkartmanı** eklersin",
-            "Sunucudaki **takma adını** değiştirirsin",
-            "Dosya ve bağlantı gönderirsin",
-            "Başka sunucuların emoji ve çıkartmalarını kullanırsın",
-            "Sesli kanallarda ses panelini kullanırsın"
+            "Çekiliş ve etkinliklerde **önceliklisin**.",
+            "Özel rolünle diğer üyelerden **üstte, ayrı grupta** görünürsün.",
+            "**Kendine özel rol** oluşturabilirsin (adı, rengi ve emojisi senin).",
+            "Sunucuya **kendi emojini ve çıkartmanı** ekleyebilirsin.",
+            "Sunucudaki **takma adını** değiştirebilirsin.",
+            "**Dosya ve bağlantı** gönderebilirsin.",
+            "Başka sunucuların **emoji ve çıkartmalarını** kullanabilirsin.",
+            "Sesli kanallarda **ses panelini** kullanabilirsin."
           ]
         },
         {

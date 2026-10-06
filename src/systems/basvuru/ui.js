@@ -251,7 +251,7 @@ function resultDm(app, guildName, reapplyAt) {
       (reapplyAt ? ` **<t:${unix(reapplyAt)}:D>** tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
   ];
   if (app.note) blocks.push(`**Sebep**\n${quote(app.note)}`);
-  blocks.push(`${guildName} - <t:${unix(app.reviewedAt)}:F>`);
+  blocks.push(`-# ${guildName} - <t:${unix(app.reviewedAt)}:F>`);
 
   return card(
     'Başvurun Sonuçlandı',

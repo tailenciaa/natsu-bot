@@ -15,21 +15,21 @@ function blocks() {
   const late = perkLines.filter((p) => p.level > 25).map((p) => p.line).join('\n');
   return [
     '**Sesli Kanallar**\n' +
-      `Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin. Sana ait bir oda için <#${c.createRoom}> kanalına gir, odanı nasıl yöneteceğin <#${c.roomGuide}> kanalında anlatılıyor. Kalıcı odalar için <#${c.permanentRooms}> kanalına bakabilirsin.`,
+      `Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin. Sana ait bir oda için <#${c.createRoom}> kanalına gir, odanı nasıl yöneteceğin <#${c.roomGuide}> kanalında anlatılıyor. **Kalıcı odalar** için <#${c.permanentRooms}> kanalına bakabilirsin.`,
     '**Ses Seviyesi**\n' +
-      `Sesli kanalda geçen her dakika ${seviye.voice.xpPerMinute} XP kazandırır ve mesaj seviyenden ayrı birikir. Her 5 seviyede yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
+      `Sesli kanalda geçen her dakika **${seviye.voice.xpPerMinute} XP** kazandırır ve mesaj seviyenden **ayrı birikir**. Her **5 seviyede** yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
     `**Ses Rolleri**\n${early}`,
     `**Üst Seviye Ses Rolleri**\n${late}\nAradaki seviyelerde (35, 45, 55...) sadece rolünü kazanırsın.`,
     '**Yayın**\n' +
-      `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından yayın yetkisini alabilirsin, 15. seviye ses rolü de yayın hakkı verir.`,
+      `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından **yayın yetkisini** alabilirsin, **15. seviye** ses rolü de yayın hakkı verir.`,
     '**Haftanın Ses Aktifleri**\n' +
-      `Her pazartesi geçen haftanın en çok seste kalan üyesi <#${c.weekly}> kanalında ilan edilir ve <@&${config.roles.weeklyVoice}> rolünü alır.`,
+      `Her pazartesi geçen haftanın **en çok seste kalan üyesi** <#${c.weekly}> kanalında ilan edilir ve <@&${config.roles.weeklyVoice}> rolünü alır.`,
     '**Sesli Kanal Kuralları**\n' +
-      'Troll dahil rahatsızlık veren her davranış ve küfür yasaktır.\n' +
-      'Bas açıp bağırmak, mikrofonla ortamı domine etmek yasaktır.\n' +
-      'Müzik botlarını ve ses panelini troll amaçlı kullanmak yasaktır.\n' +
-      'Özel odalarda kuralları çiğneyen isimler kullanmak ve sürekli gir-çık yapmak yasaktır.\n' +
-      'Yayında gösterdiğin her şeyde de bu kurallar geçerlidir.\n' +
+      '**Troll** dahil rahatsızlık veren her davranış ve **küfür** yasaktır.\n' +
+      '**Bas açıp bağırmak**, mikrofonla ortamı domine etmek yasaktır.\n' +
+      'Müzik botlarını ve ses panelini **troll amaçlı** kullanmak yasaktır.\n' +
+      'Özel odalarda **kuralları çiğneyen isimler** kullanmak ve **sürekli gir-çık** yapmak yasaktır.\n' +
+      'Yayında gösterdiğin her şeyde de **bu kurallar geçerlidir**.\n' +
       `Sorun yaşarsan <#${c.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.`,
   ];
 }
