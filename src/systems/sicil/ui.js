@@ -312,7 +312,7 @@ function punishmentDetail(p, messageId, canEdit, banner) {
   container
     .addTextDisplayComponents(
       text(
-        `## Ceza #${p.number} - ${TYPES[p.type].label}\n-# Cezanın kim tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu burada görebilirsin. Yetkin varsa süre ekleyebilir, cezayı kaldırabilir ya da sicilden silebilirsin.`,
+        `## Ceza #${p.number} - ${TYPES[p.type].label}\nCezanın kim tarafından, ne zaman ve hangi sebeple verildiğini, süresini ve şu anki durumunu burada görebilirsin. Yetkin varsa **süre ekleyebilir**, **cezayı kaldırabilir** ya da **sicilden silebilirsin**.`,
       ),
     )
     .addSeparatorComponents(divider())
