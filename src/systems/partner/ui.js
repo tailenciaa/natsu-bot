@@ -615,7 +615,7 @@ function renewalReviewDm(entry) {
     .addTextDisplayComponents(
       head(
         `Sunucu ${serverLabel(entry)}`,
-        'Teklifi kabul ettin. Partner metnini inceleyip olduğu gibi onaylayabilir, istersen düzenleyebilir ya da bir sebep belirterek teklifi iptal edebilirsin.',
+        '**Teklifi kabul ettin.** Partner metnini inceleyip olduğu gibi onaylayabilir, istersen düzenleyebilir ya da bir sebep belirterek teklifi iptal edebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -681,7 +681,7 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   const container = new ContainerBuilder().setAccentColor(colors.success).addTextDisplayComponents(
     head(
       'Partner Metinleri',
-      'Teklif onaylandı. Karşı sunucunun paylaşılan metni ile bizim sunucumuzu tanıtan metin bu mesajda yer alıyor; butonlarla paylaşılan mesaja doğrudan gidebilirsin.',
+      '**Teklif onaylandı.** Karşı sunucunun paylaşılan metni ile bizim sunucumuzu tanıtan metin bu mesajda yer alıyor; butonlarla paylaşılan mesaja doğrudan gidebilirsin.',
     ),
   );
 
@@ -740,7 +740,7 @@ function partnerPanel(entry, guildName) {
     .addTextDisplayComponents(
       head(
         `${guildName} Partner Paneli`,
-        'Sunucun artık güvenilir partnerlerimiz arasında. Bu panelden müsaitlik durumunu belirleyebilir ve istediğin zaman bizimle yeni bir partnerlik teklifinde bulunabilirsin; panel sadece sunucunun partner yetkililerine özeldir.',
+        'Sunucun artık **güvenilir partnerlerimiz arasında**. Bu panelden müsaitlik durumunu belirleyebilir ve istediğin zaman bizimle yeni bir partnerlik teklifinde bulunabilirsin; panel sadece sunucunun partner yetkililerine özeldir.',
       ),
     )
     .addSeparatorComponents(divider())
