@@ -185,6 +185,12 @@ async function handleTable(interaction) {
   return respond(interaction, ui.table(interaction.guild, ranking), { ephemeral: false });
 }
 
+// /saygi-onizleme: bu haftanın şu ana kadarki durumuna göre duyurunun örneğini sadece komutu kullanana gösterir
+async function handlePreview(interaction) {
+  const results = topUsers(interaction.guild, store.weekTotals(weekKey()));
+  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId));
+}
+
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
@@ -195,8 +201,11 @@ function handleReady(client) {
 module.exports = {
   name: 'saygi',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { 'saygi-ver': 'Herkes', 'saygi-siralama': 'Herkes' } },
-  slash: { 'saygi-ver': handleGive, 'saygi-siralama': handleTable },
+  help: {
+    category: ['siralama', 'Sıralama'],
+    access: { 'saygi-ver': 'Herkes', 'saygi-siralama': 'Herkes', 'saygi-onizleme': 'Yöneticiler' },
+  },
+  slash: { 'saygi-ver': handleGive, 'saygi-siralama': handleTable, 'saygi-onizleme': handlePreview },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.MessageCreate]: handleMessage,
