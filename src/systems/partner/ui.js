@@ -506,7 +506,7 @@ function trustedDetail(entry) {
     .addTextDisplayComponents(
       head(
         `Sunucu ${serverLabel(entry)}`,
-        'Seçtiğin güvenilir partner sunucusunun kayıt bilgileri ve paylaşılan tanıtım metni burada yer alıyor. Yetkiliysen butonlarla bu kayıt üzerinde işlem yapabilirsin.',
+        'Seçtiğin güvenilir partner sunucusunun kayıt bilgileri ve paylaşılan tanıtım metni burada yer alıyor. Yetkiliysen butonlarla **bu kayıt üzerinde işlem yapabilirsin**.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -554,7 +554,7 @@ function staffSelect(trustedId, members, statusOf) {
     .addTextDisplayComponents(
       head(
         'Yetkili Seç',
-        'Teklifte bulunma sürecini yürütecek partner yetkilisini seçmelisin. Seçilen yetkiliye DM gider; partner metnini inceleyip onaylaması ya da düzenlemesi istenir.',
+        'Teklifte bulunma sürecini yürütecek **partner yetkilisini seçmelisin**. Seçilen yetkiliye DM gider; partner metnini inceleyip onaylaması ya da düzenlemesi istenir.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -593,7 +593,7 @@ function assignedOfferDm(entry, startedBy) {
     .addTextDisplayComponents(
       head(
         'Partner Yenileme Teklifi',
-        'Bir yetkili, güvenilir partner kaydındaki metnin yenilenmesi için seni atadı. Kabul edersen metni inceleyip onaylayabilir, düzenleyebilir ya da teklifi iptal edebilirsin.',
+        'Bir yetkili, güvenilir partner kaydındaki metnin yenilenmesi için **seni atadı**. Kabul edersen metni inceleyip onaylayabilir, düzenleyebilir ya da teklifi iptal edebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
