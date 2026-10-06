@@ -225,15 +225,9 @@ module.exports = {
         {
           "heading": "Haftanın aktifleri",
           "text": "Her pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
-        }
-      ],
-      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını, hangi komutların olduğunu ve haftalık ödüllerin nasıl kazanıldığını anlatıyoruz."
-    },
-    {
-      "title": "Metin Seviye Rolleri",
-      "sub": "Sohbet ederek seviye atladıkça kazanacağın Metin Seviye rolleri ve bu rollerin sana sağladığı ayrıcalıkların tam listesi aşağıda yer alıyor.",
-      "blocks": [
+        },
         {
+          "heading": "Metin Seviye Rolleri",
           "items": [
             "<@&1556402675904544798>: Diğer üyelerden **ayrı bir renk ve simgeyle** görünürsün.",
             "<@&1556402675673862286>: Sunucudaki **takma adını** değiştirebilirsin.",
@@ -251,15 +245,7 @@ module.exports = {
           ]
         },
         {
-          "text": "**Aradaki seviyelerde** (35, 45, 55, 65, 75, 85, 95) sadece rolünü kazanırsın.\nSeviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
-        }
-      ]
-    },
-    {
-      "title": "Ses Seviye Rolleri",
-      "sub": "Sesli kanallarda vakit geçirdikçe kazanacağın Ses Seviye rolleri ve bu rollerin sana sağladığı ayrıcalıkların tam listesi aşağıda yer alıyor.",
-      "blocks": [
-        {
+          "heading": "Ses Seviye Rolleri",
           "items": [
             "<@&1556402677863424104>: Sesli kanallarda diğer üyelerden **ayrı renkte** görünürsün.",
             "<@&1556402678597156945>: **Ses panelini (soundboard)** kullanabilirsin.",
@@ -279,34 +265,8 @@ module.exports = {
         {
           "text": "**Aradaki seviyelerde** (35, 45, 55, 65, 75, 85, 95) sadece rolünü kazanırsın.\nSeviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
         }
-      ]
-    },
-    {
-      "title": "Booster Ayrıcalıkları",
-      "sub": "Sunucuyu takviye (boost) ederek bize destek olan üyelerin kazandığı ayrıcalıkları, bunları nasıl kullanabileceklerini ve sunucu etiketinin ne işe yaradığını anlatıyoruz.",
-      "blocks": [
-        {
-          "heading": "Ayrıcalıklar",
-          "items": [
-            "Çekiliş ve etkinliklerde **önceliklisin**.",
-            "Özel rolünle diğer üyelerden **üstte, ayrı grupta** görünürsün.",
-            "**Kendine özel rol** oluşturabilirsin (adı, rengi ve emojisi senin).",
-            "Sunucuya **kendi emojini ve çıkartmanı** ekleyebilirsin.",
-            "Sunucudaki **takma adını** değiştirebilirsin.",
-            "**Dosya ve bağlantı** gönderebilirsin.",
-            "Başka sunucuların **emoji ve çıkartmalarını** kullanabilirsin.",
-            "Sesli kanallarda **ses panelini** kullanabilirsin."
-          ]
-        },
-        {
-          "heading": "Nasıl kullanılır?",
-          "text": "<#1538534459836473366> kanalındaki **Booster İşlemleri** panelinden butonlarla yaparsın. Takviye edenlere <#1538534176276619264> kanalında teşekkür edilir. **Takviyen bitince** isim ve rol avantajları geri alınır."
-        },
-        {
-          "heading": "Sunucu etiketi",
-          "text": "Kazuki etiketini profilinde gösterirsen <@&1554403288424644738> rolünü alırsın ve <#1538944779298275368> kanalında teşekkür edilir."
-        }
-      ]
+      ],
+      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını, hangi komutların olduğunu ve **her seviyede kazanacağın metin ile ses rollerinin tam listesini** anlatıyoruz."
     },
     {
       "title": "Sesli Kanallar ve Özel Oda",
