@@ -156,10 +156,8 @@ module.exports = {
             "<@&1556403485769994370>: Kendine özel bir **rol** açtırabilirsin (destek talebiyle).",
             "<@&1556403486499938325>: **Ses yetkilisi** adaylığı için değerlendirilirsin.",
             "<@&1556403486713974805>: Ses seviyesinin **zirvesi**, sunucunun en aktif seslilerinden birisin."
-          ]
-        },
-        {
-          "text": "**Aradaki seviyelerde** (35, 45, 55, 65, 75, 85, 95) sadece rolünü kazanırsın.\nSeviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
+          ],
+          "note": "**Aradaki seviyelerde** (35, 45, 55, 65, 75, 85, 95) sadece rolünü kazanırsın. Seviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
         }
       ],
       "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını, hangi komutların olduğunu ve **her seviyede kazanacağın metin ile ses rollerinin tam listesini** anlatıyoruz."
