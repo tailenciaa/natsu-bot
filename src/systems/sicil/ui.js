@@ -213,7 +213,7 @@ function sicil(view) {
   // Genel'de listenin başlığı var (istatistiklerden ayrılsın diye); diğer bölümlerde bölümün adı zaten üstteki başlıkta.
   // Yardım menüsündekiyle aynı düzen: her kayıt kendi metin bloğu, aralarında ince çizgi.
   if (tab === 'genel') container.addTextDisplayComponents(text(`**${list.title}**`)).addSeparatorComponents(divider());
-  if (intro) container.addTextDisplayComponents(text(intro));
+  if (intro) container.addTextDisplayComponents(text(intro.trimEnd())).addSeparatorComponents(divider());
   if (!items.length) {
     container.addTextDisplayComponents(text(list.empty));
   } else {
