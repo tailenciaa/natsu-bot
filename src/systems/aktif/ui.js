@@ -27,14 +27,13 @@ function section(kind, entries) {
 
 // results: { ses, mesaj, yayin } -> [{ userId, value }] (en fazla 5, sıralı)
 function weeklyAnnounce(guild, results) {
-  const roles = ['ses', 'mesaj', 'yayin']
-    .filter((kind) => config.roles[kind] && results[kind][0])
-    .map((kind) => `**${KIND_META[kind].label}:** <@&${config.roles[kind]}>`);
   return page({
     title: 'Haftanın Aktifleri',
-    sub: 'Geçen haftanın ses, mesaj ve yayın birincilerini açıklıyoruz; her kategorinin birincisi haftalık rolünü bir sonraki pazartesiye kadar taşır ve rol her hafta yenilenir.',
     thumbnail: guild?.iconURL({ size: 256 }),
-    blocks: [...['ses', 'mesaj', 'yayin'].map((kind) => section(kind, results[kind])), roles.length ? `**Kazanılan Roller**\n${roles.join('\n')}` : null],
+    blocks: [
+      'Geçen haftanın **ses, mesaj ve yayın birincilerini** açıklıyoruz; her kategorinin birincisi **haftalık rolünü bir sonraki pazartesiye kadar taşır** ve rol **her hafta yenilenir.**',
+      ...['ses', 'mesaj', 'yayin'].map((kind) => section(kind, results[kind])),
+    ],
   });
 }
 
