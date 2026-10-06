@@ -69,8 +69,8 @@ const sanitize = (value) => String(value).replace(/@everyone/gi, '@​everyone')
 // yoksa metindeki bir etiket kartı her gönderişte ayrıca bildirim yollardı
 const inert = (value) => sanitize(value).replace(/<@([!&]?)(\d+)>/g, '<@​$1$2>');
 
-// Standart başlık: büyük başlık ve iki satıra yayılan uzun gri açıklama (bütün mesajlar aynı genişlikte görünsün)
-const head = (title, sub) => text(`## ${title}\n-# ${sub}`);
+// Standart başlık: büyük başlık ve iki satıra yayılan uzun normal yazılı açıklama (bütün mesajlar aynı genişlikte görünsün)
+const head = (title, sub) => text(`## ${title}\n${sub}`);
 
 const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
