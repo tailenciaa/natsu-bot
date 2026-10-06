@@ -94,64 +94,13 @@ module.exports = {
       "title": "Roller ve Ayrıcalıklar",
       "blocks": [
         {
-          "heading": "Genel",
-          "items": [
-            "<@&1544051409199042631>: Sunucuya giren **herkese otomatik** verilir.",
-            "<@&1538948140852318490>: Sunucuyu **takviye ederek** bizi destekleyenlere verilir.",
-            "<@&1554240782162989117>: **Özel üyelere** yetkililer tarafından verilir.",
-            "<@&1554403288424644738>: Kazuki **sunucu etiketini** profilinde taşıyanlara verilir.",
-            "<@&1555327703882928168>: **Partner kanallarını** görmeni sağlar."
-          ]
-        },
-        {
-          "heading": "Ödül Rolleri",
-          "items": [
-            "<@&1555890043250282496>: 5v5 gibi etkinliklerde **birinci olanlara** verilir.",
-            "<@&1554240783924858930>: **Doğum günü** olan üyelere verilir.",
-            "<@&1554240785644396704>: Haftada **en çok seste kalan** üyeye verilir.",
-            "<@&1555890043560792094>: Haftada **en çok yazan** üyeye verilir.",
-            "<@&1554240786034594042>: Haftada **en çok yayın açan** üyeye verilir.",
-            "<@&1556348584365133844>: Haftada **en çok saygınlık kazanan** üyeye verilir."
-          ]
-        },
-        {
-          "heading": "Seçilebilen Roller",
-          "items": [
-            "<@&1555890045066543154> <@&1555890045175595128> <@&1555890045280583760>: **Çekiliş, etkinlik ve sohbet** bildirimlerini almak için.",
-            "<@&1555890042658889760> <@&1555890042772394044> <@&1555890043032182804> <@&1555890043221049355> <@&1555890043237826630> <@&1555890043501944922> <@&1555890045746151474>: **Oynadığın oyunu** belirtir, oyun arkadaşı bulmanı kolaylaştırır.",
-            "<@&1555890038238093354> <@&1555890038808510464> <@&1555890039135666227>: **Cinsiyet** rolleridir."
-          ]
-        },
-        {
-          "heading": "Ceza Rolleri",
-          "items": [
-            "<@&1555281318324207647>: **Jail** cezası alanlara verilir, sadece jail kanalını görürsün.",
-            "<@&1556274144042164234>: Hesabı **7 günden yeni** olanlara güvenlik için verilir, süre dolunca kalkar."
-          ]
-        },
-        {
+          "heading": "Roller",
+          "text": "**Genel**\n<@&1544051409199042631>: Sunucuya giren **herkese otomatik** verilir.\n<@&1538948140852318490>: Sunucuyu **takviye ederek** bizi destekleyenlere verilir.\n<@&1554240782162989117>: **Özel üyelere** yetkililer tarafından verilir.\n<@&1554403288424644738>: Kazuki **sunucu etiketini** profilinde taşıyanlara verilir.\n<@&1555327703882928168>: **Partner kanallarını** görmeni sağlar.\n\n**Ödül Rolleri**\n<@&1555890043250282496>: 5v5 gibi etkinliklerde **birinci olanlara** verilir.\n<@&1554240783924858930>: **Doğum günü** olan üyelere verilir.\n<@&1554240785644396704>: Haftada **en çok seste kalan** üyeye verilir.\n<@&1555890043560792094>: Haftada **en çok yazan** üyeye verilir.\n<@&1554240786034594042>: Haftada **en çok yayın açan** üyeye verilir.\n<@&1556348584365133844>: Haftada **en çok saygınlık kazanan** üyeye verilir.\n\n**Seçilebilen Roller**\n<@&1555890045066543154> <@&1555890045175595128> <@&1555890045280583760>: **Çekiliş, etkinlik ve sohbet** bildirimlerini almak için.\n<@&1555890042658889760> <@&1555890042772394044> <@&1555890043032182804> <@&1555890043221049355> <@&1555890043237826630> <@&1555890043501944922> <@&1555890045746151474>: **Oynadığın oyunu** belirtir, oyun arkadaşı bulmanı kolaylaştırır.\n<@&1555890038238093354> <@&1555890038808510464> <@&1555890039135666227>: **Cinsiyet** rolleridir.\n\n**Ceza Rolleri**\n<@&1555281318324207647>: **Jail** cezası alanlara verilir, sadece jail kanalını görürsün.\n<@&1556274144042164234>: Hesabı **7 günden yeni** olanlara güvenlik için verilir, süre dolunca kalkar.",
           "note": "**Haftalık roller her pazartesi yenilenir**, yeni birinci rolü bir öncekinden alır."
         },
         {
           "heading": "Booster Ayrıcalıkları",
-          "items": [
-            "Çekiliş ve etkinliklerde **önceliklisin**.",
-            "Özel rolünle diğer üyelerden **üstte, ayrı grupta** görünürsün.",
-            "**Kendine özel rol** oluşturabilirsin (adı, rengi ve emojisi senin).",
-            "Sunucuya **kendi emojini ve çıkartmanı** ekleyebilirsin.",
-            "Sunucudaki **takma adını** değiştirebilirsin.",
-            "**Dosya ve bağlantı** gönderebilirsin.",
-            "Başka sunucuların **emoji ve çıkartmalarını** kullanabilirsin.",
-            "Sesli kanallarda **ses panelini** kullanabilirsin."
-          ]
-        },
-        {
-          "heading": "Booster - Nasıl kullanılır?",
-          "text": "<#1538534459836473366> kanalındaki **Booster İşlemleri** panelinden butonlarla yaparsın. Takviye edenlere <#1538534176276619264> kanalında teşekkür edilir. **Takviyen bitince** isim ve rol avantajları geri alınır."
-        },
-        {
-          "heading": "Sunucu etiketi",
-          "text": "Kazuki etiketini profilinde gösterirsen <@&1554403288424644738> rolünü alırsın ve <#1538944779298275368> kanalında teşekkür edilir."
+          "text": "Çekiliş ve etkinliklerde **önceliklisin**. Özel rolünle diğer üyelerden **üstte, ayrı grupta** görünürsün. **Kendine özel rol** oluşturabilirsin (adı, rengi ve emojisi senin). Sunucuya **kendi emojini ve çıkartmanı** ekleyebilirsin. Sunucudaki **takma adını** değiştirebilirsin. **Dosya ve bağlantı** gönderebilirsin. Başka sunucuların **emoji ve çıkartmalarını** kullanabilirsin. Sesli kanallarda **ses panelini** kullanabilirsin.\n\n<#1538534459836473366> kanalındaki **Booster İşlemleri** panelinden butonlarla yaparsın. Takviye edenlere <#1538534176276619264> kanalında teşekkür edilir. **Takviyen bitince** isim ve rol avantajları geri alınır.\n\n**Sunucu etiketi:** Kazuki etiketini profilinde gösterirsen <@&1554403288424644738> rolünü alırsın ve <#1538944779298275368> kanalında teşekkür edilir."
         }
       ],
       "sub": "Üyelere verilen genel, ödül, bildirim ve ceza rollerinin neler olduğunu; **sunucuyu takviye eden üyelerin kazandığı ayrıcalıkları** ve sunucu etiketinin ne işe yaradığını buradan görebilirsin."
