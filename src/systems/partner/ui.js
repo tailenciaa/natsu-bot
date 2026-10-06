@@ -299,8 +299,8 @@ const requesterResult = (sonuc, request, by) =>
       head(
         sonuc === 'onayla' ? 'Partner Talebin Onaylandı' : 'Partner Talebin Reddedildi',
         sonuc === 'onayla'
-          ? 'Oto partner talebin yetkililer tarafından incelendi ve onaylandı. Sunucunun tanıtım metni paylaşım kanalına gönderildi, partnerlik başladı.'
-          : 'Oto partner talebin yetkililer tarafından incelendi ve reddedildi. Talebin paylaşım kanalına gönderilmedi; ayrıntılar için yetkililerle iletişime geçebilirsin.',
+          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Sunucunun tanıtım metni paylaşım kanalına gönderildi, **partnerlik başladı**.'
+          : 'Oto partner talebin yetkililer tarafından incelendi ve **reddedildi**. Talebin paylaşım kanalına gönderilmedi; ayrıntılar için yetkililerle iletişime geçebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -322,7 +322,7 @@ function noticeCard(title, sub, infoLines, reason) {
 const serverBannedLog = (serverId, reason, by) =>
   noticeCard(
     'Sunucu Yasaklandı',
-    'Bu sunucu partner sisteminden yasaklandı. Yasak kaldırılana kadar bu sunucuyla partner yapılamaz ve gelen talepler otomatik engellenir.',
+    'Bu sunucu **partner sisteminden yasaklandı**. Yasak kaldırılana kadar bu sunucuyla **partner yapılamaz** ve gelen talepler otomatik engellenir.',
     ['**Yasak Bilgileri**', field('Sunucu ID', `\`${serverId}\``), field('Yasaklayan', `<@${by}>`)],
     reason,
   );
@@ -331,7 +331,7 @@ const serverBannedLog = (serverId, reason, by) =>
 const serverBannedDm = (reason) =>
   noticeCard(
     'Sunucun Yasaklı',
-    'Sunucun partner sisteminden yasaklandığı için talebin kabul edilmedi. Yasak kaldırılana kadar bizimle partner olamazsın.',
+    'Sunucun partner sisteminden yasaklandığı için **talebin kabul edilmedi**. Yasak kaldırılana kadar bizimle partner olamazsın.',
     [],
     reason,
   );
