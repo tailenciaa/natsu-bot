@@ -1,5 +1,5 @@
 // Saygınlık mesajları: verme onayı, tüm zamanların tablosu ve haftalık kazanan duyurusu (ödül bölümüyle birlikte)
-const { alert, page } = require('../../core/ui');
+const { alert, field, fields, page } = require('../../core/ui');
 
 const PODIUM = ['# ', '## ', '### '];
 const PAGE_SIZE = 15;
