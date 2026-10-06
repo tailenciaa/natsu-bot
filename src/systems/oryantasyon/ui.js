@@ -133,7 +133,7 @@ function areaMenu(app) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId(actionId(app, 'alan'))
-      .setPlaceholder('Görev alanlarını seç')
+      .setPlaceholder('Görev alanı seç')
       .setMinValues(1)
       .setMaxValues(config.areas.length)
       .addOptions(
@@ -152,7 +152,7 @@ function levelMenu(app) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId(actionId(app, 'seviye'))
-      .setPlaceholder('Başlayacağı yetkiyi seç')
+      .setPlaceholder('Başlangıç yetkisi seç')
       .addOptions(
         yetkiConfig.levels.filter((l) => l.starter).map((l) =>
           new StringSelectMenuOptionBuilder().setValue(l.id).setLabel(l.label).setDescription(l.description).setDefault(l.id === levelOf(app).id),

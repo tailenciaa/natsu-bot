@@ -60,7 +60,7 @@ function detail(meta, categoryLabel) {
 function panel() {
   const select = new StringSelectMenuBuilder()
     .setCustomId(`${IDS.select}:sec`)
-    .setPlaceholder('Bir log kategorisi seç...')
+    .setPlaceholder('Log kategorisi seç')
     .addOptions(
       categories.map((c) =>
         new StringSelectMenuOptionBuilder().setLabel(c.label).setDescription(c.description).setValue(c.key),

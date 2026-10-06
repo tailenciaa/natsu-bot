@@ -49,7 +49,7 @@ function profile(imageName, editable, currentTheme = null, description = 'Profil
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(IDS.theme)
-          .setPlaceholder('Profil temasını seç')
+          .setPlaceholder('Tema seç')
           .addOptions(
             Object.entries(THEMES).map(([key, theme]) =>
               new StringSelectMenuOptionBuilder().setValue(key).setLabel(theme.label).setDescription(theme.description).setDefault(THEMES[currentTheme] ? key === currentTheme : false),

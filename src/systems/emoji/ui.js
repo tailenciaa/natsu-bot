@@ -39,7 +39,7 @@ function pickPanel(emojis) {
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.pick}:0`)
-          .setPlaceholder('Eklenecek emojileri seç')
+          .setPlaceholder('Emoji seç')
           .setMinValues(1)
           .setMaxValues(shown.length)
           .addOptions(

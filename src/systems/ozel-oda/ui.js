@@ -65,9 +65,9 @@ function controlPanel(room, channel, state = {}) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.kick}:0`, 'Odadan atmak için üye seç')))
-    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.ban}:0`, 'Odadan yasaklamak için üye seç')))
-    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.transfer}:0`, 'Sahipliği devretmek için üye seç')));
+    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.kick}:0`, 'Atılacak üyeyi seç')))
+    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.ban}:0`, 'Yasaklanacak üyeyi seç')))
+    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.transfer}:0`, 'Yeni sahibi seç')));
 }
 
 function limitModal(current) {

@@ -279,7 +279,8 @@ function lint(norm) {
         const pager = /^-# Sayfa \d+ \/ \d+/.test(line);
         const rank = /^-# \d+\. /.test(line); // sıralama listelerinde ilk üçten sonraki satırlar
         const footer = /<t:\d+:[A-Za-z]>/.test(line) || /^-# .* - (Başvuru|Talep|Ceza) #\d+$/.test(line); // zaman damgalı ya da vaka kimlikli alt satır
-        if (!underTitle && !stamp && !pager && !rank && !footer) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
+        const empty = /(yok|bulunmuyor)\.$/.test(line); // boş durum satırı ("-# Ceza kaydı yok.")
+        if (!underTitle && !stamp && !pager && !rank && !footer && !empty) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
       });
     }
     const noCode = stripCode(s.value);

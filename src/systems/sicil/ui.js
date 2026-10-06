@@ -102,8 +102,8 @@ const ticketResult = (t) => (t.closedAt ? (t.closeReason?.label ?? 'Kapatıldı'
 const LISTS = {
   genel: {
     title: 'Ceza Kayıtları',
-    empty: '**Ceza kaydı yok.**',
-    placeholder: 'Detayını görmek için bir ceza seç',
+    empty: '-# Ceza kaydı yok.',
+    placeholder: 'Ceza seç',
     entry: (p) =>
       `**Ceza #${p.number} - ${TYPES[p.type].label}**\n${[stateWord(p) && `**${stateWord(p)}**`, dateTime(p.createdAt), brief(p.reason)].filter(Boolean).join(' - ')}`,
     option: (p) => ({
@@ -113,20 +113,20 @@ const LISTS = {
     }),
   },
   talepler: {
-    empty: '**Destek talebi yok.**',
-    placeholder: 'Detayını görmek için bir talep seç',
+    empty: '-# Destek talebi yok.',
+    placeholder: 'Talep seç',
     entry: (t) => `**Talep #${t.number}**\n${dateOnly(t.createdAt)} - **${ticketResult(t)}** - ${brief(t.reason)}`,
     option: (t) => ({ id: t.threadId, label: `Talep #${t.number}`, description: brief(`${ticketResult(t)} - ${t.reason}`, 100) }),
   },
   basvurular: {
-    empty: '**Başvuru yok.**',
-    placeholder: 'Detayını görmek için bir başvuru seç',
+    empty: '-# Başvuru yok.',
+    placeholder: 'Başvuru seç',
     entry: (a) => `**Başvuru #${a.number}**\n${dateOnly(a.createdAt)} - **${applicationStatus(a)}**`,
     option: (a) => ({ id: a.id, label: `Başvuru #${a.number}`, description: `${applicationStatus(a)} - ${dateOnly(a.createdAt)}` }),
   },
   puan: {
-    empty: '**Değerlendirme yok.**',
-    placeholder: 'Detayını görmek için bir değerlendirme seç',
+    empty: '-# Değerlendirme yok.',
+    placeholder: 'Değerlendirme seç',
     entry: (r) => `**${r.score}/5 - ${categoryOf(r).short}**\n${dateOnly(r.ratedAt)}${r.comment ? ` - ${brief(r.comment)}` : ''}`,
     option: (r) => ({ id: r.id, label: `${r.score}/5 - ${categoryOf(r).short}`, description: brief(`${refText(r)}${r.comment ? ` - ${r.comment}` : ''}`, 100) }),
   },
@@ -212,7 +212,7 @@ function sicil(view) {
       : '';
   // Genel'de listenin başlığı var (istatistiklerden ayrılsın diye); diğer bölümlerde bölümün adı zaten üstteki başlıkta.
   // Yardım menüsündekiyle aynı düzen: her kayıt kendi metin bloğu, aralarında ince çizgi.
-  if (tab === 'genel') container.addTextDisplayComponents(text(`**${list.title}**`));
+  if (tab === 'genel') container.addTextDisplayComponents(text(`**${list.title}**`)).addSeparatorComponents(divider());
   if (intro) container.addTextDisplayComponents(text(intro));
   if (!items.length) {
     container.addTextDisplayComponents(text(list.empty));
@@ -335,13 +335,11 @@ const ratingRemoveButton = (userId, rating, messageId) =>
 
 // "Ceza Ver" ile açılan, sadece yetkilinin gördüğü tür seçimi. messageId: güncellenecek sicil mesajı
 function typePicker(user, messageId, allowedTypes) {
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      text(
-        `## Ceza Ver\n-# <@${user.id}> için vermek istediğin ceza türünü menüden seç. Sonraki adımda sebebi ve gerekiyorsa süreyi bir formda yazarsın; ceza kişinin siciline işlenir.`,
-      ),
-    )
-    .addSeparatorComponents(divider())
+  return pageBlocks({
+    title: 'Ceza Ver',
+    sub: 'Vermek istediğin ceza türünü menüden seçersin. Sonraki adımda sebebi ve gerekiyorsa süreyi bir formda yazarsın; ceza kişinin siciline işlenir ve kişiye DM ile bildirilir.',
+    blocks: [`**Ceza Verilecek Üye**\n<@${user.id}> için **ceza türünü** menüden seç.`],
+  })
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()

@@ -53,7 +53,7 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
   // Filtreler: rol, sıralama türü ve dönem
   const roleSelect = new RoleSelectMenuBuilder()
     .setCustomId(`${IDS.role}:${type}:${period}:${days}`)
-    .setPlaceholder('Rol ile filtrele')
+    .setPlaceholder('Rol filtrele')
     .setMinValues(0)
     .setMaxValues(1);
   if (role) roleSelect.setDefaultRoles(role);

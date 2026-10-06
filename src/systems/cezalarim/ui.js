@@ -120,11 +120,12 @@ function itirazPicker(active) {
   return page({
     title: 'Cezaya İtiraz Et',
     sub: 'İtiraz etmek istediğin cezayı menüden seç. Ardından açılan formda sebebini yaz; sana özel bir destek talebi açılır ve itirazın yetkililer tarafından orada incelenir.',
+    blocks: ['**Ceza Seçimi**\nİtiraz etmek istediğin **aktif cezayı** menüden seç.'],
   }).addActionRowComponents(
     new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .setCustomId(`${IDS.itirazPick}:0`)
-        .setPlaceholder('İtiraz edeceğin cezayı seç')
+        .setPlaceholder('Ceza seç')
         .addOptions(
           active.slice(0, 25).map((p) =>
             new StringSelectMenuOptionBuilder().setValue(p.id).setLabel(label(p)).setDescription(shorten(p.reason, 100)),

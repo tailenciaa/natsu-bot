@@ -372,7 +372,7 @@ function trustedList(entries, page = 0) {
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.trustedSelect}:0`)
-          .setPlaceholder('Bir partner seç')
+          .setPlaceholder('Partner seç')
           .addOptions(
             shown
               .map((e) =>
@@ -572,7 +572,7 @@ function staffSelect(trustedId, members, statusOf) {
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.renewalAssign}:${trustedId}`)
-          .setPlaceholder('Bir partner yetkilisi seç')
+          .setPlaceholder('Partner yetkilisi seç')
           .addOptions(
             members
               .slice(0, 25)
@@ -766,7 +766,7 @@ function partnerPanel(entry, guildName) {
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.panelStatus}:${entry.id}`)
-          .setPlaceholder('Müsaitlik durumunu seç')
+          .setPlaceholder('Müsaitlik seç')
           .addOptions(
             option('aktif', 'Müsaitim', 'Yetkililer sana teklif gönderebilir'),
             option('mesgul', 'Meşgulüm', `${BUSY_DAYS} gün boyunca teklif gönderilmez`),

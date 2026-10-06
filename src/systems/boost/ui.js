@@ -111,7 +111,7 @@ function panel(guild) {
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.colorRole}:0`)
-          .setPlaceholder('Renk rolünü seç')
+          .setPlaceholder('Renk rolü seç')
           .addOptions(config.colorRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
       ),
     );

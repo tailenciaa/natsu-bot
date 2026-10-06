@@ -186,7 +186,9 @@ function tidy(components) {
     }
   }
   // Menü/butonların hemen üstündeki tek başına küçük not (-#), düzen için en alta, butonların altına taşınır
-  const isNote = (c) => c?.type === 10 && c.content.startsWith('-# ') && c.content.split('\n').every((l) => l.startsWith('-#'));
+  // Boş durum satırı ("-# Ceza kaydı yok.") listenin yerini tutar, buton satırının altına taşınmaz
+  const isEmptyState = (c) => /(yok|bulunmuyor)\.$/.test(c.content);
+  const isNote = (c) => c?.type === 10 && c.content.startsWith('-# ') && c.content.split('\n').every((l) => l.startsWith('-#')) && !isEmptyState(c);
   for (let i = 1; i < out.length - 2; i++) {
     if (!isNote(out[i]) || !isSep(out[i + 1]) || out[i + 2].type !== 1) continue;
     const note = out[i];

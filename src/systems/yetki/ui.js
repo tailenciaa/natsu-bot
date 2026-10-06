@@ -62,7 +62,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.level}:${user.id}`)
-          .setPlaceholder('Rütbeyi seç')
+          .setPlaceholder('Rütbe seç')
           .addOptions(
             levels.map((l) =>
               new StringSelectMenuOptionBuilder().setValue(l.id).setLabel(l.label).setDescription(l.description).setDefault(l.id === levelId),
@@ -72,7 +72,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.perms}:${user.id}:${levelId ?? '0'}:${mask(dutyIds, duties)}`)
-          .setPlaceholder(level ? 'Yetkileri düzenle' : 'Önce rütbe seç')
+          .setPlaceholder(level ? 'Yetki seç' : 'Önce rütbe seç')
           .setMinValues(0)
           .setMaxValues(perms.length)
           .setDisabled(!level)
@@ -85,7 +85,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
           .setCustomId(`${IDS.duties}:${user.id}:${levelId ?? '0'}:${mask(permIds, perms)}`)
-          .setPlaceholder(level ? 'Görev rollerini düzenle' : 'Önce rütbe seç')
+          .setPlaceholder(level ? 'Görev rolü seç' : 'Önce rütbe seç')
           .setMinValues(0)
           .setMaxValues(duties.length)
           .setDisabled(!level)

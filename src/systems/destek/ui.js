@@ -230,7 +230,7 @@ function closeModal() {
         .setStringSelectMenuComponent(
           new StringSelectMenuBuilder()
             .setCustomId(IDS.closeReason)
-            .setPlaceholder('Bir sebep seç')
+            .setPlaceholder('Sebep seç')
             .setRequired(true)
             .addOptions(
               config.closeReasons.map((reason) =>
