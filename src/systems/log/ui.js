@@ -67,18 +67,17 @@ function panel() {
       ),
     );
 
-  return page({
-    title: `${botName} Log Paneli`,
-    sub: 'Sunucudaki bütün olay kayıtlarına tek yerden ulaşabilirsin; kayıtlar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış olarak ayrı alt başlıklarda tutulur.',
-    accent: colors.primary,
-    blocks: [
-      '**Nasıl Kullanılır?**\n' +
-        'Aşağıdaki menüden **bir log kategorisi seç**.\n' +
-        'Sana o logun bulunduğu **alt başlığa giden bağlantı** gelir; kanalda aramana gerek kalmaz.',
-    ],
-  })
+  // Panel yalnızca bu mesaj için: başlığın altında normal yazıyla tek açıklama, sonra çizgi, menü, çizgi
+  return new ContainerBuilder()
+    .setAccentColor(colors.primary)
+    .addTextDisplayComponents(
+      text(
+        `## ${botName} Log Paneli\nAşağıdaki menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.`,
+      ),
+    )
     .addSeparatorComponents(divider())
-    .addActionRowComponents(new ActionRowBuilder().addComponents(select));
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select))
+    .addSeparatorComponents(divider());
 }
 
 // Panelden kategori seçilince gelen, alt başlığa giden bağlantı butonlu kısa cevap
