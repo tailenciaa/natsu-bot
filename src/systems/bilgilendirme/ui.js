@@ -28,7 +28,7 @@ function messages() {
     const container = new ContainerBuilder();
     if (index === 0) {
       container.addTextDisplayComponents(
-        text(`${panelTitle(TITLE)}\n-# Sunucumuz hakkında bilmen gereken her şey bu kanalda, sırayla oku.`),
+        text(`${panelTitle(TITLE)}\nSunucumuz hakkında **bilmen gereken her şey** bu kanalda, sırayla oku.`),
       );
       if (config.banner) {
         container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
