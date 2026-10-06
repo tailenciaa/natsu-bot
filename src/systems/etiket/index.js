@@ -87,6 +87,9 @@ async function handleUserUpdate(oldUser, newUser) {
 
 module.exports = {
   name: 'etiket',
+  commands,
+  help: { category: ['siralama', 'Sıralama'], access: { 'etiket-onizleme': 'Yöneticiler' } },
+  slash: { 'etiket-onizleme': handlePreview },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.UserUpdate]: handleUserUpdate,
