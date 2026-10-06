@@ -2,7 +2,7 @@
 // @kullanıcı" yazarak), tüm zamanların toplam tablosu /saygi-siralama ile görülebilir. Her hafta pazartesi, geçen
 // haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve ayarlı rol verilir (önceki haftanın sahibinden
 // geri alınır).
-const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, fetchTextChannel, stillMember } = require('../../core/helpers');
@@ -21,6 +21,11 @@ const commands = [
     .setName('saygi-siralama')
     .setDescription('Tüm zamanların saygınlık tablosunu gösterir.')
     .setContexts(InteractionContextType.Guild),
+  new SlashCommandBuilder()
+    .setName('saygi-onizleme')
+    .setDescription('Haftanın saygın üyesi duyurusunun önizlemesini sadece sana gösterir.')
+    .setContexts(InteractionContextType.Guild)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ];
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
