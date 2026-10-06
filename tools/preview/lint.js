@@ -280,7 +280,8 @@ function lint(norm) {
         const rank = /^-# \d+\. /.test(line); // sıralama listelerinde ilk üçten sonraki satırlar
         const footer = /<t:\d+:[A-Za-z]>/.test(line) || /^-# .* - (Başvuru|Talep|Ceza) #\d+$/.test(line); // zaman damgalı ya da vaka kimlikli alt satır
         const empty = /(yok|bulunmuyor)\.$/.test(line); // boş durum satırı ("-# Ceza kaydı yok.")
-        if (!underTitle && !stamp && !pager && !rank && !footer && !empty) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
+        const compact = /^### /.test(rows[0]) && i === 2; // kısa bildirim kartı (### başlık, kalın cümle, gri teşekkür; ör. etiket teşekkürü)
+        if (!underTitle && !stamp && !pager && !rank && !footer && !empty && !compact) err('kucuk-yazi', s.path, `Küçük gri yazı (-#) izin verilen yerlerde değil: ${line.slice(0, 60)}`);
       });
     }
     const noCode = stripCode(s.value);

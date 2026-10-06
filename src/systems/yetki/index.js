@@ -1,4 +1,4 @@
-// Elle yetki verme paneli: /yetki-ver ile açılır. Rütbe seçilince o rütbenin yetkileri otomatik işaretlenir,
+// Elle yetki verme (/yetki-ver) ve alma (/yetki-al) panelleri. Yetki verme paneli: /yetki-ver ile açılır. Rütbe seçilince o rütbenin yetkileri otomatik işaretlenir,
 // istenirse ekstra yetki eklenip çıkarılır. Rolü ayarlanmamış (roleId: null) rütbe/yetkiler için rol verilmez.
 // Panel herkese açık gönderilir (işlemin kaydı kanalda kalsın diye), ama menü ve butonları sadece yöneticiler kullanabilir.
 const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
@@ -17,10 +17,17 @@ const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setContexts(InteractionContextType.Guild)
     .addUserOption((o) => o.setName('kullanici').setDescription('Yetki verilecek üyeyi seç.').setRequired(true)),
+  new SlashCommandBuilder()
+    .setName('yetki-al')
+    .setDescription('Bir üyenin rütbe, yetki ve görev rollerini tamamen ya da seçerek alır.')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setContexts(InteractionContextType.Guild)
+    .addUserOption((o) => o.setName('kullanici').setDescription('Yetkisi alınacak üyeyi seç.').setRequired(true)),
 ];
 
-// Aynı üyeye aynı anda iki kez yetki verilmesin (hızlı çift tıklama)
+// Aynı üyeye aynı anda iki kez yetki verilmesin ya da alınmasın (hızlı çift tıklama)
 const giving = new Set();
+const taking = new Set();
 
 const levelById = (id) => config.levels.find((l) => l.id === id);
 const fetchUser = (interaction, userId) => interaction.client.users.fetch(userId).catch(() => null);
@@ -132,22 +139,143 @@ async function handleCancel(interaction) {
   return interaction.update({ components: [core.alert('Yetki verme iptal edildi.', null, 'danger')] });
 }
 
+// ── Yetki alma ──────────────────────────────────────────────────────────────
+
+// Üyenin şu an sahip olduğu rütbe, yetki ve görev rolleri
+const heldOf = (member) => {
+  const owned = (list) => list.filter((item) => item.roleId && member.roles.cache.has(item.roleId)).map((item) => item.id);
+  return { levelIds: owned(config.levels), permIds: owned(config.perms), dutyIds: owned(config.duties) };
+};
+
+// Alınacak rol ID'leri. Hepsi alınırken Yetkili Ekibi ve takım rolleri de gider; seçerek alınırken geriye hiçbir yetki
+// kalmadıysa Yetkili Ekibi rolü, hiçbir kalan rütbe gerektirmiyorsa takım rolü (Yönetim Ekibi) de alınır.
+function rolesToTake(member, picked, all) {
+  const held = heldOf(member);
+  const taken = all ? held : picked;
+  const left = {
+    levelIds: held.levelIds.filter((id) => !taken.levelIds.includes(id)),
+    permIds: held.permIds.filter((id) => !taken.permIds.includes(id)),
+    dutyIds: held.dutyIds.filter((id) => !taken.dutyIds.includes(id)),
+  };
+  const nothingLeft = !left.levelIds.length && !left.permIds.length && !left.dutyIds.length;
+  const stillNeeded = new Set(config.levels.filter((l) => left.levelIds.includes(l.id)).flatMap((l) => l.extraRoleIds ?? []));
+  const ids = [
+    ...config.levels.filter((l) => taken.levelIds.includes(l.id)).map((l) => l.roleId),
+    ...config.levels.flatMap((l) => l.extraRoleIds ?? []).filter((id) => !stillNeeded.has(id)),
+    ...config.perms.filter((p) => taken.permIds.includes(p.id)).map((p) => p.roleId),
+    ...config.duties.filter((d) => taken.dutyIds.includes(d.id)).map((d) => d.roleId),
+    ...(all || nothingLeft ? [basvuruConfig.roles.accept] : []),
+  ];
+  return { held, taken, roleIds: [...new Set(ids.filter((id) => id && member.roles.cache.has(id)))] };
+}
+
+const takeState = (parts) => ({
+  levelIds: ui.unmask(parts[2], config.levels),
+  permIds: ui.unmask(parts[3], config.perms),
+  dutyIds: ui.unmask(parts[4], config.duties),
+});
+
+// /yetki-al kullanici
+async function handleTakeCommand(interaction) {
+  if (!inStaffChannel(interaction)) return staffChannelError(interaction);
+  const user = interaction.options.getUser('kullanici', true);
+  if (user.bot) return replyError(interaction, 'Botlardan yetki alınamaz.');
+  const member = interaction.options.getMember('kullanici');
+  if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki almak için üyenin sunucuda olması gerekir.');
+  const held = heldOf(member);
+  const isStaff = member.roles.cache.has(basvuruConfig.roles.accept) || [held.levelIds, held.permIds, held.dutyIds].some((list) => list.length);
+  if (!isStaff) return replyError(interaction, 'Bu üyenin alınacak yetkisi yok.', 'Üyede yetkili rolü bulunmuyor.');
+  const picked = { levelIds: [], permIds: [], dutyIds: [] };
+  return respond(interaction, ui.takePanel({ user, held, picked }), { ephemeral: false });
+}
+
+// Rütbe, yetki ve görev menüleri: sadece kendi seçimini günceller, diğerleri ID'de taşınır
+const handleTakeMenu = (field) => async (interaction) => {
+  const denied = denyNonAdmin(interaction);
+  if (denied) return denied;
+  const parts = interaction.customId.split(':');
+  const member = await interaction.guild.members.fetch(parts[1]).catch(() => null);
+  if (!member) return replyError(interaction, 'Üye bulunamadı.', 'Üye sunucudan ayrılmış olabilir.');
+  const picked = { ...takeState(parts), [field]: interaction.values };
+  return interaction.update({
+    components: [ui.takePanel({ user: member.user, held: heldOf(member), picked })],
+    allowedMentions: { parse: [] },
+  });
+};
+
+// "Seçilenleri Al" ve "Hepsini Al": rolleri alır, kayıt panelini bırakır, kişiye DM ile haber verir
+const takeRoles = (all) => async (interaction) => {
+  const denied = denyNonAdmin(interaction);
+  if (denied) return denied;
+  const parts = interaction.customId.split(':');
+  const userId = parts[1];
+
+  if (taking.has(userId)) return replyError(interaction, 'Bu üyenin yetkisi zaten alınıyor.');
+  taking.add(userId);
+  try {
+    // Roller Discord'dan istenip alınırken 3 saniye aşılabilir; önce etkileşim onaylanır
+    await interaction.deferUpdate();
+
+    const member = await interaction.guild.members.fetch(userId).catch(() => null);
+    if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki almak için üyenin sunucuda olması gerekir.');
+
+    const { held, taken, roleIds } = rolesToTake(member, all ? { levelIds: [], permIds: [], dutyIds: [] } : takeState(parts), all);
+    if (!roleIds.length) return replyError(interaction, 'Alınacak rol kalmadı.', 'Üyenin bu rolleri zaten yok; paneli yeniden aç.');
+
+    const removed = await member.roles
+      .remove(roleIds, `Yetki alındı (${interaction.user.username})`)
+      .then(() => true)
+      .catch(() => false);
+    if (!removed) return replyError(interaction, 'Roller alınamadı.', 'Botun rolü alınacak rollerin üstünde olmalı.');
+
+    await interaction.editReply({
+      components: [ui.takePanel({ user: member.user, held, picked: taken, done: true, all, by: interaction.user.id, roleIds })],
+      allowedMentions: { parse: [] },
+    });
+
+    const dmSent = await member
+      .send({ components: [ui.revokeDm(interaction.guild.name, { taken, by: interaction.user.id, all })], flags: core.CV2 })
+      .then(() => true)
+      .catch(() => false);
+    if (!dmSent) await respond(interaction, core.alert('Üyeye DM gönderilemedi.', 'DM kutusu kapalı olabilir; **yetki yine de alındı.**', 'warning'));
+  } finally {
+    taking.delete(userId);
+  }
+};
+
+async function handleTakeCancel(interaction) {
+  const denied = denyNonAdmin(interaction);
+  if (denied) return denied;
+  return interaction.update({ components: [core.alert('Yetki alma iptal edildi.', null, 'danger')] });
+}
+
 module.exports = {
   name: 'yetki',
   commands,
-  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında` } },
-  slash: { 'yetki-ver': handleCommand },
+  help: {
+    category: ['yetki', 'Yetkili İşlemleri'],
+    access: {
+      'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında`,
+      'yetki-al': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında`,
+    },
+  },
+  slash: { 'yetki-ver': handleCommand, 'yetki-al': handleTakeCommand },
   events: {
     [Events.ClientReady]: (client) => {
       const guild = client.guilds.cache.get(guildId);
       if (guild) access.sync(guild).catch((err) => console.error('[yetki] Yetki izinleri ayarlanamadı:', err.message));
     },
   },
-  buttons: { [ui.IDS.cancel]: handleCancel },
+  buttons: { [ui.IDS.cancel]: handleCancel, [ui.IDS.takeCancel]: handleTakeCancel },
   prefixed: [
     [ui.IDS.level, handleLevel],
     [ui.IDS.perms, handlePerms],
     [ui.IDS.duties, handleDuties],
     [ui.IDS.give, handleGive],
+    [ui.IDS.takeLevel, handleTakeMenu('levelIds')],
+    [ui.IDS.takePerms, handleTakeMenu('permIds')],
+    [ui.IDS.takeDuties, handleTakeMenu('dutyIds')],
+    [ui.IDS.takeSelected, takeRoles(false)],
+    [ui.IDS.takeAll, takeRoles(true)],
   ],
 };

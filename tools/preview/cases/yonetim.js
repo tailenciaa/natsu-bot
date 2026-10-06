@@ -3,6 +3,7 @@ module.exports = ({ mock, ui, src }) => {
   const cz = src('systems/cezalarim/ui');
   const yetki = src('systems/yetki/ui');
   const yetkiConfig = src('systems/yetki/config');
+  const etiket = src('systems/etiket/ui');
   const yayin = src('systems/yayin/ui');
   const pg = src('systems/partnergorme/ui');
   const destek = src('systems/destek/ui');
@@ -271,6 +272,59 @@ module.exports = ({ mock, ui, src }) => {
       build: () => {
         const level = yetkiConfig.levels[5];
         return { components: [yetki.grantDm(guild.name, { level, permIds: [...level.perms], dutyIds: [...level.duties], by: admin.id })] };
+      },
+    },
+    {
+      id: 'yetki-al',
+      title: 'Yetki al paneli',
+      where: '/yetki-al komutu, yetkili komut kanalı; menülerden seçim yapıldıkça güncellenir',
+      visibility: 'public',
+      kind: 'message',
+      build: () => {
+        const level = yetkiConfig.levels[5];
+        const held = { levelIds: [level.id], permIds: [...level.perms], dutyIds: [...level.duties] };
+        return {
+          components: [yetki.takePanel({ user: member, held, picked: { levelIds: [], permIds: ['kick'], dutyIds: ['alim'] } })],
+          ...noMentions,
+        };
+      },
+    },
+    {
+      id: 'yetki-alindi',
+      title: 'Yetki alındı kaydı',
+      where: 'Seçilenleri Al ya da Hepsini Al butonuna basınca panelin yerine geçer',
+      visibility: 'public',
+      kind: 'message',
+      build: () => {
+        const level = yetkiConfig.levels[7];
+        const held = { levelIds: [level.id], permIds: [...level.perms], dutyIds: [...level.duties] };
+        const roleIds = [level.roleId, ...level.extraRoleIds, ...yetkiConfig.perms.map((p) => p.roleId)];
+        return { components: [yetki.takePanel({ user: member, held, picked: held, done: true, all: true, by: admin.id, roleIds })], ...noMentions };
+      },
+    },
+    {
+      id: 'yetki-alma-dm',
+      title: 'DM: yetki alındı',
+      where: 'Yetki alınınca yetkisi alınan kişiye özel mesaj',
+      visibility: 'dm',
+      kind: 'message',
+      build: () => {
+        const level = yetkiConfig.levels[5];
+        const taken = { levelIds: [level.id], permIds: [...level.perms], dutyIds: [...level.duties] };
+        return { components: [yetki.revokeDm(guild.name, { taken, by: admin.id, all: true })] };
+      },
+    },
+
+    // ── Sunucu etiketi ───────────────────────────────────────────────────────
+    {
+      id: 'etiket-tesekkur',
+      title: 'Etiket teşekkür mesajı',
+      where: 'Duyuru kanalı, üye sunucu etiketini profiline takınca; sadece o üye etiketlenir',
+      visibility: 'public',
+      kind: 'message',
+      build: () => {
+        const tagged = Object.assign(Object.create(member), { primaryGuild: { tag: 'なつ' } });
+        return { components: [etiket.thanks(tagged)], ...noMentions };
       },
     },
 

@@ -54,6 +54,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır (hepsi `/ya
 | Mesaja sağ tık > **Emojileri Sunucuya Ekle** | Mesajdaki emojileri seçip ekler | Emoji yönetme izni olanlar |
 | `/destek ekle` ve `/destek cikar` | Bulunduğun destek talebine üye ekler ya da çıkarır | Yetkililer |
 | `/yetki-ver kullanici` | Rütbe, yetki ve görev rolü seçerek yetki verir | Yöneticiler |
+| `/yetki-al kullanici` | Üyenin rütbe, yetki ve görev rollerini seçerek ya da hepsini birden alır | Yöneticiler |
 | `/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban` | Hızlı ceza komutları (sicile işlenir) | İlgili ceza yetkisi olanlar |
 | `/ceza-kaldir`, `/ceza-sil` | Cezayı numarasıyla kaldırır ya da sicilden siler | Yetkisi olanlar |
 | `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
