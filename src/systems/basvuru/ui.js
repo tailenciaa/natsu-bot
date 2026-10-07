@@ -23,6 +23,7 @@ const IDS = {
   reviewNote: 'basvuru-karar-not',
   remind: 'basvuru-hatirlat', // basvuru-hatirlat:<başvuru>
   transfer: 'basvuru-devir', // basvuru-devir:<başvuru>:<iste|evet:<isteyen>|hayir:<isteyen>>
+  statusDetail: 'basvuru-durum-detay', // basvuru-durum-detay:<başvuru id>
 };
 
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
