@@ -62,7 +62,7 @@ function channelThanks(user) {
 // Panelden yapılan işlemler: ad, açıklama, butonun etiketi ve ID'si (açıklamalar "İşlem Seçenekleri" bloğunda, butonlar altındaki satırda)
 const ACTIONS = [
   { title: 'İsim', note: 'Sunucudaki takma adını değiştirmeni sağlar.', label: 'İsim Değiştir', id: IDS.nick },
-  { title: 'Emoji', note: 'Hakkın olan emojiyi sunucuya eklemeni ya da güncellemeni sağlar.', label: 'Emoji Ekle / Değiştir', id: IDS.emoji },
+  { title: 'Emoji', note: 'Hakkın olan emojiyi sunucuya eklemeni ya da güncellemeni sağlar.', label: 'Emoji Ekle/Değiştir', id: IDS.emoji },
   { title: 'Özel Rol', note: 'Kendi adında, renginde ve emojinde bir rol oluşturmanı ya da düzenlemeni sağlar.', label: 'Özel Rol', id: IDS.role },
 ];
 
