@@ -609,6 +609,15 @@ function meetingLog(app) {
   );
 }
 
+// Başvuranın "Bir yetkili bağlanıyor" DM'i: direkten bağlan (Bağlan butonu) akışında gönderilir
+function connectingDm(app, guildName) {
+  return page({
+    title: `Başvuru #${pad(app.number)} — Birazdan Bağlanıyoruz`,
+    sub: `${guildName} sunucusuna yaptığın yetkili başvurusuyla ilgili bir yetkili ses kanalına katılmak üzere; hazır ol ve kanalda kal.`,
+    blocks: [`<@${app.userId}>, birazdan bir yetkili bulunduğun ses kanalına **bağlanacak.** Kanalda kal ve hazır ol.`],
+  });
+}
+
 // Durum kanalındaki canlı panel: bekleyen tüm başvuruları tek mesajda listeler; durum değiştikçe düzenlenir
 function statusPanel(apps) {
   const now = Math.floor(Date.now() / 1000);
@@ -648,4 +657,4 @@ function statusPanel(apps) {
   return container;
 }
 
-module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, statusPanel, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, statusPanel, connectingDm, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
