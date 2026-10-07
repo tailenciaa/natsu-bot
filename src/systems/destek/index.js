@@ -476,6 +476,8 @@ async function closeTicket(channel, closedBy, closeReason) {
     // Kapanan talep silinmez, sicilde görünmesi için geçmişe taşınır
     store.archiveTicket(channel.id);
     closing.delete(channel.id);
+    const { guildId } = require('../../core/config');
+    refreshStatusPanel(channel.client, guildId).catch(() => {});
   }
 }
 
