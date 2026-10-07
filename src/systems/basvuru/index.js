@@ -652,7 +652,10 @@ async function applicantLeft(guild, appId) {
   await editMessage(guild, m.panelChannelId, m.panelMessageId, ui.decisionPanel(app));
   setApplicantTimer(`${app.id}:deadline`, config.meetingApplicantGraceMinutes * 60 * 1000, () => {
     const fresh = store.getApplication(app.id);
-    if (!fresh?.meeting?.applicantAwaySince || voice.isRecruitmentChannel(guild.voiceStates.cache.get(fresh.userId)?.channelId)) return;
+    const backInMeetCh = fresh?.directConnect
+      ? guild.voiceStates.cache.get(fresh.userId)?.channelId === fresh.meetingChannelId
+      : voice.isRecruitmentChannel(guild.voiceStates.cache.get(fresh.userId)?.channelId);
+    if (!fresh?.meeting?.applicantAwaySince || backInMeetCh) return;
     return autoRejectMeeting(guild, app.id, `Başvuran görüşme sırasında kanaldan ayrıldı ve ${config.meetingApplicantGraceMinutes} dakika içinde geri dönmedi.`);
   });
 }
