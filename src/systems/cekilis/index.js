@@ -311,8 +311,9 @@ async function handleJoin(interaction) {
   }
   g.participants.push(interaction.user.id);
   store.save();
-  // Butondaki sayı güncellenir; katılana ayrıca cevap verilmez
-  return interaction.update({ components: [ui.panel(g)], allowedMentions: { parse: [] } });
+  // Butondaki sayı güncellenir, katılana ayrıca sadece kendisinin gördüğü bir onay gider
+  await interaction.update({ components: [ui.panel(g)], allowedMentions: { parse: [] } });
+  return interaction.followUp({ components: [ui.joined(g)], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
 }
 
 async function handleLeave(interaction) {

@@ -143,9 +143,9 @@ function winners(g, ids, reroll = false) {
 // Kazanan çıkmadıysa kanala giden kısa bildirim
 const noWinner = (g) => alert('Çekilişte kazanan çıkmadı.', `${g.prize}: ${noWinnerReason(g)}`, 'warning');
 
-// Katılmış üyenin butona tekrar basınca gördüğü, ayrılma butonlu cevap
+// Katılınca (ya da butona tekrar basınca) sadece basana görünen, ayrılma butonlu cevap
 function joined(g) {
-  return alert('Bu çekilişe zaten katıldın.', 'Çekilişten çıkmak istersen **Katılımdan Ayrıl** butonuna bas.', 'success').addActionRowComponents(
+  return alert('Bu çekilişe katıldın.', 'Çekilişten çıkmak istersen **Katılımdan Ayrıl** butonuna bas.', 'success').addActionRowComponents(
     new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`${IDS.leave}:${g.no}`).setLabel('Katılımdan Ayrıl').setStyle(ButtonStyle.Danger)),
   );
 }
