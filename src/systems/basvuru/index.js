@@ -259,6 +259,7 @@ async function handleApplySubmit(interaction) {
       return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
     }
     store.updateApplication(id, { messageId: message.id });
+    refreshStatusPanel(interaction.client, guild.id).catch(() => {});
 
     await respond(
       interaction,
@@ -306,6 +307,7 @@ async function beginMeetingFor(guild, app, user) {
     meetingChannelId: voice.staffVoiceChannel(guild, user.id),
     onHold: null,
   });
+  refreshStatusPanel(guild.client, guild.id).catch(() => {});
 
   const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
   // Buton başvuru mesajından ya da beklemedeki görüşmenin bildiriminden gelmiş olabilir; ikisi de kanaldan güncellenir
