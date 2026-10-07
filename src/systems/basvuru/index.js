@@ -639,7 +639,10 @@ async function applicantLeft(guild, appId) {
   const app = store.getApplication(appId);
   const m = app?.meeting;
   if (!m || m.endedAt || app.status !== 'pending' || m.applicantAwaySince) return;
-  if (voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId)) return;
+  const applicantInMeetCh = app.directConnect
+    ? guild.voiceStates.cache.get(app.userId)?.channelId === app.meetingChannelId
+    : voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId);
+  if (applicantInMeetCh) return;
 
   const leaves = (m.applicantLeaves ?? 0) + 1;
   store.updateApplication(app.id, { meeting: { ...m, applicantLeaves: leaves, applicantAwaySince: Date.now() } });
@@ -673,7 +676,8 @@ async function trackMeeting(oldState, newState) {
     } else if (app.meeting.endedAt) {
       continue;
     } else if (newState.id === app.userId) {
-      if (voice.isRecruitmentChannel(newState.channelId)) {
+      const inMeetCh = app.directConnect ? newState.channelId === app.meetingChannelId : voice.isRecruitmentChannel(newState.channelId);
+      if (inMeetCh) {
         clearTimeout(applicantTimers.get(`${app.id}:confirm`));
         applicantTimers.delete(`${app.id}:confirm`);
         await applicantBack(guild, app);
@@ -681,8 +685,11 @@ async function trackMeeting(oldState, newState) {
         setApplicantTimer(`${app.id}:confirm`, config.meetingConfirmSeconds * 1000, () => applicantLeft(guild, app.id));
       }
     } else if (newState.id === app.meetingBy) {
-      const applicantHere = voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId);
-      if (voice.isRecruitmentChannel(newState.channelId)) await staffBack(guild, app);
+      const applicantHere = app.directConnect
+        ? guild.voiceStates.cache.get(app.userId)?.channelId === app.meetingChannelId
+        : voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId);
+      const staffInMeetCh = app.directConnect ? newState.channelId === app.meetingChannelId : voice.isRecruitmentChannel(newState.channelId);
+      if (staffInMeetCh) await staffBack(guild, app);
       else if (applicantHere) await staffAway(guild, app);
     }
   }
