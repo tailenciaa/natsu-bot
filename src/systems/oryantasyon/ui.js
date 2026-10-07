@@ -69,15 +69,17 @@ const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks
 const withRow = (container, row) => container.addSeparatorComponents(divider()).addActionRowComponents(row);
 const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
 
-// Hem panelde hem başvurular kanalındaki mesajda duran yönetim butonları
+// Hem panelde hem başvurular kanalındaki mesajda duran yönetim butonları: beklemeye al (başka yetkili üstlensin),
+// başka yetkiliye bağla, başvuruyu tamamen reddet
 function manageButtons(app) {
   return [
-    new ButtonBuilder().setCustomId(actionId(app, 'aktar')).setStyle(ButtonStyle.Secondary).setLabel('Yetkiliye Aktar'),
-    new ButtonBuilder().setCustomId(actionId(app, 'iptal')).setStyle(ButtonStyle.Danger).setLabel('Oryantasyonu İptal'),
+    new ButtonBuilder().setCustomId(actionId(app, 'bekle')).setStyle(ButtonStyle.Secondary).setLabel('Beklemeye Al'),
+    new ButtonBuilder().setCustomId(actionId(app, 'aktar')).setStyle(ButtonStyle.Secondary).setLabel('Yetkiliye Bağla'),
+    new ButtonBuilder().setCustomId(actionId(app, 'iptal')).setStyle(ButtonStyle.Danger).setLabel('Başvuruyu Reddet'),
   ];
 }
 
-const cancelButton = (app) => manageButtons(app)[1];
+const cancelButton = (app) => manageButtons(app)[2];
 const claimButton = (app) =>
   new ButtonBuilder().setCustomId(actionId(app, 'ustlen')).setStyle(ButtonStyle.Success).setLabel('Oryantasyonu Üstlen');
 
@@ -268,7 +270,7 @@ function completedPanel(app, applicantUser) {
 // İptal edenin yazısı: yetkili iptal ettiyse o, başvuran ayrıldığı için bot iptal ettiyse otomatik
 const cancelHeadline = (app) =>
   app.orientation.cancelledBy
-    ? `<@${app.orientation.cancelledBy}>, <@${app.userId}> için verilen oryantasyonu iptal etti.`
+    ? `<@${app.orientation.cancelledBy}>, <@${app.userId}> için verilen oryantasyonu sonlandırdı ve **başvuruyu reddetti.**`
     : `<@${app.userId}> için verilen oryantasyon otomatik olarak iptal edildi.`;
 const penaltyText = (app) =>
   app.penaltyUntil ? `\n**Başvuru cezası:** <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamaz.` : '';
@@ -632,25 +634,25 @@ function transferNotice(app, fromId) {
   );
 }
 
-// "Oryantasyonu İptal Et" ile açılan form, sebep başvurana iletilir
+// "Başvuruyu Reddet" ile açılan form: başvuru tamamen reddedilir, sebep başvurana iletilir
 function cancelModal(app) {
   return new ModalBuilder()
     .setCustomId(actionId(app, 'iptal-form'))
-    .setTitle('Oryantasyonu İptal Et')
+    .setTitle('Başvuruyu Reddet')
     .addTextDisplayComponents(
       text(
-        `**#${pad(app.number)} numaralı başvurunun oryantasyonunu iptal ediyorsun.**\n` +
-          'Başvurana sebep DM ile iletilecek ve görüşme kanalları ona tekrar kilitlenecek.',
+        `**#${pad(app.number)} numaralı başvuruyu reddediyorsun.**\n` +
+          'Oryantasyon sona erer, başvuru tamamen reddedilir, sebep başvurana DM ile iletilir ve görüşme kanalları ona tekrar kilitlenir.',
       ),
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel('Neden iptal ediyorsun?')
+        .setLabel('Neden reddediyorsun?')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.cancelReason)
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Örn: Oryantasyona gelmedi, tekrar başvurabilir.')
+            .setPlaceholder('Örn: Oryantasyonda kurallara uymadı.')
             .setMinLength(5)
             .setMaxLength(500)
             .setRequired(true),
@@ -707,6 +709,14 @@ function pendingNotice(app, state, channelId) {
       'success',
     );
   }
+  if (state === 'hold') {
+    return card(
+      'Oryantasyon Beklemede',
+      `Oryantasyonu veren yetkili işlemi beklemeye aldı; yeni bir yetkili üstlenince kalınan adımdan devam edilir. ${record}`,
+      [`${heading}\n**<@${o.holdBy}> oryantasyonu beklemeye aldı.**\n<@${app.userId}> yeni yetkili üstleninceye kadar bekliyor.`],
+      'warning',
+    );
+  }
   if (state === 'closed') {
     return card('Oryantasyon Sona Erdi', `Oryantasyon üstlenilmeden sona erdiği için artık yetkili beklenmiyor. ${record}`, [`${heading}\n**Oryantasyon sona erdi, yetkili beklenmiyor.**`]);
   }
@@ -718,11 +728,11 @@ function pendingNotice(app, state, channelId) {
   if (channelId) buttons.push(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)));
   return withRow(
     card(
-      waiting ? 'Başvuran Bekliyor' : 'Bekleyen Oryantasyon',
+      waiting ? 'Başvuran Bekliyor' : o.holdBy ? 'Beklemedeki Oryantasyon' : 'Bekleyen Oryantasyon',
       waiting
         ? 'Oryantasyonu bekleyen başvuran bir görüşme kanalına geçti. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.'
         : 'Başvuru onaylandı ve oryantasyon yetkililere bırakıldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.',
-      [`${heading}\n${roles}, ${where}\n${app.reviewedBy ? `<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı.` : 'Oryantasyon yetkililere bırakıldı.'}`],
+      [`${heading}\n${roles}, **${where}**\n${o.holdBy ? `**<@${o.holdBy}> oryantasyonu beklemeye aldı;** yeni bir yetkili üstlenip kalınan adımdan devam etmeli.` : app.reviewedBy ? `<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı.` : 'Oryantasyon yetkililere bırakıldı.'}`],
       'warning',
     ),
     new ActionRowBuilder().addComponents(buttons),
@@ -737,7 +747,7 @@ function claimedChat(app) {
     here
       ? 'Bekleyen oryantasyonu bir yetkili üstlendi ve oryantasyon başladı. Adımlar kanalın sohbetindeki panelden ilerliyor; bu mesaj kayıt olarak kalır.'
       : 'Bekleyen oryantasyonu bir yetkili üstlendi. Yetkili kanala geldiğinde oryantasyon kendiliğinden başlar ve panel bu kanalın sohbetine gelir; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
-    [`**Başvuru #${pad(app.number)}**\n**<@${app.orientation.staffId}> oryantasyonunu üstlendi.**${here ? '' : '\nKanala gelmesi bekleniyor.'}`],
+    [`**Başvuru #${pad(app.number)}**\n**<@${app.orientation.staffId}> oryantasyonunu üstlendi.**${here ? '' : '\n**Kanala gelmesi bekleniyor.**'}`],
     'primary',
   );
 }
