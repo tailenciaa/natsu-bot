@@ -19,7 +19,7 @@ const {
   ThumbnailBuilder,
 } = require('discord.js');
 const { text, divider, unix, quote, shorten, page: pageBlocks, colors, pageInfo, pagerRow } = require('../../core/ui');
-const { statusLabel: applicationStatus } = require('../basvuru/ui');
+const { statusLabel: applicationStatus, cancelReasonOf } = require('../basvuru/ui');
 const { CATEGORIES, categoryOf, refText } = require('../degerlendirme/ui');
 const config = require('./config');
 
@@ -121,7 +121,7 @@ const LISTS = {
   basvurular: {
     empty: '-# Başvuru yok.',
     placeholder: 'Başvuru seç',
-    entry: (a) => `**Başvuru #${a.number}**\n${dateOnly(a.createdAt)} - **${applicationStatus(a)}**`,
+    entry: (a) => `**Başvuru #${a.number}**\n${dateOnly(a.createdAt)} - **${applicationStatus(a)}**${cancelReasonOf(a) ? ` - ${brief(cancelReasonOf(a), 60)}` : ''}`,
     option: (a) => ({ id: a.id, label: `Başvuru #${a.number}`, description: `${applicationStatus(a)} - ${dateOnly(a.createdAt)}` }),
   },
   puan: {
