@@ -30,6 +30,7 @@ const IDS = {
   closeModal: 'destek:kapat-form',
   closeReason: 'destek:kapat-sebep',
   closeNote: 'destek:kapat-not',
+  statusDetail: 'destek-durum-detay', // destek-durum-detay:<alt başlık id>
 };
 
 // Log kanalı kapalıysa konuşma kaydı kimseye gitmez, mesajlarda bahsedilmez
