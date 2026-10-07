@@ -160,21 +160,21 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
   const blocks = done
     ? [
         fields([
-          '**Yetkisi Alınan**',
+          '**Yetkisi Kaldırılan**',
           `<@${user.id}> artık ${all ? '**yetkili ekibinde değil.**' : '**seçilen yetkilere sahip değil.**'}`,
-          field('Yetkiyi Alan', `<@${by}>`),
+          field('Yetkiyi Kaldıran', `<@${by}>`),
         ]),
-        `**Alınan Yetkiler**\n${summary(all ? held : picked)}`,
-        `**Alınan Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ') || 'Alınacak rol kalmamıştı.'}`,
+        `**Kaldırılan Yetkiler**\n${summary(all ? held : picked)}`,
+        `**Kaldırılan Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ') || 'Kaldırılacak rol kalmamıştı.'}`,
         stamp(),
       ]
-    : [`**Düzenlenen Üye**\n<@${user.id}> için **yetki alıyorsun.**`, `**Şu Anki Yetkileri**\n${summary(held)}`, `**Alınacaklar**\n${summary(picked)}`];
+    : [`**Düzenlenen Üye**\n<@${user.id}>'ın **yetkilerini kaldırıyorsun.**`, `**Şu Anki Yetkileri**\n${summary(held)}`, `**Kaldırılacaklar**\n${summary(picked)}`];
 
   const container = page({
-    title: done ? 'Yetki Alındı' : 'Yetki Al',
+    title: done ? 'Yetki Kaldırıldı' : 'Yetki Kaldır',
     sub: done
-      ? 'Seçilen rütbe, yetki ve görev rolleri üyeden alındı; alınan rollerin özeti aşağıda. Bu mesaj, işlemin kaydı olarak kanalda kalır.'
-      : 'Menülerden alınacak rütbe, yetki ve görev rollerini seç, ardından **Seçilenleri Al** butonuyla onayla; üyenin bütün yetkilerini birden almak için **Hepsini Al** butonunu kullan.',
+      ? 'Seçilen rütbe, yetki ve görev rolleri üyeden kaldırıldı; kaldırılan rollerin özeti aşağıda. Bu mesaj, işlemin kaydı olarak kanalda kalır.'
+      : 'Menülerden **üyeden kaldırılacak** rütbe, yetki ve görev rollerini seç, ardından **Seçilenleri Kaldır** butonuyla onayla; üyenin bütün yetkilerini birden kaldırmak için **Hepsini Kaldır** butonunu kullan.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.danger : colors.primary,
     blocks,
