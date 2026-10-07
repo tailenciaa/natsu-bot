@@ -23,6 +23,9 @@ module.exports = {
     { id: '1538933991938334891', label: 'Yetkili Alım 2' },
     { id: '1538934016298848376', label: 'Yetkili Alım 3' },
   ],
+  // Görüşmeyi yürüten yetkili görüşme sırasında görüşme kanallarından ayrılırsa bu kadar dakika dönmezse görüşme beklemeye alınır
+  // ve başvurular kanalına başka bir yetkilinin üstlenmesi için bildirim gider (bu sürede bildirim gitmez)
+  meetingStaffGraceMinutes: 5,
   // Açılan ses kanalı erişimi kaç saat sonra kendiliğinden kapanır (başvuru reddedilirse hemen kapanır)
   voiceAccessHours: 24,
   // Başvuran mülakattan sonra görüşme kanalından ayrılınca kanallar kaç dakika sonra tekrar kilitlenir.

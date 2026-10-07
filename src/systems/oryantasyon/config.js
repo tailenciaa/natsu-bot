@@ -25,7 +25,7 @@ module.exports = {
     penaltyDays: 7,
     // Yetkili ayrılınca bu kadar dakika içinde dönmezse başvurular kanalına "yetkili bekleniyor" mesajı gider,
     // başka bir yetkili oryantasyonu devralabilir
-    staffGraceMinutes: 3,
+    staffGraceMinutes: 5,
   },
 
   // Başvuranın seçebileceği görev alanları. Yetki verilirken seçilen alanın rolü de verilir.
