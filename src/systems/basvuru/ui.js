@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, shorten, page, panel: standardPanel } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, panel: standardPanel } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -71,6 +71,12 @@ function orientationStatus(app) {
       `**Durum: Oryantasyon kararı bekleniyor**
 <@${o.staffId}> başvuruyu uygun buldu; oryantasyonu kendisinin mi vereceğine yoksa oryantasyon yetkililerine mi bırakacağına karar veriyor.`,
       colors.primary,
+    ];
+  }
+  if (o.status === 'unassigned' && o.holdBy) {
+    return [
+      `**Durum: Oryantasyon beklemede**\n<@${o.holdBy}> oryantasyonu beklemeye aldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili kalınan adımdan devam eder.`,
+      colors.warning,
     ];
   }
   if (o.status === 'unassigned') {
@@ -145,6 +151,9 @@ function applicationNotice(app, applicantUser) {
       `**Durum: Görüşme bekleniyor**\n<@${app.meetingBy}> başvuranı görüşmeye çağırdı${where}.\n` +
       'Başvuruyla **o ilgileniyor,** kararı da o verecek.';
     color = colors.primary;
+  } else if (app.onHold) {
+    status = `**Durum: Görüşme beklemede**\n<@${app.onHold.by}> görüşmeyi ${app.onHold.auto ? 'kanaldan uzun süre ayrıldığı için otomatik olarak ' : ''}beklemeye aldı. **Görüşmeye Çağır** butonuna ilk basan yetkili başvuruyu üstlenir.`;
+    color = colors.warning;
   } else {
     status = '**Durum: İnceleniyor**\nKarar verildiğinde sonuç başvurana **DM ile** iletilir.';
     color = colors.warning;
@@ -312,25 +321,60 @@ function decisionPanel(app, state = 'open') {
     return card(
       'Başvuru Reddedildi',
       'Görüşmenin ardından başvuru reddedildi ve sebep başvurana DM ile iletildi. Görüşme kanalları başvurana kilitlenir; kayıt başvurular kanalında kalır.',
-      [`**Başvuru #${pad(app.number)}**
-<@${app.reviewedBy}>, <@${app.userId}> kullanıcısının başvurusunu reddetti.`],
+      [`**Başvuru #${pad(app.number)}**\n<@${app.reviewedBy}>, <@${app.userId}> kullanıcısının başvurusunu reddetti.`],
       'danger',
     );
   }
+  if (state === 'hold') {
+    return card(
+      'Görüşme Beklemede',
+      'Görüşmeyi yürüten yetkili işlemi beklemeye aldı. Başvurular kanalına bildirim gitti; başka bir yetkili başvuruyu üstlenince görüşme yeniden başlar, o zamana kadar kanalda beklemen yeterli.',
+      [`**Başvuru #${pad(app.number)}**\n**<@${app.onHold?.by}> görüşmeyi beklemeye aldı.**\n<@${app.userId}> yeni yetkili çağrılana kadar bekliyor.`],
+      'warning',
+    );
+  }
   const reviewId = (action) => `${IDS.review}:${app.id}:${action}`;
+  const away = app.meeting?.staffAwaySince;
+  const blocks = [
+    `**Başvuru #${pad(app.number)}**\n<@${app.meetingBy}> ile <@${app.userId}> görüşüyor.\nKararı sadece **görüşmeye çağıran yetkili** (ya da yöneticiler) verebilir.`,
+  ];
+  if (away) {
+    blocks.push(
+      `**Yetkili ayrıldı.**\n<@${app.meetingBy}> kanaldan ayrıldı, <t:${unix(away + config.meetingStaffGraceMinutes * 60000)}:R> dönmezse görüşme beklemeye alınır ve başka bir yetkili çağrılır.`,
+    );
+  }
   return card(
     'Görüşme Kararı',
-    'Görüşme bitince başvuranın uygun olup olmadığına karar ver: **Devam Et** ile başvuru oryantasyon aşamasına geçer, **İptal Et** ile başvuru reddedilir ve sebep başvurana DM ile iletilir.',
-    [`**Başvuru #${pad(app.number)}**
-<@${app.meetingBy}> ile <@${app.userId}> görüşüyor.
-Kararı sadece **görüşmeye çağıran yetkili** (ya da yöneticiler) verebilir.`],
-    'primary',
+    'Görüşme bitince başvuranın uygun olup olmadığına karar ver: **Devam Et** ile başvuru oryantasyon aşamasına geçer, **İptal Et** ile başvuru reddedilir; bir sorun çıkarsa **Beklemeye Al** ile başka yetkiliye bırakabilirsin.',
+    blocks,
+    away ? 'warning' : 'primary',
   )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(reviewId('devam')).setStyle(ButtonStyle.Success).setLabel('Devam Et'),
+        new ButtonBuilder().setCustomId(reviewId('bekle')).setStyle(ButtonStyle.Secondary).setLabel('Beklemeye Al'),
         new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('İptal Et'),
+      ),
+    );
+}
+
+// Görüşme beklemeye alınınca (elle ya da yetkili kanaldan uzun süre ayrılınca) başvurular kanalına giden, inceleyen rolü
+// etiketleyen bildirim: başvuru mesajındaki Görüşmeye Çağır butonuna ilk basan yetkili görüşmeyi sürdürür
+function meetingHoldNotice(app) {
+  const h = app.onHold;
+  return card(
+    'Görüşme Beklemede',
+    'Başvuranın görüşmesi beklemeye alındı ve başvuru yeniden sahipsiz. Başvuru mesajındaki **Görüşmeye Çağır** butonuna ilk basan yetkili başvuruyu üstlenir ve görüşmeyi sürdürür.',
+    [
+      `**Başvuru #${pad(app.number)}**\n${app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : ''}<@${app.userId}> görüşme için bekliyor.\n**<@${h.by}> görüşmeyi ${h.auto ? 'kanaldan uzun süre ayrıldığı için otomatik olarak ' : ''}beklemeye aldı.**`,
+    ],
+    'warning',
+  )
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Başvuruya Git').setURL(messageUrl(app.guildId, app.channelId, app.messageId)),
       ),
     );
 }
@@ -343,9 +387,9 @@ function waitingChat(app, stage, askStaffId) {
   if (stage === 'unassigned') {
     body = askStaffId
       ? `<@${askStaffId}>, <@${app.userId}> için bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
-      : `<@${app.userId}> oryantasyon için kanalda.\nOryantasyonu üstlenecek yetkili bekleniyor, başvurular kanalına bildirim gönderildi.`;
+      : `<@${app.userId}> oryantasyon için kanalda.\n**Oryantasyonu üstlenecek yetkili bekleniyor,** başvurular kanalına bildirim gönderildi.`;
   } else {
-    body = `<@${app.userId}> ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanalda.\n<@${staffId}> henüz bağlanmadı, yetkilinin bağlanması bekleniyor.`;
+    body = `<@${app.userId}> ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanalda.\n<@${staffId}> henüz bağlanmadı, **yetkilinin bağlanması bekleniyor.**`;
   }
   const container = card(
     askStaffId ? 'Bekleyen Oryantasyon' : 'Yetkili Bekleniyor',
@@ -377,7 +421,7 @@ function waitingLog(app, stage, channelId) {
     'Başvuran Bekliyor',
     `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için görüşme kanalına girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`,
     [`**Başvuru #${pad(app.number)} - ${stage === 'meeting' ? 'Görüşme' : 'Oryantasyon'}**
-<@${app.userId}> <#${channelId}> kanalında <@${staffId}> yetkilisini bekliyor.`],
+**<@${app.userId}> <#${channelId}> kanalında <@${staffId}> yetkilisini bekliyor.**`],
     'warning',
   )
     .addSeparatorComponents(divider())
@@ -395,7 +439,7 @@ function meetingStaffWaitingDm(app, guildName, channelId) {
       'Yetkilin Seni Bekliyor',
       'Görüşmeye çağıran yetkili görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla hemen katılabilirsin; kanal senin için açık ve görüşme kanala girdiğinizde kendiliğinden başlar.',
       [`**Görüşme**
-<@${app.meetingBy}> mülakat için <#${channelId}> kanalına girdi, seni bekliyor.
+**<@${app.meetingBy}> mülakat için <#${channelId}> kanalına girdi, seni bekliyor.**
 **Başvuru:** #${pad(app.number)}`],
       'primary',
     )
@@ -428,4 +472,4 @@ function meetingLog(app) {
   );
 }
 
-module.exports = { IDS, STATUS, statusLabel, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+module.exports = { IDS, STATUS, statusLabel, meetingHoldNotice, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };

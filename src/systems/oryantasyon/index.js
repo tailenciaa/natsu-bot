@@ -105,7 +105,9 @@ function clearTimers(app) {
 // Kayıt kanalındaki canlı oryantasyon mesajını günceller
 // Oryantasyon bitince aynı mesaj sonuç mesajına dönüşür
 const updateLog = (guild, app) =>
-  basvuruLog.edit(
+  !['active', 'completed', 'cancelled'].includes(app.orientation.status)
+    ? null
+    : basvuruLog.edit(
     guild,
     app.orientation.logMessageId,
     app.orientation.status === 'active' ? ui.orientationLog(app) : ui.orientationResult(app),
@@ -114,13 +116,14 @@ const updateLog = (guild, app) =>
 // Başvurular kanalındaki mesajı, görüşme kanalındaki paneli ve kayıt mesajını son duruma göre günceller
 async function refresh(guild, app) {
   const applicant = await fetchUser(guild.client, app.userId);
-  const edit = async (channelId, messageId, container) => {
+  const edit = async (channelId, messageId, container, mentions = { parse: [] }) => {
     if (!channelId || !messageId) return;
     const channel = await fetchTextChannel(guild, channelId);
-    await channel?.messages.edit(messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => {});
+    await channel?.messages.edit(messageId, { components: [container], allowedMentions: mentions }).catch(() => {});
   };
   await edit(app.channelId, app.messageId, basvuruUi.applicationNotice(app, applicant));
-  await edit(app.orientation.channelId, app.orientation.messageId, ui.panel(app, applicant));
+  const pingable = { users: [app.userId, app.orientation.staffId].filter(Boolean) };
+  await edit(app.orientation.channelId, app.orientation.messageId, ui.panel(app, applicant), pingable);
   await updateLog(guild, app);
 }
 
@@ -165,7 +168,8 @@ const lastMove = new Map();
 
 // Oryantasyonu başlatır: paneli kanalın sohbetine atar, iki taraf da etiketlenir
 async function start(guild, app, channelId) {
-  saveOrientation(app, { status: 'active', channelId, startedAt: Date.now(), step: 0 });
+  // Beklemeye alınmış oryantasyon kalınan adımdan ve ilk başlangıç zamanından sürer
+  saveOrientation(app, { status: 'active', channelId, startedAt: app.orientation.startedAt ?? Date.now(), step: app.orientation.resumeStep ?? 0, resumeStep: null });
 
   const channel = await fetchTextChannel(guild, channelId);
   const applicant = await fetchUser(guild.client, app.userId);
@@ -257,8 +261,8 @@ async function markAway(guild, appId, side) {
   } else {
     saveOrientation(app, { staffAwaySince: Date.now() });
   }
+  // Ayrılınca bildirim gitmez: süre panelde sayılır, süre dolunca bildirim ya da iptal gelir
   scheduleDeadline(guild, app, side);
-  await notify(guild, app, side === 'applicant' ? 'applicantLeft' : 'staffLeft');
   await refresh(guild, app);
 }
 
@@ -275,12 +279,11 @@ async function syncSide(guild, app, side, present) {
     clearTimer(deadlineKey);
     if (side === 'applicant') {
       saveOrientation(app, { applicantAwaySince: null });
-      await notify(guild, app, 'applicantBack');
     } else {
       const joining = o.staffJoining;
       saveOrientation(app, { staffAwaySince: null, staffJoining: false, staffNeeded: false });
       await closeTakeover(guild, app, 'returned');
-      await notify(guild, app, joining ? 'staffJoined' : 'staffBack');
+      if (joining) await notify(guild, app, 'staffJoined');
     }
     return refresh(guild, app);
   }
@@ -399,7 +402,8 @@ async function closeWaitChat(guild, app, state) {
   saveOrientation(app, { waitChat: null });
   const channel = await fetchTextChannel(guild, wait.channelId);
   const container = state === 'taken' ? ui.claimedChat(app) : ui.pendingNotice(app, 'closed');
-  await channel?.messages.edit(wait.messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => {});
+  const mentions = state === 'taken' ? { users: [app.userId, app.orientation.staffId] } : { parse: [] };
+  await channel?.messages.edit(wait.messageId, { components: [container], allowedMentions: mentions }).catch(() => {});
 }
 
 // Üstlenen yokken oryantasyon verebilen biri başvuranın beklediği kanala girince kanaldaki bekleme mesajı güncellenir ve
@@ -513,6 +517,25 @@ async function begin(guild, app, staffUser, { claimed = false } = {}) {
   return { lines, ok: Boolean(access && applicantSent) };
 }
 
+// Üstlenen yokken: başvurular kanalına yetkili rolünü etiketleyen bildirim gider; başvuran bir görüşme kanalındaysa o kanalın
+// sohbetinde tek bir bekleme mesajı durur (yetkili girince güncellenir), değilse başvurana DM ile haber verilir
+async function announceUnassigned(guild, app) {
+  const applicantChannel = voiceChannelOf(guild, app.userId);
+  const inVoice = voice.isRecruitmentChannel(applicantChannel);
+  await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu`);
+  await postPending(guild, app, inVoice ? applicantChannel : null, 'open');
+  if (inVoice) {
+    const chat = await fetchTextChannel(guild, applicantChannel);
+    const message = await chat
+      ?.send({ components: [basvuruUi.waitingChat(app, 'unassigned')], flags: core.CV2, allowedMentions: { users: [app.userId] } })
+      .catch(() => null);
+    if (message) trackWaitChat(app, applicantChannel, message.id);
+  } else {
+    const applicant = await fetchUser(guild.client, app.userId);
+    await applicant?.send({ components: [ui.pendingDm(app, guild.name)], flags: core.CV2 }).catch(() => {});
+  }
+}
+
 // "Ben Vereceğim" ve "Yetkililere Bırak": onaylayan yetkilinin oryantasyonu kimin vereceği seçimi
 async function handleChoice(interaction, app, action) {
   if (app.orientation.status !== 'choosing') return replyError(interaction, 'Bu seçim zaten yapıldı.');
@@ -533,15 +556,7 @@ async function handleChoice(interaction, app, action) {
   await interaction.editReply({ components: [ui.choiceResult(app, 'birak')], allowedMentions: { parse: [] } });
   await refresh(guild, app);
 
-  // Başvuran seste değilse DM ile çağrılır, seste ise bildirim onun kanalıyla gider
-  const applicantChannel = voiceChannelOf(guild, app.userId);
-  const inVoice = voice.isRecruitmentChannel(applicantChannel);
-  await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu`);
-  await postPending(guild, app, inVoice ? applicantChannel : null, 'open');
-  if (!inVoice) {
-    const applicant = await fetchUser(interaction.client, app.userId);
-    await applicant?.send({ components: [ui.pendingDm(app, guild.name)], flags: core.CV2 }).catch(() => {});
-  }
+  await announceUnassigned(guild, app);
 }
 
 // "Oryantasyonu Üstlen": bekleyen oryantasyonu ilk basan yetkili alır ve başvuranla o ilgilenir
@@ -697,25 +712,61 @@ async function handleTakeover(interaction, app) {
 
 // İptal formu gönderilince oryantasyonu sonlandırır, başvurana sebebi iletir ve kanalları kilitler
 async function handleCancel(interaction, app) {
-  saveOrientation(app, {
-    status: 'cancelled',
-    cancelledBy: interaction.user.id,
-    cancelReason: interaction.fields.getTextInputValue(ui.IDS.cancelReason).trim(),
-    finishedAt: Date.now(),
-  });
+  const reason = interaction.fields.getTextInputValue(ui.IDS.cancelReason).trim();
+  saveOrientation(app, { status: 'cancelled', cancelledBy: interaction.user.id, cancelReason: reason, finishedAt: Date.now() });
+  basvuruStore.updateApplication(app.id, { status: 'rejected', reviewedBy: interaction.user.id, reviewedAt: Date.now(), note: reason });
   await interaction.deferUpdate();
 
   const applicant = await fetchUser(interaction.client, app.userId);
+  const days = basvuruConfig.reapplyCooldownDays;
   const sent = await applicant
-    ?.send({ components: [ui.cancelledDm(app, interaction.guild.name)], flags: core.CV2 })
+    ?.send({ components: [basvuruUi.resultDm(app, interaction.guild.name, days ? Date.now() + days * DAY : null)], flags: core.CV2 })
     .catch(() => null);
-  const kicked = await finish(interaction.guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu iptal edildi`);
+  const kicked = await finish(interaction.guild, app, `Yetkili başvurusu #${core.pad(app.number)} reddedildi`);
 
   const notes = [
     sent ? 'Başvurana sebep DM ile iletildi.' : "Başvuranın DM'si kapalı, sebebi kendisine ayrıca iletmen gerekiyor.",
     `Görüşme kanalları başvurana kilitlendi${kicked ? `, ${basvuruConfig.disconnectDelaySeconds} saniye içinde kanaldan çıkarılacak` : ''}.`,
   ];
-  await followUp(interaction, core.notice(`**Oryantasyon iptal edildi.**\n${notes.map((n) => `${n}`).join('\n')}`, sent ? 'success' : 'warning'));
+  await followUp(interaction, core.notice(`**Başvuru reddedildi.**\n${notes.map((n) => `${n}`).join('\n')}`, sent ? 'success' : 'warning'));
+}
+
+// "Beklemeye Al": oryantasyonu veren yetkili işlemi bırakır, başvuru yeniden sahipsiz olur ve başvurular kanalına yetkili
+// rolünü etiketleyen bildirim gider; ilk üstlenen yetkili kalınan adımdan devam eder
+async function putOnHold(interaction, app) {
+  const o = app.orientation;
+  if (!['waiting', 'active'].includes(o.status)) return replyError(interaction, 'Bu oryantasyon şu an beklemeye alınamaz.');
+  const { guild } = interaction;
+
+  clearTimers(app);
+  await closeTakeover(guild, app, 'closed');
+  const old = { channelId: o.channelId, messageId: o.messageId, logMessageId: o.logMessageId };
+  saveOrientation(app, {
+    status: 'unassigned',
+    staffId: null,
+    holdBy: interaction.user.id,
+    holdAt: Date.now(),
+    resumeStep: o.status === 'active' ? o.step : null,
+    channelId: null,
+    messageId: null,
+    logMessageId: null,
+    applicantAwaySince: null,
+    staffAwaySince: null,
+    staffJoining: false,
+    staffNeeded: false,
+    waitChat: null,
+  });
+  basvuruStore.updateApplication(app.id, { ownerId: null });
+  await interaction.deferUpdate();
+
+  const held = ui.pendingNotice(app, 'hold');
+  if (old.channelId && old.messageId) {
+    const channel = await fetchTextChannel(guild, old.channelId);
+    await channel?.messages.edit(old.messageId, { components: [held], allowedMentions: { parse: [] } }).catch(() => {});
+  }
+  await basvuruLog.edit(guild, old.logMessageId, held);
+  await refresh(guild, app);
+  await announceUnassigned(guild, app);
 }
 
 // "Yetki Ver": seviye ve alan rollerini verir, oryantasyonu tamamlar, başvurana tebrik DM'i gönderir
@@ -800,6 +851,7 @@ async function handleAction(interaction) {
   }
 
   if (action === 'ben' || action === 'birak') return handleChoice(interaction, app, action);
+  if (action === 'bekle') return putOnHold(interaction, app);
   if (['aktar', 'aktar-sec'].includes(action) && !['waiting', 'active'].includes(o.status)) {
     return replyError(interaction, 'Oryantasyon henüz bir yetkiliye verilmedi.', 'Önce bir yetkili oryantasyonu üstlenmeli.');
   }
