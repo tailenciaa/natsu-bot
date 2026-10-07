@@ -693,7 +693,14 @@ async function handleVoiceUpdate(oldState, newState) {
   if (newState.guild.id !== guildId) return;
   voice.handleVoiceUpdate(oldState, newState);
   if (oldState.channelId === newState.channelId) return;
-  if (!voice.isRecruitmentChannel(oldState.channelId) && !voice.isRecruitmentChannel(newState.channelId)) return;
+  const inRecruitment = voice.isRecruitmentChannel(oldState.channelId) || voice.isRecruitmentChannel(newState.channelId);
+  const inDirectConnect = !inRecruitment && store.inMeeting().some(
+    (a) =>
+      a.directConnect &&
+      (a.userId === newState.id || a.meetingBy === newState.id) &&
+      (oldState.channelId === a.meetingChannelId || newState.channelId === a.meetingChannelId),
+  );
+  if (!inRecruitment && !inDirectConnect) return;
 
   await trackMeeting(oldState, newState);
   if (voice.isRecruitmentChannel(newState.channelId)) {
