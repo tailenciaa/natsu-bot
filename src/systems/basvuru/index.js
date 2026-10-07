@@ -88,6 +88,7 @@ function handleReady(client) {
     for (const app of store.inMeeting()) {
       startMeeting(guild, app).catch((err) => console.error('[basvuru] Görüşme başlatılamadı:', err.message));
     }
+    for (const app of store.heldMeetings()) scheduleMeetingHold(guild, app);
   }
   return syncPanel(client, {
     key: 'basvuru',
@@ -203,31 +204,51 @@ async function handleReviewButton(interaction) {
   return callToMeeting(interaction, app);
 }
 
-// "Görüşmeye Çağır": başvuruyu üstlenir, ses kanallarının kilidini açar, başvurana DM atar
-async function callToMeeting(interaction, app) {
-  if (app.meetingBy) return replyError(interaction, 'Başvuran zaten görüşmeye çağrıldı.');
+// Beklemeye alan yetkinin geri alma süresi sürüyorsa başkası görüşmeyi doğrudan üstlenemez, devir isteyebilir
+const holdGuard = (app, interaction) =>
+  Boolean(app.onHold && !app.onHold.pinged && app.onHold.until > Date.now() && interaction.user.id !== app.onHold.by && !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator));
+
+// Başvuranı görüşmeye çağırır: başvuruyu üstlenir, ses kanallarının kilidini açar, başvurana DM atar. Hem butondan hem onaylanan
+// devirden çağrılır; user: görüşmeyi yürüyecek yetkili. Beklemedeki görüşme üstlenildiyse eski bildirim ve panel güncellenir.
+async function beginMeetingFor(guild, app, user) {
   const hold = app.onHold;
-  // Kayıt await'ten önce yapılır, aynı anda basan ikinci kişi yukarıdaki kontrole takılır
+  clearTimeout(meetingHoldTimers.get(app.id));
+  meetingHoldTimers.delete(app.id);
+  // Kayıt await'ten önce yapılır, aynı anda basan ikinci kişi çağıran tarafın kontrolüne takılır
   store.updateApplication(app.id, {
-    ownerId: interaction.user.id,
-    meetingBy: interaction.user.id,
+    ownerId: user.id,
+    meetingBy: user.id,
     meetingAt: Date.now(),
-    meetingChannelId: voice.staffVoiceChannel(interaction.guild, interaction.user.id),
+    meetingChannelId: voice.staffVoiceChannel(guild, user.id),
     onHold: null,
   });
 
-  await interaction.deferUpdate();
-  const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
+  const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
   // Buton başvuru mesajından ya da beklemedeki görüşmenin bildiriminden gelmiş olabilir; ikisi de kanaldan güncellenir
-  await editMessage(interaction.guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
-  if (hold?.noticeId) await editMessage(interaction.guild, app.channelId, hold.noticeId, ui.meetingHoldNotice(app, 'taken'));
+  await editMessage(guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
+  if (hold?.noticeId) await editMessage(guild, app.channelId, hold.noticeId, ui.meetingHoldNotice(app, 'taken'));
+  if (hold?.panelMessageId) await editMessage(guild, hold.panelChannelId, hold.panelMessageId, ui.decisionPanel(app, 'resumed'));
 
-  const access = await openVoice(interaction, app, `Yetkili başvurusu #${core.pad(app.number)} görüşmesi`);
-  const sent = await applicant
-    ?.send({ components: [ui.meetingDm(app, interaction.guild.name, access)], flags: core.CV2 })
-    .catch(() => null);
+  const until = await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} görüşmesi`);
+  const access = until ? { staffId: user.id, waitingIn: voice.staffVoiceChannel(guild, user.id), until } : null;
+  const sent = await applicant?.send({ components: [ui.meetingDm(app, guild.name, access)], flags: core.CV2 }).catch(() => null);
   // İkisi zaten aynı görüşme kanalındaysa ses olayı gelmeyeceği için görüşme burada başlatılır
-  await startMeeting(interaction.guild, app);
+  await startMeeting(guild, app);
+  return { access, sent };
+}
+
+// "Görüşmeye Çağır"
+async function callToMeeting(interaction, app) {
+  if (app.meetingBy) return replyError(interaction, 'Başvuran zaten görüşmeye çağrıldı.');
+  if (holdGuard(app, interaction)) {
+    return replyError(
+      interaction,
+      `Bu görüşmeyi <@${app.onHold.by}> beklemeye aldı, <t:${Math.floor(app.onHold.until / 1000)}:R> kadar yalnızca o geri alabilir.`,
+      'Devralmak için bildirimdeki **Devralma İste** butonuyla ondan devir isteyebilirsin; süre dolunca herkes üstlenebilir.',
+    );
+  }
+  await interaction.deferUpdate();
+  const { access, sent } = await beginMeetingFor(interaction.guild, app, interaction.user);
   return respond(interaction, staffReport('Başvuran görüşmeye çağrıldı.', access, sent));
 }
 
@@ -237,13 +258,6 @@ async function approve(interaction, app) {
   await interaction.deferUpdate();
   await endMeeting(interaction.guild, app);
   return orientation.askWhoOrients(interaction, app);
-}
-
-// Başvurana görüşme ses kanallarını açar; DM'e eklenecek ses bölümü bilgisini döner (açılamazsa null)
-async function openVoice(interaction, app, reason) {
-  const until = await voice.grantAccess(interaction.guild, app, reason);
-  if (!until) return null;
-  return { staffId: interaction.user.id, waitingIn: voice.staffVoiceChannel(interaction.guild, interaction.user.id), until };
 }
 
 // Butona basan yetkiliye ses kanalı ve DM durumunu özetler
@@ -298,7 +312,8 @@ async function notifyWaiting(newState) {
     }
 
     if (stage === 'unassigned') {
-      await orientation.postPending(guild, app, channelId, 'waiting');
+      // Beklemeye alan yetkinin geri alma süresinde yetkililer etiketlenmez
+      if (!orientation.isGuarded(app)) await orientation.postPending(guild, app, channelId, 'waiting');
       continue;
     }
     await log.send(guild, app, ui.waitingLog(app, stage, channelId), [], [staffId]);
@@ -324,6 +339,7 @@ async function notifyApplicantOfStaff(newState) {
 // Görüşmeyi bitmiş sayar ve kayıt kanalındaki mesajını günceller (başvuran çıkınca ya da karar verilince)
 async function endMeeting(guild, app) {
   clearAwayTimer(app);
+  clearApplicantTimers(app);
   for (const key of [...waitingNotified.keys()]) if (key.startsWith(`${app.id}:`)) waitingNotified.delete(key);
   if (!app.meeting?.startedAt || app.meeting.endedAt) return;
   store.updateApplication(app.id, { meeting: { ...app.meeting, endedAt: Date.now() } });
@@ -340,7 +356,7 @@ async function startMeeting(guild, app) {
   }
   // Kayıt await'ten önce yapılır, art arda gelen olaylarda iki kez başlatılmaz
   store.updateApplication(app.id, {
-    meeting: { channelId: applicantChannel, startedAt: Date.now(), endedAt: null, messageId: null, panelMessageId: null },
+    meeting: { channelId: applicantChannel, startedAt: Date.now(), endedAt: null, messageId: null, panelMessageId: null, applicantLeaves: 0, applicantAwaySince: null, staffAwaySince: null },
   });
   const message = await log.send(guild, app, ui.meetingLog(app));
   if (message) {
@@ -360,28 +376,73 @@ async function startMeeting(guild, app) {
   return true;
 }
 
-// Görüşmeyi beklemeye alır (yetkili elle bıraktıysa ya da kanaldan uzun süre ayrıldıysa): başvuru yeniden sahipsiz olur, görüşme
-// kaydı kapanır, karar paneli "beklemede"ye döner ve başvurular kanalına inceleyen rolü etiketleyen bildirim gider.
-// Başvuru mesajındaki Görüşmeye Çağır butonuna ilk basan yetkili görüşmeyi sürdürür.
+// Görüşmeyi beklemeye alır. Elle bırakıldıysa beklemeye alan yetkinin geri alma süresi (holdProtectMinutes) başlar: bu sürede
+// kimse etiketlenmez, başkaları devir isteyebilir, süre dolunca inceleyen rol etiketlenir ve herkes üstlenebilir. Yetkili kanaldan
+// uzun süre ayrıldığı için (auto) bırakıldıysa süre zaten dolmuştur, inceleyen rol hemen etiketlenir. Başvuru yeniden sahipsiz olur,
+// görüşme kaydı kapanır, karar paneli "beklemede"ye döner.
+const meetingHoldTimers = new Map();
 async function releaseMeeting(guild, app, { byId, auto = false }) {
   if (app.status !== 'pending' || !app.meetingBy) return false;
   const panel = { channelId: app.meeting?.panelChannelId, messageId: app.meeting?.panelMessageId };
   await endMeeting(guild, app);
+  const now = Date.now();
   store.updateApplication(app.id, {
     ownerId: null,
     meetingBy: null,
     meetingAt: null,
     meetingChannelId: null,
     meeting: null,
-    onHold: { by: byId, auto, at: Date.now() },
+    onHold: {
+      by: byId,
+      auto,
+      at: now,
+      until: auto ? now : now + config.holdProtectMinutes * 60 * 1000,
+      pinged: auto,
+      panelChannelId: panel.channelId,
+      panelMessageId: panel.messageId,
+      requests: [],
+    },
   });
 
   await editMessage(guild, panel.channelId, panel.messageId, ui.decisionPanel(app, 'hold'));
   const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
   await editMessage(guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
-  const notice = await log.send(guild, app, ui.meetingHoldNotice(app), app.reviewerRoleId ? [app.reviewerRoleId] : [], [], { reply: false });
+  const notice = await log.send(
+    guild,
+    app,
+    ui.meetingHoldNotice(app, auto ? 'open' : 'protected'),
+    auto && app.reviewerRoleId ? [app.reviewerRoleId] : [],
+    [],
+    { reply: false },
+  );
   if (notice) store.updateApplication(app.id, { onHold: { ...app.onHold, noticeId: notice.id } });
+  if (!auto) scheduleMeetingHold(guild, app);
   return true;
+}
+
+function scheduleMeetingHold(guild, app) {
+  clearTimeout(meetingHoldTimers.get(app.id));
+  meetingHoldTimers.set(
+    app.id,
+    setTimeout(
+      () => {
+        meetingHoldTimers.delete(app.id);
+        expireMeetingHold(guild, app.id).catch((err) => console.error('[basvuru] Bekleme süresi işlenemedi:', err.message));
+      },
+      Math.max(0, app.onHold.until - Date.now()),
+    ),
+  );
+}
+
+// Geri alma süresi dolunca: eski bildirim kayıt olur, inceleyen rolü etiketleyen yeni bildirim gider, panel "yetkili bekleniyor"a döner
+async function expireMeetingHold(guild, appId) {
+  const app = store.getApplication(appId);
+  if (!app || app.status !== 'pending' || app.meetingBy || !app.onHold || app.onHold.pinged) return;
+  store.updateApplication(app.id, { onHold: { ...app.onHold, pinged: true } });
+  await editMessage(guild, app.channelId, app.onHold.noticeId, ui.meetingHoldNotice(app, 'superseded'));
+  const notice = await log.send(guild, app, ui.meetingHoldNotice(app, 'open'), app.reviewerRoleId ? [app.reviewerRoleId] : [], [], { reply: false });
+  if (notice) store.updateApplication(app.id, { onHold: { ...app.onHold, noticeId: notice.id } });
+  await editMessage(guild, app.onHold.panelChannelId, app.onHold.panelMessageId, ui.decisionPanel(app, 'hold'));
 }
 
 // Görüşmeyi yürüten yetkili görüşme kanallarından ayrılınca süre başlar (bildirim gitmez, kararın paneli süreyi gösterir);
@@ -416,8 +477,71 @@ async function staffBack(guild, app) {
   await editMessage(guild, app.meeting.panelChannelId, app.meeting.panelMessageId, ui.decisionPanel(app));
 }
 
-// Görüşme kanallarındaki girişlerde görüşmeyi başlatır; başvuran görüşme kanallarından çıkınca görüşme bitmiş sayılır;
-// görüşmeyi yürüten yetkili ayrılıp dönünce süre başlatılır / durdurulur
+// Görüşme sırasında başvuran kanaldan ayrılırsa (kısa kopmalar sayılmaz) ayrılma hakkı düşer; süre içinde dönmezse ya da hakkı
+// bitince başvuru otomatik reddedilir ve sebep başvuruya (ve siciline) yazılır
+const applicantTimers = new Map();
+function clearApplicantTimers(app) {
+  for (const key of [...applicantTimers.keys()]) {
+    if (key.startsWith(`${app.id}:`)) {
+      clearTimeout(applicantTimers.get(key));
+      applicantTimers.delete(key);
+    }
+  }
+}
+function setApplicantTimer(key, ms, fn) {
+  clearTimeout(applicantTimers.get(key));
+  applicantTimers.set(
+    key,
+    setTimeout(() => {
+      applicantTimers.delete(key);
+      Promise.resolve(fn()).catch((err) => console.error('[basvuru] Başvuran ayrılma işlemi hatası:', err.message));
+    }, ms),
+  );
+}
+
+async function autoRejectMeeting(guild, appId, reason) {
+  const app = store.getApplication(appId);
+  if (!app || app.status !== 'pending') return;
+  // Karar await'ten önce kaydedilir
+  store.updateApplication(app.id, { status: 'rejected', reviewedBy: null, reviewedAt: Date.now(), note: reason, autoRejected: true });
+  await endMeeting(guild, app);
+
+  const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
+  await editMessage(guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
+  await editMessage(guild, app.meeting?.panelChannelId, app.meeting?.panelMessageId, ui.decisionPanel(app, 'rejected'));
+  await voice.lockAfterLeave(guild, app, `Yetkili başvurusu #${core.pad(app.number)} otomatik reddedildi`);
+  await applicant?.send({ components: [ui.resultDm(app, guild.name, reapplyAt(app.guildId, app.userId))], flags: core.CV2 }).catch(() => {});
+  await log.send(guild, app, ui.decisionPanel(app, 'rejected'));
+}
+
+async function applicantLeft(guild, appId) {
+  const app = store.getApplication(appId);
+  const m = app?.meeting;
+  if (!m || m.endedAt || app.status !== 'pending' || m.applicantAwaySince) return;
+  if (voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId)) return;
+
+  const leaves = (m.applicantLeaves ?? 0) + 1;
+  store.updateApplication(app.id, { meeting: { ...m, applicantLeaves: leaves, applicantAwaySince: Date.now() } });
+  if (leaves >= config.meetingMaxApplicantLeaves) {
+    return autoRejectMeeting(guild, app.id, `Başvuran görüşme sırasında ${leaves} kez kanaldan ayrıldı.`);
+  }
+  await editMessage(guild, m.panelChannelId, m.panelMessageId, ui.decisionPanel(app));
+  setApplicantTimer(`${app.id}:deadline`, config.meetingApplicantGraceMinutes * 60 * 1000, () => {
+    const fresh = store.getApplication(app.id);
+    if (!fresh?.meeting?.applicantAwaySince || voice.isRecruitmentChannel(guild.voiceStates.cache.get(fresh.userId)?.channelId)) return;
+    return autoRejectMeeting(guild, app.id, `Başvuran görüşme sırasında kanaldan ayrıldı ve ${config.meetingApplicantGraceMinutes} dakika içinde geri dönmedi.`);
+  });
+}
+
+async function applicantBack(guild, app) {
+  clearApplicantTimers(app);
+  if (!app.meeting?.applicantAwaySince) return;
+  store.updateApplication(app.id, { meeting: { ...app.meeting, applicantAwaySince: null } });
+  await editMessage(guild, app.meeting.panelChannelId, app.meeting.panelMessageId, ui.decisionPanel(app));
+}
+
+// Görüşme kanallarındaki girişlerde görüşmeyi başlatır; görüşme sırasında başvuran ayrılıp dönünce süre başlatılır / durdurulur;
+// görüşmeyi yürüten yetkili ayrılıp dönünce de süre başlatılır / durdurulur
 async function trackMeeting(oldState, newState) {
   const { guild } = newState;
   const related = store.inMeeting().filter((a) => a.userId === newState.id || a.meetingBy === newState.id);
@@ -425,9 +549,17 @@ async function trackMeeting(oldState, newState) {
   for (const app of related) {
     if (!app.meeting) {
       await startMeeting(guild, app);
-    } else if (newState.id === app.userId && !voice.isRecruitmentChannel(newState.channelId)) {
-      await endMeeting(guild, app);
-    } else if (newState.id === app.meetingBy && !app.meeting.endedAt) {
+    } else if (app.meeting.endedAt) {
+      continue;
+    } else if (newState.id === app.userId) {
+      if (voice.isRecruitmentChannel(newState.channelId)) {
+        clearTimeout(applicantTimers.get(`${app.id}:confirm`));
+        applicantTimers.delete(`${app.id}:confirm`);
+        await applicantBack(guild, app);
+      } else {
+        setApplicantTimer(`${app.id}:confirm`, config.meetingConfirmSeconds * 1000, () => applicantLeft(guild, app.id));
+      }
+    } else if (newState.id === app.meetingBy) {
       const applicantHere = voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId);
       if (voice.isRecruitmentChannel(newState.channelId)) await staffBack(guild, app);
       else if (applicantHere) await staffAway(guild, app);
@@ -505,6 +637,10 @@ async function handleRemind(interaction) {
   const { guild } = interaction;
   const channelId = guild.voiceStates.cache.get(app.userId)?.channelId;
   if (!voice.isRecruitmentChannel(channelId)) return replyError(interaction, 'Önce bir görüşme kanalına girmelisin.');
+  const holdUntil = stage === 'hold' ? app.onHold.until : stage === 'unassigned' && orientation.isGuarded(app) ? app.orientation.holdUntil : 0;
+  if (holdUntil > Date.now()) {
+    return replyError(interaction, 'Yetkili işlemi geri alabilir.', `Geri alma süresi <t:${Math.floor(holdUntil / 1000)}:R> dolunca yetkililere haber verilir; o zaman buradan hatırlatabilirsin.`);
+  }
   const staffId = stage === 'meeting' ? app.meetingBy : stage === 'orientation' ? app.orientation.staffId : null;
   if (staffId && guild.voiceStates.cache.get(staffId)?.channelId === channelId) return replyError(interaction, 'Yetkilin zaten kanalda.');
 
@@ -532,6 +668,86 @@ async function handleRemind(interaction) {
     flags: core.EPHEMERAL_CV2,
     allowedMentions: { parse: [] },
   });
+}
+
+// ── Devir isteği ──────────────────────────────────────────────────────────────
+// Beklemeye alınmış bir işlemin geri alma süresinde başka bir yetkili "Devralma İste" ile beklemeye alan yetkiden devir isteyebilir.
+// İstek ona DM ile gider (DM kapalıysa başvurular kanalına): onaylarsa işlem isteyene geçer, reddederse süre devam eder.
+const holdStageOf = (app) =>
+  app.status === 'pending' && !app.meetingBy && app.onHold
+    ? 'meeting'
+    : app.status === 'approved' && app.orientation?.status === 'unassigned' && app.orientation.holdBy
+      ? 'orientation'
+      : null;
+const holdInfo = (app, stage) =>
+  stage === 'meeting'
+    ? { by: app.onHold.by, until: app.onHold.until, pinged: app.onHold.pinged, requests: (app.onHold.requests ??= []) }
+    : { by: app.orientation.holdBy, until: app.orientation.holdUntil, pinged: app.orientation.holdPinged, requests: (app.orientation.holdRequests ??= []) };
+
+async function handleTransfer(interaction) {
+  const [, id, action, requesterId] = interaction.customId.split(':');
+  const app = store.getApplication(id);
+  if (!app) return replyError(interaction, 'Bu başvuru bulunamadı.');
+  const { client } = interaction;
+  const guild = client.guilds.cache.get(guildId);
+  const stage = holdStageOf(app);
+
+  if (action === 'iste') {
+    if (!stage) return replyError(interaction, 'Bu işlem artık beklemede değil.', 'Başvuru mesajından doğrudan üstlenebilirsin.');
+    const hold = holdInfo(app, stage);
+    const roles = stage === 'meeting' ? [app.reviewerRoleId, ...config.roles.reviewerExtra] : orientation.orienterRoles(app);
+    if (!isStaff(interaction, roles)) return replyError(interaction, 'Bu işlemi devralmak için yetkin yok.', `Gerekli roller: ${roles.filter(Boolean).map((r) => `<@&${r}>`).join(', ')}`);
+    if (interaction.user.id === hold.by) return replyError(interaction, 'Bu işlemi sen beklemeye aldın.', 'Doğrudan üstlenebilirsin.');
+    if (hold.pinged || hold.until <= Date.now()) return replyError(interaction, 'Geri alma süresi doldu.', 'Artık doğrudan üstlenebilirsin.');
+    if (hold.requests.some((r) => r.by === interaction.user.id && r.status === 'pending')) {
+      return replyError(interaction, 'Zaten bir devir isteğin var.', `<@${hold.by}> yanıtlayana ya da süre dolana kadar bekle.`);
+    }
+    hold.requests.push({ by: interaction.user.id, at: Date.now(), status: 'pending' });
+    store.updateApplication(app.id, {});
+
+    const container = ui.transferRequestDm(app, interaction.user.id, stage);
+    const holder = await client.users.fetch(hold.by).catch(() => null);
+    const sent = await holder?.send({ components: [container], flags: core.CV2 }).then(() => true, () => false);
+    // DM kapalıysa istek başvurular kanalına düşer, beklemeye alan yetkili etiketlenir
+    if (!sent) await log.send(guild, app, container, [], [hold.by], { reply: false });
+    return respond(
+      interaction,
+      core.alert(
+        'Devir isteği gönderildi.',
+        `<@${hold.by}> onaylarsa işlem sana geçer; reddederse ya da cevap vermezse <t:${Math.floor(hold.until / 1000)}:R> süre dolunca herhangi bir yetkili üstlenebilir.`,
+        'success',
+      ),
+    );
+  }
+
+  // Onay / ret: sadece beklemeye alan yetkili (ya da yönetici) yanıtlar
+  if (!stage) {
+    return interaction.update({ components: [ui.transferRequestDm(app, requesterId, app.status === 'pending' ? 'meeting' : 'orientation', 'stale')], allowedMentions: { parse: [] } });
+  }
+  const hold = holdInfo(app, stage);
+  if (interaction.user.id !== hold.by && !interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+    return replyError(interaction, 'Bu isteği sadece işlemi beklemeye alan yetkili yanıtlayabilir.');
+  }
+  const request = hold.requests.find((r) => r.by === requesterId && r.status === 'pending');
+  if (request) request.status = action === 'evet' ? 'approved' : 'rejected';
+  store.updateApplication(app.id, {});
+  const requester = await client.users.fetch(requesterId).catch(() => null);
+
+  if (action === 'hayir') {
+    await interaction.update({ components: [ui.transferRequestDm(app, requesterId, stage, 'rejected')], allowedMentions: { parse: [] } });
+    await requester?.send({ components: [ui.transferResultDm(app, hold.by, stage, 'rejected')], flags: core.CV2 }).catch(() => {});
+    return null;
+  }
+
+  if (!requester || hold.pinged || hold.until <= Date.now()) {
+    return interaction.update({ components: [ui.transferRequestDm(app, requesterId, stage, 'stale')], allowedMentions: { parse: [] } });
+  }
+  await interaction.deferUpdate();
+  if (stage === 'meeting') await beginMeetingFor(guild, app, requester);
+  else await orientation.claimFor(guild, app, requester);
+  await interaction.editReply({ components: [ui.transferRequestDm(app, requesterId, stage, 'approved')], allowedMentions: { parse: [] } });
+  await requester.send({ components: [ui.transferResultDm(app, hold.by, stage, 'approved')], flags: core.CV2 }).catch(() => {});
+  return null;
 }
 
 // Reddet formu gönderilince başvuruyu reddeder: başvuru mesajı ve (varsa) görüşme kanalındaki karar paneli güncellenir,
@@ -582,6 +798,7 @@ module.exports = {
     [ui.IDS.review, handleReviewButton],
     [ui.IDS.reviewModal, handleReviewSubmit],
     [ui.IDS.remind, handleRemind],
+    [ui.IDS.transfer, handleTransfer],
   ],
   events: {
     [Events.ClientReady]: handleReady,

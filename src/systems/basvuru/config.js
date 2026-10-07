@@ -30,6 +30,8 @@ module.exports = {
   // ayrılırsa hemen reddedilir. Sebep başvuruya (ve siciline) yazılır.
   meetingApplicantGraceMinutes: 5,
   meetingMaxApplicantLeaves: 3,
+  // Kısa bağlantı kopmaları ayrılık sayılmaz: bu kadar saniye içinde dönen başvuran ayrılmış sayılmaz
+  meetingConfirmSeconds: 15,
   // Beklemeye alan yetkinin işlemi geri alabileceği süre (dakika): bu sürede başkaları devir isteyebilir, süre dolunca herkes üstlenebilir
   holdProtectMinutes: 5,
   // Açılan ses kanalı erişimi kaç saat sonra kendiliğinden kapanır (başvuru reddedilirse hemen kapanır)
