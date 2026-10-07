@@ -510,6 +510,7 @@ async function releaseMeeting(guild, app, { byId, auto = false }) {
     meetingBy: null,
     meetingAt: null,
     meetingChannelId: null,
+    directConnect: null,
     meeting: null,
     onHold: {
       by: byId,
@@ -584,7 +585,10 @@ async function staffAway(guild, app) {
       awayTimers.delete(app.id);
       const fresh = store.getApplication(app.id);
       if (!fresh?.meeting?.staffAwaySince || fresh.meetingBy !== app.meetingBy) return;
-      if (voice.isRecruitmentChannel(guild.voiceStates.cache.get(fresh.meetingBy)?.channelId)) return;
+      const staffBackInMeetCh = fresh.directConnect
+        ? guild.voiceStates.cache.get(fresh.meetingBy)?.channelId === fresh.meetingChannelId
+        : voice.isRecruitmentChannel(guild.voiceStates.cache.get(fresh.meetingBy)?.channelId);
+      if (staffBackInMeetCh) return;
       releaseMeeting(guild, fresh, { byId: fresh.meetingBy, auto: true }).catch((err) => console.error('[basvuru] Görüşme beklemeye alınamadı:', err.message));
     }, config.meetingStaffGraceMinutes * 60 * 1000),
   );
