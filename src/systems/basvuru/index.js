@@ -453,6 +453,29 @@ async function editMessage(guild, channelId, messageId, container) {
 // Başvuranın "Hatırlat" butonu: görüşme / oryantasyon yetkilisini beklerken 5 dakikada bir yetkililere "bekliyorum" bildirimi gönderir.
 // Oryantasyonu üstlenen yoksa yetkili rolü etiketlenir, varsa yetkili etiketlenir ve DM alır.
 const REMIND_COOLDOWN = 5 * 60 * 1000;
+// Hatırlat butonunu süre dolana kadar pasif gösterir, sonra kanaldaki mesajı yeniden düzenleyip açar (başvuru hâlâ aynı aşamadaysa)
+const remindReenableTimers = new Map();
+function scheduleRemindReenable(guild, app, stage) {
+  clearTimeout(remindReenableTimers.get(app.id));
+  remindReenableTimers.set(
+    app.id,
+    setTimeout(async () => {
+      remindReenableTimers.delete(app.id);
+      const fresh = store.getApplication(app.id);
+      const chat = fresh?.waitChatMessage;
+      if (!chat || !stillWaiting(fresh, stage)) return;
+      const channel = await fetchTextChannel(guild, chat.channelId);
+      await channel?.messages.edit(chat.messageId, { components: [ui.waitingChat(fresh, stage)], allowedMentions: { parse: [] } }).catch(() => {});
+    }, REMIND_COOLDOWN),
+  );
+}
+const stillWaiting = (app, stage) =>
+  stage === 'meeting'
+    ? app.status === 'pending' && app.meetingBy && !app.meeting
+    : stage === 'unassigned'
+      ? app.status === 'approved' && app.orientation?.status === 'unassigned'
+      : app.status === 'approved' && app.orientation?.status === 'waiting';
+
 async function handleRemind(interaction) {
   const app = store.getApplication(interaction.customId.split(':')[1]);
   if (!app) return replyError(interaction, 'Bu başvuru bulunamadı.');
@@ -478,16 +501,24 @@ async function handleRemind(interaction) {
   if (next > Date.now()) {
     return replyError(interaction, 'Çok sık hatırlatıyorsun.', `<t:${Math.floor(next / 1000)}:R> tekrar hatırlatabilirsin.`);
   }
-  store.updateApplication(app.id, { remindedAt: Date.now() });
+  store.updateApplication(app.id, { remindedAt: Date.now(), waitChatMessage: { channelId, messageId: interaction.message.id } });
+
+  // Buton süre dolana kadar pasifleşir, süre dolunca aynı mesaj yeniden düzenlenip açılır
+  await interaction.update({ components: [ui.waitingChat(app, stage, undefined, true)], allowedMentions: { parse: [] } });
+  scheduleRemindReenable(guild, app, stage);
 
   if (stage === 'unassigned') {
-    await orientation.postPending(guild, app, channelId, 'waiting');
+    await orientation.postPending(guild, app, channelId, 'waiting', true);
   } else {
-    await log.send(guild, app, ui.waitingLog(app, stage, channelId), [], [staffId]);
+    await log.send(guild, app, ui.waitingLog(app, stage, channelId, true), [], [staffId]);
     const staff = await guild.client.users.fetch(staffId).catch(() => null);
-    await staff?.send({ components: [ui.applicantWaitingDm(app, guild.name, channelId, stage === 'orientation')], flags: core.CV2 }).catch(() => {});
+    await staff?.send({ components: [ui.applicantWaitingDm(app, guild.name, channelId, stage === 'orientation', true)], flags: core.CV2 }).catch(() => {});
   }
-  return respond(interaction, core.alert('Yetkililere hatırlatıldı.', 'Bir yetkili ilgilenene kadar kanalda beklemeye devam et.', 'success'));
+  return interaction.followUp({
+    components: [core.alert('Yetkililere hatırlatıldı.', `<t:${Math.floor((Date.now() + REMIND_COOLDOWN) / 1000)}:R> tekrar hatırlatabilirsin.`, 'success')],
+    flags: core.EPHEMERAL_CV2,
+    allowedMentions: { parse: [] },
+  });
 }
 
 // Reddet formu gönderilince başvuruyu reddeder: başvuru mesajı ve (varsa) görüşme kanalındaki karar paneli güncellenir,
