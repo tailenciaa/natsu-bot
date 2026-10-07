@@ -24,8 +24,8 @@ module.exports = {
   // Görev rolleri: yetkilinin hangi alanda çalıştığını gösteren roller (yetkili ve lider ayrı). Denetleyici gibi
   // yönetici rolleri buraya konmaz.
   duties: [
-    { id: 'ticket', label: 'Talep Yetkilisi', roleId: '1554237787421548704' },
-    { id: 'ticket-lider', label: 'Talep Lideri', roleId: '1554239996645613638' },
+    { id: 'ticket', label: 'Destek Yetkilisi', roleId: '1554237787421548704' },
+    { id: 'ticket-lider', label: 'Destek Lideri', roleId: '1554239996645613638' },
     { id: 'sorun', label: 'Sorun Çözücü', roleId: '1544337671340433569' },
     { id: 'sorun-lider', label: 'Sorun Çözücü Lideri', roleId: '1553133497781325954' },
     { id: 'ses', label: 'Ses Yetkilisi', roleId: '1554239999619375274' },
