@@ -400,8 +400,9 @@ function approvedDm(app, guildName, channelId) {
 }
 
 // Oryantasyonu verecek yetkiliye giden DM (onaylayınca, oryantasyon kendisine aktarılınca ya da devralınca).
-// tookOver: yetkili ayrıldığı için başvurular kanalından devralındıysa (transferredBy ayrılan yetkili)
-function staffDm(app, guildName, channelId, transferredBy, tookOver) {
+// tookOver: yetkili ayrıldığı için başvurular kanalından devralındıysa (transferredBy ayrılan yetkili),
+// claimed: bekleyen oryantasyon başvurular kanalından üstlenildiyse
+function staffDm(app, guildName, channelId, transferredBy, tookOver, claimed) {
   const o = app.orientation;
   const active = o.status === 'active';
   const target = active ? o.channelId : channelId;
@@ -413,7 +414,9 @@ function staffDm(app, guildName, channelId, transferredBy, tookOver) {
       'Başvuranla aynı kanala girdiğinde oryantasyon **kendiliğinden başlar**, panel kanalın sohbetine gelir. ' +
       'Adımları sen ilerletirsin; başvuranın bildiği konuları **Biliyor, Atla** ile geçebilirsin.';
 
-  const reason = tookOver
+  const reason = claimed
+    ? `Bekleyen #${pad(app.number)} numaralı başvurunun oryantasyonunu üstlendin, artık başvuranla sen ilgileneceksin.`
+    : tookOver
     ? `<@${transferredBy}> kanaldan ayrıldığı için #${pad(app.number)} numaralı başvurunun oryantasyonunu devraldın.`
     : transferredBy
       ? `<@${transferredBy}>, #${pad(app.number)} numaralı başvurunun oryantasyonunu sana aktardı.`
@@ -563,6 +566,10 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
     takenOver: toApplicant
       ? ['Oryantasyonun Devralındı', `**<@${o.staffId}> oryantasyonunu devraldı.**\nBirazdan kanala gelecek, kaldığın adımdan devam edeceksiniz.`, 'primary']
       : null,
+    claimed: toApplicant
+      ? ['Oryantasyonunu Yetkili Üstlendi', `**<@${o.staffId}> oryantasyonunu üstlendi.**
+${channelId ? `Seni <#${channelId}> kanalında bekleyecek, kanala girdiğinde oryantasyon kendiliğinden başlayacak.` : 'Görüşme kanallarından birine geçip beklemen yeterli; ikiniz aynı kanala girince oryantasyon kendiliğinden başlayacak.'}`, 'primary', channelId]
+      : null,
     staffWaiting: toApplicant
       ? ['Yetkilin Seni Bekliyor', `**<@${o.staffId}> oryantasyon için <#${channelId}> kanalına girdi, seni bekliyor.**\nKanala girdiğinde oryantasyon kendiliğinden başlayacak.`, 'primary', channelId]
       : null,
@@ -586,7 +593,7 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
-          .setLabel(kind === 'staffWaiting' ? 'Kanala Katıl' : 'Kanala Dön')
+          .setLabel(['staffWaiting', 'claimed'].includes(kind) ? 'Kanala Katıl' : 'Kanala Dön')
           .setURL(channelUrl(app.guildId, buttonChannelId)),
       ),
     );
