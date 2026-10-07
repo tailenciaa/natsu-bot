@@ -416,7 +416,11 @@ async function askWhoOrients(interaction, app) {
 // claimed: bekleyen oryantasyon başvurular kanalından üstlenildiyse (başvuran onay DM'ini zaten almıştır)
 async function begin(guild, app, staffUser, { claimed = false } = {}) {
   const access = await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu`);
-  const channelId = voice.pickOrientationChannel(guild, staffUser.id);
+  // Kanal: yetkili zaten bir görüşme kanalındaysa o, değilse başvuranın beklediği kanal, o da yoksa boş olan ilk kanal
+  const applicantChannel = voiceChannelOf(guild, app.userId);
+  const channelId =
+    voice.staffVoiceChannel(guild, staffUser.id) ??
+    (voice.isRecruitmentChannel(applicantChannel) ? applicantChannel : voice.pickOrientationChannel(guild, staffUser.id));
   saveOrientation(app, { suggestedChannelId: channelId });
   await refresh(guild, app);
 
