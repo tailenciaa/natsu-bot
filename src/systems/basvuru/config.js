@@ -43,6 +43,8 @@ module.exports = {
     // Yetkili Alım DM'nin yanında oryantasyon verebilen, oryantasyonu devralabilen ve kendilerine aktarılabilen roller:
     // Yetkili Alım Lideri, Oryantasyon Lideri, Oryantasyon Yetkilisi
     orientation: ['1554240783580667954', '1554240783769669663', '1554240783929049168'],
+    // Bekleyen oryantasyon bildirimlerinde sadece bu rol etiketlenir: Oryantasyon Yetkilisi
+    orientationPing: ['1554240783929049168'],
   },
 
   panel: {

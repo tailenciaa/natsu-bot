@@ -713,7 +713,7 @@ function pendingNotice(app, state, channelId) {
 
   const waiting = state === 'waiting';
   const where = channelId ? `<@${app.userId}> <#${channelId}> kanalında bekliyor.` : `<@${app.userId}> henüz bir görüşme kanalında değil.`;
-  const roles = orienterRoleIds(app).map((id) => `<@&${id}>`).join(', ');
+  const roles = basvuruConfig.roles.orientationPing.map((id) => `<@&${id}>`).join(', ');
   const buttons = [claimButton(app)];
   if (channelId) buttons.push(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)));
   return withRow(
