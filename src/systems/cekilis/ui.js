@@ -58,16 +58,16 @@ function panel(g) {
 
   // Katıl butonunun altındaki yönetim butonlarını sadece yöneticiler kullanabilir (basınca kontrol edilir)
   const button = (id, label, style) => new ButtonBuilder().setCustomId(id).setLabel(label).setStyle(style);
-  container.addActionRowComponents(
-    new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(IDS.join)
-        .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : `${closedLabel} (${g.participants.length} katılımcı)`)
-        .setStyle(g.status === 'active' ? ButtonStyle.Success : ButtonStyle.Secondary)
-        .setDisabled(g.status !== 'active'),
-      button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary).setDisabled(g.status !== 'ended'),
-    ),
+  const joinRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(IDS.join)
+      .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : `${closedLabel} (${g.participants.length} katılımcı)`)
+      .setStyle(g.status === 'active' ? ButtonStyle.Success : ButtonStyle.Secondary)
+      .setDisabled(g.status !== 'active'),
   );
+  // Yeniden Çek: iptal edilen çekilişte hiç kazanan seçilmediği için gösterilmez; açıkken pasif, bitince aktif
+  if (g.status !== 'cancelled') joinRow.addComponents(button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary).setDisabled(g.status !== 'ended'));
+  container.addActionRowComponents(joinRow);
   if (g.status === 'active') {
     container.addActionRowComponents(
       new ActionRowBuilder().addComponents(button(IDS.edit, 'Düzenle', ButtonStyle.Secondary), button(IDS.end, 'Bitir', ButtonStyle.Primary), button(IDS.cancel, 'İptal Et', ButtonStyle.Danger)),
