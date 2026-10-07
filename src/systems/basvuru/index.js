@@ -490,6 +490,7 @@ async function releaseMeeting(guild, app, { byId, auto = false }) {
     },
   });
 
+  refreshStatusPanel(guild.client, guild.id).catch(() => {});
   await editMessage(guild, panel.channelId, panel.messageId, ui.decisionPanel(app, 'hold'));
   const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
   await editMessage(guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
@@ -590,6 +591,7 @@ async function autoRejectMeeting(guild, appId, reason) {
   if (!app || app.status !== 'pending') return;
   // Karar await'ten önce kaydedilir
   store.updateApplication(app.id, { status: 'rejected', reviewedBy: null, reviewedAt: Date.now(), note: reason, autoRejected: true });
+  refreshStatusPanel(guild.client, guild.id).catch(() => {});
   await endMeeting(guild, app);
 
   const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
