@@ -67,7 +67,7 @@ module.exports = {
   },
 
   // Reddedilen başvurudan sonra kaç gün tekrar başvurulamaz (0: sınır yok)
-  reapplyCooldownDays: 0,
+  reapplyCooldownDays: 7,
 
   // Formdaki sorular (en fazla 5). "title" başvuru mesajında cevabın başlığı olarak görünür.
   questions: [
