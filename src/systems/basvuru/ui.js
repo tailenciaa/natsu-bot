@@ -197,34 +197,27 @@ function applicationNotice(app, applicantUser) {
   return withFooter(container, `-# <t:${unix(app.createdAt)}:F>`);
 }
 
-// Onayla / Reddet ile açılan form: onayda not isteğe bağlı, redde sebep zorunlu. İkisi de başvurana iletilir.
-function reviewModal(app, action) {
-  const approve = action === 'onay';
-  const approveInfo =
-    'Başvuru sana atanacak ve **oryantasyonu sen vereceksin.** Başvurana ve sana DM ile boş bir görüşme kanalı bildirilecek; ' +
-    'ikiniz de kanala girince oryantasyon kendiliğinden başlar. **Roller oryantasyon sonunda** verilir.';
+// Reddet ile açılan form: sebep zorunlu ve başvurana DM ile iletilir
+function reviewModal(app) {
   return new ModalBuilder()
-    .setCustomId(`${IDS.reviewModal}:${app.id}:${action}`)
-    .setTitle(approve ? 'Başvuruyu Onayla' : 'Başvuruyu Reddet')
+    .setCustomId(`${IDS.reviewModal}:${app.id}:red`)
+    .setTitle('Başvuruyu Reddet')
     .addTextDisplayComponents(
-      text(
-        approve
-          ? `**#${pad(app.number)} numaralı başvuruyu onaylıyorsun.**\n${approveInfo}`
-          : `**#${pad(app.number)} numaralı başvuruyu reddediyorsun.**\nYazdığın sebep başvurana **DM ile** iletilecek.`,
-      ),
+      text(`**#${pad(app.number)} numaralı başvuruyu reddediyorsun.**
+Yazdığın sebep başvurana **DM ile** iletilecek.`),
     )
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel(approve ? 'Not' : 'Ret sebebi')
-        .setDescription(approve ? 'İsteğe bağlı, başvurana iletilir.' : 'Başvurana iletilir.')
+        .setLabel('Ret sebebi')
+        .setDescription('Başvurana iletilir.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.reviewNote)
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder(approve ? 'Örn: Mülakatta çok iyiydin, oryantasyonda görüşmek üzere!' : 'Örn: Aktiflik süren şu an için yeterli değil.')
-            .setMinLength(approve ? 0 : 5)
+            .setPlaceholder('Örn: Aktiflik süren şu an için yeterli değil.')
+            .setMinLength(5)
             .setMaxLength(500)
-            .setRequired(!approve),
+            .setRequired(true),
         ),
     );
 }
@@ -310,6 +303,96 @@ function applicantWaitingDm(app, guildName, channelId, orientation) {
   );
 }
 
+// Görüşme başlayınca (ikisi aynı görüşme kanalına girince) kanalın sohbetine atılan karar paneli: görüşmeye çağıran yetkili
+// başvurunun devam edip etmeyeceğine buradan karar verir. state: open | rejected (Devam Et ile oryantasyon aşamasına geçilince
+// panelin yerine oryantasyonu kimin vereceği sorusu gelir)
+function decisionPanel(app, state = 'open') {
+  if (state === 'rejected') {
+    return card(
+      'Başvuru Reddedildi',
+      'Görüşmenin ardından başvuru reddedildi ve sebep başvurana DM ile iletildi. Görüşme kanalları başvurana kilitlenir; kayıt başvurular kanalında kalır.',
+      [`**Başvuru #${pad(app.number)}**
+<@${app.reviewedBy}>, <@${app.userId}> kullanıcısının başvurusunu reddetti.`],
+      'danger',
+    );
+  }
+  const reviewId = (action) => `${IDS.review}:${app.id}:${action}`;
+  return card(
+    'Görüşme Kararı',
+    'Görüşme bitince başvuranın uygun olup olmadığına karar ver: **Devam Et** ile başvuru oryantasyon aşamasına geçer, **İptal Et** ile başvuru reddedilir ve sebep başvurana DM ile iletilir.',
+    [`**Başvuru #${pad(app.number)}**
+<@${app.meetingBy}> ile <@${app.userId}> görüşüyor.
+Kararı sadece **görüşmeye çağıran yetkili** (ya da yöneticiler) verebilir.`],
+    'primary',
+  )
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(reviewId('devam')).setStyle(ButtonStyle.Success).setLabel('Devam Et'),
+        new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('İptal Et'),
+      ),
+    );
+}
+
+// Başvuran görüşme kanalına yetkiliden önce girince kanalın sohbetine giden bekleme mesajı.
+// stage: meeting (görüşme) | orientation (oryantasyon yetkilisi belli) | unassigned (oryantasyonu üstlenen yok)
+function waitingChat(app, stage) {
+  const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
+  const body =
+    stage === 'unassigned'
+      ? `<@${app.userId}> oryantasyon için kanalda.
+Oryantasyonu üstlenecek yetkili bekleniyor, başvurular kanalına bildirim gönderildi.`
+      : `<@${app.userId}> ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanalda.
+<@${staffId}> henüz bağlanmadı, yetkilinin bağlanması bekleniyor.`;
+  return card(
+    'Yetkili Bekleniyor',
+    'Başvuran görüşme kanalına girdi ve yetkiliyi bekliyor. Yetkili kanala bağlandığında görüşme ya da oryantasyon başlar; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
+    [`**Başvuru #${pad(app.number)}**
+${body}`],
+    'warning',
+  );
+}
+
+// Başvuran yetkiliden önce kanala girince başvurular kanalına (başvuru mesajına yanıt olarak) giden, başvuranın hangi aşamada beklediğini söyleyen kayıt.
+// stage: meeting | orientation
+function waitingLog(app, stage, channelId) {
+  const staffId = stage === 'meeting' ? app.meetingBy : app.orientation.staffId;
+  return card(
+    'Başvuran Bekliyor',
+    `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için görüşme kanalına girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`,
+    [`**Başvuru #${pad(app.number)} - ${stage === 'meeting' ? 'Görüşme' : 'Oryantasyon'}**
+<@${app.userId}> <#${channelId}> kanalında <@${staffId}> yetkilisini bekliyor.`],
+    'warning',
+  )
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
+      ),
+    );
+}
+
+// Görüşmeye çağıran yetkili başvurandan önce bir görüşme kanalına girince başvurana giden DM
+function meetingStaffWaitingDm(app, guildName, channelId) {
+  return withFooter(
+    card(
+      'Yetkilin Seni Bekliyor',
+      'Görüşmeye çağıran yetkili görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla hemen katılabilirsin; kanal senin için açık ve görüşme kanala girdiğinizde kendiliğinden başlar.',
+      [`**Görüşme**
+<@${app.meetingBy}> mülakat için <#${channelId}> kanalına girdi, seni bekliyor.
+**Başvuru:** #${pad(app.number)}`],
+      'primary',
+    )
+      .addSeparatorComponents(divider())
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
+        ),
+      ),
+    `-# ${guildName} - <t:${unix(Date.now())}:F>`,
+  );
+}
+
 // Kayıt kanalındaki görüşme mesajı: görüşme başlayınca gönderilir, bitince güncellenir
 function meetingLog(app) {
   const m = app.meeting;
@@ -329,4 +412,4 @@ function meetingLog(app) {
   );
 }
 
-module.exports = { IDS, STATUS, statusLabel, applicantWaitingDm, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+module.exports = { IDS, STATUS, statusLabel, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
