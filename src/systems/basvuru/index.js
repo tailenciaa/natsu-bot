@@ -925,6 +925,13 @@ async function handleReviewSubmit(interaction) {
   const sent = await applicant
     ?.send({ components: [ui.resultDm(app, interaction.guild.name, reapplyAt(app.guildId, app.userId))], flags: core.CV2 })
     .catch(() => null);
+
+  // Buton ephemeral Detay mesajından basıldıysa (ne başvuru kanalı mesajı ne karar paneli) onu da güncelle
+  const msgId = interaction.message?.id;
+  if (interaction.message && msgId !== app.messageId && (!panelId || msgId !== panelId)) {
+    await interaction.editReply({ components: [ui.applicationNotice(app, applicant)], flags: core.CV2, allowedMentions: { parse: [] } });
+  }
+
   if (!sent) {
     await respond(
       interaction,
