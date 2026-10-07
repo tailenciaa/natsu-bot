@@ -16,8 +16,8 @@ const IDS = {
   apply: 'basvuru:yap',
   applyModal: 'basvuru:form',
   applyQuestion: 'basvuru:soru', // sonuna soru ID'si eklenir
-  review: 'basvuru-karar', // basvuru-karar:<başvuru>:<onay|red|gorusme>
-  reviewModal: 'basvuru-karar-form', // basvuru-karar-form:<başvuru>:<onay|red>
+  review: 'basvuru-karar', // basvuru-karar:<başvuru>:<gorusme|devam|red> (eski mesajlarda onay da olabilir)
+  reviewModal: 'basvuru-karar-form', // basvuru-karar-form:<başvuru>:red
   reviewNote: 'basvuru-karar-not',
 };
 
@@ -65,6 +65,20 @@ function applicationModal() {
 // Onaylanan başvurunun oryantasyon durumu: [durum yazısı, renk]
 function orientationStatus(app) {
   const o = app.orientation;
+  if (o.status === 'choosing') {
+    return [
+      `**Durum: Oryantasyon kararı bekleniyor**
+<@${o.staffId}> başvuruyu uygun buldu; oryantasyonu kendisinin mi vereceğine yoksa oryantasyon yetkililerine mi bırakacağına karar veriyor.`,
+      colors.primary,
+    ];
+  }
+  if (o.status === 'unassigned') {
+    return [
+      `**Durum: Oryantasyon yetkilisi bekleniyor**
+<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir.`,
+      colors.warning,
+    ];
+  }
   if (o.status === 'waiting') {
     return [
       `**Durum: Oryantasyon bekleniyor**\n<@${app.reviewedBy}> onayladı, oryantasyonu <@${o.staffId}> verecek. ` +
@@ -96,17 +110,18 @@ function orientationStatus(app) {
 // Sicil gibi yerlerde görünen kısa durum
 function statusLabel(app) {
   if (app.status !== 'approved' || !app.orientation) return STATUS[app.status];
-  return { waiting: 'Oryantasyonda', active: 'Oryantasyonda', completed: 'Ekibe Katıldı', cancelled: 'Oryantasyon İptal Edildi' }[
+  return { choosing: 'Oryantasyonda', unassigned: 'Oryantasyon Bekliyor', waiting: 'Oryantasyonda', active: 'Oryantasyonda', completed: 'Ekibe Katıldı', cancelled: 'Oryantasyon İptal Edildi' }[
     app.orientation.status
   ];
 }
 
 // Başvurular kanalına giden mesaj: sağ üstte başvuranın fotoğrafı, inceleyen rol etiketlenir,
-// karar verilene kadar Onayla / Reddet / Görüşmeye Çağır butonları durur. Onaylanınca oryantasyonun durumunu gösterir,
-// oryantasyon sürerken aktarma ve iptal butonları çıkar.
+// karar verilene kadar Görüşmeye Çağır / Reddet butonları durur (başvuruyu onaylama kararı görüşme sırasında ses kanalının
+// sohbetindeki panelden verilir). Onaylanınca oryantasyonun durumunu gösterir, oryantasyon sürerken aktarma ve iptal
+// butonları, yetkililere bırakılınca üstlen butonu çıkar.
 function applicationNotice(app, applicantUser) {
   const pending = app.status === 'pending';
-  const orienting = ['waiting', 'active'].includes(app.orientation?.status);
+  const orienting = ['choosing', 'unassigned', 'waiting', 'active'].includes(app.orientation?.status);
 
   let status;
   let color;
@@ -151,7 +166,7 @@ function applicationNotice(app, applicantUser) {
   const container = card(
     pending ? `Yeni Başvuru #${pad(app.number)}` : `Başvuru #${pad(app.number)}`,
     pending
-      ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip başvuruyu onaylayabilir, reddedebilir ya da başvuranı sesli mülakata çağırabilirsin; karar başvurana DM ile iletilir.'
+      ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip başvuranı **Görüşmeye Çağır** ile sesli mülakata alabilir ya da **Reddet** ile başvuruyu sonuçlandırabilirsin; ilk çağıran yetkili başvuruyu üstlenir.'
       : 'Bu başvurunun bilgileri, cevapları ve güncel durumu burada listelenir. Başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenir ve son durumu gösterir.',
     [
       `**Başvuran**\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
@@ -167,13 +182,12 @@ function applicationNotice(app, applicantUser) {
     const reviewId = (action) => `${IDS.review}:${app.id}:${action}`;
     container.addSeparatorComponents(divider()).addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(reviewId('onay')).setStyle(ButtonStyle.Success).setLabel('Onayla'),
-        new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
         new ButtonBuilder()
           .setCustomId(reviewId('gorusme'))
-          .setStyle(ButtonStyle.Primary)
+          .setStyle(app.meetingBy ? ButtonStyle.Secondary : ButtonStyle.Success)
           .setLabel(app.meetingBy ? 'Görüşmeye Çağrıldı' : 'Görüşmeye Çağır')
           .setDisabled(Boolean(app.meetingBy)),
+        new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
       ),
     );
   }
