@@ -33,6 +33,7 @@ const IDS = {
   ban: 'partner-yasakla', // partner-yasakla:<talep>
   unban: 'partner-yasak-kaldir', // partner-yasak-kaldir:<talep>
   trustedPage: 'partner-guven-sayfa', // partner-guven-sayfa:<sayfa>:<buton yeri>
+  trustedPanelPage: 'partner-guven-panel-sayfa', // partner-guven-panel-sayfa:<sayfa>:<buton yeri>
   deletePost: 'partner-sil', // partner-sil:<talep>
   trustedSelect: 'partner-guven-sec',
   trustedAction: 'partner-guven-y', // partner-guven-y:<kayıt>:<teklif|kaldir>
