@@ -26,11 +26,17 @@ module.exports = {
   // Görüşmeyi yürüten yetkili görüşme sırasında görüşme kanallarından ayrılırsa bu kadar dakika dönmezse görüşme beklemeye alınır
   // ve başvurular kanalına başka bir yetkilinin üstlenmesi için bildirim gider (bu sürede bildirim gitmez)
   meetingStaffGraceMinutes: 5,
+  // Görüşme sırasında başvuran kanaldan ayrılırsa bu kadar dakika içinde dönmezse başvuru otomatik reddedilir; bu kadar kez
+  // ayrılırsa hemen reddedilir. Sebep başvuruya (ve siciline) yazılır.
+  meetingApplicantGraceMinutes: 5,
+  meetingMaxApplicantLeaves: 3,
+  // Beklemeye alan yetkinin işlemi geri alabileceği süre (dakika): bu sürede başkaları devir isteyebilir, süre dolunca herkes üstlenebilir
+  holdProtectMinutes: 5,
   // Açılan ses kanalı erişimi kaç saat sonra kendiliğinden kapanır (başvuru reddedilirse hemen kapanır)
   voiceAccessHours: 24,
   // Başvuran mülakattan sonra görüşme kanalından ayrılınca kanallar kaç dakika sonra tekrar kilitlenir.
   // Bağlantısı koparsa bu süre içinde geri dönebilsin diye; geri dönerse kilitlenmez.
-  leaveLockMinutes: 2,
+  leaveLockMinutes: 6,
   // Oryantasyon bitince kanallar hemen kilitlenir; başvuran hâlâ kanaldaysa son mesajları görebilsin diye
   // kaç saniye sonra kanaldan çıkarılır
   disconnectDelaySeconds: 10,

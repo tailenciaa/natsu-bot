@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, panel: standardPanel } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, fields, field, panel: standardPanel } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -20,6 +20,7 @@ const IDS = {
   reviewModal: 'basvuru-karar-form', // basvuru-karar-form:<başvuru>:red
   reviewNote: 'basvuru-karar-not',
   remind: 'basvuru-hatirlat', // basvuru-hatirlat:<başvuru>
+  transfer: 'basvuru-devir', // basvuru-devir:<başvuru>:<iste|evet:<isteyen>|hayir:<isteyen>>
 };
 
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
@@ -114,6 +115,9 @@ function orientationStatus(app) {
   return [`**Durum: Oryantasyon iptal edildi**\n${by}\n${quote(o.cancelReason)}${penalty}`, colors.danger];
 }
 
+// Başvurunun reddedilme / oryantasyonunun iptal edilme sebebi (yoksa null); sicil listesinde gösterilir
+const cancelReasonOf = (app) => (app.status === 'rejected' ? app.note : app.orientation?.status === 'cancelled' ? app.orientation.cancelReason : null) ?? null;
+
 // Sicil gibi yerlerde görünen kısa durum
 function statusLabel(app) {
   if (app.status !== 'approved' || !app.orientation) return STATUS[app.status];
@@ -143,7 +147,9 @@ function applicationNotice(app, applicantUser) {
     status = `**Durum: Onaylandı**\n<@${app.reviewedBy}> onayladı.${role}`;
     color = colors.success;
   } else if (app.status === 'rejected') {
-    status = `**Durum: Reddedildi**\n<@${app.reviewedBy}> başvuruyu reddetti.`;
+    status = app.reviewedBy
+      ? `**Durum: Reddedildi**\n<@${app.reviewedBy}> başvuruyu reddetti.`
+      : '**Durum: Otomatik olarak reddedildi**\nGörüşme sırasında yaşanan bir sorun yüzünden başvuru kendiliğinden reddedildi.';
     color = colors.danger;
   } else if (app.meetingBy) {
     const where = app.meetingChannelId ? `, <#${app.meetingChannelId}> kanalında bekliyor` : '';
@@ -264,7 +270,7 @@ function voiceSection(container, app, voice) {
 function resultDm(app, guildName, reapplyAt) {
   const blocks = [
     `**Başvuru Sonucu**\nBaşvurun bu sefer **olumlu sonuçlanmadı.**\n` +
-      `#${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> değerlendirdi.` +
+      (app.reviewedBy ? `#${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> değerlendirdi.` : `#${pad(app.number)} numaralı başvurun **otomatik olarak** reddedildi.`) +
       (reapplyAt ? ` **<t:${unix(reapplyAt)}:D>** tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
   ];
   if (app.note) blocks.push(`**Sebep**\n${quote(app.note)}`);
@@ -291,49 +297,66 @@ function meetingDm(app, guildName, voice) {
   return withFooter(container, `-# ${guildName} - <t:${unix(app.meetingAt)}:F>`);
 }
 
+const stageName = (stage) => (stage === 'meeting' ? 'Görüşme' : 'Oryantasyon');
+const stageWord = (stage) => (stage === 'meeting' ? 'görüşmene' : 'oryantasyonuna');
+const jump = (guildId, channelId) =>
+  new ActionRowBuilder().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(guildId, channelId)));
+
 // Başvuran bir görüşme kanalına girince başvuruyla ilgilenen yetkiliye giden DM (görüşme ya da oryantasyon için)
 function applicantWaitingDm(app, guildName, channelId, orientation, reminder) {
+  const stage = orientation ? 'oryantasyon' : 'görüşme';
   return withFooter(
     card(
-      reminder ? 'Başvuran Seni Hatırlatıyor' : 'Başvuran Seni Bekliyor',
+      reminder ? 'Başvuran Hatırlatıyor' : 'Başvuran Seni Bekliyor',
       reminder
-        ? 'Başvuran hâlâ kanalda bekliyor ve Hatırlat butonuyla sana haber verdi. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.'
-        : 'Başvuran görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.',
+        ? `Başvuran hâlâ ${stage} için kanalda bekliyor ve **Hatırlat** butonuyla sana haber verdi. **Kanala Katıl** butonuyla hemen bağlanabilirsin.`
+        : `Başvuran ${stage} için kanala girdi ve senin bağlanmanı bekliyor. **Kanala Katıl** butonuyla hemen bağlanabilirsin; ayrıntılar başvurular kanalında.`,
       [
-        `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalında${reminder ? ' hâlâ' : ''} bekliyor.\n**Başvuru:** #${pad(app.number)}` +
-          (orientation && !reminder ? '\nKanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
+        fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', orientation ? 'Oryantasyon' : 'Görüşme'), field('Kanal', `<#${channelId}>`)]),
+        `**<@${app.userId}>, ${stage} için <#${channelId}> kanalında${reminder ? ' hâlâ' : ''} seni bekliyor.**`,
       ],
       'primary',
     )
       .addSeparatorComponents(divider())
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
-        ),
-      ),
+      .addActionRowComponents(jump(app.guildId, channelId)),
     `-# ${guildName} - <t:${unix(Date.now())}:F>`,
   );
 }
 
 // Görüşme başlayınca (ikisi aynı görüşme kanalına girince) kanalın sohbetine atılan karar paneli: görüşmeye çağıran yetkili
-// başvurunun devam edip etmeyeceğine buradan karar verir. state: open | rejected (Devam Et ile oryantasyon aşamasına geçilince
-// panelin yerine oryantasyonu kimin vereceği sorusu gelir)
+// başvurunun devam edip etmeyeceğine buradan karar verir. state: open | rejected | hold (beklemeye alındı) | resumed (başka yetkili üstlendi)
 function decisionPanel(app, state = 'open', remindDisabled) {
+  const head = `**Başvuru #${pad(app.number)}**`;
   if (state === 'rejected') {
+    const auto = !app.reviewedBy;
     return card(
       'Başvuru Reddedildi',
-      'Görüşmenin ardından başvuru reddedildi ve sebep başvurana DM ile iletildi. Görüşme kanalları başvurana kilitlenir; kayıt başvurular kanalında kalır.',
-      [`**Başvuru #${pad(app.number)}**\n<@${app.reviewedBy}>, <@${app.userId}> kullanıcısının başvurusunu reddetti.`],
+      auto
+        ? 'Görüşme sırasında yaşanan bir sorun yüzünden başvuru otomatik olarak reddedildi ve sebep başvurana DM ile iletildi. Görüşme kanalları kilitlenir; kayıt başvurular kanalında ve sicilde kalır.'
+        : 'Görüşmenin ardından başvuru reddedildi ve sebep başvurana DM ile iletildi. Görüşme kanalları başvurana kilitlenir; kayıt başvurular kanalında kalır.',
+      [auto ? `${head}\n**<@${app.userId}> kullanıcısının başvurusu otomatik olarak reddedildi.**\n${quote(app.note)}` : `${head}\n<@${app.reviewedBy}>, <@${app.userId}> kullanıcısının başvurusunu reddetti.`],
       'danger',
     );
   }
+  if (state === 'resumed') {
+    return card(
+      'Görüşme Üstlenildi',
+      'Beklemedeki görüşmeyi bir yetkili üstlendi ve başvuranı yeniden görüşmeye çağırdı. Yetkili bu kanala bağlandığında görüşme başlar ve karar paneli yeniden gelir.',
+      [`${head}\n**<@${app.meetingBy}> görüşmeyi üstlendi.**`],
+      'success',
+    );
+  }
   if (state === 'hold') {
+    const h = app.onHold;
+    const protectedNow = h.until > Date.now();
     return card(
       'Görüşme Beklemede',
-      'Görüşmeyi yürüten yetkili işlemi beklemeye aldı. Başvurular kanalına bildirim gitti; başka bir yetkili üstlenince (ya da aynı yetkili geri dönüp üstlenince) görüşme yeniden başlar.',
+      'Görüşmeyi yürüten yetkili işlemi beklemeye aldı. Başvuran, bir yetkili görüşmeyi üstlenip kanala bağlanana kadar bekler; üstlenen yetkili başvuruyla ilgilenmek zorundadır.',
       [
-        `**Başvuru #${pad(app.number)}**\n**<@${app.onHold?.by}> görüşmeyi beklemeye aldı.**\n<@${app.userId}> yeni yetkili çağrılana kadar bekliyor.`,
-        '**Yetkili bekleniyor.**\nBir yetkili bağlanana kadar kanalda bekle; çok uzarsa **Hatırlat** butonuyla yetkililere haber verebilirsin.',
+        fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Beklemeye alan', `<@${h.by}>`), field('Durum', 'Yetkili bekleniyor')]),
+        protectedNow
+          ? `**<@${h.by}> <t:${unix(h.until)}:R> kadar işlemi geri alabilir.**\nBu süre dolunca başvurular kanalında yetkililere haber verilir ve herhangi bir yetkili üstlenebilir.`
+          : '**Yetkili bekleniyor.**\nBaşvurular kanalında yetkililere haber verildi; bir yetkili üstlenince görüşme yeniden başlar.',
       ],
       'warning',
     )
@@ -345,20 +368,25 @@ function decisionPanel(app, state = 'open', remindDisabled) {
       );
   }
   const reviewId = (action) => `${IDS.review}:${app.id}:${action}`;
-  const away = app.meeting?.staffAwaySince;
+  const m = app.meeting;
   const blocks = [
-    `**Başvuru #${pad(app.number)}**\n<@${app.meetingBy}> ile <@${app.userId}> görüşüyor.\nKararı sadece **görüşmeye çağıran yetkili** (ya da yöneticiler) verebilir.`,
+    `${head}\n<@${app.meetingBy}> ile <@${app.userId}> görüşüyor.\nKararı sadece **görüşmeye çağıran yetkili** (ya da yöneticiler) verebilir.`,
   ];
-  if (away) {
+  if (m?.staffAwaySince) {
     blocks.push(
-      `**Yetkili ayrıldı.**\n<@${app.meetingBy}> kanaldan ayrıldı, <t:${unix(away + config.meetingStaffGraceMinutes * 60000)}:R> dönmezse görüşme beklemeye alınır ve **başka bir yetkiliye aktarılacaksınız.**`,
+      `**Yetkili kanaldan ayrıldı.**\n<@${app.meetingBy}> <t:${unix(m.staffAwaySince + config.meetingStaffGraceMinutes * 60000)}:R> kadar dönmezse görüşme beklemeye alınır ve **başka bir yetkiliye aktarılacaksınız.**`,
+    );
+  }
+  if (m?.applicantAwaySince) {
+    blocks.push(
+      `**Başvuran kanaldan ayrıldı.**\n<@${app.userId}> (ayrılma ${m.applicantLeaves}/${config.meetingMaxApplicantLeaves}) <t:${unix(m.applicantAwaySince + config.meetingApplicantGraceMinutes * 60000)}:R> kadar dönmezse başvuru otomatik olarak reddedilir.`,
     );
   }
   return card(
     'Görüşme Kararı',
     'Görüşme bitince başvuranın uygun olup olmadığına karar ver: **Devam Et** ile başvuru oryantasyon aşamasına geçer, **İptal Et** ile başvuru reddedilir; bir sorun çıkarsa **Beklemeye Al** ile başka yetkiliye bırakabilirsin.',
     blocks,
-    away ? 'warning' : 'primary',
+    m?.staffAwaySince || m?.applicantAwaySince ? 'warning' : 'primary',
   )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -370,55 +398,106 @@ function decisionPanel(app, state = 'open', remindDisabled) {
     );
 }
 
-// Görüşme beklemeye alınınca (elle ya da yetkili kanaldan uzun süre ayrılınca) başvurular kanalına giden, inceleyen rolü
-// etiketleyen bildirim: başvuru mesajındaki Görüşmeye Çağır butonuna ilk basan yetkili görüşmeyi sürdürür
-// state: open (üstlenen bekleniyor) | remind (başvuran Hatırlat'a bastı) | taken (bir yetkili üstlendi)
+// Başvurular kanalına giden "görüşme beklemede" bildirimi.
+// state: protected (beklemeye alan yetkinin geri alma süresi sürüyor, kimse etiketlenmez, başkaları devir isteyebilir) |
+// open (süre doldu ya da yetkili ayrıldı: herkes üstlenebilir, inceleyen rol etiketlenir) | remind (başvuran hatırlattı) |
+// taken (üstlenildi) | superseded (süre dolduğu için yeni bildirim gönderildi)
 function meetingHoldNotice(app, state = 'open') {
-  const h = app.onHold;
-  const heading = `**Başvuru #${pad(app.number)}**`;
+  const h = app.onHold ?? {};
+  const head = `**Başvuru #${pad(app.number)}**`;
   if (state === 'taken') {
     return card(
       'Görüşme Üstlenildi',
-      'Beklemedeki görüşmeyi bir yetkili üstlendi ve başvuranı yeniden görüşmeye çağırdı; artık başka bir işlem gerekmiyor. Bu mesaj başvurular kanalında kayıt olarak kalır.',
-      [`${heading}\n**<@${app.meetingBy}> görüşmeyi üstlendi.**`],
+      'Beklemedeki görüşmeyi bir yetkili üstlendi ve başvuranı yeniden görüşmeye çağırdı; başka bir işlem gerekmiyor. Bu mesaj başvurular kanalında kayıt olarak kalır.',
+      [`${head}\n**<@${app.meetingBy}> görüşmeyi üstlendi.**`],
       'success',
     );
   }
+  if (state === 'superseded') {
+    return card('Görüşme Beklemede', 'Geri alma süresi doldu; yetkililere haber vermek için yeni bir bildirim gönderildi. Bu mesaj kayıt olarak kalır.', [`${head}\n<@${h.by}> görüşmeyi beklemeye almıştı.`], 'warning');
+  }
   const roles = app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : '';
-  const remind = state === 'remind';
+  const info = fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', 'Görüşme'), field('Beklemeye alan', `<@${h.by}>`)]);
+  const buttons = [new ButtonBuilder().setCustomId(`${IDS.review}:${app.id}:gorusme`).setStyle(ButtonStyle.Success).setLabel('Görüşmeye Çağır')];
+  let sub;
+  let status;
+  if (state === 'protected') {
+    sub = `**<@${h.by}>** görüşmeyi beklemeye aldı ve **<t:${unix(h.until)}:R>** kadar yalnızca o geri alabilir. Başka bir yetkili **Devralma İste** ile ondan devir isteyebilir; süre dolunca herkes üstlenebilir ve yetkililere haber verilir.`;
+    status = `**<@${h.by}> görüşmeyi beklemeye aldı.**\n<@${app.userId}> yetkili bekliyor, bu süre içinde yetkililer etiketlenmez.`;
+    buttons.push(new ButtonBuilder().setCustomId(`${IDS.transfer}:${app.id}:iste`).setStyle(ButtonStyle.Secondary).setLabel('Devralma İste'));
+  } else if (state === 'remind') {
+    sub = 'Görüşmesi beklemeye alınan başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla haber verdi. **Görüşmeye Çağır** butonuna ilk basan yetkili görüşmeyi sürdürür.';
+    status = `${roles}**<@${app.userId}> hâlâ yetkili bekliyor.**`;
+  } else {
+    sub = 'Beklemedeki görüşmeyi **Görüşmeye Çağır** butonuna ilk basan yetkili sürdürür ve başvuranla ilgilenmek zorundadır.';
+    status = `${roles}**<@${app.userId}> görüşme için yetkili bekliyor.**\n${h.auto ? `<@${h.by}> kanaldan uzun süre ayrıldığı için görüşme otomatik olarak beklemeye alındı.` : `<@${h.by}> görüşmeyi beklemeye almıştı, geri alma süresi doldu.`}`;
+  }
+  buttons.push(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Başvuruya Git').setURL(messageUrl(app.guildId, app.channelId, app.messageId)));
+  return card(state === 'remind' ? 'Başvuran Hatırlatıyor' : 'Görüşme Beklemede', sub, [info, status], 'warning')
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(new ActionRowBuilder().addComponents(buttons));
+}
+
+// Devir isteği: beklemeye alan yetkiliye DM ile gider (butonlar onay/ret). state: pending | approved | rejected | stale
+function transferRequestDm(app, requesterId, stage, state = 'pending') {
+  const holderId = stage === 'meeting' ? app.onHold?.by : app.orientation?.holdBy;
+  const until = stage === 'meeting' ? app.onHold?.until : app.orientation?.holdUntil;
+  const what = stage === 'meeting' ? 'görüşmesini' : 'oryantasyonunu';
+  const whatAcc = stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu';
+  const head = `**Başvuru #${pad(app.number)} - ${stageName(stage)}**`;
+  if (state !== 'pending') {
+    const text_ = {
+      approved: [`Devir Onaylandı`, `${head}\n**<@${requesterId}> ${whatAcc} devraldı.** Artık başvuruyla o ilgileniyor.`, 'success'],
+      rejected: [`Devir Reddedildi`, `${head}\n**<@${requesterId}> kullanıcısının devir isteğini reddettin.** Geri alma süren devam ediyor.`, 'danger'],
+      stale: [`İstek Geçersiz`, `${head}\nBu başvuru artık beklemede değil ya da süre doldu; bu istek için bir işlem gerekmiyor.`, 'warning'],
+    }[state];
+    return card(text_[0], 'Devir isteğinin sonucu bu mesajda görünür; bu mesaj kayıt olarak kalır.', [text_[1]], text_[2]);
+  }
   return card(
-    remind ? 'Başvuran Hatırlatıyor' : 'Görüşme Beklemede',
-    remind
-      ? 'Görüşmesi beklemeye alınan başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla haber verdi. **Görüşmeye Çağır** butonuna ilk basan yetkili görüşmeyi sürdürür.'
-      : 'Bir yetkili görüşmeyi beklemeye aldı ve başvuru yeniden sahipsiz. **Görüşmeye Çağır** butonuna ilk basan yetkili görüşmeyi sürdürür; beklemeye alan yetkili de isterse geri dönüp tekrar üstlenebilir.',
+    'Devir İsteği',
+    `Beklemeye aldığın başvurunun ${what} başka bir yetkili devralmak istiyor. **Onayla** dersen işlem ona geçer, **Reddet** dersen geri alma süren devam eder.`,
     [
-      `${heading}\n${roles}<@${app.userId}> görüşme için bekliyor.\n${
-        remind
-          ? '**Başvuran hâlâ yetkili bekliyor.**'
-          : `**<@${h.by}> görüşmeyi ${h.auto ? 'kanaldan uzun süre ayrıldığı için otomatik olarak ' : ''}beklemeye aldı.**`
-      }`,
+      fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', stageName(stage)), field('İsteyen', `<@${requesterId}>`)]),
+      `**<@${requesterId}> bu işlemi devralmak istiyor.**\nCevap vermezsen <t:${unix(until)}:R> süre dolunca herhangi bir yetkili işlemi zaten üstlenebilir.`,
     ],
     'warning',
   )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.review}:${app.id}:gorusme`).setStyle(ButtonStyle.Success).setLabel('Görüşmeye Çağır'),
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Başvuruya Git').setURL(messageUrl(app.guildId, app.channelId, app.messageId)),
+        new ButtonBuilder().setCustomId(`${IDS.transfer}:${app.id}:evet:${requesterId}`).setStyle(ButtonStyle.Success).setLabel('Onayla'),
+        new ButtonBuilder().setCustomId(`${IDS.transfer}:${app.id}:hayir:${requesterId}`).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
       ),
     );
+}
+
+// Devir isteği sonuçlanınca isteyen yetkiliye giden DM. state: approved | rejected
+function transferResultDm(app, holderId, stage, state) {
+  const until = stage === 'meeting' ? app.onHold?.until : app.orientation?.holdUntil;
+  return state === 'approved'
+    ? card(
+        'Devir Onaylandı',
+        'İstediğin işlemi beklemeye alan yetkili sana devretti. Başvuranla artık sen ilgileniyorsun; ayrıntılar başvuran ve yetkili için ayrıca gönderildi.',
+        [`**Başvuru #${pad(app.number)} - ${stageName(stage)}**\n**<@${holderId}> işlemi sana devretti.**`],
+        'success',
+      )
+    : card(
+        'Devir Reddedildi',
+        'Beklemeye alan yetkili isteğini reddetti. Geri alma süresi dolunca herhangi bir yetkili işlemi üstlenebilir; o zamana kadar yalnızca o geri alabilir.',
+        [`**Başvuru #${pad(app.number)} - ${stageName(stage)}**\n**<@${holderId}> devir isteğini reddetti.**\n${until > Date.now() ? `<t:${unix(until)}:R> sonra işlemi üstlenebilirsin.` : 'Süre doldu, işlemi doğrudan üstlenebilirsin.'}`],
+        'danger',
+      );
 }
 
 // Yetkili kanala bağlanınca kanalın sohbetindeki "Yetkili Bekleniyor" mesajının yerine geçer
 function waitingResolved(app, stage) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
-  const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
   return card(
     'Yetkili Bağlandı',
     `Başvuranı bekleyen yetkili kanala bağlandı ve ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} başladı. Bu mesaj kanalın sohbetinde kayıt olarak kalır.`,
     [
-      [`**Başvuru:** #${pad(app.number)}`, `**Başvuran:** <@${app.userId}>`, `**Aşama:** ${stageName}`, `**Yetkili:** <@${staffId}>`].join('\n'),
-      `**<@${staffId}> kanala bağlandı.**`,
+      fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', stageName(stage)), field('Yetkili', `<@${staffId}>`)]),
+      `**<@${app.userId}>, <@${staffId}> yetkilisi ${stageWord(stage)} bağlandı.**`,
     ],
     'success',
   );
@@ -428,23 +507,23 @@ function waitingResolved(app, stage) {
 // stage: meeting (görüşme) | orientation (oryantasyon yetkilisi belli) | unassigned (oryantasyonu üstlenen yok)
 function waitingChat(app, stage, askStaffId, remindDisabled) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
-  const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
-  const info = [
-    `**Başvuru:** #${pad(app.number)}`,
-    `**Başvuran:** <@${app.userId}>`,
-    `**Aşama:** ${stageName}`,
-    `**Yetkili:** ${stage === 'unassigned' ? 'Henüz üstlenen yok' : `<@${staffId}>`}`,
-  ].join('\n');
+  const what = stage === 'meeting' ? 'görüşme' : 'oryantasyon';
+  const info = fields([
+    field('Başvuru', `#${pad(app.number)}`),
+    field('Başvuran', `<@${app.userId}>`),
+    field('Aşama', stageName(stage)),
+    field('Yetkili', stage === 'unassigned' ? 'Henüz üstlenen yok' : `<@${staffId}>`),
+  ]);
   const status = askStaffId
-    ? `**<@${askStaffId}>, bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?**\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
+    ? `**<@${askStaffId}>, <@${app.userId}> için bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?**\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
     : stage === 'unassigned'
-      ? '**Oryantasyonu üstlenecek yetkili bekleniyor.**\nBaşvurular kanalına bildirim gönderildi.'
-      : '**Yetkilinin bağlanması bekleniyor.**\nYetkili kanala bağlanınca başlanacak, kanaldan ayrılmadan bekle.';
+      ? `**<@${app.userId}> oryantasyon için bir yetkilinin üstlenmesini bekliyor.**\nBaşvurular kanalında yetkililere haber verildi.`
+      : `**<@${app.userId}> ${what} için <@${staffId}> yetkilisinin bağlanmasını bekliyor.**\nYetkili bağlandığında ${what} kendiliğinden başlar.`;
   const container = card(
     askStaffId ? 'Bekleyen Oryantasyon' : 'Yetkili Bekleniyor',
     askStaffId
       ? 'Oryantasyonu bekleyen başvuran kanalda ve henüz kimse üstlenmedi. **Oryantasyonu Üstlen** ile başvuranla ilgilenebilir, **Şimdi Değil** ile mesajı eski haline döndürebilirsin; mesaj kanalda kalır.'
-      : 'Başvuran görüşme kanalına girdi ve yetkiliyi bekliyor. Yetkili kanala bağlandığında görüşme ya da oryantasyon başlar; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
+      : `${stage === 'meeting' ? 'Görüşme' : 'Oryantasyon'} için kanalda bekliyorsun; yetkili bağlanınca başlanır. Uzun sürerse **Hatırlat** butonuyla yetkililere haber verebilirsin.`,
     [info, status],
     'warning',
   );
@@ -468,30 +547,26 @@ function waitingChat(app, stage, askStaffId, remindDisabled) {
 // stage: meeting | orientation
 function waitingLog(app, stage, channelId, reminder) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation.staffId;
-  const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
+  const toWhat = stage === 'meeting' ? 'görüşmeye' : 'oryantasyona';
   return card(
     reminder ? 'Başvuran Hatırlatıyor' : 'Başvuran Bekliyor',
     reminder
-      ? `Başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla sana haber verdi. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`
-      : `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için görüşme kanalına girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`,
+      ? 'Başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla yetkiliye haber verdi. **Kanala Katıl** butonuyla hemen bağlanabilirsin.'
+      : `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanala girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla hemen bağlanabilirsin.`,
     [
-      [
-        `**Başvuru:** #${pad(app.number)}`,
-        `**Başvuran:** <@${app.userId}>`,
-        `**Aşama:** ${stageName}`,
-        `**Yetkili:** <@${staffId}>`,
-        `**Kanal:** <#${channelId}>`,
-      ].join('\n'),
-      reminder ? `**<@${staffId}>, başvuran hâlâ bekliyor.**` : `**<@${staffId}> yetkilisinin bağlanması bekleniyor.**`,
+      fields([
+        field('Başvuru', `#${pad(app.number)}`),
+        field('Başvuran', `<@${app.userId}>`),
+        field('Aşama', stageName(stage)),
+        field('Yetkili', `<@${staffId}>`),
+        field('Kanal', `<#${channelId}>`),
+      ]),
+      `**<@${app.userId}>, <#${channelId}> kanalında <@${staffId}> yetkilisinin ${toWhat} bağlanmasını${reminder ? ' hâlâ' : ''} bekliyor.**`,
     ],
     'warning',
   )
     .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
-      ),
-    );
+    .addActionRowComponents(jump(app.guildId, channelId));
 }
 
 // Görüşmeye çağıran yetkili başvurandan önce bir görüşme kanalına girince başvurana giden DM
@@ -499,18 +574,15 @@ function meetingStaffWaitingDm(app, guildName, channelId) {
   return withFooter(
     card(
       'Yetkilin Seni Bekliyor',
-      'Görüşmeye çağıran yetkili görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla hemen katılabilirsin; kanal senin için açık ve görüşme kanala girdiğinizde kendiliğinden başlar.',
-      [`**Görüşme**
-**<@${app.meetingBy}> mülakat için <#${channelId}> kanalına girdi, seni bekliyor.**
-**Başvuru:** #${pad(app.number)}`],
+      'Görüşmeye çağıran yetkili görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla hemen bağlanabilirsin; kanal senin için açık ve görüşme ikiniz de kanaldayken kendiliğinden başlar.',
+      [
+        fields([field('Başvuru', `#${pad(app.number)}`), field('Aşama', 'Görüşme'), field('Yetkili', `<@${app.meetingBy}>`), field('Kanal', `<#${channelId}>`)]),
+        `**<@${app.meetingBy}> yetkilisi görüşmen için <#${channelId}> kanalında seni bekliyor.**`,
+      ],
       'primary',
     )
       .addSeparatorComponents(divider())
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)),
-        ),
-      ),
+      .addActionRowComponents(jump(app.guildId, channelId)),
     `-# ${guildName} - <t:${unix(Date.now())}:F>`,
   );
 }
@@ -534,4 +606,4 @@ function meetingLog(app) {
   );
 }
 
-module.exports = { IDS, STATUS, statusLabel, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
