@@ -198,17 +198,17 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
     );
 
   const rows = [];
-  if (held.levelIds.length) rows.push(menu(IDS.takeLevel, 'Alınacak rütbe', levels, held.levelIds, picked.levelIds));
-  if (held.permIds.length) rows.push(menu(IDS.takePerms, 'Alınacak yetkiler', perms, held.permIds, picked.permIds));
-  if (held.dutyIds.length) rows.push(menu(IDS.takeDuties, 'Alınacak görev rolleri', duties, held.dutyIds, picked.dutyIds));
+  if (held.levelIds.length) rows.push(menu(IDS.takeLevel, 'Kaldırılacak rütbe', levels, held.levelIds, picked.levelIds));
+  if (held.permIds.length) rows.push(menu(IDS.takePerms, 'Kaldırılacak yetkiler', perms, held.permIds, picked.permIds));
+  if (held.dutyIds.length) rows.push(menu(IDS.takeDuties, 'Kaldırılacak görev rolleri', duties, held.dutyIds, picked.dutyIds));
   rows.push(
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(stateId(IDS.takeSelected))
         .setStyle(ButtonStyle.Danger)
-        .setLabel('Seçilenleri Al')
+        .setLabel('Seçilenleri Kaldır')
         .setDisabled(![picked.levelIds, picked.permIds, picked.dutyIds].some((list) => list.length)),
-      new ButtonBuilder().setCustomId(`${IDS.takeAll}:${user.id}`).setStyle(ButtonStyle.Danger).setLabel('Hepsini Al'),
+      new ButtonBuilder().setCustomId(`${IDS.takeAll}:${user.id}`).setStyle(ButtonStyle.Danger).setLabel('Hepsini Kaldır'),
       new ButtonBuilder().setCustomId(IDS.takeCancel).setStyle(ButtonStyle.Secondary).setLabel('İptal'),
     ),
   );
