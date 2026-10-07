@@ -438,7 +438,8 @@ async function handleSkip(interaction, app) {
 // Başvurular kanalına "bekleyen oryantasyon" bildirimi gönderir ve üstlenilince güncellensin diye kaydeder. Yetkili rolleri
 // etiketlenir; "boşta kim varsa o ilgilenir". state: open (yetkililere bırakılınca) | waiting (başvuran bir görüşme kanalına geçince)
 async function postPending(guild, app, channelId, state, reminder) {
-  const message = await basvuruLog.send(guild, app, ui.pendingNotice(app, state, channelId, reminder), basvuruConfig.roles.orientationPing);
+  const roles = state === 'protected' ? [] : basvuruConfig.roles.orientationPing;
+  const message = await basvuruLog.send(guild, app, ui.pendingNotice(app, state, channelId, reminder), roles, [], { reply: false });
   if (message) saveOrientation(app, { claimMessageIds: [...(app.orientation.claimMessageIds ?? []), message.id] });
   return message;
 }
@@ -524,7 +525,10 @@ async function announceUnassigned(guild, app) {
   const applicantChannel = voiceChannelOf(guild, app.userId);
   const inVoice = voice.isRecruitmentChannel(applicantChannel);
   await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu`);
-  await postPending(guild, app, inVoice ? applicantChannel : null, 'open');
+  // Beklemeye alan yetkinin geri alma süresi sürüyorsa kimse etiketlenmez; süre dolunca yetkililere haber verilir
+  const guarded = isGuarded(app);
+  await postPending(guild, app, inVoice ? applicantChannel : null, guarded ? 'protected' : 'open');
+  if (guarded) scheduleHoldExpiry(guild, app);
   if (inVoice) {
     const chat = await fetchTextChannel(guild, applicantChannel);
     const message = await chat
@@ -561,6 +565,58 @@ async function handleChoice(interaction, app, action) {
 }
 
 // "Oryantasyonu Üstlen": bekleyen oryantasyonu ilk basan yetkili alır ve başvuranla o ilgilenir
+// Beklemeye alınmış oryantasyonda beklemeye alan yetkinin geri alma süresi sürüyorsa (başkaları devir isteyebilir)
+const isGuarded = (app) => Boolean(app.orientation?.holdBy && app.orientation.holdUntil > Date.now() && !app.orientation.holdPinged);
+
+// Beklemeye alınmış oryantasyonların geri alma süresi dolunca: eski bildirim kayıt olur, yetkili rolü etiketli yeni bildirim gider
+const holdTimers = new Map();
+function scheduleHoldExpiry(guild, app) {
+  clearTimeout(holdTimers.get(app.id));
+  holdTimers.set(
+    app.id,
+    setTimeout(
+      () => {
+        holdTimers.delete(app.id);
+        expireHold(guild, app.id).catch((err) => console.error('[oryantasyon] Bekleme süresi işlenemedi:', err.message));
+      },
+      Math.max(0, app.orientation.holdUntil - Date.now()),
+    ),
+  );
+}
+
+async function expireHold(guild, appId) {
+  const app = basvuruStore.getApplication(appId);
+  const o = app?.orientation;
+  if (!o || o.status !== 'unassigned' || !o.holdBy || o.holdPinged) return;
+  saveOrientation(app, { holdPinged: true });
+  await closeClaims(guild, app, 'superseded');
+  const applicantChannel = voiceChannelOf(guild, app.userId);
+  await postPending(guild, app, voice.isRecruitmentChannel(applicantChannel) ? applicantChannel : null, 'open');
+  await refresh(guild, app);
+}
+
+// Bekleyen oryantasyonu bir yetkiye verir (butonla üstlenme ya da onaylanan devir): kayıt yapılır, bildirimler kapanır, yetkili ve başvuran bilgilendirilir
+function markClaimed(app, userId) {
+  clearTimeout(holdTimers.get(app.id));
+  holdTimers.delete(app.id);
+  saveOrientation(app, { status: 'waiting', staffId: userId, claimedAt: Date.now(), holdBy: null, holdUntil: null, holdPinged: null, holdRequests: [] });
+  basvuruStore.updateApplication(app.id, { ownerId: userId });
+}
+
+async function finishClaim(guild, app, user) {
+  await closeClaims(guild, app, 'taken');
+  const result = await begin(guild, app, user, { claimed: true });
+  await closeWaitChat(guild, app, 'taken');
+  return result;
+}
+
+// Etkileşimsiz üstlenme (devir isteği onaylanınca)
+async function claimFor(guild, app, user) {
+  markClaimed(app, user.id);
+  return finishClaim(guild, app, user);
+}
+
+// "Oryantasyonu Üstlen": bekleyen oryantasyonu ilk basan yetkili alır ve başvuranla o ilgilenir
 async function handleClaim(interaction, app) {
   const o = app.orientation;
   if (o.status !== 'unassigned') {
@@ -570,15 +626,18 @@ async function handleClaim(interaction, app) {
   if (!isStaff(interaction, orienterRoles(app))) {
     return replyError(interaction, `Oryantasyonu sadece ${mentionRoles(orienterRoles(app))} rolündekiler üstlenebilir.`);
   }
+  if (isGuarded(app) && interaction.user.id !== o.holdBy && !isAdmin(interaction)) {
+    return replyError(
+      interaction,
+      `Bu işlemi <@${o.holdBy}> beklemeye aldı, <t:${Math.floor(o.holdUntil / 1000)}:R> kadar yalnızca o geri alabilir.`,
+      'Devralmak için bildirimdeki **Devralma İste** butonuyla ondan devir isteyebilirsin; süre dolunca herkes üstlenebilir.',
+    );
+  }
 
   // Kayıt await'ten önce yapılır, aynı anda basan ikinci kişi yukarıdaki kontrole takılır
-  saveOrientation(app, { status: 'waiting', staffId: interaction.user.id, claimedAt: Date.now() });
-  basvuruStore.updateApplication(app.id, { ownerId: interaction.user.id });
+  markClaimed(app, interaction.user.id);
   await interaction.deferUpdate();
-  await closeClaims(interaction.guild, app, 'taken');
-
-  const { lines, ok } = await begin(interaction.guild, app, interaction.user, { claimed: true });
-  await closeWaitChat(interaction.guild, app, 'taken');
+  const { lines, ok } = await finishClaim(interaction.guild, app, interaction.user);
   await followUp(interaction, core.notice(`**Oryantasyonu üstlendin.**\n${lines.join('\n')}`, ok ? 'success' : 'warning'));
 }
 
@@ -635,6 +694,7 @@ async function handleReady(client) {
   await resolveAreaRoles(guild);
   for (const app of basvuruStore.inOrientation()) {
     if (app.orientation.status === 'active') await syncPresence(guild, app.id);
+    else if (app.orientation.status === 'unassigned' && app.orientation.holdBy && !app.orientation.holdPinged) scheduleHoldExpiry(guild, app);
     else await tryStart(guild, app);
   }
 }
@@ -747,6 +807,9 @@ async function putOnHold(interaction, app) {
     staffId: null,
     holdBy: interaction.user.id,
     holdAt: Date.now(),
+    holdUntil: Date.now() + basvuruConfig.holdProtectMinutes * MINUTE,
+    holdPinged: false,
+    holdRequests: [],
     resumeStep: o.status === 'active' ? o.step : null,
     channelId: null,
     messageId: null,
@@ -884,6 +947,9 @@ module.exports = {
   askWhoOrients,
   postPending,
   trackWaitChat,
+  orienterRoles,
+  isGuarded,
+  claimFor,
   prefixed: [[ui.IDS.action, handleAction]],
   events: {
     [Events.ClientReady]: handleReady,

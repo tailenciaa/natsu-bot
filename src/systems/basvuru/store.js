@@ -51,6 +51,11 @@ module.exports = {
     return Object.values(data.applications).filter((a) => a.status === 'pending' && a.meetingBy);
   },
 
+  // Görüşmesi beklemeye alınmış, süresi dolunca yetkilileri etiketleyecek başvurular
+  heldMeetings() {
+    return Object.values(data.applications).filter((a) => a.status === 'pending' && !a.meetingBy && a.onHold && !a.onHold.pinged);
+  },
+
   // Onaylanmış, oryantasyonu bekleyen ya da süren başvurular
   inOrientation() {
     return Object.values(data.applications).filter((a) => a.status === 'approved' && ORIENTING.includes(a.orientation?.status));
