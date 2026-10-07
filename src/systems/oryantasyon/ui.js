@@ -387,10 +387,27 @@ function orientationResult(app) {
   }
   return card(
     'Oryantasyon Tamamlandı',
-    'Bu başvurunun oryantasyonu tamamlandı ve görüşme kanalları başvurana kilitlendi. Yeni yetkilinin başlangıç yetkisi, görev alanları ve oryantasyon özeti bu mesajda yer alıyor.',
+    'Bu başvurunun oryantasyonu tamamlandı ve görüşme kanalları başvurana kilitlendi. Oryantasyon özeti bu mesajda kalıcı olarak durur; rol ve ekip bilgileri ayrı mesajda.',
     [
-      `**Yeni Yetkili - Başvuru #${pad(app.number)}**\n<@${app.userId}> oryantasyonu tamamladı ve yetkili ekibine katıldı.\nOryantasyonu <@${o.staffId}> verdi.`,
-      `**Özet**\n${[`**Başlangıç Yetkisi:** ${o.levelLabel}`, ...summaryLines(app, o.finishedAt)].join('\n')}`,
+      `**Başvuru #${pad(app.number)}**\n<@${app.userId}> oryantasyonu tamamladı.\nOryantasyonu <@${o.staffId}> verdi.`,
+      `**Oryantasyon Özeti**\n${summaryLines(app, o.finishedAt).join('\n')}`,
+      `-# <t:${unix(o.finishedAt)}:F>`,
+    ],
+    'success',
+  );
+}
+
+// Kayıt kanalına giden ayrı "yetki verildi" mesajı — orientationResult'tan bağımsız
+function rolesGrantedResult(app) {
+  const o = app.orientation;
+  const { roleIds } = plannedRoles(app);
+  const roles = roleIds.length ? roleIds.map((id) => `<@&${id}>`).join(' ') : 'Rol tanımlanmamış';
+  return card(
+    'Yetki Verildi',
+    `Oryantasyonu tamamlayan başvurana başlangıç yetki rolü ve seçilen görev alanlarının rolleri verildi. Bu mesaj kayıt kanalındaki ekip katılım bildirimidir.`,
+    [
+      `**<@${app.userId}> yetkili ekibine katıldı.**\nBaşlangıç yetkisi: **${o.levelLabel ?? '—'}** · Oryantasyonu veren: <@${o.staffId}>`,
+      `**Verilen Roller**\n${roles}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
     'success',
