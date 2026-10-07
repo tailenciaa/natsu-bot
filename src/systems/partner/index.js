@@ -649,6 +649,12 @@ async function handleTrustedPage(interaction) {
   return interaction.update({ components: [ui.trustedList(store.trustedOf(interaction.guildId), page)], allowedMentions: { parse: [] } });
 }
 
+// Güvenilir partnerler paneli sayfa butonları: partner-guven-panel-sayfa:<sayfa>:<buton yeri>
+async function handleTrustedPanelPage(interaction) {
+  const page = Number(interaction.customId.split(':')[1]) || 0;
+  return interaction.update({ components: [ui.trustedListPanel(store.trustedOf(interaction.guildId), page)], allowedMentions: { parse: [] } });
+}
+
 async function handleStaffStatusCommand(interaction) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu komutu sadece partner yetkilileri kullanabilir.');
   const durum = interaction.options.getString('durum', true);
@@ -1005,6 +1011,7 @@ module.exports = {
     [ui.IDS.ban, handleBan],
     [ui.IDS.unban, handleUnban],
     [ui.IDS.trustedPage, handleTrustedPage],
+    [ui.IDS.trustedPanelPage, handleTrustedPanelPage],
     [ui.IDS.deletePost, handleDeletePost],
     [ui.IDS.trustedSelect, handleTrustedSelect],
     [ui.IDS.trustedAction, handleTrustedAction],
