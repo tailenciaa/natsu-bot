@@ -173,6 +173,7 @@ function handleReady(client) {
     }
     for (const app of store.heldMeetings()) scheduleMeetingHold(guild, app);
   }
+  refreshStatusPanel(client, guildId).catch((err) => console.error('[basvuru] Durum paneli güncellenemedi:', err.message));
   return syncPanel(client, {
     key: 'basvuru',
     label: 'Yetkili alım',
