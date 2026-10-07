@@ -14,6 +14,8 @@ module.exports = {
     // Süreç kayıtları: görüşme ve oryantasyonun başladığı, ilerlediği ve bittiği bu kanala yazılır. null: kapalı.
     // Başvurular kanalıyla aynıysa kayıtlar başvuru mesajına yanıt olarak gider.
     log: '1538942729273348187',
+    // Bekleyen başvuruları listeleyen canlı durum paneli; durum değiştikçe tek mesaj güncellenir. null: kapalı.
+    statusPanel: '1557464144184090655',
   },
 
   // Görüşme ses kanalları: normalde herkese kapalı (@everyone "Bağlan" yasak).
