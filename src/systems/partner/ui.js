@@ -443,17 +443,9 @@ function trustedActionRow(entry) {
   return rows;
 }
 
-// Mesaj başına en fazla 40 bileşen olabilir. Güvenilir partnerler panelinde her kaydın bilgisi 2, hızlı işlem butonları
-// 6-9 bileşen tutar; bu yüzden ilk QUICK_ACTION_LIMIT kayıt butonlu gösterilir, sığdığı kadar kayıt sadece bilgiyle
-// listelenir, kalanı tek satırda sayılır (hepsi /guvenilir-partnerler menüsünden açılabilir).
-const QUICK_ACTION_LIMIT = 3;
-const COMPONENT_BUDGET = 38;
+const PANEL_PAGE_SIZE = 3;
 
-// Bir kaydın panelde kaç bileşen tutacağı: ayırıcı + metin (+ butonlu kayıtta tidy çizgisi ve satırlar)
-const entryCost = (entry, withButtons) =>
-  2 + (withButtons ? 1 + trustedActionRow(entry).reduce((sum, row) => sum + 1 + row.components.length, 0) : 0);
-
-function trustedListPanel(entries) {
+function trustedListPanel(entries, page = 0) {
   const container = new ContainerBuilder().addTextDisplayComponents(
     head(
       'Güvenilir Partnerler',
@@ -465,37 +457,29 @@ function trustedListPanel(entries) {
     return container.addSeparatorComponents(divider()).addTextDisplayComponents(text('**Henüz güvenilir listeye eklenmiş bir partner yok.**'));
   }
 
-  let used = 2; // kapsayıcı + başlık
-  let shown = 0;
-  for (const [index, entry] of entries.entries()) {
-    const withButtons = index < QUICK_ACTION_LIMIT;
-    const hasMore = index < entries.length - 1;
-    // Sonraki kayıtlar sığmayacaksa sondaki "+N sunucu daha" notu (2 bileşen) için yer bırakılır
-    if (used + entryCost(entry, withButtons) + (hasMore ? 2 : 0) > COMPONENT_BUDGET && shown > 0) break;
+  const pageCount = Math.ceil(entries.length / PANEL_PAGE_SIZE);
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  const shown = entries.slice(current * PANEL_PAGE_SIZE, (current + 1) * PANEL_PAGE_SIZE);
+  const nav = (target, slot) => `${IDS.trustedPanelPage}:${target}:${slot}`;
 
-    container.addSeparatorComponents(divider()).addTextDisplayComponents(
-      text(
-        fields([
-          field('Sunucu', `\`${serverLabel(entry)}\``),
-          field('Partner Yetkilisi', contactsText(entry)),
-          field('Eklenme', `<t:${unix(entry.addedAt)}:D>`),
-          field('Ekleyen', `<@${entry.addedBy}>`),
-        ]),
-      ),
-    );
-    if (withButtons) container.addActionRowComponents(...trustedActionRow(entry));
-    used += entryCost(entry, withButtons);
-    shown += 1;
+  for (const entry of shown) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(
+        text(
+          fields([
+            field('Sunucu', `\`${serverLabel(entry)}\``),
+            field('Partner Yetkilisi', contactsText(entry)),
+            field('Eklenme', `<t:${unix(entry.addedAt)}:D>`),
+            field('Ekleyen', `<@${entry.addedBy}>`),
+          ]),
+        ),
+      )
+      .addActionRowComponents(...trustedActionRow(entry));
   }
 
-  if (shown < entries.length) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`**+${entries.length - shown} sunucu daha var.** Hepsini \`/guvenilir-partnerler\` komutuyla görebilirsin.`));
-  } else if (entries.length > QUICK_ACTION_LIMIT) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`İşlem butonları **ilk ${QUICK_ACTION_LIMIT} sunucu** için gösterilir; diğerleri için \`/guvenilir-partnerler\` komutunu kullan.`));
+  if (pageCount > 1) {
+    container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   }
 
   return container;
