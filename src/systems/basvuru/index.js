@@ -96,6 +96,45 @@ function reviewError(interaction, app) {
   return null;
 }
 
+// Bekleyen başvurunun kısa durumu: /basvuru liste ve sonuç mesajlarında kullanılır
+function pendingStatus(app) {
+  if (app.onHold) return `Görüşme beklemede - <@${app.onHold.by}> ayrıldı`;
+  if (app.meetingBy) return `Görüşmede - <@${app.meetingBy}>`;
+  return 'İnceleniyor';
+}
+
+// /basvuru liste: henüz karara bağlanmamış tüm başvuruları numara, başvuran, durum ve mesaj bağlantısıyla listeler
+async function handleList(interaction) {
+  const pending = store.pendingApplications(interaction.guildId);
+  if (!pending.length) return respond(interaction, core.alert('Bekleyen başvuru yok.', 'Tüm başvurular sonuçlandırılmış.', 'success'));
+
+  const lines = pending.map(
+    (a) => `**#${core.pad(a.number)}** <@${a.userId}> - ${pendingStatus(a)} · [Mesaja git](${core.messageUrl(a.guildId, a.channelId, a.messageId)})`,
+  );
+  return respond(
+    interaction,
+    core.page({
+      title: 'Bekleyen Başvurular',
+      sub: 'Henüz sonuçlanmamış tüm başvurular burada listelenir; bir başvuruyu bulmak için kanalda aramak yerine **Mesaja git** bağlantısını kullanabilir, reddetmek için `/basvuru reddet` komutuna numarasını yazabilirsin.',
+      blocks: [lines.join('\n')],
+    }),
+  );
+}
+
+// /basvuru reddet no:<numara>: kararı sadece ilgili yetkili (ya da yönetici) verebilir, karar modalı normal akışla aynıdır
+async function handleRejectCommand(interaction) {
+  const app = store.getApplication(`${interaction.guildId}-${interaction.options.getInteger('no', true)}`);
+  const error = reviewError(interaction, app);
+  if (error) return replyError(interaction, error);
+  return interaction.showModal(ui.reviewModal(app));
+}
+
+async function handleCommand(interaction) {
+  const sub = interaction.options.getSubcommand();
+  if (sub === 'liste') return handleList(interaction);
+  return handleRejectCommand(interaction);
+}
+
 // Bot açılınca paneli yetkili alım kanalına gönderir (değişmediyse dokunmaz) ve süresi dolan ses erişimlerini kapatmaya başlar
 function handleReady(client) {
   voice.startSweeper(client);
