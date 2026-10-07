@@ -606,4 +606,22 @@ function meetingLog(app) {
   );
 }
 
-module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+// Durum kanalındaki canlı panel: bekleyen tüm başvuruları tek mesajda listeler; durum değiştikçe düzenlenir
+function statusPanel(apps) {
+  const now = Math.floor(Date.now() / 1000);
+  const panelStatusLabel = (app) => {
+    if (app.onHold) return `Görüşme beklemede — <@${app.onHold.by}>`;
+    if (app.meetingBy) return `Görüşmede — <@${app.meetingBy}>`;
+    return 'İnceleniyor';
+  };
+  const list = apps.length
+    ? apps.map((a) => `**#${pad(a.number)}** · <@${a.userId}> · ${panelStatusLabel(a)}`).join('\n')
+    : 'Şu an incelenmeyi bekleyen başvuru yok.';
+  return page({
+    title: 'Bekleyen Başvurular',
+    sub: 'Yetkili alım sistemindeki tüm bekleyen başvurular ve anlık durumları burada listelenir; başvuru durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
+    blocks: [list, `-# Son güncelleme: <t:${now}:R>`],
+  });
+}
+
+module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, statusPanel, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
