@@ -339,6 +339,37 @@ async function callToMeeting(interaction, app) {
   return respond(interaction, staffReport('Başvuran görüşmeye çağrıldı.', access, sent));
 }
 
+// "Bağlan": başvuranın içinde bulunduğu ses kanalına yetkili katılır; ses kanalı açılmaz, başvurana DM gider
+async function callToConnect(interaction, app) {
+  if (app.meetingBy) return replyError(interaction, 'Başvuran zaten görüşmeye üstlenildi.');
+  const applicantChannel = interaction.guild.voiceStates.cache.get(app.userId)?.channelId;
+  if (!applicantChannel) return replyError(interaction, 'Başvuran artık bir ses kanalında değil.');
+  if (holdGuard(app, interaction)) {
+    return replyError(
+      interaction,
+      `Bu görüşmeyi <@${app.onHold.by}> beklemeye aldı, <t:${Math.floor(app.onHold.until / 1000)}:R> kadar yalnızca o geri alabilir.`,
+      'Devralmak için bildirimdeki **Devralma İste** butonuyla ondan devir isteyebilirsin; süre dolunca herkes üstlenebilir.',
+    );
+  }
+  await interaction.deferUpdate();
+  const hold = app.onHold;
+  clearTimeout(meetingHoldTimers.get(app.id));
+  meetingHoldTimers.delete(app.id);
+  store.updateApplication(app.id, { ownerId: interaction.user.id, meetingBy: interaction.user.id, meetingAt: Date.now(), meetingChannelId: applicantChannel, directConnect: true, onHold: null });
+  refreshStatusPanel(interaction.client, interaction.guildId).catch(() => {});
+  const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
+  await editMessage(interaction.guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
+  if (hold?.noticeId) await editMessage(interaction.guild, app.channelId, hold.noticeId, ui.meetingHoldNotice(app, 'taken'));
+  if (hold?.panelMessageId) await editMessage(interaction.guild, hold.panelChannelId, hold.panelMessageId, ui.decisionPanel(app, 'resumed'));
+  const sent = await applicant?.send({ components: [ui.connectingDm(app, interaction.guild.name)], flags: core.CV2 }).catch(() => null);
+  await startMeeting(interaction.guild, app);
+  return respond(interaction, core.alert(
+    'Başvuran ses kanalında, bağlanabilirsin.',
+    [`<#${applicantChannel}> kanalına git.`, sent ? 'Başvurana hazır olması söylendi.' : "Başvuranın DM'si kapalı."].join('\n'),
+    sent ? 'success' : 'warning',
+  ));
+}
+
 // "Devam Et": başvuru onaylanır, görüşme biter ve oryantasyonu kimin vereceği sorulur
 async function approve(interaction, app) {
   if (!app.meetingBy) return replyError(interaction, 'Önce başvuranı görüşmeye çağırmalısın.');
@@ -438,7 +469,8 @@ async function endMeeting(guild, app) {
 async function startMeeting(guild, app) {
   if (app.meeting || app.status !== 'pending' || !app.meetingBy) return false;
   const applicantChannel = guild.voiceStates.cache.get(app.userId)?.channelId;
-  if (!voice.isRecruitmentChannel(applicantChannel) || guild.voiceStates.cache.get(app.meetingBy)?.channelId !== applicantChannel) {
+  const inMeetChannel = app.directConnect ? applicantChannel === app.meetingChannelId : voice.isRecruitmentChannel(applicantChannel);
+  if (!inMeetChannel || guild.voiceStates.cache.get(app.meetingBy)?.channelId !== applicantChannel) {
     return false;
   }
   // Kayıt await'ten önce yapılır, art arda gelen olaylarda iki kez başlatılmaz
