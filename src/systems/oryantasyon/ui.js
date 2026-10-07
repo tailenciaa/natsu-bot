@@ -729,6 +729,16 @@ function pendingNotice(app, state, channelId) {
   );
 }
 
+// Bekleyen oryantasyon üstlenilince başvuran bir görüşme kanalındaysa o kanalın sohbetine giden bilgi
+function claimedChat(app) {
+  return card(
+    'Oryantasyon Üstlenildi',
+    'Bekleyen oryantasyonu bir yetkili üstlendi. Yetkili kanala geldiğinde oryantasyon kendiliğinden başlar ve panel bu kanalın sohbetine gelir; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
+    [`**Başvuru #${pad(app.number)}**\n**<@${app.orientation.staffId}> oryantasyonunu üstlendi.**\nKanala gelmesi bekleniyor.`],
+    'primary',
+  );
+}
+
 // Oryantasyon yetkililere bırakıldığında başvuran bir görüşme kanalında değilse ona giden DM
 function pendingDm(app, guildName) {
   return withFooter(
@@ -751,6 +761,7 @@ function pendingDm(app, guildName) {
 module.exports = {
   IDS,
   orienterRoleIds,
+  claimedChat,
   choicePanel,
   choiceResult,
   pendingNotice,

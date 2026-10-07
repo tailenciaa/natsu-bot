@@ -1,6 +1,9 @@
 // Oryantasyon: onaylanan başvuranın ekibe katılmadan önceki son aşaması.
-// Başvuru onaylanınca (basvuru sistemi begin'i çağırır) başvurana ve onaylayan yetkiliye DM ile boş bir görüşme kanalı
-// bildirilir. İkisi aynı görüşme kanalına girince oryantasyon kendiliğinden başlar ve bot kanalın sohbetine bir panel
+// Başvuru görüşmenin ardından onaylanınca (basvuru sistemi askWhoOrients'i çağırır) onaylayan yetkiliye oryantasyonu kendisinin
+// mi vereceği, yoksa oryantasyon yetkililerine mi bırakacağı sorulur. Kendisi verecekse ona ve başvurana DM ile boş bir
+// görüşme kanalı bildirilir; bırakırsa başvurular kanalına yetkilileri etiketleyen bir bildirim düşer ve "Oryantasyonu Üstlen"
+// butonuna ilk basan yetkili oryantasyonu verir (başvuran görüşme kanalında değilse DM ile çağrılır, kanala geçince
+// bildirim tekrarlanır). İkisi aynı görüşme kanalına girince oryantasyon kendiliğinden başlar ve bot kanalın sohbetine bir panel
 // atar. Yetkili adımları panelden ilerletir (bilinen adımlar atlanabilir), başvuran görev alanlarını seçer, en sonda
 // yetkili seviyeyi seçip "Yetki Ver"e basar: roller verilir, başvurana tebrik DM'i gider, kanallar tekrar kilitlenir.
 // Oryantasyon başka bir yetkiliye aktarılabilir ya da sebep yazılarak iptal edilebilir.
@@ -48,11 +51,13 @@ function saveOrientation(app, patch) {
   basvuruStore.updateApplication(app.id, { orientation: { ...app.orientation, ...patch } });
 }
 
-// Başvuru onaylanırken kaydedilen yeni oryantasyon
-function create(staffId) {
+// Başvuru onaylanırken kaydedilen yeni oryantasyon. status: choosing (onaylayan yetkili kimin vereceğine karar veriyor),
+// unassigned (yetkililere bırakıldı), waiting (yetkili belli) ya da active
+function create(staffId, status = 'waiting') {
   return {
-    status: 'waiting',
+    status,
     staffId,
+    claimMessageIds: [],
     suggestedChannelId: null,
     channelId: null,
     messageId: null,
@@ -145,6 +150,7 @@ async function notify(guild, app, kind, channelId) {
 async function finish(guild, app, reason) {
   clearTimers(app);
   await closeTakeover(guild, app, 'closed');
+  await closeClaims(guild, app, 'closed');
   await refresh(guild, app);
   // Canlı kayıt mesajı refresh ile sonuca döndü; oryantasyon hiç başlamadan bittiyse sonuç ayrı mesaj olarak gider
   if (!app.orientation.logMessageId) await basvuruLog.send(guild, app, ui.orientationResult(app));
@@ -372,26 +378,75 @@ async function announceNewStaff(guild, app, fromId) {
     .catch(() => {});
 }
 
-// Başvuru sistemi onaylanan başvuru için çağırır (başvuru kaydedilmiş, etkileşim deferUpdate edilmiş olarak):
-// kanalların kilidini açar, boş kanalı bulur, iki tarafa DM atar, ikisi zaten aynı kanaldaysa hemen başlatır
-async function begin(interaction, app) {
-  const { guild } = interaction;
+// Başvurular kanalındaki "bekleyen oryantasyon" mesajlarını son haline getirir (üstlenildi ya da oryantasyon bitti)
+async function closeClaims(guild, app, state) {
+  const ids = app.orientation.claimMessageIds ?? [];
+  if (!ids.length) return;
+  saveOrientation(app, { claimMessageIds: [] });
+  for (const id of ids) await basvuruLog.edit(guild, id, ui.pendingNotice(app, state));
+}
+
+// Başvurular kanalına "bekleyen oryantasyon" bildirimi gönderir ve üstlenilince güncellensin diye kaydeder. Yetkili rolleri
+// etiketlenir; "boşta kim varsa o ilgilenir". state: open (yetkililere bırakılınca) | waiting (başvuran bir görüşme kanalına geçince)
+async function postPending(guild, app, channelId, state) {
+  const message = await basvuruLog.send(guild, app, ui.pendingNotice(app, state, channelId), ui.orienterRoleIds(app));
+  if (message) saveOrientation(app, { claimMessageIds: [...(app.orientation.claimMessageIds ?? []), message.id] });
+  return message;
+}
+
+// Başvuru sistemi "Devam Et" için çağırır (etkileşim deferUpdate edilmiş olarak): başvuru onaylanır ve onaylayan yetkiliye
+// oryantasyonu kendisinin mi vereceği, yoksa yetkililere mi bırakacağı sorulur
+async function askWhoOrients(interaction, app) {
+  basvuruStore.updateApplication(app.id, {
+    status: 'approved',
+    reviewedBy: interaction.user.id,
+    reviewedAt: Date.now(),
+    ownerId: interaction.user.id,
+    orientation: create(interaction.user.id, 'choosing'),
+  });
+  const panel = ui.choicePanel(app);
+  // Eski mesajlardaki Onayla butonundan gelindiyse (başvuru mesajı) soru ayrı ve sadece basana görünen bir mesajla sorulur
+  if (interaction.message?.id === app.messageId) await followUp(interaction, panel);
+  else await interaction.editReply({ components: [panel], allowedMentions: { parse: [] } });
+  await refresh(interaction.guild, app);
+}
+
+// Oryantasyonu verecek yetkili belli olunca (kendisi seçtiyse ya da üstlendiyse) çağrılır: kanalların kilidi açılır, boş kanal
+// bulunur, başvurana ve yetkiliye haber verilir, ikisi zaten aynı kanaldaysa oryantasyon hemen başlar.
+// claimed: bekleyen oryantasyon başvurular kanalından üstlenildiyse (başvuran onay DM'ini zaten almıştır)
+async function begin(guild, app, staffUser, { claimed = false } = {}) {
   const access = await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu`);
-  const channelId = voice.pickOrientationChannel(guild, app.orientation.staffId);
+  const channelId = voice.pickOrientationChannel(guild, staffUser.id);
   saveOrientation(app, { suggestedChannelId: channelId });
+  await refresh(guild, app);
 
-  const applicant = await fetchUser(interaction.client, app.userId);
-  await interaction.editReply({ components: [basvuruUi.applicationNotice(app, applicant)], allowedMentions: { parse: [] } });
-
-  // Görüşmeden hemen sonra onaylandıysa ikisi zaten aynı kanalda olabilir; o zaman yetkiliye ayrıca DM gerekmez
+  // Görüşmeden hemen sonra ikisi zaten aynı kanalda olabilir; o zaman yetkiliye ayrıca DM gerekmez
   const started = await tryStart(guild, app);
   const target = started ? app.orientation.channelId : channelId;
-  const applicantSent = await applicant
-    ?.send({ components: [ui.approvedDm(app, guild.name, target)], flags: core.CV2 })
-    .catch(() => null);
+  const applicant = await fetchUser(guild.client, app.userId);
+
+  let applicantSent = true;
+  if (!claimed) {
+    applicantSent = await applicant
+      ?.send({ components: [ui.approvedDm(app, guild.name, target)], flags: core.CV2 })
+      .then(() => true, () => false);
+  } else if (!started) {
+    // Başvuran seste değilse DM ile, seste ise bulunduğu kanalın sohbetine yetkilinin üstlendiği haber verilir
+    const applicantChannel = voiceChannelOf(guild, app.userId);
+    if (voice.isRecruitmentChannel(applicantChannel)) {
+      const chat = await fetchTextChannel(guild, applicantChannel);
+      await chat?.send({ components: [ui.claimedChat(app)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+    } else {
+      applicantSent = await applicant
+        ?.send({ components: [ui.presenceDm(app, guild.name, 'claimed', true, channelId)], flags: core.CV2 })
+        .then(() => true, () => false);
+    }
+  }
   const staffSent =
     started ||
-    (await interaction.user.send({ components: [ui.staffDm(app, guild.name, channelId)], flags: core.CV2 }).catch(() => null));
+    (await staffUser
+      .send({ components: [ui.staffDm(app, guild.name, channelId, null, false, claimed)], flags: core.CV2 })
+      .then(() => true, () => false));
 
   const lines = [
     started
@@ -400,14 +455,62 @@ async function begin(interaction, app) {
         ? `Oryantasyon için <#${channelId}> kanalı ayarlandı. İkiniz de kanala girince oryantasyon kendiliğinden başlayacak.`
         : 'Şu an boş görüşme kanalı yok; ikinize de boşalan bir kanala geçmeniz söylendi. Aynı kanala girince oryantasyon başlar.',
     access ? null : 'Ses kanallarının kilidi açılamadı, başvuran sunucuda olmayabilir.',
-    applicantSent ? 'Başvurana DM ile haber verildi.' : "Başvuranın DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.",
+    applicantSent ? 'Başvurana haber verildi.' : "Başvuranın DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.",
     staffSent ? null : "Senin DM'in kapalı olduğu için sana ayrıca bilgi gönderilemedi.",
   ].filter(Boolean);
+  return { lines, ok: Boolean(access && applicantSent) };
+}
 
-  await respond(
-    interaction,
-    core.notice(`**Başvuru onaylandı, oryantasyonu sen vereceksin.**\n${lines.map((l) => `${l}`).join('\n')}`, access && applicantSent ? 'success' : 'warning'),
-  );
+// "Ben Vereceğim" ve "Yetkililere Bırak": onaylayan yetkilinin oryantasyonu kimin vereceği seçimi
+async function handleChoice(interaction, app, action) {
+  if (app.orientation.status !== 'choosing') return replyError(interaction, 'Bu seçim zaten yapıldı.');
+  const { guild, user } = interaction;
+
+  if (action === 'ben') {
+    saveOrientation(app, { status: 'waiting', staffId: user.id });
+    basvuruStore.updateApplication(app.id, { ownerId: user.id });
+    await interaction.deferUpdate();
+    const { lines } = await begin(guild, app, user);
+    return interaction.editReply({ components: [ui.choiceResult(app, 'ben', lines)], allowedMentions: { parse: [] } });
+  }
+
+  // Yetkililere bırakılır: yetkili belli değil, başvuruyu artık kimse üstlenmiş sayılmaz
+  saveOrientation(app, { status: 'unassigned', staffId: null });
+  basvuruStore.updateApplication(app.id, { ownerId: null });
+  await interaction.deferUpdate();
+  await interaction.editReply({ components: [ui.choiceResult(app, 'birak')], allowedMentions: { parse: [] } });
+  await refresh(guild, app);
+
+  // Başvuran seste değilse DM ile çağrılır, seste ise bildirim onun kanalıyla gider
+  const applicantChannel = voiceChannelOf(guild, app.userId);
+  const inVoice = voice.isRecruitmentChannel(applicantChannel);
+  await voice.grantAccess(guild, app, `Yetkili başvurusu #${core.pad(app.number)} oryantasyonu`);
+  await postPending(guild, app, inVoice ? applicantChannel : null, 'open');
+  if (!inVoice) {
+    const applicant = await fetchUser(interaction.client, app.userId);
+    await applicant?.send({ components: [ui.pendingDm(app, guild.name)], flags: core.CV2 }).catch(() => {});
+  }
+}
+
+// "Oryantasyonu Üstlen": bekleyen oryantasyonu ilk basan yetkili alır ve başvuranla o ilgilenir
+async function handleClaim(interaction, app) {
+  const o = app.orientation;
+  if (o.status !== 'unassigned') {
+    return replyError(interaction, o.staffId ? `Bu oryantasyonu <@${o.staffId}> üstlendi.` : 'Bu oryantasyon artık yetkili beklemiyor.');
+  }
+  if (interaction.user.id === app.userId) return replyError(interaction, 'Kendi oryantasyonunu üstlenemezsin.');
+  if (!isStaff(interaction, orienterRoles(app))) {
+    return replyError(interaction, `Oryantasyonu sadece ${mentionRoles(orienterRoles(app))} rolündekiler üstlenebilir.`);
+  }
+
+  // Kayıt await'ten önce yapılır, aynı anda basan ikinci kişi yukarıdaki kontrole takılır
+  saveOrientation(app, { status: 'waiting', staffId: interaction.user.id, claimedAt: Date.now() });
+  basvuruStore.updateApplication(app.id, { ownerId: interaction.user.id });
+  await interaction.deferUpdate();
+  await closeClaims(interaction.guild, app, 'taken');
+
+  const { lines, ok } = await begin(interaction.guild, app, interaction.user, { claimed: true });
+  await followUp(interaction, core.notice(`**Oryantasyonu üstlendin.**\n${lines.join('\n')}`, ok ? 'success' : 'warning'));
 }
 
 // Oryantasyon bekleyen yetkili bir görüşme kanalına girip başvuran orada değilse başvurana haber verir
@@ -433,7 +536,7 @@ async function handleVoiceUpdate(oldState, newState) {
   for (const app of related) {
     if (app.orientation.status === 'active') {
       await syncPresence(guild, app.id);
-    } else if (voice.isRecruitmentChannel(newState.channelId)) {
+    } else if (app.orientation.status === 'waiting' && voice.isRecruitmentChannel(newState.channelId)) {
       const started = await tryStart(guild, app);
       if (!started && newState.id === app.orientation.staffId) await notifyApplicantOfStaff(guild, app, newState.channelId);
     }
@@ -611,13 +714,15 @@ async function handleAction(interaction) {
   const app = basvuruStore.getApplication(id);
   if (!app?.orientation) return replyError(interaction, 'Bu oryantasyon bulunamadı.');
   const o = app.orientation;
-  if (!['waiting', 'active'].includes(o.status)) return replyError(interaction, 'Bu oryantasyon zaten sonuçlandı.');
+  if (!basvuruStore.ORIENTING.includes(o.status)) return replyError(interaction, 'Bu oryantasyon zaten sonuçlandı.');
 
-  // Devralma butonu başvurular kanalında, oryantasyonu yöneten kişi dışındakiler içindir
+  // Devralma ve üstlenme butonları başvurular kanalında, oryantasyonu yöneten kişi dışındakiler içindir
   if (action === 'devral') return handleTakeover(interaction, app);
+  if (action === 'ustlen') return handleClaim(interaction, app);
 
   const isApplicant = interaction.user.id === app.userId;
-  const canManage = interaction.user.id === o.staffId || isAdmin(interaction);
+  // Üstlenen yoksa oryantasyonu iptal etmeyi oryantasyon verebilen roller de yapabilir
+  const canManage = o.status === 'unassigned' ? isStaff(interaction, orienterRoles(app)) : interaction.user.id === o.staffId || isAdmin(interaction);
 
   // Alan seçimini başvuran da yapabilir
   if (action === 'alan') {
@@ -637,6 +742,10 @@ async function handleAction(interaction) {
     );
   }
 
+  if (action === 'ben' || action === 'birak') return handleChoice(interaction, app, action);
+  if (['aktar', 'aktar-sec'].includes(action) && !['waiting', 'active'].includes(o.status)) {
+    return replyError(interaction, 'Oryantasyon henüz bir yetkiliye verilmedi.', 'Önce bir yetkili oryantasyonu üstlenmeli.');
+  }
   if (action === 'aktar') return respond(interaction, ui.transferPicker(app));
   if (action === 'aktar-sec') return handleTransfer(interaction, app);
   if (action === 'iptal') return interaction.showModal(ui.cancelModal(app));
@@ -662,7 +771,8 @@ async function handleAction(interaction) {
 module.exports = {
   name: 'oryantasyon',
   create,
-  begin,
+  askWhoOrients,
+  postPending,
   prefixed: [[ui.IDS.action, handleAction]],
   events: {
     [Events.ClientReady]: handleReady,
