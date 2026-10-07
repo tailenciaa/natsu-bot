@@ -5,14 +5,14 @@ const core = require('../../core/ui');
 const { fetchTextChannel } = require('../../core/helpers');
 const config = require('./config');
 
-// roles: etiketlenecek rol ID'leri (mesajın içinde geçmeleri gerekir)
-async function send(guild, app, container, roles = []) {
+// roles / users: etiketlenecek rol ve kullanıcı ID'leri (mesajın içinde geçmeleri gerekir)
+async function send(guild, app, container, roles = [], users = []) {
   const channel = await fetchTextChannel(guild, config.channels.log);
   if (!channel) return null;
   const reply =
     channel.id === app.channelId && app.messageId ? { messageReference: app.messageId, failIfNotExists: false } : undefined;
   return channel
-    .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [], roles, repliedUser: false }, reply })
+    .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [], roles, users, repliedUser: false }, reply })
     .catch((err) => {
       console.error('[basvuru] Süreç kaydı gönderilemedi:', err.message);
       return null;
