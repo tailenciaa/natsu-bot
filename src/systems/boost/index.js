@@ -274,7 +274,10 @@ module.exports = {
     [ui.IDS.nickForm]: handleNickForm,
     [ui.IDS.roleForm]: handleRoleForm,
   },
-  prefixed: [[ui.IDS.colorRole, handleColorRole]],
+  prefixed: [
+    [ui.IDS.colorRole, handleColorRole],
+    [ui.IDS.iconRole, handleIconRole],
+  ],
   events: {
     [Events.ClientReady]: sendPanel,
     [Events.GuildMemberUpdate]: handleMemberUpdate,
