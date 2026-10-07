@@ -151,6 +151,7 @@ async function finish(guild, app, reason) {
   clearTimers(app);
   await closeTakeover(guild, app, 'closed');
   await closeClaims(guild, app, 'closed');
+  await closeWaitChat(guild, app, 'closed');
   await refresh(guild, app);
   // Canlı kayıt mesajı refresh ile sonuca döndü; oryantasyon hiç başlamadan bittiyse sonuç ayrı mesaj olarak gider
   if (!app.orientation.logMessageId) await basvuruLog.send(guild, app, ui.orientationResult(app));
@@ -386,6 +387,49 @@ async function closeClaims(guild, app, state) {
   for (const id of ids) await basvuruLog.edit(guild, id, ui.pendingNotice(app, state));
 }
 
+// Başvuranın beklediği kanalın sohbetindeki bekleme mesajını kaydeder (yetkili girince güncellensin diye)
+function trackWaitChat(app, channelId, messageId) {
+  saveOrientation(app, { waitChat: { channelId, messageId, declinedBy: [] } });
+}
+
+// Kanaldaki bekleme mesajını son haline getirir: üstlenildiyse "üstlenildi", oryantasyon bittiyse "sona erdi"
+async function closeWaitChat(guild, app, state) {
+  const wait = app.orientation.waitChat;
+  if (!wait) return;
+  saveOrientation(app, { waitChat: null });
+  const channel = await fetchTextChannel(guild, wait.channelId);
+  const container = state === 'taken' ? ui.claimedChat(app) : ui.pendingNotice(app, 'closed');
+  await channel?.messages.edit(wait.messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => {});
+}
+
+// Üstlenen yokken oryantasyon verebilen biri başvuranın beklediği kanala girince kanaldaki bekleme mesajı güncellenir ve
+// o kişi etiketlenir ("bekleyen işlem var, ilgilenmek ister misin?"); başvurular kanalına tekrar bildirim gitmez
+async function askStaffInChannel(guild, member, channelId) {
+  if (member.user.bot) return;
+  for (const app of basvuruStore.inOrientation().filter((a) => a.orientation.status === 'unassigned')) {
+    const wait = app.orientation.waitChat;
+    if (!wait || wait.channelId !== channelId || app.userId === member.id) continue;
+    if (voiceChannelOf(guild, app.userId) !== channelId || wait.declinedBy?.includes(member.id)) continue;
+    const canTake = member.permissions.has(PermissionFlagsBits.Administrator) || orienterRoles(app).some((id) => member.roles.cache.has(id));
+    if (!canTake) continue;
+    const channel = await fetchTextChannel(guild, channelId);
+    await channel?.messages
+      .edit(wait.messageId, { components: [basvuruUi.waitingChat(app, 'unassigned', member.id)], allowedMentions: { users: [member.id] } })
+      .catch(() => {});
+  }
+}
+
+// "Şimdi Değil": mesaj eski "yetkili bekleniyor" haline döner, bildirim tekrarlanmaz, isteyen yine üstlenebilir
+async function handleSkip(interaction, app) {
+  if (app.orientation.status !== 'unassigned') return replyError(interaction, 'Bu oryantasyon artık yetkili beklemiyor.');
+  if (!isStaff(interaction, orienterRoles(app))) {
+    return replyError(interaction, `Bu butonu sadece ${mentionRoles(orienterRoles(app))} rolündekiler kullanabilir.`);
+  }
+  const wait = app.orientation.waitChat;
+  if (wait) saveOrientation(app, { waitChat: { ...wait, declinedBy: [...new Set([...(wait.declinedBy ?? []), interaction.user.id])] } });
+  return interaction.update({ components: [basvuruUi.waitingChat(app, 'unassigned')], allowedMentions: { parse: [] } });
+}
+
 // Başvurular kanalına "bekleyen oryantasyon" bildirimi gönderir ve üstlenilince güncellensin diye kaydeder. Yetkili rolleri
 // etiketlenir; "boşta kim varsa o ilgilenir". state: open (yetkililere bırakılınca) | waiting (başvuran bir görüşme kanalına geçince)
 async function postPending(guild, app, channelId, state) {
@@ -437,7 +481,9 @@ async function begin(guild, app, staffUser, { claimed = false } = {}) {
   } else if (!started) {
     // Başvuran seste değilse DM ile, seste ise bulunduğu kanalın sohbetine yetkilinin üstlendiği haber verilir
     const applicantChannel = voiceChannelOf(guild, app.userId);
-    if (voice.isRecruitmentChannel(applicantChannel)) {
+    if (voice.isRecruitmentChannel(applicantChannel) && app.orientation.waitChat?.channelId === applicantChannel) {
+      // Kanaldaki bekleme mesajı handleClaim'de "üstlenildi"ye çevrilir
+    } else if (voice.isRecruitmentChannel(applicantChannel)) {
       const chat = await fetchTextChannel(guild, applicantChannel);
       await chat
         ?.send({ components: [ui.claimedChat(app)], flags: core.CV2, allowedMentions: { users: [app.userId, app.orientation.staffId] } })
@@ -516,6 +562,7 @@ async function handleClaim(interaction, app) {
   await closeClaims(interaction.guild, app, 'taken');
 
   const { lines, ok } = await begin(interaction.guild, app, interaction.user, { claimed: true });
+  await closeWaitChat(interaction.guild, app, 'taken');
   await followUp(interaction, core.notice(`**Oryantasyonu üstlendin.**\n${lines.join('\n')}`, ok ? 'success' : 'warning'));
 }
 
@@ -536,6 +583,9 @@ async function handleVoiceUpdate(oldState, newState) {
   if (guild.id !== guildId || oldState.channelId === newState.channelId) return;
   if (!voice.isRecruitmentChannel(oldState.channelId) && !voice.isRecruitmentChannel(newState.channelId)) return;
 
+  if (voice.isRecruitmentChannel(newState.channelId) && newState.member) {
+    await askStaffInChannel(guild, newState.member, newState.channelId);
+  }
   const related = basvuruStore
     .inOrientation()
     .filter((a) => a.userId === newState.id || a.orientation.staffId === newState.id);
@@ -725,6 +775,7 @@ async function handleAction(interaction) {
   // Devralma ve üstlenme butonları başvurular kanalında, oryantasyonu yöneten kişi dışındakiler içindir
   if (action === 'devral') return handleTakeover(interaction, app);
   if (action === 'ustlen') return handleClaim(interaction, app);
+  if (action === 'gec') return handleSkip(interaction, app);
 
   const isApplicant = interaction.user.id === app.userId;
   // Üstlenen yoksa oryantasyonu iptal etmeyi oryantasyon verebilen roller de yapabilir
@@ -779,6 +830,7 @@ module.exports = {
   create,
   askWhoOrients,
   postPending,
+  trackWaitChat,
   prefixed: [[ui.IDS.action, handleAction]],
   events: {
     [Events.ClientReady]: handleReady,

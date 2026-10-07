@@ -277,10 +277,14 @@ async function notifyWaiting(newState) {
     if (staffId && guild.voiceStates.cache.get(staffId)?.channelId === channelId) continue;
     if (!cooledDown(`${app.id}:${stage}`)) continue;
 
-    const chat = await fetchTextChannel(guild, channelId);
-    await chat
-      ?.send({ components: [ui.waitingChat(app, stage)], flags: core.CV2, allowedMentions: { users: [app.userId, staffId].filter(Boolean) } })
-      .catch(() => {});
+    // Üstlenen yokken kanalda tek bir bekleme mesajı durur (yetkili girince güncellenir); aynı kanalda yeniden gönderilmez
+    if (!(stage === 'unassigned' && app.orientation.waitChat?.channelId === channelId)) {
+      const chat = await fetchTextChannel(guild, channelId);
+      const message = await chat
+        ?.send({ components: [ui.waitingChat(app, stage)], flags: core.CV2, allowedMentions: { users: [app.userId, staffId].filter(Boolean) } })
+        .catch(() => null);
+      if (message && stage === 'unassigned') orientation.trackWaitChat(app, channelId, message.id);
+    }
 
     if (stage === 'unassigned') {
       await orientation.postPending(guild, app, channelId, 'waiting');
@@ -375,6 +379,46 @@ async function editMessage(guild, channelId, messageId, container) {
   await channel?.messages.edit(messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => {});
 }
 
+// Başvuranın "Hatırlat" butonu: görüşme / oryantasyon yetkilisini beklerken 5 dakikada bir yetkililere "bekliyorum" bildirimi gönderir.
+// Oryantasyonu üstlenen yoksa yetkili rolü etiketlenir, varsa yetkili etiketlenir ve DM alır.
+const REMIND_COOLDOWN = 5 * 60 * 1000;
+async function handleRemind(interaction) {
+  const app = store.getApplication(interaction.customId.split(':')[1]);
+  if (!app) return replyError(interaction, 'Bu başvuru bulunamadı.');
+  if (interaction.user.id !== app.userId) return replyError(interaction, 'Bu butonu sadece başvuran kullanabilir.');
+
+  const stage =
+    app.status === 'pending' && app.meetingBy && !app.meeting
+      ? 'meeting'
+      : app.status === 'approved' && app.orientation?.status === 'unassigned'
+        ? 'unassigned'
+        : app.status === 'approved' && app.orientation?.status === 'waiting'
+          ? 'orientation'
+          : null;
+  if (!stage) return replyError(interaction, 'Şu an yetkili beklenen bir işlemin yok.');
+
+  const { guild } = interaction;
+  const channelId = guild.voiceStates.cache.get(app.userId)?.channelId;
+  if (!voice.isRecruitmentChannel(channelId)) return replyError(interaction, 'Önce bir görüşme kanalına girmelisin.');
+  const staffId = stage === 'meeting' ? app.meetingBy : stage === 'orientation' ? app.orientation.staffId : null;
+  if (staffId && guild.voiceStates.cache.get(staffId)?.channelId === channelId) return replyError(interaction, 'Yetkilin zaten kanalda.');
+
+  const next = (app.remindedAt ?? 0) + REMIND_COOLDOWN;
+  if (next > Date.now()) {
+    return replyError(interaction, 'Çok sık hatırlatıyorsun.', `<t:${Math.floor(next / 1000)}:R> tekrar hatırlatabilirsin.`);
+  }
+  store.updateApplication(app.id, { remindedAt: Date.now() });
+
+  if (stage === 'unassigned') {
+    await orientation.postPending(guild, app, channelId, 'waiting');
+  } else {
+    await log.send(guild, app, ui.waitingLog(app, stage, channelId), [], [staffId]);
+    const staff = await guild.client.users.fetch(staffId).catch(() => null);
+    await staff?.send({ components: [ui.applicantWaitingDm(app, guild.name, channelId, stage === 'orientation')], flags: core.CV2 }).catch(() => {});
+  }
+  return respond(interaction, core.alert('Yetkililere hatırlatıldı.', 'Bir yetkili ilgilenene kadar kanalda beklemeye devam et.', 'success'));
+}
+
 // Reddet formu gönderilince başvuruyu reddeder: başvuru mesajı ve (varsa) görüşme kanalındaki karar paneli güncellenir,
 // başvurana sebep DM ile iletilir ve görüşme kanalları kilitlenir. Form başvurular kanalındaki mesajdan ya da karar panelinden açılmış olabilir.
 async function handleReviewSubmit(interaction) {
@@ -422,6 +466,7 @@ module.exports = {
   prefixed: [
     [ui.IDS.review, handleReviewButton],
     [ui.IDS.reviewModal, handleReviewSubmit],
+    [ui.IDS.remind, handleRemind],
   ],
   events: {
     [Events.ClientReady]: handleReady,

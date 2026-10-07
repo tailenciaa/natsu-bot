@@ -19,6 +19,7 @@ const IDS = {
   review: 'basvuru-karar', // basvuru-karar:<başvuru>:<gorusme|devam|red> (eski mesajlarda onay da olabilir)
   reviewModal: 'basvuru-karar-form', // basvuru-karar-form:<başvuru>:red
   reviewNote: 'basvuru-karar-not',
+  remind: 'basvuru-hatirlat', // basvuru-hatirlat:<başvuru>
 };
 
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
@@ -336,21 +337,36 @@ Kararı sadece **görüşmeye çağıran yetkili** (ya da yöneticiler) verebili
 
 // Başvuran görüşme kanalına yetkiliden önce girince kanalın sohbetine giden bekleme mesajı.
 // stage: meeting (görüşme) | orientation (oryantasyon yetkilisi belli) | unassigned (oryantasyonu üstlenen yok)
-function waitingChat(app, stage) {
+function waitingChat(app, stage, askStaffId) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
-  const body =
-    stage === 'unassigned'
-      ? `<@${app.userId}> oryantasyon için kanalda.
-Oryantasyonu üstlenecek yetkili bekleniyor, başvurular kanalına bildirim gönderildi.`
-      : `<@${app.userId}> ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanalda.
-<@${staffId}> henüz bağlanmadı, yetkilinin bağlanması bekleniyor.`;
-  return card(
-    'Yetkili Bekleniyor',
-    'Başvuran görüşme kanalına girdi ve yetkiliyi bekliyor. Yetkili kanala bağlandığında görüşme ya da oryantasyon başlar; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
-    [`**Başvuru #${pad(app.number)}**
-${body}`],
+  let body;
+  if (stage === 'unassigned') {
+    body = askStaffId
+      ? `<@${askStaffId}>, <@${app.userId}> için bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
+      : `<@${app.userId}> oryantasyon için kanalda.\nOryantasyonu üstlenecek yetkili bekleniyor, başvurular kanalına bildirim gönderildi.`;
+  } else {
+    body = `<@${app.userId}> ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanalda.\n<@${staffId}> henüz bağlanmadı, yetkilinin bağlanması bekleniyor.`;
+  }
+  const container = card(
+    askStaffId ? 'Bekleyen Oryantasyon' : 'Yetkili Bekleniyor',
+    askStaffId
+      ? 'Oryantasyonu bekleyen başvuran kanalda ve henüz kimse üstlenmedi. **Oryantasyonu Üstlen** ile başvuranla ilgilenebilir, **Şimdi Değil** ile mesajı eski haline döndürebilirsin; mesaj kanalda kalır.'
+      : 'Başvuran görüşme kanalına girdi ve yetkiliyi bekliyor. Yetkili kanala bağlandığında görüşme ya da oryantasyon başlar; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
+    [`**Başvuru #${pad(app.number)}**\n${body}`],
     'warning',
   );
+  const row = new ActionRowBuilder();
+  if (stage === 'unassigned') {
+    row.addComponents(
+      new ButtonBuilder().setCustomId(`${orientationUi.IDS.action}:${app.id}:ustlen`).setStyle(ButtonStyle.Success).setLabel('Oryantasyonu Üstlen'),
+    );
+    if (askStaffId) {
+      row.addComponents(new ButtonBuilder().setCustomId(`${orientationUi.IDS.action}:${app.id}:gec`).setStyle(ButtonStyle.Secondary).setLabel('Şimdi Değil'));
+    }
+  }
+  // Başvuran 5 dakikada bir yetkililere "bekliyorum" bildirimi gönderebilir
+  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.remind}:${app.id}`).setStyle(ButtonStyle.Secondary).setLabel('Hatırlat'));
+  return container.addSeparatorComponents(divider()).addActionRowComponents(row);
 }
 
 // Başvuran yetkiliden önce kanala girince başvurular kanalına (başvuru mesajına yanıt olarak) giden, başvuranın hangi aşamada beklediğini söyleyen kayıt.

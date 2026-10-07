@@ -731,10 +731,13 @@ function pendingNotice(app, state, channelId) {
 
 // Bekleyen oryantasyon üstlenilince başvuran bir görüşme kanalındaysa o kanalın sohbetine giden bilgi
 function claimedChat(app) {
+  const here = app.orientation.status === 'active';
   return card(
     'Oryantasyon Üstlenildi',
-    'Bekleyen oryantasyonu bir yetkili üstlendi. Yetkili kanala geldiğinde oryantasyon kendiliğinden başlar ve panel bu kanalın sohbetine gelir; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
-    [`**Başvuru #${pad(app.number)}**\n**<@${app.orientation.staffId}> oryantasyonunu üstlendi.**\nKanala gelmesi bekleniyor.`],
+    here
+      ? 'Bekleyen oryantasyonu bir yetkili üstlendi ve oryantasyon başladı. Adımlar kanalın sohbetindeki panelden ilerliyor; bu mesaj kayıt olarak kalır.'
+      : 'Bekleyen oryantasyonu bir yetkili üstlendi. Yetkili kanala geldiğinde oryantasyon kendiliğinden başlar ve panel bu kanalın sohbetine gelir; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
+    [`**Başvuru #${pad(app.number)}**\n**<@${app.orientation.staffId}> oryantasyonunu üstlendi.**${here ? '' : '\nKanala gelmesi bekleniyor.'}`],
     'primary',
   );
 }
