@@ -658,8 +658,103 @@ function cancelModal(app) {
     );
 }
 
+// Başvuruyu onaylayan yetkiliye görüşme kanalının sohbetinde sorulan soru: oryantasyonu kendisi mi verecek, yetkililere mi bırakacak
+function choicePanel(app) {
+  return withRow(
+    card(
+      'Oryantasyonu Kim Verecek?',
+      'Başvuruyu uygun buldun. Oryantasyonu **kendin** verebilir ya da **oryantasyon yetkililerine** bırakabilirsin; bırakırsan başvurular kanalına bildirim düşer ve ilk üstlenen yetkili oryantasyonu verir.',
+      [`**Başvuru #${pad(app.number)}**\n<@${app.userId}> için oryantasyon aşamasına geçiliyor.\nSeçimi sadece <@${app.orientation.staffId}> (ya da yöneticiler) yapabilir.`],
+      'success',
+    ),
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(actionId(app, 'ben')).setStyle(ButtonStyle.Success).setLabel('Ben Vereceğim'),
+      new ButtonBuilder().setCustomId(actionId(app, 'birak')).setStyle(ButtonStyle.Secondary).setLabel('Yetkililere Bırak'),
+    ),
+  );
+}
+
+// Seçim yapılınca soru mesajının yerine geçen sonuç. lines: "ben" seçildiyse oryantasyonun ne durumda olduğu
+function choiceResult(app, which, lines = []) {
+  if (which === 'ben') {
+    return card(
+      'Oryantasyonu Sen Veriyorsun',
+      'Oryantasyon sana verildi. İkiniz de aynı görüşme kanalına girince oryantasyon kendiliğinden başlar ve panel kanalın sohbetine gelir; adımları sen ilerletirsin.',
+      [`**Başvuru #${pad(app.number)}**\n${lines.join('\n') || `<@${app.userId}> ile oryantasyona geçiliyor.`}`],
+      'success',
+    );
+  }
+  return card(
+    'Oryantasyon Yetkililere Bırakıldı',
+    'Oryantasyon artık sende değil. Başvurular kanalına bildirim gönderildi; **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir, o zamana kadar başvuran kanalda bekleyebilir.',
+    [`**Başvuru #${pad(app.number)}**\n<@${app.userId}> için oryantasyon yetkilisi bekleniyor.`],
+    'primary',
+  );
+}
+
+// Başvurular kanalına giden "bekleyen oryantasyon" mesajı: oryantasyon yetkililere bırakılınca ve başvuran bir görüşme
+// kanalına geçince gelir, ilk üstlenen yetkili oryantasyonu verir. Üstlenen olunca (ya da oryantasyon bitince) kayıt olarak kalır.
+// state: open (başvuran henüz kanalda değil) | waiting (başvuran kanalda bekliyor) | taken | closed
+function pendingNotice(app, state, channelId) {
+  const o = app.orientation;
+  const heading = `**Başvuru #${pad(app.number)}**`;
+  const record = 'Bu mesaj başvurular kanalında kayıt olarak kalır.';
+  if (state === 'taken') {
+    return card(
+      'Oryantasyon Üstlenildi',
+      `Bekleyen oryantasyonu bir yetkili üstlendi, artık başka bir işlem gerekmiyor. ${record}`,
+      [`${heading}\n**<@${o.staffId}> oryantasyonu üstlendi.**`],
+      'success',
+    );
+  }
+  if (state === 'closed') {
+    return card('Oryantasyon Sona Erdi', `Oryantasyon üstlenilmeden sona erdiği için artık yetkili beklenmiyor. ${record}`, [`${heading}\n**Oryantasyon sona erdi, yetkili beklenmiyor.**`]);
+  }
+
+  const waiting = state === 'waiting';
+  const where = channelId ? `<@${app.userId}> <#${channelId}> kanalında bekliyor.` : `<@${app.userId}> henüz bir görüşme kanalında değil.`;
+  const roles = orienterRoleIds(app).map((id) => `<@&${id}>`).join(', ');
+  const buttons = [claimButton(app)];
+  if (channelId) buttons.push(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)));
+  return withRow(
+    card(
+      waiting ? 'Başvuran Bekliyor' : 'Bekleyen Oryantasyon',
+      waiting
+        ? 'Oryantasyonu bekleyen başvuran bir görüşme kanalına geçti. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.'
+        : 'Başvuru onaylandı ve oryantasyon yetkililere bırakıldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.',
+      [`${heading}\n${roles}, ${where}\n${app.reviewedBy ? `<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı.` : 'Oryantasyon yetkililere bırakıldı.'}`],
+      'warning',
+    ),
+    new ActionRowBuilder().addComponents(buttons),
+  );
+}
+
+// Oryantasyon yetkililere bırakıldığında başvuran bir görüşme kanalında değilse ona giden DM
+function pendingDm(app, guildName) {
+  return withFooter(
+    withRow(
+      card(
+        'Oryantasyon Bekleniyor',
+        'Başvurun onaylandı ve oryantasyona çağırıldın. Oryantasyonu bir yetkili üstlenince sana haber vereceğiz; şimdilik görüşme kanallarından birine geçip orada beklemen yeterli.',
+        [
+          `**Başvuru Durumu**\nTebrikler, son aşamaya geçtin: oryantasyon!\n#${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> onayladı.`,
+          '**Oryantasyon**\nOryantasyonu **ilk üstlenen yetkili** verecek. Üstlendiğinde ve ikiniz aynı kanala girdiğinizde oryantasyon **kendiliğinden başlar**. Kanallar senin için açıldı.',
+        ],
+        'success',
+      ),
+      voiceButtons(app.guildId, null),
+    ),
+    `-# ${guildName} - <t:${unix(app.reviewedAt)}:F>`,
+  );
+}
+
 module.exports = {
   IDS,
+  orienterRoleIds,
+  choicePanel,
+  choiceResult,
+  pendingNotice,
+  pendingDm,
   plannedRoles,
   levelOf,
   areasOf,
