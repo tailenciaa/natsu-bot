@@ -557,7 +557,7 @@ module.exports = {
     [ui.IDS.close]: handleCloseRequest,
   },
   modals: { [ui.IDS.modal]: handleModalSubmit, [ui.IDS.closeModal]: handleCloseSubmit },
-  prefixed: [[ui.IDS.claim, handleClaim]],
+  prefixed: [[ui.IDS.claim, handleClaim], [ui.IDS.statusDetail, handleStatusDetail]],
   events: {
     [Events.ClientReady]: sendPanel,
     // Kapanmış taleplere yazılmasını engelle
