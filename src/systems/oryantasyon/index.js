@@ -196,6 +196,7 @@ async function start(guild, app, channelId) {
   }
 
   saveOrientation(app, { messageId: message.id });
+  await basvuruLog.closeWaiting(guild, app);
   // Oryantasyon uzun sürebilir, kanal erişimi baştan uzatılır
   if (app.voiceAccessUntil) {
     basvuruStore.updateApplication(app.id, { voiceAccessUntil: Date.now() + basvuruConfig.voiceAccessHours * HOUR });

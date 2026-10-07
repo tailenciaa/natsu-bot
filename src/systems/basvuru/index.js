@@ -206,6 +206,7 @@ async function handleReviewButton(interaction) {
 // "Görüşmeye Çağır": başvuruyu üstlenir, ses kanallarının kilidini açar, başvurana DM atar
 async function callToMeeting(interaction, app) {
   if (app.meetingBy) return replyError(interaction, 'Başvuran zaten görüşmeye çağrıldı.');
+  const hold = app.onHold;
   // Kayıt await'ten önce yapılır, aynı anda basan ikinci kişi yukarıdaki kontrole takılır
   store.updateApplication(app.id, {
     ownerId: interaction.user.id,
@@ -217,7 +218,9 @@ async function callToMeeting(interaction, app) {
 
   await interaction.deferUpdate();
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
-  await interaction.editReply({ components: [ui.applicationNotice(app, applicant)], allowedMentions: { parse: [] } });
+  // Buton başvuru mesajından ya da beklemedeki görüşmenin bildiriminden gelmiş olabilir; ikisi de kanaldan güncellenir
+  await editMessage(interaction.guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
+  if (hold?.noticeId) await editMessage(interaction.guild, app.channelId, hold.noticeId, ui.meetingHoldNotice(app, 'taken'));
 
   const access = await openVoice(interaction, app, `Yetkili başvurusu #${core.pad(app.number)} görüşmesi`);
   const sent = await applicant
@@ -291,6 +294,7 @@ async function notifyWaiting(newState) {
         ?.send({ components: [ui.waitingChat(app, stage)], flags: core.CV2, allowedMentions: { users: [app.userId, staffId].filter(Boolean) } })
         .catch(() => null);
       if (message && stage === 'unassigned') orientation.trackWaitChat(app, channelId, message.id);
+      else if (message) store.updateApplication(app.id, { waitingChat: { channelId, messageId: message.id, stage } });
     }
 
     if (stage === 'unassigned') {
@@ -345,6 +349,7 @@ async function startMeeting(guild, app) {
     if (app.meeting.endedAt) await log.edit(guild, message.id, ui.meetingLog(app));
   }
 
+  await log.closeWaiting(guild, app);
   const chat = await fetchTextChannel(guild, applicantChannel);
   const panel = await chat
     ?.send({ components: [ui.decisionPanel(app)], flags: core.CV2, allowedMentions: { users: [app.meetingBy, app.userId] } })
@@ -374,7 +379,8 @@ async function releaseMeeting(guild, app, { byId, auto = false }) {
   await editMessage(guild, panel.channelId, panel.messageId, ui.decisionPanel(app, 'hold'));
   const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
   await editMessage(guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
-  await log.send(guild, app, ui.meetingHoldNotice(app), app.reviewerRoleId ? [app.reviewerRoleId] : []);
+  const notice = await log.send(guild, app, ui.meetingHoldNotice(app), app.reviewerRoleId ? [app.reviewerRoleId] : [], [], { reply: false });
+  if (notice) store.updateApplication(app.id, { onHold: { ...app.onHold, noticeId: notice.id } });
   return true;
 }
 
@@ -465,14 +471,17 @@ function scheduleRemindReenable(guild, app, stage) {
       const chat = fresh?.waitChatMessage;
       if (!chat || !stillWaiting(fresh, stage)) return;
       const channel = await fetchTextChannel(guild, chat.channelId);
-      await channel?.messages.edit(chat.messageId, { components: [ui.waitingChat(fresh, stage)], allowedMentions: { parse: [] } }).catch(() => {});
+      const container = stage === 'hold' ? ui.decisionPanel(fresh, 'hold') : ui.waitingChat(fresh, stage);
+      await channel?.messages.edit(chat.messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => {});
     }, REMIND_COOLDOWN),
   );
 }
 const stillWaiting = (app, stage) =>
   stage === 'meeting'
     ? app.status === 'pending' && app.meetingBy && !app.meeting
-    : stage === 'unassigned'
+    : stage === 'hold'
+      ? app.status === 'pending' && !app.meetingBy && app.onHold
+      : stage === 'unassigned'
       ? app.status === 'approved' && app.orientation?.status === 'unassigned'
       : app.status === 'approved' && app.orientation?.status === 'waiting';
 
@@ -484,11 +493,13 @@ async function handleRemind(interaction) {
   const stage =
     app.status === 'pending' && app.meetingBy && !app.meeting
       ? 'meeting'
-      : app.status === 'approved' && app.orientation?.status === 'unassigned'
-        ? 'unassigned'
-        : app.status === 'approved' && app.orientation?.status === 'waiting'
-          ? 'orientation'
-          : null;
+      : app.status === 'pending' && !app.meetingBy && app.onHold
+        ? 'hold'
+        : app.status === 'approved' && app.orientation?.status === 'unassigned'
+          ? 'unassigned'
+          : app.status === 'approved' && app.orientation?.status === 'waiting'
+            ? 'orientation'
+            : null;
   if (!stage) return replyError(interaction, 'Şu an yetkili beklenen bir işlemin yok.');
 
   const { guild } = interaction;
@@ -504,10 +515,12 @@ async function handleRemind(interaction) {
   store.updateApplication(app.id, { remindedAt: Date.now(), waitChatMessage: { channelId, messageId: interaction.message.id } });
 
   // Buton süre dolana kadar pasifleşir, süre dolunca aynı mesaj yeniden düzenlenip açılır
-  await interaction.update({ components: [ui.waitingChat(app, stage, undefined, true)], allowedMentions: { parse: [] } });
+  await interaction.update({ components: [stage === 'hold' ? ui.decisionPanel(app, 'hold', true) : ui.waitingChat(app, stage, undefined, true)], allowedMentions: { parse: [] } });
   scheduleRemindReenable(guild, app, stage);
 
-  if (stage === 'unassigned') {
+  if (stage === 'hold') {
+    await log.send(guild, app, ui.meetingHoldNotice(app, 'remind'), app.reviewerRoleId ? [app.reviewerRoleId] : [], [], { reply: false });
+  } else if (stage === 'unassigned') {
     await orientation.postPending(guild, app, channelId, 'waiting', true);
   } else {
     await log.send(guild, app, ui.waitingLog(app, stage, channelId, true), [], [staffId]);
