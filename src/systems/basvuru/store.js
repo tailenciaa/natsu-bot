@@ -67,4 +67,12 @@ module.exports = {
       .filter((a) => a.guildId === guildId && a.userId === userId)
       .sort((a, b) => b.createdAt - a.createdAt);
   },
+
+  // Henüz karara bağlanmamış (inceleniyor, görüşmede ya da görüşmesi beklemede) başvurular, en eski önce
+  // (/basvuru liste ve /basvuru reddet komutları için: başvuru sayısı artınca mesaj aramak yerine numarayla bulunur)
+  pendingApplications(guildId) {
+    return Object.values(data.applications)
+      .filter((a) => a.guildId === guildId && a.status === 'pending')
+      .sort((a, b) => a.createdAt - b.createdAt);
+  },
 };
