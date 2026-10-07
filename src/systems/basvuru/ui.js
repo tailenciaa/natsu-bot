@@ -617,14 +617,33 @@ function statusPanel(apps) {
     if (app.meetingBy) return `Görüşmede — <@${app.meetingBy}>`;
     return 'İnceleniyor';
   };
-  const list = apps.length
-    ? apps.map((a) => `**#${pad(a.number)}** · <@${a.userId}> · ${panelStatusLabel(a)}`).join('\n')
-    : 'Şu an incelenmeyi bekleyen başvuru yok.';
-  return page({
-    title: 'Bekleyen Başvurular',
-    sub: 'Yetkili alım sistemindeki tüm bekleyen başvurular ve anlık durumları burada listelenir; başvuru durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
-    blocks: [list, `-# Son güncelleme: <t:${now}:R>`],
-  });
+  const container = new ContainerBuilder().addTextDisplayComponents(
+    text(
+      '## Bekleyen Başvurular\nYetkili alım sistemindeki tüm bekleyen başvurular ve anlık durumları burada listelenir; başvuru durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
+    ),
+  );
+  if (apps.length) {
+    for (const app of apps) {
+      container
+        .addSeparatorComponents(divider())
+        .addSectionComponents(
+          new SectionBuilder()
+            .addTextDisplayComponents(
+              text(`**#${pad(app.number)}** · <@${app.userId}> · ${panelStatusLabel(app)}`),
+            )
+            .setButtonAccessory(
+              new ButtonBuilder()
+                .setCustomId(`${IDS.statusDetail}:${app.id}`)
+                .setLabel('Detay')
+                .setStyle(ButtonStyle.Secondary),
+            ),
+        );
+    }
+  } else {
+    container.addSeparatorComponents(divider()).addTextDisplayComponents(text('Şu an incelenmeyi bekleyen başvuru yok.'));
+  }
+  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
+  return container;
 }
 
 module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, statusPanel, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
