@@ -144,6 +144,8 @@ async function removeRegularMembers(thread, ticket) {
 
 // Bot açılınca paneli destek kanalına gönderir (değişmediyse dokunmaz)
 function sendPanel(client) {
+  const { guildId } = require('../../core/config');
+  refreshStatusPanel(client, guildId).catch((err) => console.error('[destek] Durum paneli güncellenemedi:', err.message));
   return syncPanel(client, {
     key: 'destek',
     label: 'Destek',
@@ -237,6 +239,7 @@ async function createTicket(interaction, reason, afterCreate) {
       });
 
       if (afterCreate) await afterCreate(thread, store.getTicket(thread.id));
+      refreshStatusPanel(interaction.client, guild.id).catch(() => {});
     } catch (err) {
       // Yarım kalan talep ortada kalmasın: alt başlık ve kayıt temizlenir, üye yeniden deneyebilir
       console.error('[destek] Talep oluşturulurken hata, talep geri alındı:', err);
@@ -299,6 +302,7 @@ async function handleClaim(interaction) {
   await interaction.editReply({ components: [ui.claimRequest(ticket)], allowedMentions: { parse: [] } });
   await refreshClaimMessage(interaction.guild, ticket, interaction.message.id);
   await refreshTicketPanel(thread, ticket);
+  refreshStatusPanel(interaction.client, interaction.guildId).catch(() => {});
 
   await thread.send({
     components: [ui.claimedNotice(ticket)],
