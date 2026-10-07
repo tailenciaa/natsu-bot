@@ -614,6 +614,8 @@ function statusPanel(apps) {
   const now = Math.floor(Date.now() / 1000);
   const panelStatusLabel = (app) => {
     if (app.onHold) return `Görüşme beklemede — <@${app.onHold.by}>`;
+    if (app.directConnect && app.meetingBy && app.meeting?.startedAt) return `Bağlandı — <@${app.meetingBy}>`;
+    if (app.directConnect && app.meetingBy) return `Üstlenildi — <@${app.meetingBy}>`;
     if (app.meetingBy) return `Görüşmede — <@${app.meetingBy}>`;
     return 'İnceleniyor';
   };
