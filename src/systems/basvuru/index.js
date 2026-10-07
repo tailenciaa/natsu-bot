@@ -286,6 +286,7 @@ async function handleReviewButton(interaction) {
     return null;
   }
   if (action === 'devam' || (action === 'onay' && app.meetingBy)) return approve(interaction, app);
+  if (action === 'baglan') return callToConnect(interaction, app);
   return callToMeeting(interaction, app);
 }
 
@@ -885,7 +886,20 @@ async function handleStatusDetail(interaction) {
   if (!app) return respond(interaction, core.alert('Bu başvuru artık mevcut değil.'), { ephemeral: true });
   await interaction.deferReply({ flags: core.EPHEMERAL });
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
-  await interaction.editReply({ components: [ui.applicationNotice(app, applicant)], flags: core.CV2, allowedMentions: { parse: [] } });
+  const container = ui.applicationNotice(app, applicant);
+  // Başvuran bir ses kanalındaysa ve görüşme henüz başlamadıysa "Bağlan" butonu göster
+  const applicantVoiceChannel = interaction.guild.voiceStates.cache.get(app.userId)?.channelId;
+  if (app.status === 'pending' && !app.meetingBy && applicantVoiceChannel) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`${ui.IDS.review}:${app.id}:baglan`)
+          .setLabel('Bağlan')
+          .setStyle(ButtonStyle.Success),
+      ),
+    );
+  }
+  await interaction.editReply({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } });
 }
 
 module.exports = {
