@@ -107,16 +107,6 @@ module.exports = {
         'Güvenilir partner listesini güncel tut; sorun çıkaran partnerleri üst yetkiliye bildir.\n' +
         'Partner metinlerinde sunucumuzun kurallarına uymayan içerik varsa onaylama.',
     },
-    {
-      id: 'kayit',
-      label: 'Karşılama',
-      description: 'Yeni gelen üyeleri karşılar, sunucuya ısınmalarını sağlar.',
-      roleId: '1555890045599223868',
-      info:
-        'Sunucuya yeni katılanları sıcak bir dille karşıla, kanalları ve kuralları kısaca tanıt.\n' +
-        'Sahte ya da yeni açılmış şüpheli hesapları üst yetkiliye bildir.\n' +
-        'Yeni üyelerin sorularını sabırla cevapla; ilk izlenim sunucunun yüzüdür.',
-    },
   ],
 
   steps: [

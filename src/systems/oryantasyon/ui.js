@@ -75,7 +75,7 @@ const withFooter = (container, footer) => container.addSeparatorComponents(divid
 function manageButtons(app) {
   return [
     new ButtonBuilder().setCustomId(actionId(app, 'bekle')).setStyle(ButtonStyle.Secondary).setLabel('Beklemeye Al'),
-    new ButtonBuilder().setCustomId(actionId(app, 'aktar')).setStyle(ButtonStyle.Secondary).setLabel('Yetkiliye Bağla'),
+    new ButtonBuilder().setCustomId(actionId(app, 'aktar')).setStyle(ButtonStyle.Secondary).setLabel('Başka Yetkiliye Aktar'),
     new ButtonBuilder().setCustomId(actionId(app, 'iptal')).setStyle(ButtonStyle.Danger).setLabel('Başvuruyu Reddet'),
   ];
 }
