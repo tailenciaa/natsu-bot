@@ -747,7 +747,10 @@ function claimedChat(app) {
     here
       ? 'Bekleyen oryantasyonu bir yetkili üstlendi ve oryantasyon başladı. Adımlar kanalın sohbetindeki panelden ilerliyor; bu mesaj kayıt olarak kalır.'
       : 'Bekleyen oryantasyonu bir yetkili üstlendi. Yetkili kanala geldiğinde oryantasyon kendiliğinden başlar ve panel bu kanalın sohbetine gelir; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
-    [`**Başvuru #${pad(app.number)}**\n**<@${app.orientation.staffId}> oryantasyonunu üstlendi.**${here ? '' : '\n**Kanala gelmesi bekleniyor.**'}`],
+    [
+      [`**Başvuru:** #${pad(app.number)}`, `**Başvuran:** <@${app.userId}>`, '**Aşama:** Oryantasyon', `**Yetkili:** <@${app.orientation.staffId}>`].join('\n'),
+      here ? '**Oryantasyon başladı.**' : '**Yetkilinin kanala gelmesi bekleniyor.**',
+    ],
     'primary',
   );
 }

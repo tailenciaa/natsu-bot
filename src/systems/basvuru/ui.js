@@ -383,20 +383,24 @@ function meetingHoldNotice(app) {
 // stage: meeting (görüşme) | orientation (oryantasyon yetkilisi belli) | unassigned (oryantasyonu üstlenen yok)
 function waitingChat(app, stage, askStaffId) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
-  let body;
-  if (stage === 'unassigned') {
-    body = askStaffId
-      ? `<@${askStaffId}>, <@${app.userId}> için bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
-      : `<@${app.userId}> oryantasyon için kanalda.\n**Oryantasyonu üstlenecek yetkili bekleniyor,** başvurular kanalına bildirim gönderildi.`;
-  } else {
-    body = `<@${app.userId}> ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanalda.\n<@${staffId}> henüz bağlanmadı, **yetkilinin bağlanması bekleniyor.**`;
-  }
+  const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
+  const info = [
+    `**Başvuru:** #${pad(app.number)}`,
+    `**Başvuran:** <@${app.userId}>`,
+    `**Aşama:** ${stageName}`,
+    `**Yetkili:** ${stage === 'unassigned' ? 'Henüz üstlenen yok' : `<@${staffId}>`}`,
+  ].join('\n');
+  const status = askStaffId
+    ? `**<@${askStaffId}>, bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?**\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
+    : stage === 'unassigned'
+      ? '**Oryantasyonu üstlenecek yetkili bekleniyor.**\nBaşvurular kanalına bildirim gönderildi.'
+      : '**Yetkilinin bağlanması bekleniyor.**\nYetkili kanala bağlanınca başlanacak, kanaldan ayrılmadan bekle.';
   const container = card(
     askStaffId ? 'Bekleyen Oryantasyon' : 'Yetkili Bekleniyor',
     askStaffId
       ? 'Oryantasyonu bekleyen başvuran kanalda ve henüz kimse üstlenmedi. **Oryantasyonu Üstlen** ile başvuranla ilgilenebilir, **Şimdi Değil** ile mesajı eski haline döndürebilirsin; mesaj kanalda kalır.'
       : 'Başvuran görüşme kanalına girdi ve yetkiliyi bekliyor. Yetkili kanala bağlandığında görüşme ya da oryantasyon başlar; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
-    [`**Başvuru #${pad(app.number)}**\n${body}`],
+    [info, status],
     'warning',
   );
   const row = new ActionRowBuilder();
@@ -417,11 +421,20 @@ function waitingChat(app, stage, askStaffId) {
 // stage: meeting | orientation
 function waitingLog(app, stage, channelId) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation.staffId;
+  const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
   return card(
     'Başvuran Bekliyor',
     `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için görüşme kanalına girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`,
-    [`**Başvuru #${pad(app.number)} - ${stage === 'meeting' ? 'Görüşme' : 'Oryantasyon'}**
-**<@${app.userId}> <#${channelId}> kanalında <@${staffId}> yetkilisini bekliyor.**`],
+    [
+      [
+        `**Başvuru:** #${pad(app.number)}`,
+        `**Başvuran:** <@${app.userId}>`,
+        `**Aşama:** ${stageName}`,
+        `**Yetkili:** <@${staffId}>`,
+        `**Kanal:** <#${channelId}>`,
+      ].join('\n'),
+      `**<@${staffId}> yetkilisinin bağlanması bekleniyor.**`,
+    ],
     'warning',
   )
     .addSeparatorComponents(divider())
