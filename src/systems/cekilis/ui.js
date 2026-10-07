@@ -37,7 +37,8 @@ const SUB = {
 
 // Çekiliş mesajı: başlık, ödül, bilgiler; açıkken katıl butonu ve (yöneticiler için) yönetim butonları, bitince kazananlar
 function panel(g) {
-  const title = { active: `Çekiliş #${g.no}`, ended: `Çekiliş #${g.no} Bitti`, cancelled: `Çekiliş #${g.no} İptal Edildi` }[g.status];
+  const title = { active: `Çekiliş #${g.no}`, ended: `Çekiliş #${g.no} Sona Erdi`, cancelled: `Çekiliş #${g.no} İptal Edildi` }[g.status];
+  const closedLabel = { ended: 'Çekiliş Bitti', cancelled: 'Çekiliş İptal Edildi' }[g.status];
   const info = [];
   if (g.status === 'ended') {
     info.push(`**Kazananlar:** ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`, `**Katılımcı:** ${g.participants.length}`);
@@ -51,7 +52,7 @@ function panel(g) {
     title,
     sub: SUB[g.status],
     accent: g.status === 'cancelled' ? colors.danger : undefined,
-    blocks: [`**Ödül**\n${g.prize}${g.description ? `\n${quote(g.description)}` : ''}`, `**${g.status === 'ended' ? 'Sonuç' : 'Bilgiler'}**\n${info.join('\n')}`],
+    blocks: [`${g.prize}${g.description ? `\n${quote(g.description)}` : ''}`, quote(info.join('\n'))],
   });
   if (g.status === 'ended') container.addTextDisplayComponents(text(stamp(g.endsAt, 'f')));
 
@@ -61,7 +62,7 @@ function panel(g) {
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(IDS.join)
-        .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : 'Katılım Kapandı')
+        .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : `${closedLabel} (${g.participants.length} katılımcı)`)
         .setStyle(g.status === 'active' ? ButtonStyle.Success : ButtonStyle.Secondary)
         .setDisabled(g.status !== 'active'),
     ),
