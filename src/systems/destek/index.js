@@ -22,6 +22,33 @@ const { buildTranscript } = require('./transcript');
 
 const creating = new Set();
 const closing = new Set();
+const UNKNOWN_MESSAGE = 10008;
+
+// Durum kanalındaki panel mesajını açık taleplere göre günceller; mesaj silinmişse yeniden gönderilir
+async function refreshStatusPanel(client, gid) {
+  if (!config.channels.statusPanel) return;
+  const guild = client.guilds.cache.get(gid);
+  const channel = guild && (await fetchTextChannel(guild, config.channels.statusPanel));
+  if (!channel) return;
+  const container = ui.statusPanel(store.openTicketsAll(gid));
+  const messageId = store.statusPanelMessageId(gid);
+  let missing = !messageId;
+  if (messageId) {
+    const edited = await channel.messages
+      .edit(messageId, { components: [container], allowedMentions: { parse: [] } })
+      .catch((err) => {
+        if (err.code === UNKNOWN_MESSAGE) missing = true;
+        else console.error('[destek] Durum paneli düzenlenemedi:', err.message);
+        return null;
+      });
+    if (edited) return;
+  }
+  if (!missing) return;
+  const message = await channel
+    .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } })
+    .catch((err) => console.error('[destek] Durum paneli gönderilemedi:', err.message));
+  if (message) store.setStatusPanelMessageId(gid, message.id);
+}
 
 // ── Komutlar ─────────────────────────────────────────────────────────────────
 
