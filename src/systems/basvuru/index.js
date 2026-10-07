@@ -492,6 +492,7 @@ async function startMeeting(guild, app) {
   if (panel) {
     store.updateApplication(app.id, { meeting: { ...app.meeting, panelChannelId: applicantChannel, panelMessageId: panel.id } });
   }
+  clearConnectTimer(app.id);
   return true;
 }
 
@@ -500,8 +501,18 @@ async function startMeeting(guild, app) {
 // uzun süre ayrıldığı için (auto) bırakıldıysa süre zaten dolmuştur, inceleyen rol hemen etiketlenir. Başvuru yeniden sahipsiz olur,
 // görüşme kaydı kapanır, karar paneli "beklemede"ye döner.
 const meetingHoldTimers = new Map();
+
+// "Bağlan" basıldıktan sonra yetkili belirtilen kanala CONNECT_TIMEOUT_MS içinde girmezse görüşme otomatik bırakılır
+const CONNECT_TIMEOUT_MS = 5 * 60 * 1000;
+const connectTimers = new Map();
+function clearConnectTimer(appId) {
+  clearTimeout(connectTimers.get(appId));
+  connectTimers.delete(appId);
+}
+
 async function releaseMeeting(guild, app, { byId, auto = false }) {
   if (app.status !== 'pending' || !app.meetingBy) return false;
+  clearConnectTimer(app.id);
   const panel = { channelId: app.meeting?.panelChannelId, messageId: app.meeting?.panelMessageId };
   await endMeeting(guild, app);
   const now = Date.now();
