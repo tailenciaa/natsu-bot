@@ -848,6 +848,9 @@ async function handleReviewSubmit(interaction) {
 
 module.exports = {
   name: 'basvuru',
+  commands,
+  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { basvuru: 'Yöneticiler' } },
+  slash: { basvuru: handleCommand },
   buttons: { [ui.IDS.apply]: handleApplyButton },
   modals: { [ui.IDS.applyModal]: handleApplySubmit },
   prefixed: [
