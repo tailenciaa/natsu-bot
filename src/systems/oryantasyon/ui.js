@@ -226,20 +226,27 @@ function panel(app, applicantUser) {
       .setStyle(ButtonStyle.Secondary)
       .setLabel('Geri')
       .setDisabled(o.step === 0),
-    step.type === 'final'
-      ? new ButtonBuilder()
-          .setCustomId(actionId(app, 'ver'))
-          .setStyle(ButtonStyle.Success)
-          .setLabel('Yetki Ver')
-          .setDisabled(!o.areas.length)
-      : new ButtonBuilder()
-          .setCustomId(actionId(app, 'ileri'))
-          .setStyle(ButtonStyle.Success)
-          .setLabel(step.nextLabel ?? 'Anlatıldı, Devam')
-          .setDisabled(step.type === 'areas' && !o.areas.length),
   );
-  if (step.skippable) {
-    nav.addComponents(new ButtonBuilder().setCustomId(actionId(app, 'atla')).setStyle(ButtonStyle.Secondary).setLabel('Biliyor, Atla'));
+  if (o.awaitingConfirm) {
+    nav.addComponents(
+      new ButtonBuilder().setCustomId(actionId(app, 'ileri')).setStyle(ButtonStyle.Secondary).setLabel('Onay Bekleniyor').setDisabled(true),
+      new ButtonBuilder().setCustomId(actionId(app, 'anladim')).setStyle(ButtonStyle.Success).setLabel('Anladım, Devam'),
+    );
+  } else if (step.type === 'final') {
+    nav.addComponents(
+      new ButtonBuilder().setCustomId(actionId(app, 'ver')).setStyle(ButtonStyle.Success).setLabel('Yetki Ver').setDisabled(!o.areas.length),
+    );
+  } else {
+    nav.addComponents(
+      new ButtonBuilder()
+        .setCustomId(actionId(app, 'ileri'))
+        .setStyle(ButtonStyle.Success)
+        .setLabel(step.nextLabel ?? 'Anlatıldı, Devam')
+        .setDisabled(step.type === 'areas' && !o.areas.length),
+    );
+    if (step.skippable) {
+      nav.addComponents(new ButtonBuilder().setCustomId(actionId(app, 'atla')).setStyle(ButtonStyle.Secondary).setLabel('Biliyor, Atla'));
+    }
   }
 
   return container
