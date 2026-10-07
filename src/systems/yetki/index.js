@@ -181,7 +181,7 @@ async function handleTakeCommand(interaction) {
   const user = interaction.options.getUser('kullanici', true);
   if (user.bot) return replyError(interaction, 'Botlardan yetki alınamaz.');
   const member = interaction.options.getMember('kullanici');
-  if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki almak için üyenin sunucuda olması gerekir.');
+  if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki kaldırmak için üyenin sunucuda olması gerekir.');
   const held = heldOf(member);
   const isStaff = member.roles.cache.has(basvuruConfig.roles.accept) || [held.levelIds, held.permIds, held.dutyIds].some((list) => list.length);
   if (!isStaff) return replyError(interaction, 'Bu üyenin kaldırılacak yetkisi yok.', 'Üyede yetkili rolü bulunmuyor.');
@@ -210,23 +210,23 @@ const takeRoles = (all) => async (interaction) => {
   const parts = interaction.customId.split(':');
   const userId = parts[1];
 
-  if (taking.has(userId)) return replyError(interaction, 'Bu üyenin yetkisi zaten alınıyor.');
+  if (taking.has(userId)) return replyError(interaction, 'Bu üyenin yetkisi zaten kaldırılıyor.');
   taking.add(userId);
   try {
-    // Roller Discord'dan istenip alınırken 3 saniye aşılabilir; önce etkileşim onaylanır
+    // Roller Discord'dan istenip kaldırılırken 3 saniye aşılabilir; önce etkileşim onaylanır
     await interaction.deferUpdate();
 
     const member = await interaction.guild.members.fetch(userId).catch(() => null);
-    if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki almak için üyenin sunucuda olması gerekir.');
+    if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki kaldırmak için üyenin sunucuda olması gerekir.');
 
     const { held, taken, roleIds } = rolesToTake(member, all ? { levelIds: [], permIds: [], dutyIds: [] } : takeState(parts), all);
-    if (!roleIds.length) return replyError(interaction, 'Alınacak rol kalmadı.', 'Üyenin bu rolleri zaten yok; paneli yeniden aç.');
+    if (!roleIds.length) return replyError(interaction, 'Kaldırılacak rol kalmadı.', 'Üyenin bu rolleri zaten yok; paneli yeniden aç.');
 
     const removed = await member.roles
-      .remove(roleIds, `Yetki alındı (${interaction.user.username})`)
+      .remove(roleIds, `Yetki kaldırıldı (${interaction.user.username})`)
       .then(() => true)
       .catch(() => false);
-    if (!removed) return replyError(interaction, 'Roller alınamadı.', 'Botun rolü alınacak rollerin üstünde olmalı.');
+    if (!removed) return replyError(interaction, 'Roller kaldırılamadı.', 'Botun rolü kaldırılacak rollerin üstünde olmalı.');
 
     await interaction.editReply({
       components: [ui.takePanel({ user: member.user, held, picked: taken, done: true, all, by: interaction.user.id, roleIds })],
@@ -237,7 +237,7 @@ const takeRoles = (all) => async (interaction) => {
       .send({ components: [ui.revokeDm(interaction.guild.name, { taken, by: interaction.user.id, all })], flags: core.CV2 })
       .then(() => true)
       .catch(() => false);
-    if (!dmSent) await respond(interaction, core.alert('Üyeye DM gönderilemedi.', 'DM kutusu kapalı olabilir; **yetki yine de alındı.**', 'warning'));
+    if (!dmSent) await respond(interaction, core.alert('Üyeye DM gönderilemedi.', 'DM kutusu kapalı olabilir; **yetki yine de kaldırıldı.**', 'warning'));
   } finally {
     taking.delete(userId);
   }
@@ -246,7 +246,7 @@ const takeRoles = (all) => async (interaction) => {
 async function handleTakeCancel(interaction) {
   const denied = denyNonAdmin(interaction);
   if (denied) return denied;
-  return interaction.update({ components: [core.alert('Yetki alma iptal edildi.', null, 'danger')] });
+  return interaction.update({ components: [core.alert('Yetki kaldırma iptal edildi.', null, 'danger')] });
 }
 
 module.exports = {
