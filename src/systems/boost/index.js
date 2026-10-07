@@ -63,6 +63,8 @@ async function handleMemberUpdate(oldMember, newMember) {
   }
   const colorIds = newMember.roles.cache.filter((r) => config.colorRoles.some((c) => c.roleId === r.id)).map((r) => r.id);
   if (colorIds.length) await newMember.roles.remove(colorIds, 'Takviye sona erdi, renk rolü kaldırıldı').catch((err) => console.error('[boost] Renk rolü alınamadı:', err.message));
+  const iconIds = newMember.roles.cache.filter((r) => config.iconRoles.some((c) => c.roleId === r.id)).map((r) => r.id);
+  if (iconIds.length) await newMember.roles.remove(iconIds, 'Takviye sona erdi, simge rolü kaldırıldı').catch((err) => console.error('[boost] Simge rolü alınamadı:', err.message));
   await revokeRole(newMember.guild, newMember.id);
 }
 
@@ -234,6 +236,29 @@ async function handleColorRole(interaction) {
   const stale = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId).map((r) => r.id);
   if (stale.length) await interaction.member.roles.remove(stale, 'Booster işlemleri: renk rolü değişti').catch((err) => console.error('[boost] Eski renk rolü alınamadı:', err.message));
   return respond(interaction, core.alert('Renk rolün ayarlandı.', undefined, 'success'));
+}
+
+// ── Simge Rolü: hazır rollerden birini tek seçimli seçme menüsü (renk rolüyle aynı mantık) ────
+
+async function handleIconRole(interaction) {
+  if (!isBooster(interaction)) return notBooster(interaction);
+  const roleId = interaction.values[0];
+  const allIds = config.iconRoles.map((c) => c.roleId);
+  if (!allIds.includes(roleId)) return replyError(interaction, 'Bu simge rolü artık geçerli değil.', 'Güncel panelden başka bir simge seçebilirsin.');
+
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  const ok = await interaction.member.roles
+    .add(roleId, 'Booster işlemleri: simge rolü seçildi')
+    .then(() => true)
+    .catch((err) => {
+      console.error('[boost] Simge rolü verilemedi:', err.message);
+      return false;
+    });
+  if (!ok) return respond(interaction, core.alert('Simge rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'));
+
+  const stale = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId).map((r) => r.id);
+  if (stale.length) await interaction.member.roles.remove(stale, 'Booster işlemleri: simge rolü değişti').catch((err) => console.error('[boost] Eski simge rolü alınamadı:', err.message));
+  return respond(interaction, core.alert('Simge rolün ayarlandı.', undefined, 'success'));
 }
 
 module.exports = {
