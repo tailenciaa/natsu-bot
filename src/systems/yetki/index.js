@@ -184,7 +184,7 @@ async function handleTakeCommand(interaction) {
   if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki almak için üyenin sunucuda olması gerekir.');
   const held = heldOf(member);
   const isStaff = member.roles.cache.has(basvuruConfig.roles.accept) || [held.levelIds, held.permIds, held.dutyIds].some((list) => list.length);
-  if (!isStaff) return replyError(interaction, 'Bu üyenin alınacak yetkisi yok.', 'Üyede yetkili rolü bulunmuyor.');
+  if (!isStaff) return replyError(interaction, 'Bu üyenin kaldırılacak yetkisi yok.', 'Üyede yetkili rolü bulunmuyor.');
   const picked = { levelIds: [], permIds: [], dutyIds: [] };
   return respond(interaction, ui.takePanel({ user, held, picked }), { ephemeral: false });
 }
