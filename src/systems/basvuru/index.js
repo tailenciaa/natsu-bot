@@ -879,6 +879,15 @@ async function handleReviewSubmit(interaction) {
   }
 }
 
+async function handleStatusDetail(interaction) {
+  const id = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
+  const app = store.getApplication(id);
+  if (!app) return respond(interaction, core.alert('Bu başvuru artık mevcut değil.'), { ephemeral: true });
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
+  await interaction.editReply({ components: [ui.applicationNotice(app, applicant)], flags: core.CV2, allowedMentions: { parse: [] } });
+}
+
 module.exports = {
   name: 'basvuru',
   commands,
@@ -891,6 +900,7 @@ module.exports = {
     [ui.IDS.reviewModal, handleReviewSubmit],
     [ui.IDS.remind, handleRemind],
     [ui.IDS.transfer, handleTransfer],
+    [ui.IDS.statusDetail, handleStatusDetail],
   ],
   events: {
     [Events.ClientReady]: handleReady,
