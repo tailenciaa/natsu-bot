@@ -61,7 +61,8 @@ function channelThanks(user) {
 
 // Panelden yapılan işlemler: ad, açıklama, butonun etiketi ve ID'si (açıklamalar "İşlem Seçenekleri" bloğunda, butonlar altındaki satırda)
 const ACTIONS = [
-  { title: 'Takma Ad', note: 'Sunucudaki takma adını değiştirmeni sağlar.', label: 'Takma Ad', id: IDS.nick },
+  { title: 'İsim', note: 'Sunucudaki takma adını değiştirmeni sağlar.', label: 'İsim Değiştir', id: IDS.nick },
+  { title: 'Emoji', note: 'Hakkın olan emojiyi sunucuya eklemeni ya da güncellemeni sağlar.', label: 'Emoji Ekle / Değiştir', id: IDS.emoji },
   { title: 'Özel Rol', note: 'Kendi adında, renginde ve emojinde bir rol oluşturmanı ya da düzenlemeni sağlar.', label: 'Özel Rol', id: IDS.role },
 ];
 
@@ -82,6 +83,7 @@ function perkLines() {
 function optionLines() {
   const lines = ACTIONS.map((a) => `**${a.title}:** ${a.note}`);
   if (config.colorRoles.length) lines.push('**Renk Rolü:** Sana hazırladığımız renk rollerinden birini menüden seçebilirsin.');
+  if (config.iconRoles.length) lines.push('**Simge Rolü:** Sana hazırladığımız simge rollerinden birini menüden seçebilirsin.');
   return lines;
 }
 
