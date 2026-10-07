@@ -697,7 +697,7 @@ function choiceResult(app, which, lines = []) {
 // Başvurular kanalına giden "bekleyen oryantasyon" mesajı: oryantasyon yetkililere bırakılınca ve başvuran bir görüşme
 // kanalına geçince gelir, ilk üstlenen yetkili oryantasyonu verir. Üstlenen olunca (ya da oryantasyon bitince) kayıt olarak kalır.
 // state: open (başvuran henüz kanalda değil) | waiting (başvuran kanalda bekliyor) | taken | closed
-function pendingNotice(app, state, channelId) {
+function pendingNotice(app, state, channelId, reminder) {
   const o = app.orientation;
   const heading = `**Başvuru #${pad(app.number)}**`;
   const record = 'Bu mesaj başvurular kanalında kayıt olarak kalır.';
@@ -728,11 +728,13 @@ function pendingNotice(app, state, channelId) {
   if (channelId) buttons.push(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Kanala Katıl').setURL(channelUrl(app.guildId, channelId)));
   return withRow(
     card(
-      waiting ? 'Başvuran Bekliyor' : o.holdBy ? 'Beklemedeki Oryantasyon' : 'Bekleyen Oryantasyon',
-      waiting
-        ? 'Oryantasyonu bekleyen başvuran bir görüşme kanalına geçti. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.'
-        : 'Başvuru onaylandı ve oryantasyon yetkililere bırakıldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.',
-      [`${heading}\n${roles}, **${where}**\n${o.holdBy ? `**<@${o.holdBy}> oryantasyonu beklemeye aldı;** yeni bir yetkili üstlenip kalınan adımdan devam etmeli.` : app.reviewedBy ? `<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı.` : 'Oryantasyon yetkililere bırakıldı.'}`],
+      reminder ? 'Başvuran Hatırlatıyor' : waiting ? 'Başvuran Bekliyor' : o.holdBy ? 'Beklemedeki Oryantasyon' : 'Bekleyen Oryantasyon',
+      reminder
+        ? 'Başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla haber verdi. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir.'
+        : waiting
+          ? 'Oryantasyonu bekleyen başvuran bir görüşme kanalına geçti. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.'
+          : 'Başvuru onaylandı ve oryantasyon yetkililere bırakıldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.',
+      [`${heading}\n${roles}, **${where}**\n${o.holdBy ? `**<@${o.holdBy}> oryantasyonu beklemeye aldı;** yeni bir yetkili üstlenip kalınan adımdan devam etmeli.` : reminder ? '**Başvuran hâlâ üstlenecek yetkili bekliyor.**' : app.reviewedBy ? `<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı.` : 'Oryantasyon yetkililere bırakıldı.'}`],
       'warning',
     ),
     new ActionRowBuilder().addComponents(buttons),

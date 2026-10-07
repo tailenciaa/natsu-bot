@@ -292,14 +292,16 @@ function meetingDm(app, guildName, voice) {
 }
 
 // Başvuran bir görüşme kanalına girince başvuruyla ilgilenen yetkiliye giden DM (görüşme ya da oryantasyon için)
-function applicantWaitingDm(app, guildName, channelId, orientation) {
+function applicantWaitingDm(app, guildName, channelId, orientation, reminder) {
   return withFooter(
     card(
-      'Başvuran Seni Bekliyor',
-      'Başvuran görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.',
+      reminder ? 'Başvuran Seni Hatırlatıyor' : 'Başvuran Seni Bekliyor',
+      reminder
+        ? 'Başvuran hâlâ kanalda bekliyor ve Hatırlat butonuyla sana haber verdi. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.'
+        : 'Başvuran görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla görüşmeyi ya da oryantasyonu hemen başlatabilirsin; başvuru ayrıntıları başvurular kanalında.',
       [
-        `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalına girdi.\n**Başvuru:** #${pad(app.number)}` +
-          (orientation ? '\nKanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
+        `**Başvuran**\n<@${app.userId}> ${orientation ? 'oryantasyon' : 'görüşme'} için <#${channelId}> kanalında${reminder ? ' hâlâ' : ''} bekliyor.\n**Başvuru:** #${pad(app.number)}` +
+          (orientation && !reminder ? '\nKanala girdiğinde oryantasyon kendiliğinden başlayacak.' : ''),
       ],
       'primary',
     )
@@ -381,7 +383,7 @@ function meetingHoldNotice(app) {
 
 // Başvuran görüşme kanalına yetkiliden önce girince kanalın sohbetine giden bekleme mesajı.
 // stage: meeting (görüşme) | orientation (oryantasyon yetkilisi belli) | unassigned (oryantasyonu üstlenen yok)
-function waitingChat(app, stage, askStaffId) {
+function waitingChat(app, stage, askStaffId, remindDisabled) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
   const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
   const info = [
@@ -413,18 +415,22 @@ function waitingChat(app, stage, askStaffId) {
     }
   }
   // Başvuran 5 dakikada bir yetkililere "bekliyorum" bildirimi gönderebilir
-  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.remind}:${app.id}`).setStyle(ButtonStyle.Secondary).setLabel('Hatırlat'));
+  row.addComponents(
+    new ButtonBuilder().setCustomId(`${IDS.remind}:${app.id}`).setStyle(ButtonStyle.Secondary).setLabel('Hatırlat').setDisabled(Boolean(remindDisabled)),
+  );
   return container.addSeparatorComponents(divider()).addActionRowComponents(row);
 }
 
 // Başvuran yetkiliden önce kanala girince başvurular kanalına (başvuru mesajına yanıt olarak) giden, başvuranın hangi aşamada beklediğini söyleyen kayıt.
 // stage: meeting | orientation
-function waitingLog(app, stage, channelId) {
+function waitingLog(app, stage, channelId, reminder) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation.staffId;
   const stageName = stage === 'meeting' ? 'Görüşme' : 'Oryantasyon';
   return card(
-    'Başvuran Bekliyor',
-    `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için görüşme kanalına girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`,
+    reminder ? 'Başvuran Hatırlatıyor' : 'Başvuran Bekliyor',
+    reminder
+      ? `Başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla sana haber verdi. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`
+      : `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için görüşme kanalına girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla ${stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu'} hemen başlatabilirsin.`,
     [
       [
         `**Başvuru:** #${pad(app.number)}`,
@@ -433,7 +439,7 @@ function waitingLog(app, stage, channelId) {
         `**Yetkili:** <@${staffId}>`,
         `**Kanal:** <#${channelId}>`,
       ].join('\n'),
-      `**<@${staffId}> yetkilisinin bağlanması bekleniyor.**`,
+      reminder ? `**<@${staffId}>, başvuran hâlâ bekliyor.**` : `**<@${staffId}> yetkilisinin bağlanması bekleniyor.**`,
     ],
     'warning',
   )

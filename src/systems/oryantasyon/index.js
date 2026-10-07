@@ -436,8 +436,8 @@ async function handleSkip(interaction, app) {
 
 // Başvurular kanalına "bekleyen oryantasyon" bildirimi gönderir ve üstlenilince güncellensin diye kaydeder. Yetkili rolleri
 // etiketlenir; "boşta kim varsa o ilgilenir". state: open (yetkililere bırakılınca) | waiting (başvuran bir görüşme kanalına geçince)
-async function postPending(guild, app, channelId, state) {
-  const message = await basvuruLog.send(guild, app, ui.pendingNotice(app, state, channelId), basvuruConfig.roles.orientationPing);
+async function postPending(guild, app, channelId, state, reminder) {
+  const message = await basvuruLog.send(guild, app, ui.pendingNotice(app, state, channelId, reminder), basvuruConfig.roles.orientationPing);
   if (message) saveOrientation(app, { claimMessageIds: [...(app.orientation.claimMessageIds ?? []), message.id] });
   return message;
 }
