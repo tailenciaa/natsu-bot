@@ -278,7 +278,9 @@ async function notifyWaiting(newState) {
     if (!cooledDown(`${app.id}:${stage}`)) continue;
 
     const chat = await fetchTextChannel(guild, channelId);
-    await chat?.send({ components: [ui.waitingChat(app, stage)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+    await chat
+      ?.send({ components: [ui.waitingChat(app, stage)], flags: core.CV2, allowedMentions: { users: [app.userId, staffId].filter(Boolean) } })
+      .catch(() => {});
 
     if (stage === 'unassigned') {
       await orientation.postPending(guild, app, channelId, 'waiting');

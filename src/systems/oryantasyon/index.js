@@ -439,7 +439,9 @@ async function begin(guild, app, staffUser, { claimed = false } = {}) {
     const applicantChannel = voiceChannelOf(guild, app.userId);
     if (voice.isRecruitmentChannel(applicantChannel)) {
       const chat = await fetchTextChannel(guild, applicantChannel);
-      await chat?.send({ components: [ui.claimedChat(app)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+      await chat
+        ?.send({ components: [ui.claimedChat(app)], flags: core.CV2, allowedMentions: { users: [app.userId, app.orientation.staffId] } })
+        .catch(() => {});
     } else {
       applicantSent = await applicant
         ?.send({ components: [ui.presenceDm(app, guild.name, 'claimed', true, channelId)], flags: core.CV2 })
