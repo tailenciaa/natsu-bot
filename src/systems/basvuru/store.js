@@ -1,7 +1,14 @@
 // Yetkili başvurularının kaydı: applications, sunucu-numara ID'si ile
 const { data, save, guildData } = require('../../core/db');
 
+// Onaylanıp oryantasyon aşamasına geçmiş başvuruların oryantasyon durumları:
+// choosing (onaylayan yetkili oryantasyonu kimin vereceğine karar veriyor), unassigned (yetkililere bırakıldı, üstlenen yok),
+// waiting (yetkili belli, ikisinin aynı kanalda buluşması bekleniyor), active (oryantasyon sürüyor)
+const ORIENTING = ['choosing', 'unassigned', 'waiting', 'active'];
+
 module.exports = {
+  ORIENTING,
+
   nextApplicationNumber(guildId) {
     const settings = (guildData(guildId).application ??= {});
     settings.counter = (settings.counter ?? 0) + 1;
@@ -46,9 +53,7 @@ module.exports = {
 
   // Onaylanmış, oryantasyonu bekleyen ya da süren başvurular
   inOrientation() {
-    return Object.values(data.applications).filter(
-      (a) => a.status === 'approved' && ['waiting', 'active'].includes(a.orientation?.status),
-    );
+    return Object.values(data.applications).filter((a) => a.status === 'approved' && ORIENTING.includes(a.orientation?.status));
   },
 
   // Kullanıcının bu sunucudaki tüm başvuruları, en yeni önce

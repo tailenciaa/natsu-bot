@@ -14,8 +14,8 @@ const SWEEP_INTERVAL = 10 * 60 * 1000;
 const channelIds = () => config.voiceChannels.map((c) => c.id);
 const isRecruitmentChannel = (channelId) => Boolean(channelId) && channelIds().includes(channelId);
 
-// Onaylanmış, oryantasyonu bekleyen ya da süren başvuru
-const inOrientation = (app) => app.status === 'approved' && ['waiting', 'active'].includes(app.orientation?.status);
+// Onaylanmış, oryantasyonu bekleyen (yetkili karar veriyor, üstlenen yok ya da buluşma bekleniyor) ya da süren başvuru
+const inOrientation = (app) => app.status === 'approved' && store.ORIENTING.includes(app.orientation?.status);
 // Sonuçlanmış başvurunun erişimi açık kalmamalı: reddedilen ya da onaylanıp oryantasyonu biten (tamamlanan / iptal edilen)
 const finished = (app) => app.status === 'rejected' || (app.status === 'approved' && !inOrientation(app));
 
