@@ -65,14 +65,13 @@ function panel(g) {
         .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : `${closedLabel} (${g.participants.length} katılımcı)`)
         .setStyle(g.status === 'active' ? ButtonStyle.Success : ButtonStyle.Secondary)
         .setDisabled(g.status !== 'active'),
+      button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary).setDisabled(g.status !== 'ended'),
     ),
   );
   if (g.status === 'active') {
     container.addActionRowComponents(
       new ActionRowBuilder().addComponents(button(IDS.edit, 'Düzenle', ButtonStyle.Secondary), button(IDS.end, 'Bitir', ButtonStyle.Primary), button(IDS.cancel, 'İptal Et', ButtonStyle.Danger)),
     );
-  } else if (g.status === 'ended') {
-    container.addActionRowComponents(new ActionRowBuilder().addComponents(button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary)));
   }
   return container;
 }
