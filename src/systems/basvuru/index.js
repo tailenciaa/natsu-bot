@@ -21,6 +21,23 @@ const voice = require('./voice');
 const DAY = 24 * 60 * 60 * 1000;
 const submitting = new Set();
 
+// Başvuru sayısı arttıkça kanalda mesaj aramak yerine numarayla bulmak için: bekleyen başvuruları listeler,
+// "reddet" doğrudan numarayla ret formunu açar (karar hâlâ sadece ilgili yetkilide/yöneticide kalır).
+const commands = [
+  new SlashCommandBuilder()
+    .setName('basvuru')
+    .setDescription('Bekleyen yetkili başvurularını yönetir.')
+    .setContexts(InteractionContextType.Guild)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand((s) => s.setName('liste').setDescription('Henüz sonuçlanmamış tüm başvuruları, mesaj bağlantılarıyla listeler.'))
+    .addSubcommand((s) =>
+      s
+        .setName('reddet')
+        .setDescription('Bekleyen bir başvuruyu, mesajını aramadan numarasıyla reddeder.')
+        .addIntegerOption((o) => o.setName('no').setDescription('Başvuru numarasını girer.').setMinValue(1).setRequired(true)),
+    ),
+];
+
 const hasRole = (member, roleId) =>
   Array.isArray(member?.roles) ? member.roles.includes(roleId) : Boolean(member?.roles?.cache.has(roleId));
 
