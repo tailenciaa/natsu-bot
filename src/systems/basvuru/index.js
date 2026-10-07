@@ -6,7 +6,7 @@
 // başvuru onaylanır, oryantasyonu kimin vereceği sorulur (oryantasyon sistemi); İptal Et ile reddedilir ve kanallar kilitlenir.
 // Yetkili ya da başvuran kanala diğerinden önce girerse kanalın sohbetine, başvurular kanalına ve karşı tarafın DM'ine
 // "bekleniyor" bildirimi gider.
-const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
