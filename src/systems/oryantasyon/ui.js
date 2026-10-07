@@ -567,7 +567,7 @@ function presenceDm(app, guildName, kind, toApplicant, channelId) {
       ? ['Oryantasyonun Devralındı', `**<@${o.staffId}> oryantasyonunu devraldı.**\nBirazdan kanala gelecek, kaldığın adımdan devam edeceksiniz.`, 'primary']
       : null,
     claimed: toApplicant
-      ? ['Oryantasyonunu Yetkili Üstlendi', `**<@${o.staffId}> oryantasyonunu üstlendi.**
+      ? ['Yetkilin Belli Oldu', `**<@${o.staffId}> oryantasyonunu üstlendi.**
 ${channelId ? `Seni <#${channelId}> kanalında bekleyecek, kanala girdiğinde oryantasyon kendiliğinden başlayacak.` : 'Görüşme kanallarından birine geçip beklemen yeterli; ikiniz aynı kanala girince oryantasyon kendiliğinden başlayacak.'}`, 'primary', channelId]
       : null,
     staffWaiting: toApplicant
@@ -685,7 +685,7 @@ function choiceResult(app, which, lines = []) {
     );
   }
   return card(
-    'Oryantasyon Yetkililere Bırakıldı',
+    'Yetkililere Bırakıldı',
     'Oryantasyon artık sende değil. Başvurular kanalına bildirim gönderildi; **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir, o zamana kadar başvuran kanalda bekleyebilir.',
     [`**Başvuru #${pad(app.number)}**\n<@${app.userId}> için oryantasyon yetkilisi bekleniyor.`],
     'primary',
