@@ -17,4 +17,8 @@ module.exports = {
   // Boosterların seçebileceği hazır renk rolleri (tek seçimli, gradyanlar dahil). Her biri { roleId, label }.
   // Roller Discord'da oluşturulup buraya eklenene kadar liste boş kalır, panelde renk seçimi görünmez.
   colorRoles: [],
+
+  // Boosterların seçebileceği hazır simge (ikon) rolleri (tek seçimli). Her biri { roleId, label }.
+  // Roller Discord'da oluşturulup buraya eklenene kadar liste boş kalır, panelde simge seçimi görünmez.
+  iconRoles: [],
 };

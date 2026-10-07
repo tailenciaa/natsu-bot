@@ -24,6 +24,7 @@ const IDS = {
   nick: 'boost:nick',
   role: 'boost:rol',
   colorRole: 'boost-renk', // boost-renk:0
+  iconRole: 'boost-simge', // boost-simge:0
   emojiForm: 'boost-emoji-form',
   nickForm: 'boost-nick-form',
   roleForm: 'boost-rol-form',
