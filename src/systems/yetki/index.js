@@ -19,10 +19,10 @@ const commands = [
     .addUserOption((o) => o.setName('kullanici').setDescription('Yetki verilecek üyeyi seç.').setRequired(true)),
   new SlashCommandBuilder()
     .setName('yetki-al')
-    .setDescription('Bir üyenin rütbe, yetki ve görev rollerini tamamen ya da seçerek alır.')
+    .setDescription('Bir üyenin rütbe, yetki ve görev rollerini tamamen ya da seçerek kaldırır.')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Yetkisi alınacak üyeyi seç.').setRequired(true)),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Yetkisi kaldırılacak üyeyi seç.').setRequired(true)),
 ];
 
 // Aynı üyeye aynı anda iki kez yetki verilmesin ya da alınmasın (hızlı çift tıklama)

@@ -215,21 +215,21 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
   return container.addSeparatorComponents(divider()).addActionRowComponents(...rows);
 }
 
-// Yetkisi alınan kişiye giden DM
+// Yetkisi kaldırılan kişiye giden DM
 function revokeDm(guildName, { taken, by, all }) {
   return page({
-    title: 'Yetkilerin Güncellendi',
+    title: all ? 'Yetkili Ekibinden Çıkarıldın' : 'Bazı Yetkilerin Kaldırıldı',
     sub: all
-      ? `${guildName} sunucusundaki yetkili ekibi üyeliğin sona erdi ve bütün yetkilerin alındı; bugüne kadarki emeğin için teşekkür ederiz.`
-      : `${guildName} sunucusunda bazı yetkilerin alındı; alınan yetkileri ve işlemi yapan yetkiliyi aşağıda görebilirsin.`,
+      ? `${guildName} sunucusundaki yetkili ekibi üyeliğin sona erdi ve bütün yetkilerin kaldırıldı; bugüne kadarki emeğin için teşekkür ederiz.`
+      : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; kaldırılan yetkileri ve işlemi yapan yetkiliyi aşağıda görebilirsin.`,
     accent: colors.danger,
     blocks: [
       fields([
-        '**Alınan Yetkiler**',
+        '**Kaldırılan Yetkiler**',
         field('Rütbe', labelsOf(config.levels, taken.levelIds)),
         field('Yetkiler', labelsOf(config.perms, taken.permIds)),
         field('Görev Rolleri', labelsOf(config.duties, taken.dutyIds)),
-        field('Yetkiyi Alan', `<@${by}>`),
+        field('Yetkiyi Kaldıran', `<@${by}>`),
       ]),
       stamp(),
     ],
