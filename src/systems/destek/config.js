@@ -13,6 +13,8 @@ module.exports = {
     claim: '1553111362765459526',
     // Açılış/kapanış logları ve konuşma kaydı (.txt) için kanal. null: kapalı
     log: null,
+    // Açık talepleri listeleyen canlı durum paneli; talep durumu değiştikçe tek mesaj güncellenir. null: kapalı.
+    statusPanel: '1557464223208968304',
   },
 
   roles: {

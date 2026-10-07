@@ -854,6 +854,7 @@ async function handleReviewSubmit(interaction) {
     reviewedAt: Date.now(),
     note: interaction.fields.getTextInputValue(ui.IDS.reviewNote).trim() || null,
   });
+  refreshStatusPanel(interaction.client, interaction.guildId).catch(() => {});
   await interaction.deferUpdate();
   await endMeeting(interaction.guild, app);
 
