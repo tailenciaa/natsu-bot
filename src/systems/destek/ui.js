@@ -307,9 +307,24 @@ function closeDm(ticketNumber, guildName, rating) {
   return container;
 }
 
+// Durum kanalındaki canlı panel: açık tüm talepleri tek mesajda listeler; durum değiştikçe düzenlenir
+function statusPanel(tickets) {
+  const now = Math.floor(Date.now() / 1000);
+  const claimLabel = (t) => (t.claimedBy ? `<@${t.claimedBy}> üstlendi` : 'Üstlenilmedi');
+  const list = tickets.length
+    ? tickets.map((t) => `**#${pad(t.number)}** · <@${t.ownerId}> · ${claimLabel(t)}`).join('\n')
+    : 'Şu an açık destek talebi yok.';
+  return page({
+    title: 'Açık Destek Talepleri',
+    sub: 'Destek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
+    blocks: [list, `-# Son güncelleme: <t:${now}:R>`],
+  });
+}
+
 module.exports = {
   IDS,
   panel,
+  statusPanel,
   ticketModal,
   ticketPanel,
   claimedNotice,

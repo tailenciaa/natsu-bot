@@ -60,4 +60,20 @@ module.exports = {
       (t) => t.guildId === guildId && t.claimedBy === userId,
     );
   },
+
+  // Bu sunucunun tüm açık talepleri, en eski önce
+  openTicketsAll(guildId) {
+    return Object.values(data.tickets)
+      .filter((t) => t.guildId === guildId)
+      .sort((a, b) => a.createdAt - b.createdAt);
+  },
+
+  // Durum paneli mesaj ID'si
+  statusPanelMessageId(guildId) {
+    return guildData(guildId).destekStatusPanel?.messageId ?? null;
+  },
+  setStatusPanelMessageId(guildId, messageId) {
+    (guildData(guildId).destekStatusPanel ??= {}).messageId = messageId;
+    save();
+  },
 };
