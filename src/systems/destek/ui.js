@@ -314,14 +314,31 @@ function closeDm(ticketNumber, guildName, rating) {
 function statusPanel(tickets) {
   const now = Math.floor(Date.now() / 1000);
   const claimLabel = (t) => (t.claimedBy ? `<@${t.claimedBy}> üstlendi` : 'Üstlenilmedi');
-  const list = tickets.length
-    ? tickets.map((t) => `**#${pad(t.number)}** · <@${t.ownerId}> · ${claimLabel(t)}`).join('\n')
-    : 'Şu an açık destek talebi yok.';
-  return page({
-    title: 'Açık Destek Talepleri',
-    sub: 'Destek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
-    blocks: [list, `-# Son güncelleme: <t:${now}:R>`],
-  });
+  const container = new ContainerBuilder().addTextDisplayComponents(
+    text(
+      '## Açık Destek Talepleri\nDestek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
+    ),
+  );
+  if (tickets.length) {
+    for (const t of tickets) {
+      container
+        .addSeparatorComponents(divider())
+        .addSectionComponents(
+          new SectionBuilder()
+            .addTextDisplayComponents(text(`**#${pad(t.number)}** · <@${t.ownerId}> · ${claimLabel(t)}`))
+            .setButtonAccessory(
+              new ButtonBuilder()
+                .setCustomId(`${IDS.statusDetail}:${t.threadId}`)
+                .setLabel('Detay')
+                .setStyle(ButtonStyle.Secondary),
+            ),
+        );
+    }
+  } else {
+    container.addSeparatorComponents(divider()).addTextDisplayComponents(text('Şu an açık destek talebi yok.'));
+  }
+  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
+  return container;
 }
 
 module.exports = {

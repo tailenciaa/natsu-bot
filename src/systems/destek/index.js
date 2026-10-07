@@ -533,6 +533,14 @@ async function handleMemberCommand(interaction) {
   });
 }
 
+async function handleStatusDetail(interaction) {
+  const threadId = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
+  const ticket = store.getTicket(threadId);
+  if (!ticket) return replyError(interaction, 'Bu talep artık mevcut değil.');
+  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.editReply({ components: [ui.claimRequest(ticket)], flags: core.CV2, allowedMentions: { parse: [] } });
+}
+
 module.exports = {
   name: 'destek',
   createTicket,
