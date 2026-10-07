@@ -1,9 +1,11 @@
 // Yetkili alım sistemi: yetkili alım kanalındaki panelden "Başvuru Yap" ile form doldurulur, başvuru başvurular
-// kanalına gider. Panel bot açılınca kanala kendiliğinden gönderilir. İnceleyen rol Onayla / Reddet / Görüşmeye Çağır
-// ile karar verir. Görüşmeye çağıran ya da onaylayan yetkili başvuruyu üstlenir, sonraki kararları sadece o
-// (ya da yöneticiler) verebilir.
+// kanalına gider. Panel bot açılınca kanala kendiliğinden gönderilir. İnceleyen rol Görüşmeye Çağır / Reddet ile karar verir.
+// Görüşmeye çağıran yetkili başvuruyu üstlenir, sonraki kararları sadece o (ya da yöneticiler) verebilir.
 // Görüşmeye çağrılan başvurana görüşme ses kanallarının kilidi açılır (voice.js), görüşmeden çıkınca tekrar kilitlenir.
-// Onaylanan başvuru oryantasyona geçer (oryantasyon sistemi), reddedilenin kanalları kilitlenir.
+// Başvuran ve yetkili aynı görüşme kanalına girince görüşme başlar ve kanalın sohbetine karar paneli gelir: Devam Et ile
+// başvuru onaylanır, oryantasyonu kimin vereceği sorulur (oryantasyon sistemi); İptal Et ile reddedilir ve kanallar kilitlenir.
+// Yetkili ya da başvuran kanala diğerinden önce girerse kanalın sohbetine, başvurular kanalına ve karşı tarafın DM'ine
+// "bekleniyor" bildirimi gider.
 const { Events, PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -80,6 +82,13 @@ function reviewError(interaction, app) {
 // Bot açılınca paneli yetkili alım kanalına gönderir (değişmediyse dokunmaz) ve süresi dolan ses erişimlerini kapatmaya başlar
 function handleReady(client) {
   voice.startSweeper(client);
+  // Bot kapalıyken ikisi de aynı kanala girdiyse görüşme (ve karar paneli) açılışta başlatılır
+  const guild = client.guilds.cache.get(guildId);
+  if (guild) {
+    for (const app of store.inMeeting()) {
+      startMeeting(guild, app).catch((err) => console.error('[basvuru] Görüşme başlatılamadı:', err.message));
+    }
+  }
   return syncPanel(client, {
     key: 'basvuru',
     label: 'Yetkili alım',
@@ -175,18 +184,24 @@ async function handleApplySubmit(interaction) {
   }
 }
 
-// Başvurular kanalındaki Onayla / Reddet (form açar) ve Görüşmeye Çağır butonları
+// Başvurular kanalındaki Görüşmeye Çağır / Reddet (form açar) butonları ile görüşme kanalının sohbetindeki karar paneli
+// (Devam Et / İptal Et). Eski mesajlardaki Onayla butonu, başvuran çağrılmadıysa görüşmeye çağırır, çağrıldıysa Devam Et gibi çalışır.
 async function handleReviewButton(interaction) {
   const [, id, action] = interaction.customId.split(':');
   const app = store.getApplication(id);
   const error = reviewError(interaction, app);
   if (error) return replyError(interaction, error);
 
-  if (action !== 'gorusme') return interaction.showModal(ui.reviewModal(app, action));
+  if (action === 'red') return interaction.showModal(ui.reviewModal(app));
+  if (action === 'devam' || (action === 'onay' && app.meetingBy)) return approve(interaction, app);
+  return callToMeeting(interaction, app);
+}
 
+// "Görüşmeye Çağır": başvuruyu üstlenir, ses kanallarının kilidini açar, başvurana DM atar
+async function callToMeeting(interaction, app) {
   if (app.meetingBy) return replyError(interaction, 'Başvuran zaten görüşmeye çağrıldı.');
   // Kayıt await'ten önce yapılır, aynı anda basan ikinci kişi yukarıdaki kontrole takılır
-  store.updateApplication(id, {
+  store.updateApplication(app.id, {
     ownerId: interaction.user.id,
     meetingBy: interaction.user.id,
     meetingAt: Date.now(),
@@ -201,7 +216,17 @@ async function handleReviewButton(interaction) {
   const sent = await applicant
     ?.send({ components: [ui.meetingDm(app, interaction.guild.name, access)], flags: core.CV2 })
     .catch(() => null);
+  // İkisi zaten aynı görüşme kanalındaysa ses olayı gelmeyeceği için görüşme burada başlatılır
+  await startMeeting(interaction.guild, app);
   return respond(interaction, staffReport('Başvuran görüşmeye çağrıldı.', access, sent));
+}
+
+// "Devam Et": başvuru onaylanır, görüşme biter ve oryantasyonu kimin vereceği sorulur
+async function approve(interaction, app) {
+  if (!app.meetingBy) return replyError(interaction, 'Önce başvuranı görüşmeye çağırmalısın.');
+  await interaction.deferUpdate();
+  await endMeeting(interaction.guild, app);
+  return orientation.askWhoOrients(interaction, app);
 }
 
 // Başvurana görüşme ses kanallarını açar; DM'e eklenecek ses bölümü bilgisini döner (açılamazsa null)
@@ -224,67 +249,110 @@ function staffReport(title, access, sent) {
   return core.alert(title, lines.join('\n'), access && sent ? 'success' : 'warning');
 }
 
-// Aynı başvuru için kanal değiştirdikçe yetkiliye DM yağmasın diye son bildirim zamanları: başvuru -> zaman
+// Aynı başvuru için kanal değiştirdikçe bildirim yağmasın diye son bildirim zamanları: başvuru:aşama -> zaman
 const waitingNotified = new Map();
 const WAITING_NOTIFY_COOLDOWN = 5 * 60 * 1000;
+const cooledDown = (key) => {
+  if (Date.now() - (waitingNotified.get(key) ?? 0) < WAITING_NOTIFY_COOLDOWN) return false;
+  waitingNotified.set(key, Date.now());
+  return true;
+};
 
-// Başvuran bir görüşme kanalına girince, görüşmeye çağıran ya da oryantasyonu verecek yetkili aynı kanalda değilse
-// yetkiliye DM ile "başvuran seni bekliyor" bildirimi gider
-async function notifyStaff(newState) {
+// Başvuran bir görüşme kanalına girince, görüşmeye çağıran ya da oryantasyonu verecek yetkili aynı kanalda değilse:
+// kanalın sohbetine "yetkili bekleniyor" mesajı, başvurular kanalına başvuranın aşamasını söyleyen kayıt (oryantasyonu
+// üstlenen yoksa yetkilileri etiketleyen bildirim) ve yetkiliye DM gider. Görüşme başladıysa bildirim yapılmaz.
+async function notifyWaiting(newState) {
   const { guild, channelId } = newState;
   const waiting = store
     .applicationsOf(guild.id, newState.id)
-    .filter((a) => (a.status === 'pending' && a.meetingBy) || a.orientation?.status === 'waiting');
+    .filter(
+      (a) =>
+        (a.status === 'pending' && a.meetingBy && !a.meeting) ||
+        (a.status === 'approved' && ['unassigned', 'waiting'].includes(a.orientation?.status)),
+    );
 
   for (const app of waiting) {
-    const orienting = app.status === 'approved';
-    const staffId = orienting ? app.orientation.staffId : app.meetingBy;
-    if (guild.voiceStates.cache.get(staffId)?.channelId === channelId) continue;
-    if (Date.now() - (waitingNotified.get(app.id) ?? 0) < WAITING_NOTIFY_COOLDOWN) continue;
-    waitingNotified.set(app.id, Date.now());
+    const stage = app.status === 'pending' ? 'meeting' : app.orientation.status === 'unassigned' ? 'unassigned' : 'orientation';
+    const staffId = stage === 'meeting' ? app.meetingBy : stage === 'orientation' ? app.orientation.staffId : null;
+    if (staffId && guild.voiceStates.cache.get(staffId)?.channelId === channelId) continue;
+    if (!cooledDown(`${app.id}:${stage}`)) continue;
 
+    const chat = await fetchTextChannel(guild, channelId);
+    await chat?.send({ components: [ui.waitingChat(app, stage)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+
+    if (stage === 'unassigned') {
+      await orientation.postPending(guild, app, channelId, 'waiting');
+      continue;
+    }
+    await log.send(guild, app, ui.waitingLog(app, stage, channelId), [], [staffId]);
     const staff = await guild.client.users.fetch(staffId).catch(() => null);
     await staff
-      ?.send({ components: [ui.applicantWaitingDm(app, guild.name, channelId, orienting)], flags: core.CV2 })
+      ?.send({ components: [ui.applicantWaitingDm(app, guild.name, channelId, stage === 'orientation')], flags: core.CV2 })
       .catch(() => {});
+  }
+}
+
+// Görüşmeye çağıran yetkili başvurandan önce bir görüşme kanalına girince başvurana "yetkilin seni bekliyor" DM'i gider
+// (oryantasyon sırasındaki karşılığı oryantasyon sisteminde)
+async function notifyApplicantOfStaff(newState) {
+  const { guild, channelId } = newState;
+  for (const app of store.inMeeting().filter((a) => a.meetingBy === newState.id && !a.meeting)) {
+    if (guild.voiceStates.cache.get(app.userId)?.channelId === channelId) continue;
+    if (!cooledDown(`${app.id}:staff-meeting`)) continue;
+    const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
+    await applicant?.send({ components: [ui.meetingStaffWaitingDm(app, guild.name, channelId)], flags: core.CV2 }).catch(() => {});
   }
 }
 
 // Görüşmeyi bitmiş sayar ve kayıt kanalındaki mesajını günceller (başvuran çıkınca ya da karar verilince)
 async function endMeeting(guild, app) {
-  waitingNotified.delete(app.id);
+  for (const key of [...waitingNotified.keys()]) if (key.startsWith(`${app.id}:`)) waitingNotified.delete(key);
   if (!app.meeting?.startedAt || app.meeting.endedAt) return;
   store.updateApplication(app.id, { meeting: { ...app.meeting, endedAt: Date.now() } });
   await log.edit(guild, app.meeting.messageId, ui.meetingLog(app));
 }
 
-// Görüşmeye çağıran yetkili ve başvuran aynı görüşme kanalına girince görüşme başlamış sayılır ve kayıt kanalına yazılır;
-// başvuran görüşme kanallarından çıkınca görüşme bitmiş sayılır. Her başvuru için bir görüşme kaydı tutulur.
+// Görüşmeye çağıran yetkili ve başvuran aynı görüşme kanalındaysa görüşmeyi başlatır: kayıt kanalına "Görüşme Başladı"
+// yazılır ve kanalın sohbetine karar paneli (Devam Et / İptal Et) atılır. Her başvuru için bir görüşme kaydı tutulur.
+async function startMeeting(guild, app) {
+  if (app.meeting || app.status !== 'pending' || !app.meetingBy) return false;
+  const applicantChannel = guild.voiceStates.cache.get(app.userId)?.channelId;
+  if (!voice.isRecruitmentChannel(applicantChannel) || guild.voiceStates.cache.get(app.meetingBy)?.channelId !== applicantChannel) {
+    return false;
+  }
+  // Kayıt await'ten önce yapılır, art arda gelen olaylarda iki kez başlatılmaz
+  store.updateApplication(app.id, {
+    meeting: { channelId: applicantChannel, startedAt: Date.now(), endedAt: null, messageId: null, panelMessageId: null },
+  });
+  const message = await log.send(guild, app, ui.meetingLog(app));
+  if (message) {
+    store.updateApplication(app.id, { meeting: { ...app.meeting, messageId: message.id } });
+    // Mesaj gönderilirken başvuran çıktıysa (görüşme bitti) mesaj "Görüşme Başladı" halinde kalmasın
+    if (app.meeting.endedAt) await log.edit(guild, message.id, ui.meetingLog(app));
+  }
+
+  const chat = await fetchTextChannel(guild, applicantChannel);
+  const panel = await chat
+    ?.send({ components: [ui.decisionPanel(app)], flags: core.CV2, allowedMentions: { parse: [] } })
+    .catch((err) => console.error('[basvuru] Karar paneli gönderilemedi:', err.message));
+  if (panel) {
+    store.updateApplication(app.id, { meeting: { ...app.meeting, panelChannelId: applicantChannel, panelMessageId: panel.id } });
+  }
+  return true;
+}
+
+// Görüşme kanallarındaki girişlerde görüşmeyi başlatır; başvuran görüşme kanallarından çıkınca görüşme bitmiş sayılır
 async function trackMeeting(oldState, newState) {
   const { guild } = newState;
   const related = store.inMeeting().filter((a) => a.userId === newState.id || a.meetingBy === newState.id);
 
   for (const app of related) {
-    if (!app.meeting) {
-      const applicantChannel = guild.voiceStates.cache.get(app.userId)?.channelId;
-      if (!voice.isRecruitmentChannel(applicantChannel) || guild.voiceStates.cache.get(app.meetingBy)?.channelId !== applicantChannel) {
-        continue;
-      }
-      // Kayıt await'ten önce yapılır, art arda gelen olaylarda iki kez başlatılmaz
-      store.updateApplication(app.id, { meeting: { channelId: applicantChannel, startedAt: Date.now(), endedAt: null, messageId: null } });
-      const message = await log.send(guild, app, ui.meetingLog(app));
-      if (message) {
-        store.updateApplication(app.id, { meeting: { ...app.meeting, messageId: message.id } });
-        // Mesaj gönderilirken başvuran çıktıysa (görüşme bitti) mesaj "Görüşme Başladı" halinde kalmasın
-        if (app.meeting.endedAt) await log.edit(guild, message.id, ui.meetingLog(app));
-      }
-    } else if (newState.id === app.userId && !voice.isRecruitmentChannel(newState.channelId)) {
-      await endMeeting(guild, app);
-    }
+    if (!app.meeting) await startMeeting(guild, app);
+    else if (newState.id === app.userId && !voice.isRecruitmentChannel(newState.channelId)) await endMeeting(guild, app);
   }
 }
 
-// Görüşme kanallarındaki giriş çıkışlar: kilitleme zamanlayıcıları, görüşme kaydı ve yetkiliye "başvuran seni bekliyor" bildirimi
+// Görüşme kanallarındaki giriş çıkışlar: kilitleme zamanlayıcıları, görüşme kaydı ve "bekleniyor" bildirimleri
 async function handleVoiceUpdate(oldState, newState) {
   if (newState.guild.id !== guildId) return;
   voice.handleVoiceUpdate(oldState, newState);
@@ -292,33 +360,46 @@ async function handleVoiceUpdate(oldState, newState) {
   if (!voice.isRecruitmentChannel(oldState.channelId) && !voice.isRecruitmentChannel(newState.channelId)) return;
 
   await trackMeeting(oldState, newState);
-  if (voice.isRecruitmentChannel(newState.channelId)) await notifyStaff(newState);
+  if (voice.isRecruitmentChannel(newState.channelId)) {
+    await notifyWaiting(newState);
+    await notifyApplicantOfStaff(newState);
+  }
 }
 
-// Onay / red formu gönderilince başvuruyu sonuçlandırır. Onaylanan başvuru onaylayan yetkiliye atanıp oryantasyona
-// geçer (roller oryantasyon sonunda verilir); reddedilene DM gider ve görüşme kanalları kilitlenir.
+// Mesajı kanalından bulup günceller (karar paneli gibi, etkileşimin bağlı olmadığı mesajlar için)
+async function editMessage(guild, channelId, messageId, container) {
+  if (!channelId || !messageId) return;
+  const channel = await fetchTextChannel(guild, channelId);
+  await channel?.messages.edit(messageId, { components: [container], allowedMentions: { parse: [] } }).catch(() => {});
+}
+
+// Reddet formu gönderilince başvuruyu reddeder: başvuru mesajı ve (varsa) görüşme kanalındaki karar paneli güncellenir,
+// başvurana sebep DM ile iletilir ve görüşme kanalları kilitlenir. Form başvurular kanalındaki mesajdan ya da karar panelinden açılmış olabilir.
 async function handleReviewSubmit(interaction) {
   const [, id, action] = interaction.customId.split(':');
   const app = store.getApplication(id);
   const error = reviewError(interaction, app);
   if (error) return replyError(interaction, error);
+  if (action !== 'red') return replyError(interaction, 'Bu işlem artık kullanılmıyor.', 'Başvuruyu görüşme sırasında gelen panelden onaylayabilirsin.');
 
-  const approved = action === 'onay';
   // Karar await'ten önce kaydedilir, aynı anda karar veren ikinci kişi yukarıdaki kontrole takılır
   store.updateApplication(id, {
-    status: approved ? 'approved' : 'rejected',
+    status: 'rejected',
     reviewedBy: interaction.user.id,
     reviewedAt: Date.now(),
     note: interaction.fields.getTextInputValue(ui.IDS.reviewNote).trim() || null,
-    ...(approved ? { ownerId: interaction.user.id, orientation: orientation.create(interaction.user.id) } : {}),
   });
   await interaction.deferUpdate();
   await endMeeting(interaction.guild, app);
 
-  if (approved) return orientation.begin(interaction, app);
-
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
-  await interaction.editReply({ components: [ui.applicationNotice(app, applicant)], allowedMentions: { parse: [] } });
+  await editMessage(interaction.guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
+  const panelId = app.meeting?.panelMessageId;
+  if (panelId) {
+    const closed = ui.decisionPanel(app, 'rejected');
+    if (interaction.message?.id === panelId) await interaction.editReply({ components: [closed], allowedMentions: { parse: [] } });
+    else await editMessage(interaction.guild, app.meeting.panelChannelId, panelId, closed);
+  }
   await voice.lockAfterLeave(interaction.guild, app, `Yetkili başvurusu #${core.pad(app.number)} reddedildi`);
 
   const sent = await applicant
