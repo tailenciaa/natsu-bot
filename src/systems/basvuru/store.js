@@ -75,4 +75,13 @@ module.exports = {
       .filter((a) => a.guildId === guildId && a.status === 'pending')
       .sort((a, b) => a.createdAt - b.createdAt);
   },
+
+  // Durum paneli mesaj ID'si (tek mesaj her güncellemede düzenlenir)
+  statusPanelMessageId(guildId) {
+    return guildData(guildId).basvuruStatusPanel?.messageId ?? null;
+  },
+  setStatusPanelMessageId(guildId, messageId) {
+    (guildData(guildId).basvuruStatusPanel ??= {}).messageId = messageId;
+    save();
+  },
 };
