@@ -193,6 +193,12 @@ async function handleReviewButton(interaction) {
   if (error) return replyError(interaction, error);
 
   if (action === 'red') return interaction.showModal(ui.reviewModal(app));
+  if (action === 'bekle') {
+    if (!app.meetingBy) return replyError(interaction, 'Başvuran henüz görüşmeye çağrılmadı.');
+    await interaction.deferUpdate();
+    await releaseMeeting(interaction.guild, app, { byId: interaction.user.id });
+    return null;
+  }
   if (action === 'devam' || (action === 'onay' && app.meetingBy)) return approve(interaction, app);
   return callToMeeting(interaction, app);
 }
@@ -206,6 +212,7 @@ async function callToMeeting(interaction, app) {
     meetingBy: interaction.user.id,
     meetingAt: Date.now(),
     meetingChannelId: voice.staffVoiceChannel(interaction.guild, interaction.user.id),
+    onHold: null,
   });
 
   await interaction.deferUpdate();
@@ -312,6 +319,7 @@ async function notifyApplicantOfStaff(newState) {
 
 // Görüşmeyi bitmiş sayar ve kayıt kanalındaki mesajını günceller (başvuran çıkınca ya da karar verilince)
 async function endMeeting(guild, app) {
+  clearAwayTimer(app);
   for (const key of [...waitingNotified.keys()]) if (key.startsWith(`${app.id}:`)) waitingNotified.delete(key);
   if (!app.meeting?.startedAt || app.meeting.endedAt) return;
   store.updateApplication(app.id, { meeting: { ...app.meeting, endedAt: Date.now() } });
@@ -339,7 +347,7 @@ async function startMeeting(guild, app) {
 
   const chat = await fetchTextChannel(guild, applicantChannel);
   const panel = await chat
-    ?.send({ components: [ui.decisionPanel(app)], flags: core.CV2, allowedMentions: { parse: [] } })
+    ?.send({ components: [ui.decisionPanel(app)], flags: core.CV2, allowedMentions: { users: [app.meetingBy, app.userId] } })
     .catch((err) => console.error('[basvuru] Karar paneli gönderilemedi:', err.message));
   if (panel) {
     store.updateApplication(app.id, { meeting: { ...app.meeting, panelChannelId: applicantChannel, panelMessageId: panel.id } });
@@ -347,14 +355,77 @@ async function startMeeting(guild, app) {
   return true;
 }
 
-// Görüşme kanallarındaki girişlerde görüşmeyi başlatır; başvuran görüşme kanallarından çıkınca görüşme bitmiş sayılır
+// Görüşmeyi beklemeye alır (yetkili elle bıraktıysa ya da kanaldan uzun süre ayrıldıysa): başvuru yeniden sahipsiz olur, görüşme
+// kaydı kapanır, karar paneli "beklemede"ye döner ve başvurular kanalına inceleyen rolü etiketleyen bildirim gider.
+// Başvuru mesajındaki Görüşmeye Çağır butonuna ilk basan yetkili görüşmeyi sürdürür.
+async function releaseMeeting(guild, app, { byId, auto = false }) {
+  if (app.status !== 'pending' || !app.meetingBy) return false;
+  const panel = { channelId: app.meeting?.panelChannelId, messageId: app.meeting?.panelMessageId };
+  await endMeeting(guild, app);
+  store.updateApplication(app.id, {
+    ownerId: null,
+    meetingBy: null,
+    meetingAt: null,
+    meetingChannelId: null,
+    meeting: null,
+    onHold: { by: byId, auto, at: Date.now() },
+  });
+
+  await editMessage(guild, panel.channelId, panel.messageId, ui.decisionPanel(app, 'hold'));
+  const applicant = await guild.client.users.fetch(app.userId).catch(() => null);
+  await editMessage(guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
+  await log.send(guild, app, ui.meetingHoldNotice(app), app.reviewerRoleId ? [app.reviewerRoleId] : []);
+  return true;
+}
+
+// Görüşmeyi yürüten yetkili görüşme kanallarından ayrılınca süre başlar (bildirim gitmez, kararın paneli süreyi gösterir);
+// süre içinde dönmezse görüşme beklemeye alınır ve başka bir yetkili çağrılır
+const awayTimers = new Map();
+function clearAwayTimer(app) {
+  clearTimeout(awayTimers.get(app.id));
+  awayTimers.delete(app.id);
+}
+
+async function staffAway(guild, app) {
+  if (app.meeting.staffAwaySince) return;
+  store.updateApplication(app.id, { meeting: { ...app.meeting, staffAwaySince: Date.now() } });
+  await editMessage(guild, app.meeting.panelChannelId, app.meeting.panelMessageId, ui.decisionPanel(app));
+  clearAwayTimer(app);
+  awayTimers.set(
+    app.id,
+    setTimeout(() => {
+      awayTimers.delete(app.id);
+      const fresh = store.getApplication(app.id);
+      if (!fresh?.meeting?.staffAwaySince || fresh.meetingBy !== app.meetingBy) return;
+      if (voice.isRecruitmentChannel(guild.voiceStates.cache.get(fresh.meetingBy)?.channelId)) return;
+      releaseMeeting(guild, fresh, { byId: fresh.meetingBy, auto: true }).catch((err) => console.error('[basvuru] Görüşme beklemeye alınamadı:', err.message));
+    }, config.meetingStaffGraceMinutes * 60 * 1000),
+  );
+}
+
+async function staffBack(guild, app) {
+  clearAwayTimer(app);
+  if (!app.meeting?.staffAwaySince) return;
+  store.updateApplication(app.id, { meeting: { ...app.meeting, staffAwaySince: null } });
+  await editMessage(guild, app.meeting.panelChannelId, app.meeting.panelMessageId, ui.decisionPanel(app));
+}
+
+// Görüşme kanallarındaki girişlerde görüşmeyi başlatır; başvuran görüşme kanallarından çıkınca görüşme bitmiş sayılır;
+// görüşmeyi yürüten yetkili ayrılıp dönünce süre başlatılır / durdurulur
 async function trackMeeting(oldState, newState) {
   const { guild } = newState;
   const related = store.inMeeting().filter((a) => a.userId === newState.id || a.meetingBy === newState.id);
 
   for (const app of related) {
-    if (!app.meeting) await startMeeting(guild, app);
-    else if (newState.id === app.userId && !voice.isRecruitmentChannel(newState.channelId)) await endMeeting(guild, app);
+    if (!app.meeting) {
+      await startMeeting(guild, app);
+    } else if (newState.id === app.userId && !voice.isRecruitmentChannel(newState.channelId)) {
+      await endMeeting(guild, app);
+    } else if (newState.id === app.meetingBy && !app.meeting.endedAt) {
+      const applicantHere = voice.isRecruitmentChannel(guild.voiceStates.cache.get(app.userId)?.channelId);
+      if (voice.isRecruitmentChannel(newState.channelId)) await staffBack(guild, app);
+      else if (applicantHere) await staffAway(guild, app);
+    }
   }
 }
 
