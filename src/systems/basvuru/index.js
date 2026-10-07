@@ -170,6 +170,15 @@ function handleReady(client) {
   if (guild) {
     for (const app of store.inMeeting()) {
       startMeeting(guild, app).catch((err) => console.error('[basvuru] Görüşme başlatılamadı:', err.message));
+      if (app.directConnect && !app.meeting?.startedAt) {
+        const remaining = Math.max(0, (app.meetingAt ?? 0) + CONNECT_TIMEOUT_MS - Date.now());
+        connectTimers.set(app.id, setTimeout(() => {
+          connectTimers.delete(app.id);
+          const fresh = store.getApplication(app.id);
+          if (!fresh?.directConnect || !fresh.meetingBy || fresh.meeting?.startedAt) return;
+          releaseMeeting(guild, fresh, { byId: fresh.meetingBy, auto: true }).catch(() => {});
+        }, remaining));
+      }
     }
     for (const app of store.heldMeetings()) scheduleMeetingHold(guild, app);
   }
@@ -356,6 +365,14 @@ async function callToConnect(interaction, app) {
   clearTimeout(meetingHoldTimers.get(app.id));
   meetingHoldTimers.delete(app.id);
   store.updateApplication(app.id, { ownerId: interaction.user.id, meetingBy: interaction.user.id, meetingAt: Date.now(), meetingChannelId: applicantChannel, directConnect: true, onHold: null });
+  const connectGuild = interaction.guild;
+  clearConnectTimer(app.id);
+  connectTimers.set(app.id, setTimeout(() => {
+    connectTimers.delete(app.id);
+    const fresh = store.getApplication(app.id);
+    if (!fresh?.directConnect || !fresh.meetingBy || fresh.meeting?.startedAt) return;
+    releaseMeeting(connectGuild, fresh, { byId: fresh.meetingBy, auto: true }).catch(() => {});
+  }, CONNECT_TIMEOUT_MS));
   refreshStatusPanel(interaction.client, interaction.guildId).catch(() => {});
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
   await editMessage(interaction.guild, app.channelId, app.messageId, ui.applicationNotice(app, applicant));
