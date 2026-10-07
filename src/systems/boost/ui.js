@@ -108,7 +108,7 @@ function panel(guild) {
       new ActionRowBuilder().addComponents(ACTIONS.map((a) => new ButtonBuilder().setCustomId(a.id).setLabel(a.label).setStyle(ButtonStyle.Primary))),
     );
 
-  // Hazır renk rolü tanımlı değilse menü hiç gösterilmez
+  // Hazır renk/simge rolü tanımlı değilse ilgili menü hiç gösterilmez
   if (config.colorRoles.length) {
     container.addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -116,6 +116,16 @@ function panel(guild) {
           .setCustomId(`${IDS.colorRole}:0`)
           .setPlaceholder('Renk rolü seç')
           .addOptions(config.colorRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
+      ),
+    );
+  }
+  if (config.iconRoles.length) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.iconRole}:0`)
+          .setPlaceholder('Simge rolü seç')
+          .addOptions(config.iconRoles.map((c) => new StringSelectMenuOptionBuilder().setValue(c.roleId).setLabel(c.label))),
       ),
     );
   }
