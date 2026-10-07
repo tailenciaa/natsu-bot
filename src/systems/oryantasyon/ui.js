@@ -77,10 +77,20 @@ function manageButtons(app) {
   ];
 }
 
-// Başvurular kanalındaki mesajda oryantasyon sürerken çıkan satır: panele git, aktar, iptal
+const cancelButton = (app) => manageButtons(app)[1];
+const claimButton = (app) =>
+  new ButtonBuilder().setCustomId(actionId(app, 'ustlen')).setStyle(ButtonStyle.Success).setLabel('Oryantasyonu Üstlen');
+
+// Oryantasyonu üstlenebilen roller: başvuruları inceleyen rol, yetkili alım / oryantasyon liderleri ve oryantasyon yetkilileri
+const orienterRoleIds = (app) => [...new Set([app.reviewerRoleId, ...basvuruConfig.roles.orientation].filter(Boolean))];
+
+// Başvurular kanalındaki mesajda oryantasyon sürerken çıkan satır: panele git, aktar, iptal.
+// Yetkili henüz karar veriyorsa sadece iptal, yetkililere bırakıldıysa üstlen ve iptal çıkar.
 function noticeRow(app) {
   const row = new ActionRowBuilder();
   const o = app.orientation;
+  if (o.status === 'unassigned') return row.addComponents(claimButton(app), cancelButton(app));
+  if (o.status === 'choosing') return row.addComponents(cancelButton(app));
   if (o.status === 'active' && o.messageId) {
     row.addComponents(
       new ButtonBuilder()
