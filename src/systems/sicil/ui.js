@@ -63,15 +63,6 @@ const brief = (value, max = 80) => shorten(String(value ?? '').replace(/\s+/g, '
 const formatAverage = (list) =>
   (list.reduce((sum, r) => sum + r.score, 0) / list.length).toLocaleString('tr-TR', { maximumFractionDigits: 1 });
 
-// Kategori bazında ortalamalar: "**Destek:** `4,8` (3) - **Görüşme:** `5` (1)"; değerlendirmesi olmayan kategori yazılmaz
-function categoryAverages(ratings) {
-  return Object.entries(CATEGORIES)
-    .map(([key, category]) => [category, ratings.filter((r) => (r.category ?? 'destek') === key)])
-    .filter(([, list]) => list.length)
-    .map(([category, list]) => `**${category.short}:** \`${formatAverage(list)}\` (${list.length})`)
-    .join(' - ');
-}
-
 // Liste satırlarındaki kısa durum: uyarılar süresiz olduğu için durum yazılmaz
 const stateWord = (p) => (p.type === 'uyari' ? null : { active: 'Aktif', expired: 'Süresi doldu', lifted: 'Kaldırıldı' }[p.status] ?? null);
 
@@ -131,47 +122,6 @@ const LISTS = {
     option: (r) => ({ id: r.id, label: `${r.score}/5 - ${categoryOf(r).short}`, description: brief(`${refText(r)}${r.comment ? ` - ${r.comment}` : ''}`, 100) }),
   },
 };
-
-// Başlık açık olan bölümü anlatır
-const HEADINGS = {
-  genel: 'sunucu üzerindeki geçmiş verilerine',
-  talepler: 'açtığı destek taleplerine',
-  basvurular: 'yaptığı yetkili başvurularına',
-  puan: 'aldığı değerlendirmelere',
-};
-
-// hasItems: bölümde kayıt varsa listeden detay açılabileceği de söylenir
-function header(user, tab, hasItems) {
-  return new SectionBuilder()
-    .addTextDisplayComponents(
-      text(
-        `## Kullanıcı Sicili\n<@${user.id}> kullanıcısının ${HEADINGS[tab]} buradan ulaşabilirsin. Bölümler arasında **butonlarla geçiş** yapabilirsin${hasItems ? '; listeden bir kaydın ayrıntılarını da açabilirsin' : '; bu bölümde henüz gösterilecek bir kayıt yok'}.`,
-      ),
-    )
-    .setThumbnailAccessory(new ThumbnailBuilder().setURL(user.displayAvatarURL({ size: 256 })));
-}
-
-// Başlık, varsa işlem sonucu ve ayırıcı; her görünüm bununla başlar
-function frame(user, tab, banner, hasItems) {
-  const container = new ContainerBuilder().addSectionComponents(header(user, tab, hasItems));
-  if (banner) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(banner));
-  return container.addSeparatorComponents(divider());
-}
-
-// Ana sayfadaki istatistik paneli: kısa özet. Aktif cezalar hemen alttaki tabloda göründüğü için ayrıca durum yazılmaz.
-// Toplam İşlem Sayısı: kişinin yetkili olarak verdiği cezalar ve üstlendiği destek talepleri.
-function statsPanel({ punishments, claimedCount, ratings, showRatings, givenCount }) {
-  const points = punishments.reduce((sum, p) => sum + (config.penaltyPoints[p.type] ?? 0), 0);
-  const tier = [...config.pointTiers].reverse().find((t) => points >= t.points);
-  const lines = [
-    stat('Toplam Ceza Puanı', code(points), tier ? tier.label : undefined),
-    stat('Toplam İşlem Sayısı', code(givenCount + claimedCount)),
-  ];
-  if (showRatings) {
-    lines.push(stat('Yetkili Puanı', code(ratings.length ? `${formatAverage(ratings)} / 5` : '-'), `Değerlendirme: ${code(ratings.length)}`));
-  }
-  return `**İstatistik Paneli**\n${lines.join('\n')}`;
-}
 
 // Bölüm butonları: açık olan bölüm yeşil (sıralama mesajındaki dönem butonları gibi)
 function tabRow(user, tabs, current) {
