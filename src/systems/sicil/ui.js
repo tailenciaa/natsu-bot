@@ -157,9 +157,9 @@ function sicil(view, imageName) {
   if (view.banner) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(view.banner));
   container.addActionRowComponents(tabRow(user, tabs, tab));
 
-  // Tablodaki kaydın detayı; sayfa butonları (varsa) menüyle aynı satırda. Sayfa bilgisi kartın alt şeridinde durur
+  // Tablodaki kaydın detayı menüyle açılır; menü sayfa butonlarından ayrı satıra konur. Sayfa bilgisi kartın
+  // alt şeridinde durur
   if (pageItems.length) {
-    const nav = (target, slot) => `${IDS.navigate}:${user.id}:${tab}:${target}:${slot}`;
     container.addSeparatorComponents(divider()).addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -175,21 +175,20 @@ function sicil(view, imageName) {
               return o.emoji ? option.setEmoji(o.emoji) : option;
             }),
           ),
-        ...pagerRow({ prevId: nav(page - 1, 'prev'), nextId: nav(page + 1, 'next'), page, pageCount }).components,
       ),
     );
   }
 
-  // Farklı iş yapan "Ceza Ver" çizgiyle ayrılır
+  // Sayfa butonları her zaman görünür; tek sayfada ya da boş listede devre dışı kalır. Genel sekmesinde "Ceza Ver"
+  // aynı satıra eklenir
+  const nav = (target, slot) => `${IDS.navigate}:${user.id}:${tab}:${target}:${slot}`;
+  const pageButtons = pagerRow({ prevId: nav(page - 1, 'prev'), nextId: nav(page + 1, 'next'), page, pageCount }).components;
   if (tab === 'genel' && view.allowedTypes.length) {
-    container
-      .addSeparatorComponents(divider())
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId(`${IDS.action}:${user.id}:ver:0:${page}`).setLabel('Ceza Ver').setStyle(ButtonStyle.Danger),
-        ),
-      );
+    pageButtons.push(
+      new ButtonBuilder().setCustomId(`${IDS.action}:${user.id}:ver:0:${page}`).setLabel('Ceza Ver').setStyle(ButtonStyle.Danger),
+    );
   }
+  container.addSeparatorComponents(divider()).addActionRowComponents(new ActionRowBuilder().addComponents(...pageButtons));
   return container;
 }
 
