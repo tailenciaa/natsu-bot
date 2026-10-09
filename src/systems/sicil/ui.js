@@ -18,7 +18,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, unix, quote, shorten, page: pageBlocks, colors, pageInfo, pagerRow } = require('../../core/ui');
+const { text, divider, unix, quote, shorten, page: pageBlocks, colors, pagerRow } = require('../../core/ui');
 const { statusLabel: applicationStatus, cancelReasonOf } = require('../basvuru/ui');
 const { categoryOf, refText } = require('../degerlendirme/ui');
 const config = require('./config');
@@ -157,8 +157,9 @@ function sicil(view, imageName) {
   if (view.banner) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(view.banner));
   container.addActionRowComponents(tabRow(user, tabs, tab));
 
-  // Tablodaki kaydın detayı
+  // Tablodaki kaydın detayı; sayfa butonları (varsa) menüyle aynı satırda. Sayfa bilgisi kartın alt şeridinde durur
   if (pageItems.length) {
+    const nav = (target, slot) => `${IDS.navigate}:${user.id}:${tab}:${target}:${slot}`;
     container.addSeparatorComponents(divider()).addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
@@ -174,17 +175,9 @@ function sicil(view, imageName) {
               return o.emoji ? option.setEmoji(o.emoji) : option;
             }),
           ),
+        ...pagerRow({ prevId: nav(page - 1, 'prev'), nextId: nav(page + 1, 'next'), page, pageCount }).components,
       ),
     );
-  }
-
-  // Toplam kayıt, sayfa ve sayfa butonları (kayıt yoksa gösterilmez)
-  if (items.length) {
-    const nav = (target, slot) => `${IDS.navigate}:${user.id}:${tab}:${target}:${slot}`;
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(pageInfo(page, pageCount, items.length)))
-      .addActionRowComponents(pagerRow({ prevId: nav(page - 1, 'prev'), nextId: nav(page + 1, 'next'), page, pageCount }));
   }
 
   // Farklı iş yapan "Ceza Ver" çizgiyle ayrılır
