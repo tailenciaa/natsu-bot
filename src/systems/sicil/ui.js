@@ -10,17 +10,17 @@ const {
   ComponentType,
   ContainerBuilder,
   LabelBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ModalBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ThumbnailBuilder,
 } = require('discord.js');
 const { text, divider, unix, quote, shorten, page: pageBlocks, colors, pageInfo, pagerRow } = require('../../core/ui');
 const { statusLabel: applicationStatus, cancelReasonOf } = require('../basvuru/ui');
-const { CATEGORIES, categoryOf, refText } = require('../degerlendirme/ui');
+const { categoryOf, refText } = require('../degerlendirme/ui');
 const config = require('./config');
 
 const IDS = {
