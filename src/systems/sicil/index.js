@@ -108,7 +108,7 @@ async function detail(interaction, user, tab, id, messageId) {
 async function refreshSicil(interaction, user, messageId, tab) {
   const channel = await fetchTextChannel(interaction.guild, interaction.channelId);
   await channel?.messages
-    .edit(messageId, { ...(await sicilView(interaction, user, tab, 0)), attachments: [], allowedMentions: { parse: [] } })
+    .edit(messageId, { ...(await sicilView(interaction, user, tab, 0)), flags: core.CV2, attachments: [], allowedMentions: { parse: [] } })
     .catch(() => {});
 }
 
@@ -125,9 +125,11 @@ async function handleCommand(interaction) {
     if (!canView(interaction)) return replyError(interaction, 'Başkalarının sicilini sadece yetkililer görüntüleyebilir.');
     if (!staffChannel) return staffChannelError(interaction);
   }
-  // Görünüm kurulurken Discord'dan üye çekilebilir ve kart çizilebilir; 3 saniyeyi aşmamak için cevap önce ertelenir
-  await interaction.deferReply(staffChannel ? undefined : { flags: core.EPHEMERAL });
-  return interaction.editReply({ ...(await sicilView(interaction, user, 'genel', 0)), allowedMentions: { parse: [] } });
+  // Görünüm kurulurken Discord'dan üye çekilebilir ve kart çizilebilir; 3 saniyeyi aşmamak için cevap önce ertelenir.
+  // Mesaj Container taşıdığı için IsComponentsV2 bayrağı şart; eksikse Discord mesajı her seferinde reddeder
+  const flags = staffChannel ? core.CV2 : core.EPHEMERAL_CV2;
+  await interaction.deferReply({ flags });
+  return interaction.editReply({ ...(await sicilView(interaction, user, 'genel', 0)), flags, allowedMentions: { parse: [] } });
 }
 
 // Bölüm, sayfa ve geri butonları: sicil:<kullanıcı>:<bölüm>:<sayfa>:<buton yeri>
