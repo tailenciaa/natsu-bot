@@ -470,8 +470,16 @@ function commandDelete(p, byId, reason) {
 
 module.exports = {
   IDS,
+  TABS,
   TYPES,
+  PAGE_SIZE,
   formatDuration,
+  dateTime,
+  dateOnly,
+  brief,
+  formatAverage,
+  stateWord,
+  ticketResult,
   sicil,
   readOnly,
   punishmentDetail,
