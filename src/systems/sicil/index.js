@@ -3,7 +3,7 @@
 // ayrı mesaj olarak açılır. Yetkililer yetkili komut kanalında ceza verir (Genel'deki "Ceza Ver"), cezanın detayından
 // süre ekler, kaldırır ya da sicilden siler, değerlendirmenin detayından değerlendirmeyi kaldırır; işlemden sonra sicil
 // mesajının tablosu da güncellenir. Kimin ne yapabileceği config.js'te.
-const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId, staffCommandChannel } = require('../../core/config');
 const { respond, replyError, isStaff, isMenuOwner, fetchTextChannel, inStaffChannel, staffChannelError } = require('../../core/helpers');
@@ -16,6 +16,7 @@ const ratings = require('../degerlendirme');
 const degerlendirmeStore = require('../degerlendirme/store');
 const degerlendirmeUi = require('../degerlendirme/ui');
 const config = require('./config');
+const { buildSicilCard } = require('./card');
 const moderation = require('./moderation');
 const store = require('./store');
 const ui = require('./ui');
@@ -68,7 +69,17 @@ async function buildView(interaction, user, tab, page, banner) {
   };
 }
 
-const sicilView = async (interaction, user, tab, page, banner) => ui.sicil(await buildView(interaction, user, tab, page, banner));
+// Sicil görünümü: kart görseli + bileşenler. Bütün gönderme/güncelleme noktaları aynı yapıyı kullanır; sekme ya da
+// sayfa değişince attachments: [] ile eski kartın yerine yenisi konur
+const CARD_NAME = 'sicil.png';
+const sicilView = async (interaction, user, tab, page, banner) => {
+  const view = await buildView(interaction, user, tab, page, banner);
+  const buffer = await buildSicilCard(user, view);
+  return {
+    components: [ui.sicil(view, CARD_NAME)],
+    files: [new AttachmentBuilder(buffer, { name: CARD_NAME })],
+  };
+};
 
 // Bölümdeki kaydın detayı (bulunamazsa null). Talep, başvuru ve değerlendirmede kaydın kendi kanalındaki mesajı
 // salt okunur olarak gösterilir; cezanın başka yerde mesajı olmadığı için kendi detayı vardır.
@@ -97,7 +108,7 @@ async function detail(interaction, user, tab, id, messageId) {
 async function refreshSicil(interaction, user, messageId, tab) {
   const channel = await fetchTextChannel(interaction.guild, interaction.channelId);
   await channel?.messages
-    .edit(messageId, { components: [await sicilView(interaction, user, tab, 0)], allowedMentions: { parse: [] } })
+    .edit(messageId, { ...(await sicilView(interaction, user, tab, 0)), attachments: [], allowedMentions: { parse: [] } })
     .catch(() => {});
 }
 
@@ -114,9 +125,9 @@ async function handleCommand(interaction) {
     if (!canView(interaction)) return replyError(interaction, 'Başkalarının sicilini sadece yetkililer görüntüleyebilir.');
     if (!staffChannel) return staffChannelError(interaction);
   }
-  // Görünüm kurulurken Discord'dan üye çekilebilir; 3 saniyeyi aşmamak için cevap önce ertelenir
+  // Görünüm kurulurken Discord'dan üye çekilebilir ve kart çizilebilir; 3 saniyeyi aşmamak için cevap önce ertelenir
   await interaction.deferReply(staffChannel ? undefined : { flags: core.EPHEMERAL });
-  return respond(interaction, await sicilView(interaction, user, 'genel', 0), { ephemeral: !staffChannel });
+  return interaction.editReply({ ...(await sicilView(interaction, user, 'genel', 0)), allowedMentions: { parse: [] } });
 }
 
 // Bölüm, sayfa ve geri butonları: sicil:<kullanıcı>:<bölüm>:<sayfa>:<buton yeri>
@@ -126,7 +137,7 @@ async function handleNavigate(interaction) {
   await interaction.deferUpdate();
   const user = await fetchUser(interaction, userId);
   if (!user) return replyError(interaction, 'Üye bulunamadı.');
-  return interaction.editReply({ components: [await sicilView(interaction, user, tab, Number(page) || 0)], allowedMentions: { parse: [] } });
+  return interaction.editReply({ ...(await sicilView(interaction, user, tab, Number(page) || 0)), attachments: [], allowedMentions: { parse: [] } });
 }
 
 // Bölümdeki kaydın detayı: sicil-detay:<kullanıcı>:<bölüm>:<sayfa>. Detay, seçen kişiye ayrı ve sadece ona görünen
