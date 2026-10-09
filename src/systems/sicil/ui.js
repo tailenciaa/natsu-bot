@@ -135,10 +135,11 @@ function tabRow(user, tabs, current) {
   );
 }
 
-// Herkese açık sicil. Düzen sıralama mesajıyla aynı: başlık, bölüm butonları, içerik, en altta toplam kayıt ve sayfalar.
+// Herkese açık sicil. Kayıtların görsel özeti (kart) mesajın en üstündedir; sekme butonları, kayıt detayı menüsü,
+// sayfalama ve (yetkiye göre) "Ceza Ver" bileşenlerle kalır. imageName: buildSicilCard çıktısının ek dosya adı.
 // view: { user, tab, page, punishments, tickets, applications, ratings, claimedCount, givenCount, showRatings,
 //         allowedTypes (verebileceği ceza türleri), canRemoveRatings, banner }
-function sicil(view) {
+function sicil(view, imageName) {
   const { user, ratings } = view;
   const tabs = Object.keys(TABS).filter((key) => key !== 'puan' || view.showRatings);
   const tab = tabs.includes(view.tab) ? view.tab : 'genel';
@@ -150,28 +151,11 @@ function sicil(view) {
   const start = page * PAGE_SIZE;
   const pageItems = items.slice(start, start + PAGE_SIZE);
 
-  const container = frame(user, tab, view.banner, items.length > 0).addActionRowComponents(tabRow(user, tabs, tab)).addSeparatorComponents(divider());
-  if (tab === 'genel') container.addTextDisplayComponents(text(statsPanel(view))).addSeparatorComponents(divider());
-
-  // Kategori dağılımı tek kategori varken ortalamanın aynısı olacağı için sadece birden fazla kategoride yazılır
-  const multipleCategories = new Set(ratings.map((r) => r.category ?? 'destek')).size > 1;
-  const intro =
-    tab === 'puan' && ratings.length
-      ? `**Değerlendirme Özeti**\n${stat('Ortalama Puan', code(`${formatAverage(ratings)} / 5`), `Değerlendirme: ${code(ratings.length)}`)}\n` +
-        (multipleCategories ? categoryAverages(ratings) : '')
-      : '';
-  // Genel'de listenin başlığı var (istatistiklerden ayrılsın diye); diğer bölümlerde bölümün adı zaten üstteki başlıkta.
-  // Yardım menüsündekiyle aynı düzen: her kayıt kendi metin bloğu, aralarında ince çizgi.
-  if (tab === 'genel') container.addTextDisplayComponents(text(`**${list.title}**`)).addSeparatorComponents(divider());
-  if (intro) container.addTextDisplayComponents(text(intro.trimEnd())).addSeparatorComponents(divider());
-  if (!items.length) {
-    container.addTextDisplayComponents(text(list.empty));
-  } else {
-    pageItems.forEach((item, index) => {
-      if (index > 0) container.addSeparatorComponents(divider());
-      container.addTextDisplayComponents(text(list.entry(item)));
-    });
-  }
+  const container = new ContainerBuilder().addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`)),
+  );
+  if (view.banner) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(view.banner));
+  container.addActionRowComponents(tabRow(user, tabs, tab));
 
   // Tablodaki kaydın detayı
   if (pageItems.length) {
