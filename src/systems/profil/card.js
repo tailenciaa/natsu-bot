@@ -1,6 +1,6 @@
 // Profil kartı: kapak (tema gradyanı ya da kullanıcının görseli), avatar, ad, unvan, biyografi, mesaj/ses seviye kartları
 // ve alt bilgi kutuları içeren görsel (PNG, Buffer döner). Yazılar assets/fonts altındaki Poppins ile çizilir.
-const { FONT, fitText, wrapLines, roundRect, hexAlpha, mix, makeScheme, loadImageSafe, drawAvatar, drawBar } = require('../../core/canvas');
+const { FONT, canvasLib, fitText, wrapLines, roundRect, hexAlpha, mix, makeScheme, loadImageSafe, drawAvatar, drawBar } = require('../../core/canvas');
 const levelConfig = require('../seviye/config');
 const { levelFromXp } = require('../seviye/level');
 const { resolveTheme } = require('./themes');
