@@ -19,7 +19,7 @@ function canvasLib() {
   lib = require('canvas');
   for (const [file, weight] of FONT_FILES) {
     const fontPath = path.join(FONT_DIR, file);
-    if (fs.existsSync(fontPath)) lib.registerFont(fontPath, { family: FONT, weight: Number(weight) });
+    if (fs.existsSync(fontPath)) lib.registerFont(fontPath, { family: FONT, weight });
     else console.error(`[kart] Yazı tipi bulunamadı: ${fontPath}`);
   }
   return lib;
