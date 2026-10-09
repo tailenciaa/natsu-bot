@@ -73,7 +73,7 @@ async function syncAllRoles(guild) {
 }
 
 // Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider).
-// ping false ise (örnek duyuru) etiket görünür ama kimseye bildirim gitmez. Gönderildiyse true döner.
+// ping false ise (örnek duyuru ya da ara seviye) etiket görünür ama kimseye bildirim gitmez. Gönderildiyse true döner.
 async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {}) {
   const allowedMentions = ping ? { users: [user.id] } : { parse: [] };
   try {
@@ -103,7 +103,8 @@ async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {
   }
 }
 
-// XP ekler; her seviye atlandığında kayıt tutulur ama sadece ana seviyelerde (5, 10, 15...) rol verilir, kanala duyurulur ve üye etiketlenir
+// XP ekler; atlanan her seviye duyurulur. Rol verme ve etiket bildirimi sadece ana seviyelerde (5, 10, 15...);
+// ara seviyelerde kart yine gider ama üye bildirimsiz etiketlenir (spam olmasın diye)
 async function grantXp(guild, userId, kind, amount) {
   const before = levelFromXp(store.xpOf(kind, userId));
   const after = levelFromXp(store.addXp(kind, userId, amount));
@@ -115,19 +116,22 @@ async function grantXp(guild, userId, kind, amount) {
   for (let level = before + 1; level <= after; level++) {
     if (level <= store.announcedLevel(kind, userId)) continue;
     store.markAnnounced(kind, userId, level);
-    if (!config.milestones.includes(level)) continue; // ara seviyeler sessizce geçilir
 
-    const roleId = config.roles[kind][level];
-    const member = roleId ? await guild.members.fetch(userId).catch(() => null) : null;
-    const given = member ? await syncKindRole(member, kind) : null;
-    // Rol gerçekten verilemediyse duyuruda "kazanılan rol" olarak gösterilmez
-    const role = roleId && given === roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
+    // Rol işlemleri sadece ana seviyelerde; ara seviyede role null kalır, kartta "sıradaki rol" paneli gösterilir
+    let role = null;
+    if (config.milestones.includes(level)) {
+      const roleId = config.roles[kind][level];
+      const member = roleId ? await guild.members.fetch(userId).catch(() => null) : null;
+      const given = member ? await syncKindRole(member, kind) : null;
+      // Rol gerçekten verilemediyse duyuruda "kazanılan rol" olarak gösterilmez
+      role = roleId && given === roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
+    }
 
     channel ??= await fetchTextChannel(guild, config.channel);
     user ??= await guild.client.users.fetch(userId).catch(() => null);
 
     if (user && channel) {
-      await sendLevelUp(channel, user, kind, level, role);
+      await sendLevelUp(channel, user, kind, level, role, { ping: config.milestones.includes(level) });
     }
   }
 }
