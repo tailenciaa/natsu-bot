@@ -1,8 +1,9 @@
 // Sicil kartı: /sicil menüsünün üstünde görünen görsel (PNG, Buffer döner). Üstte avatar ve kullanıcı adı, Genel
-// sekmesinde ceza puanı / toplam işlem / yetkili puanı kutuları, Değerlendirmeler sekmesinde ortalama paneli; altta
-// o sayfadaki kayıtların listesi. Sekmeler, sayfalar ve detay menüsü mesajın bileşenlerinde kalır; kart listedeki
-// bilgilerin görsel özetidir, sayfalama ui.js ile aynı hesapla yapılır.
+// sekmesinde ceza puanı / toplam işlem / yetkili puanı kutuları, Değerlendirmeler sekmesinde ortalama paneli; ortada
+// o sayfadaki kayıtların listesi, altta ince bir şeritte sayfa bilgisi. Sekmeler, sayfalar ve detay menüsü mesajın
+// bileşenlerinde kalır; kart listedeki bilgilerin görsel özetidir, sayfalama ui.js ile aynı hesapla yapılır.
 const { FONT, canvasLib, fitText, roundRect, hexAlpha, mix, makeScheme, drawBackground, drawAvatar } = require('../../core/canvas');
+const { pageInfo } = require('../../core/ui');
 const { statusLabel, cancelReasonOf } = require('../basvuru/ui');
 const { CATEGORIES, categoryOf } = require('../degerlendirme/ui');
 const config = require('./config');
@@ -16,6 +17,7 @@ const HEADER_H = 132;
 const STATS_H = 84;
 const ROW_H = 56;
 const ROW_GAP = 10;
+const FOOTER_H = 46;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 
@@ -159,8 +161,9 @@ async function buildSicilCard(user, view) {
   const pageItems = items.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   const withStats = tab === 'genel' || (tab === 'puan' && view.ratings.length > 0);
+  const withFooter = items.length > 0;
   const rowsH = pageItems.length ? pageItems.length * ROW_H + (pageItems.length - 1) * ROW_GAP : 72;
-  const height = HEADER_H + (withStats ? 20 + STATS_H + 24 : 24) + rowsH + 32;
+  const height = HEADER_H + (withStats ? 20 + STATS_H + 24 : 24) + rowsH + 32 + (withFooter ? FOOTER_H : 0);
 
   const canvas = canvasLib().createCanvas(WIDTH, height);
   const ctx = canvas.getContext('2d');
@@ -206,6 +209,22 @@ async function buildSicilCard(user, view) {
   } else {
     const rowOf = ROWS[tab];
     pageItems.forEach((item, i) => drawRow(ctx, rowOf(item, c), y + i * (ROW_H + ROW_GAP), c));
+  }
+
+  // Sayfa bilgisi kartın alt şeridinde: ince çizgi üstünde ortalı soluk yazı
+  y += rowsH;
+  if (withFooter) {
+    ctx.strokeStyle = hexAlpha('#ffffff', 0.08);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD, y + 12);
+    ctx.lineTo(WIDTH - PAD, y + 12);
+    ctx.stroke();
+    ctx.fillStyle = c.muted;
+    ctx.font = font(500, 14);
+    ctx.textAlign = 'center';
+    ctx.fillText(pageInfo(page, pageCount, items.length), WIDTH / 2, y + 36);
+    ctx.textAlign = 'left';
   }
 
   ctx.restore();
