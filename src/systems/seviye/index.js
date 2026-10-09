@@ -1,9 +1,9 @@
-// Seviye sistemi: mesaj ve ses aktivitesiyle ayrı ayrı XP kazanılır, her seviye atlamada kanala kart duyurusu gider;
-// rol verme ve üye etiketleme (bildirim) sadece ana seviyelerde (5'in katları, 100'e kadar) olur, ara seviyelerde kart
-// bildirimsiz gider. Üyede her türden (mesaj/ses) sadece ulaştığı en yüksek ana seviyenin rolü durur (düşük olanlar
-// alınır); bot açılırken ve üye sunucuya (tekrar) girince roller XP'ye göre otomatik eşitlenir. XP kalıcıdır; sıralama
-// sistemindeki günlük istatistiklerden bağımsızdır ama ses süresi aynı yöntemle sayılır: botlar ve AFK kanalı
-// sayılmaz, dakikada bir kredi verilir.
+// Seviye sistemi: mesaj ve ses aktivitesiyle ayrı ayrı XP kazanılır, her seviye atlamada kanala kart duyurusu gider
+// ve üye etiketlenir; rol verme sadece ana seviyelerde (5'in katları, 100'e kadar) olur, ara seviyelerde karttaki rol
+// paneli "sıradaki rol" olarak gösterilir. Üyede her türden (mesaj/ses) sadece ulaştığı en yüksek ana seviyenin rolü
+// durur (düşük olanlar alınır); bot açılırken ve üye sunucuya (tekrar) girince roller XP'ye göre otomatik eşitlenir.
+// XP kalıcıdır; sıralama sistemindeki günlük istatistiklerden bağımsızdır ama ses süresi aynı yöntemle sayılır:
+// botlar ve AFK kanalı sayılmaz, dakikada bir kredi verilir.
 const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -103,8 +103,8 @@ async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {
   }
 }
 
-// XP ekler; atlanan her seviye duyurulur. Rol verme ve etiket bildirimi sadece ana seviyelerde (5, 10, 15...);
-// ara seviyelerde kart yine gider ama üye bildirimsiz etiketlenir (spam olmasın diye)
+// XP ekler; atlanan her seviye duyurulur ve üye etiketlenir. Rol verme sadece ana seviyelerde (5, 10, 15...);
+// ara seviyelerde karttaki rol paneli "sıradaki rol" olarak gösterilir
 async function grantXp(guild, userId, kind, amount) {
   const before = levelFromXp(store.xpOf(kind, userId));
   const after = levelFromXp(store.addXp(kind, userId, amount));
@@ -131,7 +131,7 @@ async function grantXp(guild, userId, kind, amount) {
     user ??= await guild.client.users.fetch(userId).catch(() => null);
 
     if (user && channel) {
-      await sendLevelUp(channel, user, kind, level, role, { ping: config.milestones.includes(level) });
+      await sendLevelUp(channel, user, kind, level, role);
     }
   }
 }
