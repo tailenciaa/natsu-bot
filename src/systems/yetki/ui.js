@@ -6,7 +6,7 @@ const {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
-const { colors, divider, page, field, fields, stamp } = require('../../core/ui');
+const { colors, divider, page, field, fields, rows, chip, stamp } = require('../../core/ui');
 const { staffCommandChannel } = require('../../core/config');
 const config = require('./config');
 
@@ -34,15 +34,17 @@ const unmask = (value, list) => {
 
 // Seçili öğelerin adları; hiçbiri seçili değilse "Yok"
 const labelsOf = (list, ids) => list.filter((item) => ids.includes(item.id)).map((item) => item.label).join(', ') || 'Yok';
+// Seçim değerleri kartta kod rozetinde durur; seçim yapılmadıysa boşluk hali rozetsiz, düz yazıyla kalır
+const choice = (value) => (value === 'Yok' ? value : chip(value));
 
 // state: { user, levelId, permIds, done, missingRoles }. Seçimler buton/menü ID'lerinde taşınır.
 function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, by, roleIds = [] }) {
   const { levels, perms, duties } = config;
   const level = levels.find((l) => l.id === levelId);
-  const summary = fields([
-    field('Rütbe', level ? level.label : 'Seçilmedi'),
-    field('Yetkiler', labelsOf(perms, permIds)),
-    field('Görev Rolleri', labelsOf(duties, dutyIds)),
+  const summary = rows([
+    ['Rütbe', level ? chip(level.label) : 'Seçilmedi'],
+    ['Yetkiler', labelsOf(perms, permIds)],
+    ['Görev Rolleri', labelsOf(duties, dutyIds)],
   ]);
 
   const blocks = done
@@ -133,13 +135,12 @@ function grantDm(guildName, { level, permIds, dutyIds, by }) {
     sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın. Sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın bu mesajda; yeni görevinde başarılar.`,
     accent: colors.success,
     blocks: [
-      fields([
-        '**Yetki Bilgilerin**',
-        field('Rütbe', level.label),
-        field('Yetkiler', labelsOf(config.perms, permIds)),
-        field('Görev Rolleri', labelsOf(config.duties, dutyIds)),
-        field('Yetkiyi Veren', `<@${by}>`),
-      ]),
+      `**Yetki Bilgilerin**\n${rows([
+        ['Rütbe', chip(level.label)],
+        ['Yetkiler', labelsOf(config.perms, permIds)],
+        ['Görev Rolleri', labelsOf(config.duties, dutyIds)],
+        ['Yetkiyi Veren', `<@${by}>`],
+      ])}`,
       guideText(),
       stamp(),
     ],
@@ -151,10 +152,10 @@ function grantDm(guildName, { level, permIds, dutyIds, by }) {
 function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) {
   const { levels, perms, duties } = config;
   const summary = (src) =>
-    fields([
-      field('Rütbe', labelsOf(levels, src.levelIds)),
-      field('Yetkiler', labelsOf(perms, src.permIds)),
-      field('Görev Rolleri', labelsOf(duties, src.dutyIds)),
+    rows([
+      ['Rütbe', choice(labelsOf(levels, src.levelIds))],
+      ['Yetkiler', labelsOf(perms, src.permIds)],
+      ['Görev Rolleri', labelsOf(duties, src.dutyIds)],
     ]);
 
   const blocks = done
@@ -224,13 +225,12 @@ function revokeDm(guildName, { taken, by, all }) {
       : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; kaldırılan yetkileri ve işlemi yapan yetkiliyi bu mesajda görebilirsin.`,
     accent: colors.danger,
     blocks: [
-      fields([
-        '**Kaldırılan Yetkiler**',
-        field('Rütbe', labelsOf(config.levels, taken.levelIds)),
-        field('Yetkiler', labelsOf(config.perms, taken.permIds)),
-        field('Görev Rolleri', labelsOf(config.duties, taken.dutyIds)),
-        field('Yetkiyi Kaldıran', `<@${by}>`),
-      ]),
+      `**Kaldırılan Yetkiler**\n${rows([
+        ['Rütbe', choice(labelsOf(config.levels, taken.levelIds))],
+        ['Yetkiler', labelsOf(config.perms, taken.permIds)],
+        ['Görev Rolleri', labelsOf(config.duties, taken.dutyIds)],
+        ['Yetkiyi Kaldıran', `<@${by}>`],
+      ])}`,
       stamp(),
     ],
   });
