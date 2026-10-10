@@ -109,13 +109,15 @@ Renk durumu söyler: yeşil tamamlandı/onaylandı, sarı bekliyor, kırmızı h
 
 ### Menü ve sekmeli görünümler (yardım, sicil, sıralama)
 
-`başlık → sekme butonları → içerik → sayfa bilgisi → « »`. Aktif sekme yeşil (Success), diğerleri gri; sayfa bilgisi tek satır (`Sayfa 2 / 5 · 48 kayıt`); tek sayfalık listede sayfa butonu gösterilmez.
+`başlık → sekme butonları → içerik → sayfa bilgisi → « »`. Aktif sekme yeşil (Success), diğerleri gri; sayfa bilgisi tek satır (`Sayfa 2 / 5 · 48 kayıt`); tek sayfalık listede sayfa butonu gösterilmez. Sekme satırının kendisi yalnızca sekmeleri taşır; **dönüş ve gezinme düğmeleri listenin altında, çizgiyle ayrılmış kendi satırında** durur.
 
 Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı günceller** (`interaction.update`), yeni mesaj atmaz; mesajda bir görsel varsa `attachments: []` ile temizlenir. Yeni mesaj yalnızca ilk açılışta ve modal gönderiminde (modal, eski mesajı güncelleyemez) atılır.
 
-Bir panelin düğmesi **yeni bir mesaj** açtığında (profil kartının mağaza, rozet ve vitrin sayfaları) o sayfanın **Geri** düğmesi olmak zorundadır; Geri sayfa mesajını kaldırır (`interaction.message.delete()`) ve kişi açtığı panele döner. Geri düğmesi görünür kontrollerin içinde durur — sekme satırı varsa aynı satıra eklenir.
+Bir panelin düğmesi **yeni bir mesaj** açtığında (profil kartının mağaza, rozet ve vitrin sayfaları) o sayfanın **Geri** düğmesi olmak zorundadır; Geri sayfa mesajını kaldırır (`interaction.message.delete()`) ve kişi açtığı panele döner. Geri düğmesi görünür kontrollerin içinde durur — sekme sayfasındaysa listenin altındaki kendi satırında.
 
-Cüzdan (`/bakiye`) bundan ayrıdır ve **tek mesajda gezilir**: Mağaza ve Siparişlerim cüzdan kartının yerini alır, asla yeni mesaj atmaz. Mağazanın geri düğmesi mağazanın nereden açıldığına göre belirlenir: cüzdandan açılan sayfada **Cüzdana Dön** cüzdan kartını yeniden yazar, profil kartından açılan sayfada Geri mesajı kaldırır. Kaynak, mağazanın sekme, al ve giy düğmelerinin customId sonunda taşınır (`profil-ayar:magaza:tema:cuzdan`), böylece yerinde yenilenen sayfada yön kaybolmaz.
+Cüzdan (`/bakiye`) bundan ayrıdır ve **tek mesajda gezilir**: Mağaza ve Siparişlerim cüzdan kartının yerini alır, asla yeni mesaj atmaz. Mağazanın alt gezinme satırı nereden açıldığına göre belirlenir: cüzdandan açılan sayfada **Cüzdana Dön** cüzdan kartını yeniden yazar ve yanına **Siparişlerim** eklenir, profil kartından açılan sayfada tek başına Geri mesajı kaldırır. Kaynak, mağazanın sekme, al ve giy düğmelerinin customId sonunda taşınır (`profil-ayar:magaza:tema:cuzdan`), böylece yerinde yenilenen sayfada yön kaybolmaz.
+
+Sayısal özetlerde her satıra bir `**Etiket:** \`kutu\`` yığını kurulmaz: kartın asıl sayısı kendi satırında kalın verilir (`**Mevcut Bakiye:** \`187 coin\``), ikincil sayılar `pills` ile tek satırda toplanır (`` `Kazanç: 42.000 coin` · `Harcanan: 23.600 coin` ``).
 
 ### Form, DM ve log
 
