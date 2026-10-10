@@ -127,6 +127,8 @@ async function handleCommand(interaction) {
     if (!canView(interaction)) return replyError(interaction, 'Başkalarının sicilini sadece yetkililer görüntüleyebilir.');
     if (!staffChannel) return staffChannelError(interaction);
   }
+  // GİZLİ İSTİSNA: yetkili komut kanalı dışındaki `/sicil` kişiye özel kalır. Üye kendi sicilini her yerde
+  // görebilsin ama ceza kayıtları kanalda herkese görünmesin; yetkili kanalı dışında kart sadece sahibine yazılır.
   // Görünüm kurulurken Discord'dan üye çekilebilir ve kart çizilebilir; 3 saniyeyi aşmamak için cevap önce ertelenir.
   // Mesaj Container taşıdığı için IsComponentsV2 bayrağı şart; eksikse Discord mesajı her seferinde reddeder
   const flags = staffChannel ? core.CV2 : core.EPHEMERAL_CV2;
@@ -203,6 +205,8 @@ async function handleAction(interaction) {
   if (action === 'sil') return interaction.showModal(ui.deleteModal(punishment, messageId));
 }
 
+// HATA: ceza işlemi tutmadı. Akış deferUpdate ile ertelendiği için replyError kullanılamaz; uyarı ayrı ve kişiye
+// özel mesaj olarak gönderilir.
 const failed = (interaction, result) =>
   interaction.followUp({
     components: [core.alert(result.error, result.hint, 'danger')],
