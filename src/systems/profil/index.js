@@ -375,19 +375,22 @@ async function buy(interaction, tur, key) {
   coinStore.recordPurchase(interaction.user.id, { tur, key, name: item.name, price: item.price });
 
   // Kapağında kendi görseli olan üye satın aldığı arka planı kartta göremez: nedenini hemen söyle
-  const uyarı = shop.wear === 'cover' && custom.banner ? '\nKartında kendi görselin durduğu için arka plan şimdilik görünmez; kapak düzenleyiciden görseli kaldırabilirsin.' : '';
-  const durum = shop.wear ? 'kartına uygulandı' : 'kartına eklendi';
+  const uyarı = shop.wear === 'cover' && custom.banner ? 'Kartında kendi görselin durduğu için arka plan şimdilik görünmez; kapak düzenleyiciden görseli kaldırabilirsin.' : null;
 
   // Mağaza sayfası yerinde yenilenir: bakiye ve düğme durumu hemen doğru görünsün
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
   await respond(
     interaction,
-    core.alert(
-      `${item.name} satın alındı ve ${durum}.`,
-      `**${number(item.price)}** coin düşüldü, bakiyen **${number(coinStore.balance(interaction.user.id))}** coin.${uyarı}`,
-      'success',
-    ),
-    { followUp: true },
+    ui.purchase({
+      user: interaction.user,
+      tur,
+      name: item.name,
+      price: item.price,
+      balance: coinStore.balance(interaction.user.id),
+      worn: Boolean(shop.wear),
+      note: uyarı,
+    }),
+    { followUp: true, ephemeral: false, allowedMentions: { users: [interaction.user.id] } },
   );
   return refreshLiveCard(interaction);
 }
@@ -402,7 +405,7 @@ async function wear(interaction, tur, key) {
 
   store.set(interaction.user.id, { [shop.wear]: key });
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
-  await respond(interaction, core.alert('Kartın güncellendi.', `${item.name} görünümü seçildi; profil kartın da hemen böyle çizildi.`), { followUp: true });
+  await respond(interaction, ui.equip({ user: interaction.user, tur, name: item.name }), { followUp: true });
   return refreshLiveCard(interaction);
 }
 
@@ -544,13 +547,7 @@ async function handleSettings(interaction) {
       });
       store.set(interaction.user.id, { pronoun, links });
       await interaction.deferUpdate();
-      await respond(
-        interaction,
-        bad.length
-          ? core.alert('Bağlantıların kaydedildi.', `${bad.join(', ')} için verdiğin adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.`, 'warning')
-          : core.alert('Vitrinin güncellendi.', 'Profil kartının alt şeridinde görünecek.', 'success'),
-        { followUp: true },
-      );
+      await respond(interaction, ui.vitrinSaved({ user: interaction.user, bad }), { followUp: true });
       return refreshLiveCard(interaction);
     }
     case 'renk-form': {

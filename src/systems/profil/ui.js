@@ -17,6 +17,8 @@ const {
   TextInputStyle,
 } = require('discord.js');
 const core = require('../../core/ui');
+// Ürün türünün tek adı ve coin biçimi coin sisteminden alınır: sipariş listesiyle mağaza bildirimi aynı sözcükleri kullansın
+const { coin, TUR_LABEL } = require('../coin/ui');
 const { coverOf } = require('./kapak');
 const { THEMES } = require('./themes');
 
@@ -335,4 +337,48 @@ function shopPage(tab, tabs, balance, items) {
   return container;
 }
 
-module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, gorunumPage, rozetPage, vitrinPage, shopPage };
+// ── Mağaza işlemlerinin bildirim kartları ─────────────────────────────────────
+// Satın alma herkese açık duyurulur: üye ne aldığını gösterir, okuyan da coin biriktirmeye özenir.
+// Giyme ve vitrin kartın kendi ayarıdır, sonucu sadece üye görür.
+function purchase({ user, tur, name, price, balance, worn, note }) {
+  return core.receipt({
+    title: 'Satın Alma Tamamlandı',
+    sub: `<@${user.id}> profil mağazasından **${name}** ürününü aldı${worn ? ' ve hemen kartına uyguladı' : '; ürün kartında görünüyor'}.`,
+    user,
+    pairs: [
+      ['Ürün', core.chip(name)],
+      ['Tür', core.chip(TUR_LABEL[tur])],
+      ['Fiyat', coin(price)],
+      ['Yeni Bakiye', coin(balance)],
+    ],
+    note,
+  });
+}
+
+function equip({ user, tur, name }) {
+  return core.receipt({
+    title: 'Kartın Güncellendi',
+    sub: 'Profil kartının görünümü değişti; kart yeniden çizildi, mesajında hemen böyle görünecek.',
+    user,
+    accent: 'primary',
+    pairs: [
+      ['Ürün', core.chip(name)],
+      ['Tür', core.chip(TUR_LABEL[tur])],
+    ],
+  });
+}
+
+// bad: https ile başlamadığı için kartına yazılmayan bağlantıların adları
+function vitrinSaved({ user, bad = [] }) {
+  return core.receipt({
+    title: 'Vitrinin Güncellendi',
+    sub: 'Profil kartının alt şeridi yeniden çizildi; zamirin ve verdiğin bağlantılar kartında görünecek.',
+    user,
+    accent: bad.length ? 'warning' : 'primary',
+    note: bad.length
+      ? `${bad.join(', ')} için verdiğin adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.`
+      : null,
+  });
+}
+
+module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, gorunumPage, rozetPage, vitrinPage, shopPage, purchase, equip, vitrinSaved };
