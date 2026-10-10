@@ -36,18 +36,18 @@ function daily({ user, amount, streak, base, bonus, balance, nextAt }) {
   });
 }
 
-// Cüzdan kartı: bakiye, biriken, harcanan ve seri. Günlük ödülün ne zaman hazır olacağı da burada yazılır.
+// Cüzdan kartı: bakiye tek ve en önemli sayı olduğu için kendi satırında; kazanç, harcama ve seri yan yana
+// kapsümlerde toplanır ki dört satırlık etiket-kutu yığını kartı boğmasın.
 function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now() }) {
   const container = page({
     title: 'Coin Cüzdanım',
     sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece** ve **saygınlık vermekten** birikir; harcadığın yer profil mağazasıdır.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
-      `**Cüzdan Bilgileri**\n${rows([
-        ['Mevcut Bakiye', coin(balance)],
-        ['Toplam Kazanç', coin(earned)],
-        ['Harcanan', coin(spent)],
-        streak > 0 && ['Günlük Seri', chip(`${streak} gün`)],
+      `**Cüzdan Bilgileri**\n**Mevcut Bakiye:** ${coin(balance)}\n${pills([
+        ['Kazanç', `${number(earned)} coin`],
+        ['Harcanan', `${number(spent)} coin`],
+        streak > 0 && ['Seri', `${streak} gün`],
       ])}`,
       readyAt > now ? `Günlük ödülün ${rel(readyAt)} içinde hazır olacak.` : 'Günlük ödülün hazır: `/gunluk` ile toplayabilirsin.',
     ],
