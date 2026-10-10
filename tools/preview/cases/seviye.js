@@ -1,8 +1,7 @@
-// Seviye ve profil sistemleri (src/systems/seviye, src/systems/profil): kartlar canvas ile çizilen PNG olduğu için
+// Seviye sistemi (src/systems/seviye): kartlar canvas ile çizilen PNG olduğu için
 // önizlemede aynı boyutta yer tutucu PNG kullanılır; mesaj düzeni ve metinler gerçek ui fonksiyonlarından gelir.
 module.exports = ({ mock, ui, src }) => {
   const s = src('systems/seviye/ui');
-  const p = src('systems/profil/ui');
   const level = (name, o = {}) => mock.user({ username: name, displayName: name, ...o });
 
   const member = level('mehmet');
@@ -50,84 +49,12 @@ module.exports = ({ mock, ui, src }) => {
       build: () => ({ components: [s.levelUpAnnounce(member, 'ses', 20, null)], allowedMentions: { users: [member.id] } }),
     },
     {
-      id: 'profil-sahibi',
-      title: 'Profil kartı: kendi profili, tema seçili',
-      where: '/profil komutu, herkese açık; kontrolleri sadece sahibi kullanır',
-      visibility: 'public',
-      kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 1000, 676, 'Profil kartı')], ...noMentions }),
-    },
-    {
-      id: 'profil-sahibi-temasiz',
-      title: 'Profil kartı: kendi profili, tema seçilmemiş',
-      where: '/profil komutu, ilk açılış ya da Sıfırla sonrası',
-      visibility: 'public',
-      kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 1000, 676, 'Profil kartı')], ...noMentions }),
-    },
-    {
-      id: 'profil-baskasi',
-      title: 'Profil kartı: başka üyenin profili',
-      where: '/profil komutu başka üyeyle; kontrol yok',
-      visibility: 'public',
-      kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 1000, 676, 'Profil kartı')], ...noMentions }),
-    },
-    {
-      id: 'bio-modal-bos',
-      title: 'Biyografi formu: boş',
-      where: 'Profilde Biyografi butonuna basınca açılır',
-      visibility: 'ephemeral',
-      kind: 'modal',
-      build: () => p.bioModal({}),
-    },
-    {
-      id: 'bio-modal-dolu',
-      title: 'Biyografi formu: dolu',
-      where: 'Profilde Biyografi butonuna basınca açılır, kayıtlı değerlerle',
-      visibility: 'ephemeral',
-      kind: 'modal',
-      build: () => p.bioModal({ bio: 'Anime izlemeyi ve gece sohbetlerini severim.', title: 'Anime Sever' }),
-    },
-    {
-      id: 'renk-modal',
-      title: 'Renk formu',
-      where: 'Profilde Renk butonuna basınca açılır',
-      visibility: 'ephemeral',
-      kind: 'modal',
-      build: () => p.colorModal({ color: 0xff5599 }),
-    },
-    {
-      id: 'kapak-modal',
-      title: 'Kapak formu',
-      where: 'Profilde Kapak butonuna basınca açılır',
-      visibility: 'ephemeral',
-      kind: 'modal',
-      build: () => p.bannerModal({ banner: 'https://i.imgur.com/ornek.png' }),
-    },
-    {
       id: 'hata-bot-seviye',
       title: 'Hata: bot seviyesi',
       where: '/seviye komutu bir botla',
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [ui.alert('Botların seviyesi bulunmaz.', undefined, 'danger')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
-    },
-    {
-      id: 'hata-bot-profil',
-      title: 'Hata: bot profili',
-      where: '/profil komutu bir botla',
-      visibility: 'ephemeral',
-      kind: 'message',
-      build: () => ({ components: [ui.alert('Botların profili bulunmaz.', undefined, 'danger')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
-    },
-    {
-      id: 'hata-renk',
-      title: 'Hata: geçersiz renk',
-      where: 'Renk formu gönderilince',
-      visibility: 'ephemeral',
-      kind: 'message',
-      build: () => ({ components: [ui.alert('Renk anlaşılamadı.', 'Örnek: #ff5599 ya da ff5599', 'danger')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
     {
       id: 'test-onay',
