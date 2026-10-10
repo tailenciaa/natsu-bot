@@ -1,5 +1,5 @@
 // Profil kartı temaları: kapak (üst alan) gradyanı ve varsayılan vurgu rengi. Kullanıcı renk seçtiyse vurgu o renk olur,
-// kapak görseli eklediyse görsel temanın yerine geçer.
+// kapak görseli eklediyse görsel temanın yerine geçer. price alanı olan temalar coin ile satın alınır (coin/mağaza).
 const { mix, luminance } = require('../../core/canvas');
 
 const THEMES = {
@@ -9,6 +9,10 @@ const THEMES = {
   orman: { label: 'Orman', description: 'Koyu ve açık yeşil', from: '#07210f', to: '#237a43', accent: '#5be08a' },
   gunbatimi: { label: 'Gün Batımı', description: 'Turuncu ve mor', from: '#2b0f2e', to: '#cc5a2c', accent: '#ff9b5e' },
   ruya: { label: 'Mor Rüya', description: 'Menekşe tonları', from: '#1b0b33', to: '#7230c2', accent: '#b57bff' },
+  kor: { label: 'Kor', description: 'Kızıl ve turuncu', from: '#2a0708', to: '#a3271b', accent: '#ff6a4d', price: 2500 },
+  krom: { label: 'Krom', description: 'Çelik grisi', from: '#141619', to: '#5b646e', accent: '#c3ccd6', price: 3200 },
+  zumrut: { label: 'Zümrüt', description: 'Yeşil ve altın', from: '#04211a', to: '#0f7a5a', accent: '#3ee0a1', price: 4500 },
+  elmas: { label: 'Elmas', description: 'Buz mavisi', from: '#071a2b', to: '#2f7fbf', accent: '#9fe6ff', price: 6000 },
 };
 
 const DEFAULT_THEME = 'sakura';
