@@ -36,15 +36,21 @@ const IDS = {
   roleEmojiField: 'rol-emoji',
 };
 
-// Takviye edene giden DM: teşekkür + panelin ve emoji/çıkartma komutlarının nasıl kullanılacağı
+// Takviye edene giden DM: teşekkür + avantajlar ve panelden/komutla nasıl kullanılır
 function thanksDm(guildName, panelChannelId, perks) {
-  const panelLine = panelChannelId ? `<#${panelChannelId}> kanalındaki panelden` : 'Booster İşlemleri panelinden';
+  const panelLine = panelChannelId ? `<#${panelChannelId}> kanalındaki panel` : 'Booster İşlemleri paneli';
   return page({
     title: 'Takviyen İçin Teşekkürler',
     sub: `${guildName} sunucusunu takviye ettiğin için **çok teşekkür ederiz**; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir ve bu mesajdaki bilgilerle hepsini kullanabilirsin.`,
     blocks: [
-      `**Panelden yapabileceklerin**\n${panelLine} takma adını değiştirebilir ve kendi renginde, emojinde bir rol oluşturabilirsin.\nTakma ad ve rol takviyen bitince geri alınır.`,
-      `**Emoji ve çıkartma**\nEmoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullanabilirsin.\nHakların: **${perks.emoji} emoji**, **${perks.sticker} çıkartma**.`,
+      `**Avantajların**\n${rows([
+        ['Emoji Hakkı', chip(`${perks.emoji} emoji`)],
+        ['Çıkartma Hakkı', chip(`${perks.sticker} çıkartma`)],
+        ['Takma Ad', chip('panelden değişir')],
+        ['Özel Rol', chip('panelden kurulur')],
+      ])}`,
+      `**Nasıl Kullanırsın**\n1. ${panelLine} üzerinden takma adını değiştir, kendi renginde ve emojinde rolünü kur.\n2. Emoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullan.\n3. Takviyen bitince takma adın ve özel rolün otomatik geri alınır.`,
+      stamp(),
     ],
   });
 }
@@ -75,16 +81,16 @@ function perkLines() {
     '- **Harici emoji ve çıkartma** kullanabilirsin.',
     '- **Takma adını** değiştirebilirsin.',
     '- **Ses panelini** (soundboard) kullanabilirsin.',
-    `- \`/emoji-ekle\` ile **${config.perks.emoji} emoji**, \`/cikartma-ekle\` ile **${config.perks.sticker} çıkartma** ekleyebilirsin.`,
+    `- \`/emoji-ekle\` ile ${chip(`${config.perks.emoji} emoji`)}, \`/cikartma-ekle\` ile ${chip(`${config.perks.sticker} çıkartma`)} ekleyebilirsin.`,
   ];
 }
 
-// İşlem Seçenekleri bloğu: her işlem kalın adıyla ve normal yazıyla açıklamasıyla
+// İşlem Seçenekleri bloğu: her işlem etiket-değer satırıyla; hazır renk/simge rolü yoksa satır atlanır
 function optionLines() {
-  const lines = ACTIONS.map((a) => `**${a.title}:** ${a.note}`);
-  if (config.colorRoles.length) lines.push('**Renk Rolü:** Sana hazırladığımız renk rollerinden birini menüden seçebilirsin.');
-  if (config.iconRoles.length) lines.push('**Simge Rolü:** Sana hazırladığımız simge rollerinden birini menüden seçebilirsin.');
-  return lines;
+  const pairs = ACTIONS.map((a) => [a.title, a.note]);
+  if (config.colorRoles.length) pairs.push(['Renk Rolü', 'Sana hazırladığımız renk rollerinden birini menüden seçebilirsin.']);
+  if (config.iconRoles.length) pairs.push(['Simge Rolü', 'Sana hazırladığımız simge rollerinden birini menüden seçebilirsin.']);
+  return rows(pairs);
 }
 
 // guild: sağ üstteki sunucu simgesi için
@@ -102,7 +108,7 @@ function panel(guild) {
 
   container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**İşlem Seçenekleri**\n${optionLines().join('\n')}`))
+    .addTextDisplayComponents(text(`**İşlem Seçenekleri**\n${optionLines()}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(ACTIONS.map((a) => new ButtonBuilder().setCustomId(a.id).setLabel(a.label).setStyle(ButtonStyle.Primary))),
