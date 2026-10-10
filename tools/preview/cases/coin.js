@@ -13,6 +13,18 @@ module.exports = ({ mock, ui, src }) => {
   // İlk dört gün seri bonusuyla, beşinci gün ayrıca seviye bonusu birikir
   const bakiye = [0, 1, 2, 3].reduce((toplam, i) => toplam + base + i * config.daily.streakBonus, besinci);
 
+  // Mağazadan alınmış ürünler (coin/store'daki sipariş kayıtlarının biçimi); ad ve fiyatlar gerçek katalogdan
+  const urun = (name, price, daysAgo) => ({ id: `${name}-${daysAgo}`, userId: user.id, name, price, at: mock.ago(daysAgo * mock.DAY) });
+  const purchases = [urun('Elmas', 6000, 3), urun('Buzlu Cam', 3400, 11), urun('Neon', 7200, 26)];
+  const manyPurchases = [
+    ...purchases,
+    urun('Kor', 2500, 40),
+    urun('Taç', 3400, 52),
+    urun('Altın', 4800, 61),
+    urun('Zümrüt', 4500, 70),
+    urun('Yıldız', 2600, 84),
+  ];
+
   return [
     {
       id: 'gunluk-ilk',
@@ -63,6 +75,60 @@ module.exports = ({ mock, ui, src }) => {
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
+    },
+
+    // ── /bakiye: cüzdan ve siparişler ──────────────────────────────────────────
+    {
+      id: 'bakiye',
+      title: '/bakiye: cüzdan kartı',
+      where: '/bakiye komutu, sadece kullanana görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [coin.wallet({ user, balance: 18400, earned: 42000, spent: 23600, streak: 5, readyAt: Date.now() + 9 * 3600 * 1000 })],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'bakiye-odul-hazir',
+      title: '/bakiye: günlük ödül hazır',
+      where: '/bakiye, günün ödülünü henüz toplamamış üye',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [coin.wallet({ user, balance: 800, earned: 800, spent: 0, streak: 0, readyAt: Date.now() })],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'siparisler',
+      title: 'Siparişlerim: alınmış ürünler',
+      where: 'Cüzdan kartındaki Siparişlerim butonu',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [coin.orders({ user, items: purchases, page: 0 })],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'siparisler-bos',
+      title: 'Siparişlerim: henüz alışveriş yok',
+      where: 'Cüzdan kartındaki Siparişlerim butonu',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [coin.orders({ user, items: [], page: 0 })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
+    },
+    {
+      id: 'siparisler-uzun',
+      title: 'Siparişlerim: sayfalama',
+      where: 'Sipariş listesi ikinci sayfada',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [coin.orders({ user, items: manyPurchases, page: 1 })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
   ];
 };
