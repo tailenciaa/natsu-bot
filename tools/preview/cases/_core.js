@@ -56,7 +56,7 @@ module.exports = ({ mock, ui }) => {
           ui.panelMessage(
             {
               title: '## Kazuki Örnek Paneli',
-              description: '**Bir sorunun mu var?** Sağdaki butondan başlayabilirsin, ekibimiz en kısa sürede ilgilenir.',
+              description: '**Bir sorunun mu var?** Talep Oluştur butonuyla başla, ekibimiz en kısa sürede ilgilenir.',
               buttonLabel: 'Talep Oluştur',
               footer: 'Gereksiz kullanım yaptırım uygulanmasına neden olabilir.',
             },

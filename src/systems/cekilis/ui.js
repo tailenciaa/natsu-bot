@@ -40,9 +40,9 @@ function panel(g) {
   const title = { active: `Çekiliş #${g.no}`, ended: `Çekiliş #${g.no} Sona Erdi`, cancelled: `Çekiliş #${g.no} İptal Edildi` }[g.status];
   const closedLabel = { ended: 'Çekiliş Bitti', cancelled: 'Çekiliş İptal Edildi' }[g.status];
   const info = [];
-  if (g.status === 'ended') {
-    info.push(`**Kazananlar:** ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`, `**Katılımcı:** ${g.participants.length}`);
-  } else if (g.status === 'active') {
+  if (g.status === 'ended') info.push(`**Kazananlar:** ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`);
+  if (g.status === 'ended' || g.status === 'cancelled') info.push(`**Katılımcı:** ${g.participants.length}`);
+  if (g.status === 'active') {
     info.push(`**Bitiş:** <t:${unix(g.endsAt)}:R>`, `**Kazanan sayısı:** ${g.winnerCount}`);
     if (g.roleId) info.push(`**Gerekli rol:** <@&${g.roleId}>`);
   }
