@@ -41,7 +41,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, herkese açık; kontrolleri sadece sahibi kullanır',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 928, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 988, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-sahibi-temasiz',
@@ -49,7 +49,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, ilk açılış ya da Sıfırla sonrası',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 928, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 988, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-baskasi',
@@ -57,7 +57,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu başka üyeyle; kontrol yok',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 838, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 878, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'bio-modal-bos',
@@ -113,6 +113,32 @@ module.exports = ({ mock, ui, src }) => {
       build: () => ({
         components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, cover: 'cam' })],
         files: [card('kapak.png', 300, 'Kapak önizlemesi')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'gorunum-cam',
+      title: 'Kart görünümü: cam tema, saydamlık ayarlanabiliyor',
+      where: 'Profilde "Görünüm" butonu, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [p.gorunumPage('profil.png', { themeLabel: THEMES.nebula.label, glass: true, opacity: 30 })],
+        files: [card('profil.png', 988, 'Profil kartı')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'gorunum-duz',
+      title: 'Kart görünümü: düz tema, saydamlık düğmeleri pasif',
+      where: 'Düz panelli bir temada Görünüm butonu; düğmeler kaybolmaz, sadece işlemez',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [p.gorunumPage('profil.png', { themeLabel: THEMES.sakura.label, glass: false, opacity: 50 })],
+        files: [card('profil.png', 988, 'Profil kartı')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
