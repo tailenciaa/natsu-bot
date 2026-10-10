@@ -198,11 +198,12 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
         ),
     );
 
-  const rows = [];
-  if (held.levelIds.length) rows.push(menu(IDS.takeLevel, 'Kaldırılacak rütbe', levels, held.levelIds, picked.levelIds));
-  if (held.permIds.length) rows.push(menu(IDS.takePerms, 'Kaldırılacak yetkiler', perms, held.permIds, picked.permIds));
-  if (held.dutyIds.length) rows.push(menu(IDS.takeDuties, 'Kaldırılacak görev rolleri', duties, held.dutyIds, picked.dutyIds));
-  rows.push(
+  // Not: yerel ad 'rows' kullanılmaz, çekirdekteki rows() yardımcısını gölgeler
+  const controlRows = [];
+  if (held.levelIds.length) controlRows.push(menu(IDS.takeLevel, 'Kaldırılacak rütbe', levels, held.levelIds, picked.levelIds));
+  if (held.permIds.length) controlRows.push(menu(IDS.takePerms, 'Kaldırılacak yetkiler', perms, held.permIds, picked.permIds));
+  if (held.dutyIds.length) controlRows.push(menu(IDS.takeDuties, 'Kaldırılacak görev rolleri', duties, held.dutyIds, picked.dutyIds));
+  controlRows.push(
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(stateId(IDS.takeSelected))
@@ -213,7 +214,7 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
       new ButtonBuilder().setCustomId(IDS.takeCancel).setStyle(ButtonStyle.Secondary).setLabel('İptal'),
     ),
   );
-  return container.addSeparatorComponents(divider()).addActionRowComponents(...rows);
+  return container.addSeparatorComponents(divider()).addActionRowComponents(...controlRows);
 }
 
 // Yetkisi kaldırılan kişiye giden DM
