@@ -10,7 +10,7 @@ const {
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { colors, panel, page, rows, chip, quote, stamp, divider, text, pills, hasValue } = require('../../core/ui');
+const { colors, panel, page, rows, chip, quote, stamp, divider, text, pills } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {

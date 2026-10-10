@@ -61,6 +61,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/ceza-kaldir`, `/ceza-sil` | Cezayı numarasıyla kaldırır ya da sicilden siler | Yetkisi olanlar |
 | `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
 | `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
+| `/kalici-oda liste`, `kapat`, `devret` | Kalıcı odaları ve bekleyen başvuruları listeler, oda kapatır, sahibi ayrılmış odayı bir üyeye devreder (başvuru panelden yapılır) | Yöneticiler |
 | `/log kur` | Log kurulum menüsünü açar | Yöneticiler |
 
 Ceza komutları (`/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban`, `/ceza-kaldir`, `/ceza-sil`) ve `/yetki-ver` ile `/yetki-al` sadece yetkili komut kanalında çalışır.
@@ -75,7 +76,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
 | Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
-| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
+| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği odalar), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
 
@@ -117,6 +118,5 @@ node -e "process.env.GUILD_ID='1'; require('./src/systems')"   # bot yükleniyor
 - Panel görselleri: ilgili `config.js` içindeki bağlantı ya da `assets/` ve `assets/banners/` altındaki dosyalar.
 - Destek kapatma sebepleri: `src/systems/destek/config.js` içindeki `closeReasons`; yetkili alım soruları: `src/systems/basvuru/config.js`.
 - Görev rozetlerinin rol ödülleri: `src/systems/profil/config.js` içindeki `gorevRolleri`. Rol ID'leri boşsa özellik çalışmaz; doldurulunca bot açılırken tüm sunucu taranır, üye katılırken ve rozet sayfasını açtığında kendi rolleri rozet durumuna göre eşitlenir (hedef gerilerse rol geri alınır).
-- Kozmetik fiyatları: çerçeve ve sergi rozetleri `src/systems/profil/kozmetik.js`, temalar `themes.js`, arka plan efektleri `kapak.js` içinde.
-- Panel tarzı temadan gelir: `themes.js` içinde `glass: true` olan temalar buzlu cam panel, ötekiler düz opak panel çizer. Cam temalarda saydamlığı üye kartın altındaki **Görünüm** sayfasından ayarlar (`custom.glassOpacity`, 0-100); düz temada düğmeler pasif durur.
+- Kozmetik fiyatları: çerçeve ve sergi rozetleri `src/systems/profil/kozmetik.js`, temalar `themes.js`, arka plan efektleri `kapak.js` içinde.- Panel tarzı temadan gelir: `themes.js` içinde `glass: true` olan temalar buzlu cam panel, ötekiler düz opak panel çizer. Cam temalarda saydamlığı üye kartın altındaki **Görünüm** sayfasından ayarlar (`custom.glassOpacity`, 0-100); düz temada düğmeler pasif durur.
 - Botun rolü, verdiği rollerin (otorol, seviye, takviye, VIP vb.) üstünde olmalıdır.
