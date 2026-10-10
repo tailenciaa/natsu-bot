@@ -239,10 +239,10 @@ function drawIcon(ctx, icon, cx, cy, r, color) {
 // Rozet etiketlerinin satırlara dağılımı: her etiket yazısına göre genişler, sığmayan alt satıra iner. En fazla
 // iki satır ayrılır; hiç sığdıramadıkların yerine son satıra tek bir "+N" etiketi konur.
 function badgeRows(ctx, badges, maxWidth) {
-  ctx.font = font(500, 14);
+  ctx.font = font(500, 17);
   const items = badges.map((b) => {
     const textWidth = Math.round(ctx.measureText(b.label).width);
-    return { ...b, w: textWidth + (b.icon ? 52 : 34), textWidth };
+    return { ...b, w: textWidth + (b.icon ? 62 : 40), textWidth };
   });
 
   const rows = [[]];
@@ -262,7 +262,7 @@ function badgeRows(ctx, badges, maxWidth) {
     used += b.w + BADGE_GAP;
   }
 
-  if (hidden > 0) rows[rows.length - 1].push({ key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 48, textWidth: 22 });
+  if (hidden > 0) rows[rows.length - 1].push({ key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 56, textWidth: 26 });
   return rows.filter((row) => row.length);
 }
 
@@ -282,12 +282,12 @@ function drawBadges(ctx, rows, y) {
       roundRect(ctx, x + 0.5, ry + 0.5, b.w - 1, BADGE_ROW_H - 1, (BADGE_ROW_H - 1) / 2);
       ctx.stroke();
 
-      const iconX = b.icon ? x + 20 : x + 15;
-      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 8 : 4, b.color);
+      const iconX = b.icon ? x + 24 : x + 18;
+      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 9.5 : 5, b.color);
       ctx.fillStyle = mix(b.color, '#ffffff', 0.3);
-      ctx.font = font(500, 14);
+      ctx.font = font(500, 17);
       ctx.textAlign = 'left';
-      ctx.fillText(b.label, x + (b.icon ? 34 : 25), ry + 21);
+      ctx.fillText(b.label, x + (b.icon ? 40 : 30), ry + 25);
       x += b.w + BADGE_GAP;
     }
   });
