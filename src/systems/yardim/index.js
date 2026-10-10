@@ -28,7 +28,7 @@ const SELF = 'yardim';
 // Kategori sırası ve kategori menüsündeki kısa açıklamaları; listede olmayan kategoriler sistem sırasıyla sona
 // eklenir. Bir kategoride listelenecek komut kalmıyorsa kategori hiç gösterilmez.
 const CATEGORIES = [
-  ['hesap', 'Profilin, seviyen, coinlerin ve sicilin'],
+  ['hesap', 'Profil, seviye, coin ve sicil komutları'],
   ['siralama', 'Sıralamalar ve saygınlık'],
   ['partner', 'Partner sunucular'],
   ['emoji', 'Emoji ve çıkartma ekleme'],
@@ -117,11 +117,9 @@ async function handleCommand(interaction) {
   return respond(interaction, menu(interaction), { ephemeral: false });
 }
 
-// Kategori menüsü: yardim:<kategori>
+// Kategori menüsü: yardim:<kategori>. Menü herkese açık olduğu için kategoriyi herkes değiştirebilir; liste her
+// basışta o kişiyi gözeten katmanla yeniden çizilir.
 async function handleNavigate(interaction) {
-  if (!isMenuOwner(interaction)) {
-    return replyError(interaction, 'Bu menüyü sadece komutu kullanan kişi gezebilir.', 'Kendi menün için /yardim yazabilirsin.');
-  }
   return interaction.update({
     components: [menu(interaction, interaction.values?.[0] ?? interaction.customId.split(':')[1])],
     allowedMentions: { parse: [] },

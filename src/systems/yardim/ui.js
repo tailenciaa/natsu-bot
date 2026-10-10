@@ -11,7 +11,7 @@ const countComponents = (json) => 1 + (json.components ?? []).reduce((n, c) => n
 function helpMenu({ botName, avatarUrl, categories, tab, entries, total = 0 }) {
   const container = page({
     title: 'Yardım Menüsü',
-    sub: `${botName} komutlarını kategoriler halinde burada görebilir, komutun adına tıklayarak hemen kullanabilirsin. Bu menüde senin kullanabildiğin **${total}** komut listeleniyor.`,
+    sub: `${botName} komutları kategoriler halinde burada listelenir, komutun adına tıklayıp hemen kullanabilirsin. Bu menüde **${total}** komut var; kategoriyi menüden değiştirirsin.`,
     thumbnail: avatarUrl,
     accent: colors.primary,
   });

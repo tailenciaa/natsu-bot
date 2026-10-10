@@ -295,7 +295,7 @@ module.exports = {
   name: 'sicil',
   commands,
   help: {
-    category: ['hesap', 'Hesabım'],
+    category: ['hesap', 'Profil'],
     member: ['sicil'],
     access: {
       sicil: `Herkes kendi sicilini görebilir; başkalarının sicili ve ceza işlemleri yetkililer için, sadece <#${staffCommandChannel}> kanalında`,
