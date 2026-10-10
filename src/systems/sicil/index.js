@@ -71,13 +71,15 @@ async function buildView(interaction, user, tab, page, banner) {
 
 // Sicil görünümü: kart görseli + bileşenler. Bütün gönderme/güncelleme noktaları aynı yapıyı kullanır; sekme ya da
 // sayfa değişince attachments: [] ile eski kartın yerine yenisi konur
-const CARD_NAME = 'sicil.png';
 const sicilView = async (interaction, user, tab, page, banner) => {
   const view = await buildView(interaction, user, tab, page, banner);
   const buffer = await buildSicilCard(user, view);
+  // Dosya adı her seferinde farklı: aynı adla yüklenince istemci, güncellemede eski görseli tutabiliyor ya da
+  // yüklenme göstergesinde takılı kalabiliyor
+  const name = `sicil-${tab}-${page}-${Date.now().toString(36)}.png`;
   return {
-    components: [ui.sicil(view, CARD_NAME)],
-    files: [new AttachmentBuilder(buffer, { name: CARD_NAME })],
+    components: [ui.sicil(view, name)],
+    files: [new AttachmentBuilder(buffer, { name })],
   };
 };
 
