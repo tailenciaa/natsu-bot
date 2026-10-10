@@ -528,10 +528,21 @@ async function handleSettings(interaction) {
   }
 }
 
+// Görev rozetlerinin rol ödülleri: bot açılırken bütün sunucu bir kez taranır, üye katıldığında sadece o üye eşitlenir
+async function sweepMissionRoles(client) {
+  if (!gorev.ROLE_KEYS.length) return;
+  const guild = client.guilds.cache.get(guildId);
+  if (guild) await gorev.syncAll(guild);
+}
+
 module.exports = {
   name: 'profil',
   commands,
   help: { category: ['siralama', 'Sıralama'], access: { profil: 'Herkes' } },
   slash: { profil: handleCommand },
   prefixed: [[ui.IDS.prefix, handleSettings]],
+  events: {
+    [Events.ClientReady]: sweepMissionRoles,
+    [Events.GuildMemberAdd]: (member) => (member.guild.id === guildId ? gorev.syncMember(member) : null),
+  },
 };
