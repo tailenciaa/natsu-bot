@@ -233,47 +233,92 @@ async function checkImage(url) {
 
 // ── Mağaza ────────────────────────────────────────────────────────────────────
 
-const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar' };
+const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar', kapak: 'Arka Planlar', rozet: 'Rozetler' };
 
-// Ürün kataloğu: { tur, key, name, note, price } — çerçevesiz hâl ücretsizdir, mağazada "Giy" olarak durur
-function catalog(tur) {
-  if (tur === 'tema') {
-    return Object.entries(THEMES)
-      .filter(([, theme]) => theme.price > 0)
-      .map(([key, theme]) => ({ tur, key, name: theme.label, note: theme.description, price: theme.price }));
-  }
-  return kozmetik.FRAMES.map((f) => ({ tur: 'cerceve', key: f.key, name: f.label, note: f.note, price: f.price }));
-}
+// Ürün türleri tek yerde tanımlıdır: sahiplik listesi (field), kartta hangi alanla giyildiği (wear), giyilmemişken
+// kabul edilen varsayılanı (def) ve ücretsiz sayılan anahtar (free). `wear: null` olan türde giyme adımı yoktur:
+// satın alınan sergi rozeti kartta kendiliğinden görünür. Ücretsiz temalar mağazada değil tema menüsünde durur.
+const SHOP = {
+  cerceve: {
+    field: 'ownedFrames',
+    wear: 'frame',
+    def: 'yok',
+    free: (key) => key === 'yok',
+    items: () => kozmetik.FRAMES.map((f) => ({ key: f.key, name: f.label, note: f.note, price: f.price })),
+  },
+  tema: {
+    field: 'ownedThemes',
+    wear: 'theme',
+    def: null,
+    free: () => false,
+    items: () =>
+      Object.entries(THEMES)
+        .filter(([, theme]) => theme.price > 0)
+        .map(([key, theme]) => ({ key, name: theme.label, note: theme.description, price: theme.price })),
+  },
+  kapak: {
+    field: 'ownedCovers',
+    wear: 'cover',
+    def: 'yok',
+    free: (key) => key === 'yok',
+    items: () => kapak.COVERS.map((c) => ({ key: c.key, name: c.label, note: c.note, price: c.price })),
+  },
+  rozet: {
+    field: 'ownedBadges',
+    wear: null,
+    def: null,
+    free: () => false,
+    items: () => kozmetik.SHOP_BADGES.map((b) => ({ key: b.key, name: b.label, note: b.note, price: b.price })),
+  },
+};
 
-const ownsItem = (tur, custom, key) =>
-  tur === 'tema' ? (custom.ownedThemes ?? []).includes(key) : key === 'yok' || (custom.ownedFrames ?? []).includes(key);
+const catalog = (tur) => (SHOP[tur]?.items() ?? []).map((item) => ({ ...item, tur }));
 
-const wornItem = (tur, custom, key) => (tur === 'tema' ? custom.theme === key : (custom.frame ?? 'yok') === key);
+const ownsItem = (tur, custom, key) => {
+  const shop = SHOP[tur];
+  return Boolean(shop) && (shop.free(key) || (custom[shop.field] ?? []).includes(key));
+};
+
+const wornItem = (tur, custom, key) => {
+  const shop = SHOP[tur];
+  return Boolean(shop?.wear) && (custom[shop.wear] ?? shop.def) === key;
+};
 
 // Mağaza sayfasının satırları: sahiplik ve bakiye durumuna göre düğme etiketi belirlenir
 function shopRows(tur, custom) {
+  const shop = SHOP[tur];
+  const wearId = (key) => `${ui.IDS.wear}${tur}:${key}`;
+  const buyId = (key) => `${ui.IDS.buy}${tur}:${key}`;
+  const priceTag = (price) => `${number(price)} coin`;
   return catalog(tur).map((item) => {
-    const owned = ownsItem(tur, custom, item.key);
-    const worn = wornItem(tur, custom, item.key);
     const base = { name: item.name, note: item.note };
-    if (worn) return { ...base, state: 'Kartında bu var', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giyili', disabled: true };
-    if (item.price === 0) return { ...base, state: 'Ücretsiz', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: ButtonStyle.Secondary };
-    if (owned) return { ...base, state: 'Sahipsin', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: ButtonStyle.Primary };
-    return { ...base, state: `${number(item.price)} coin`, id: `${ui.IDS.buy}${tur}:${item.key}`, label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
+    const owned = ownsItem(tur, custom, item.key);
+    if (wornItem(tur, custom, item.key)) return { ...base, state: 'Kartında bu var', id: wearId(item.key), label: 'Giyili', disabled: true };
+    // Giyilmesi gerekmeyen ürünler satın alınır alınmaz kartta görünür
+    if (!shop.wear) {
+      return owned
+        ? { ...base, state: 'Kartında görünüyor', id: wearId(item.key), label: 'Sahipsin', disabled: true }
+        : { ...base, state: priceTag(item.price), id: buyId(item.key), label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
+    }
+    if (item.price === 0) return { ...base, state: 'Ücretsiz', id: wearId(item.key), label: 'Giy', wearStyle: ButtonStyle.Secondary };
+    if (owned) return { ...base, state: 'Sahipsin', id: wearId(item.key), label: 'Giy', wearStyle: ButtonStyle.Primary };
+    return { ...base, state: priceTag(item.price), id: buyId(item.key), label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
   });
 }
 
 function shopMessage(interaction, tab) {
-  return ui.shopPage(tab, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tab, store.get(interaction.user.id)));
+  const tur = SHOP[tab] ? tab : 'cerceve';
+  return ui.shopPage(tur, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tur, store.get(interaction.user.id)));
 }
 
 // Ürün satın alma: para ancak ürün gerçekten sahipliğe geçiyorsa düşürülür
 async function buy(interaction, tur, key) {
+  const shop = SHOP[tur];
   const item = catalog(tur).find((i) => i.key === key);
-  if (!item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
+  if (!shop || !item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
 
   const custom = store.get(interaction.user.id);
-  if (ownsItem(tur, custom, key)) return replyError(interaction, 'Bu ürün zaten sende.', 'Kartında kullanmak için giyebilirsin.');
+  if (ownsItem(tur, custom, key)) return replyError(interaction, 'Bu ürün zaten sende.', shop.wear ? 'Kartında kullanmak için giyebilirsin.' : 'Kartında zaten görünüyor.');
 
   const balance = coinStore.balance(interaction.user.id);
   if (balance < item.price) {
@@ -285,16 +330,23 @@ async function buy(interaction, tur, key) {
   }
 
   if (!coinStore.spend(interaction.user.id, item.price)) return replyError(interaction, 'Satın alma tamamlanamadı.', 'Birkaç saniye sonra tekrar dene.');
-  if (tur === 'tema') store.addTheme(interaction.user.id, key);
-  else store.addFrame(interaction.user.id, key);
+  store.addOwned(interaction.user.id, shop.field, key);
   // Satın alınan hemen giyilir; kart hem mağaza mesajında hem profil mesajında güncellenir
-  store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
+  if (shop.wear) store.set(interaction.user.id, { [shop.wear]: key });
+
+  // Kapağında kendi görseli olan üye satın aldığı arka planı kartta göremez: nedenini hemen söyle
+  const uyarı = shop.wear === 'cover' && custom.banner ? '\nKartında kendi görselin durduğu için arka plan şimdilik görünmez; kapak düzenleyiciden görseli kaldırabilirsin.' : '';
+  const durum = shop.wear ? 'kartına uygulandı.' : 'rozetin kartına eklendi.';
 
   // Mağaza sayfası yerinde yenilenir: bakiye ve düğme durumu hemen doğru görünsün
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
   await respond(
     interaction,
-    core.alert(`${item.name} satın alındı ve kartına uygulandı.`, `**${number(item.price)}** coin düşüldü, bakiyen **${number(coinStore.balance(interaction.user.id))}** coin.`, 'success'),
+    core.alert(
+      `${item.name} satın alındı ve ${durum}`,
+      `**${number(item.price)}** coin düşüldü, bakiyen **${number(coinStore.balance(interaction.user.id))}** coin.${uyarı}`,
+      'success',
+    ),
     { followUp: true },
   );
   return refreshLiveCard(interaction);
