@@ -338,8 +338,8 @@ function shopPage(tab, tabs, balance, items) {
 }
 
 // ── Mağaza işlemlerinin bildirim kartları ─────────────────────────────────────
-// Satın alma herkese açık duyurulur: üye ne aldığını gösterir, okuyan da coin biriktirmeye özenir.
-// Giyme ve vitrin kartın kendi ayarıdır, sonucu sadece üye görür.
+// Satın alma, giyme ve vitrin değişikliği kanalda herkese açık duyurulur: kartlar 3. tekil şahısla yazılır ve
+// üye @etiketle anılır.
 function purchase({ user, tur, name, price, balance, worn, note }) {
   return core.receipt({
     title: 'Satın Alma Tamamlandı',
@@ -357,8 +357,8 @@ function purchase({ user, tur, name, price, balance, worn, note }) {
 
 function equip({ user, tur, name }) {
   return core.receipt({
-    title: 'Kartın Güncellendi',
-    sub: 'Profil kartının görünümü değişti; kart yeniden çizildi, mesajında hemen böyle görünecek.',
+    title: 'Kart Görünümü Değiştirildi',
+    sub: `<@${user.id}> profil kartının görünümünü değiştirdi; kart yeniden çizildi ve hemen böyle görünecek.`,
     user,
     pairs: [
       ['Ürün', core.chip(name)],
@@ -370,12 +370,12 @@ function equip({ user, tur, name }) {
 // bad: https ile başlamadığı için kartına yazılmayan bağlantıların adları
 function vitrinSaved({ user, bad = [] }) {
   return core.receipt({
-    title: 'Vitrinin Güncellendi',
-    sub: 'Profil kartının alt şeridi yeniden çizildi; zamirin ve verdiğin bağlantılar kartında görünecek.',
+    title: 'Vitrin Güncellendi',
+    sub: `<@${user.id}> vitrinini güncelledi; zamiri ve bağlantıları profil kartının alt şeridinde görünecek.`,
     user,
     accent: bad.length ? 'warning' : 'success',
     note: bad.length
-      ? `${bad.join(', ')} için verdiğin adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.`
+      ? `${bad.join(', ')} için girilen adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.`
       : null,
   });
 }
