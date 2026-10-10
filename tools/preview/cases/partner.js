@@ -33,7 +33,18 @@ module.exports = ({ mock, src }) => {
     addedAt: mock.ago(3 * mock.DAY),
     ...o,
   });
-  const many = (n) => Array.from({ length: n }, (_, i) => entry({ id: `${guild.id}-${i + 10}`, serverId: String(100000000000000000n + BigInt(i)), contactIds: i % 3 ? [member.id, staff.id] : [] }));
+  // Test listesindeki her satır farklı yetkili/tarih taşır: gerçek veride de satırlar özdeş olmaz
+  const people = [member.id, staff.id];
+  const many = (n) =>
+    Array.from({ length: n }, (_, i) =>
+      entry({
+        id: `${guild.id}-${i + 10}`,
+        serverId: String(100000000000000000n + BigInt(i)),
+        contactIds: i % 3 ? [people[i % people.length]] : [],
+        addedBy: people[(i + 1) % people.length],
+        addedAt: mock.ago((3 + i) * mock.DAY),
+      }),
+    );
   const long = 'Çok uzun bir partner metni. '.repeat(120);
 
   // Güvenilir partnerler paneli kartı: index.js'teki (trustedPanelView) gibi çizilir ve mesajın ekine konur

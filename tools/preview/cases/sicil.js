@@ -27,7 +27,7 @@ module.exports = ({ mock, ui, src }) => {
       ...o,
     };
   };
-  const longReason = 'Sohbet kanallarında art arda kural ihlali yaptı ve uyarılara rağmen devam etti.\nİkinci satır da var. '.repeat(6).trim();
+  const longReason = Array.from({ length: 6 }, (_, i) => `Sohbet kanallarında art arda kural ihlali yaptı ve uyarılara rağmen devam etti (${i + 1}).`).join('\n');
   const many = (n) =>
     Array.from({ length: n }, (_, i) =>
       punishment({

@@ -41,9 +41,12 @@ module.exports = ({ mock, ui, src }) => {
   const jail = punishment({ number: 13, type: 'jail', reason: 'Yetkiliye hakaret etti.', duration: null, expiresAt: null });
   const warn = punishment({ number: 14, type: 'uyari', reason: 'Reklam yapmak yasaktır, kurallara dikkat et.', duration: null, expiresAt: null });
   const ban = punishment({ number: 15, type: 'ban', reason: 'Sunucudaki üyelere dolandırıcılık amaçlı mesaj attı.', duration: null, expiresAt: null });
-  const longReason = 'Sohbet kanallarında art arda kural ihlali yaptı. '.repeat(10).trim();
+  const longReason = Array.from({ length: 10 }, (_, i) => `Sohbet kanallarında art arda kural ihlali yaptı (${i + 1}).`).join('\n');
   const long = punishment({ number: 16, reason: longReason });
-  const many = (n) => Array.from({ length: n }, (_, i) => punishment({ number: 100 + i, type: i % 2 ? 'mute' : 'ban', reason: `Örnek sebep ${i + 1}: ${'ayrıntı '.repeat(8)}`.trim() }));
+  const many = (n) =>
+    Array.from({ length: n }, (_, i) =>
+      punishment({ number: 100 + i, type: i % 2 ? 'mute' : 'ban', expiresAt: Date.now() + (i + 1) * mock.HOUR, reason: `Örnek sebep ${i + 1}: ${'ayrıntı '.repeat(8)}`.trim() }),
+    );
   const objection = 'Bu mesajı ben yazmadım, hesabım çalınmıştı. Şifremi hemen değiştirdim ve yetkililere haber verdim.';
 
   return [
