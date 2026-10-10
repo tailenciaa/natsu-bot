@@ -237,7 +237,7 @@ async function end(interaction) {
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.', 'Sonuçlanmış çekilişte **/cekilis yeniden-cek** ile yeni kazanan seçebilirsin.');
   await interaction.deferReply({ flags: core.CV2 });
-  if (!(await finish(interaction.client, g))) return respond(interaction, core.alert('Çekiliş zaten sonuçlanıyor.', 'Birkaç saniye sonra çekiliş mesajına bakabilirsin.', 'warning'), { ephemeral: true });
+  if (!(await finish(interaction.client, g))) return respond(interaction, core.alert('Çekiliş zaten sonuçlanıyor.', 'Birkaç saniye sonra çekiliş mesajına bakabilirsin.', 'warning'));
   return respond(interaction, core.alert(`Çekiliş #${g.no} sonuçlandırıldı.`, g.winners.length ? 'Kazananlar çekiliş kanalında duyuruldu.' : ui.noWinnerReason(g), 'success'));
 }
 
@@ -247,7 +247,7 @@ async function reroll(interaction) {
   if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.', 'Açık bir çekilişi önce **/cekilis bitir** ile sonuçlandır.');
   await interaction.deferReply({ flags: core.CV2 });
   const ids = await pickWinners(interaction.guild, g, interaction.options.getInteger('kazanan') ?? 1);
-  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'), { ephemeral: true });
+  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'));
   g.winners.push(...ids);
   store.save();
   await refreshPanel(interaction.client, g);
@@ -413,7 +413,7 @@ async function handleRerollButton(interaction) {
   if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.');
   await interaction.deferReply({ flags: core.CV2 });
   const ids = await pickWinners(interaction.guild, g, 1);
-  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'), { ephemeral: true });
+  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'));
   g.winners.push(...ids);
   store.save();
   await refreshPanel(interaction.client, g);
