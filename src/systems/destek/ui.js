@@ -19,7 +19,7 @@ const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
 
-const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, stamp, pageInfo, pagerRow } = core;
+const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, rows, chip, stamp, pageInfo, pagerRow } = core;
 
 const IDS = {
   create: 'destek:olustur',
@@ -158,7 +158,10 @@ function ticketClosed(ticket) {
     sub: 'Talebin kapanış bilgisi burada yer alır: kimin kapattığı ve seçilen sebep. Başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin.',
     accent: colors.danger,
     blocks: [
-      fields([`**Talebi <@${ticket.closedBy}> kapattı.**`, logEnabled() ? 'Konuşma kaydı ekibe iletildi.' : null]),
+      rows([
+        ['Kapatan', `<@${ticket.closedBy}>`],
+        logEnabled() && ['Konuşma Kaydı', chip('ekibe iletildi')],
+      ]),
       reasonText(ticket.closeReason),
     ],
   });
@@ -203,15 +206,14 @@ function claimRequest(ticket) {
     sub,
     accent: color,
     blocks: [
-      fields([
-        '**Talep Bilgileri**',
-        field('Talep Sahibi', `<@${ticket.ownerId}>`),
-        field('Açılış', `<t:${unix(ticket.createdAt)}:R>`),
-        ticket.claimedBy ? field('Üstlenen', `<@${ticket.claimedBy}>`) : null,
-        ticket.closedBy ? field('Kapatan', `<@${ticket.closedBy}>`) : null,
-        ticket.closedBy && ticket.closeReason ? field('Kapatma Sebebi', ticket.closeReason.label) : null,
-        waiting ? `<@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
+      rows([
+        ['Talep Sahibi', `<@${ticket.ownerId}>`],
+        ['Açılış', `<t:${unix(ticket.createdAt)}:R>`],
+        ticket.claimedBy && ['Üstlenen', `<@${ticket.claimedBy}>`],
+        ticket.closedBy && ['Kapatan', `<@${ticket.closedBy}>`],
+        ticket.closedBy && ticket.closeReason && ['Kapatma Sebebi', ticket.closeReason.label],
       ]),
+      waiting ? `<@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
       `**Konu**\n${quote(ticket.reason)}`,
     ],
   }).addActionRowComponents(row);
@@ -277,11 +279,10 @@ function openLog(ticket, channel, owner) {
     sub: 'Bir üye yeni bir destek talebi açtı. Talebi açan üye, alt başlık ve üyenin yazdığı konu bu kayıtta yer alır; talep kapanınca ayrı bir kapanış kaydı eklenir.',
     accent: colors.success,
     blocks: [
-      fields([
-        '**Talep Bilgileri**',
-        field('Talep', `<#${channel.id}>`),
-        field('Talep Sahibi', personText(owner.id, owner)),
-        field('Açılış', `<t:${unix(ticket.createdAt)}:F>`),
+      rows([
+        ['Talep', `<#${channel.id}>`],
+        ['Talep Sahibi', personText(owner.id, owner)],
+        ['Açılış', `<t:${unix(ticket.createdAt)}:F>`],
       ]),
       `**Konu**\n${quote(ticket.reason)}`,
     ],
@@ -295,14 +296,13 @@ function closeLog(ticket, closedBy, fileName, owner) {
     sub: 'Bir destek talebi kapatıldı. İlgili kişiler, zamanlar, konu ve kapatma sebebi bu kayıtta yer alır; konuşmanın tamamı ekteki dosyadadır.',
     accent: colors.danger,
     blocks: [
-      fields([
-        '**Talep Bilgileri**',
-        field('Talep', `<#${ticket.threadId}>`),
-        field('Talep Sahibi', personText(ticket.ownerId, owner)),
-        field('Üstlenen', ticket.claimedBy ? `<@${ticket.claimedBy}>` : 'Yok'),
-        field('Kapatan', personText(closedBy.id, closedBy)),
-        field('Açılış', `<t:${unix(ticket.createdAt)}:F>`),
-        field('Kapanış', `<t:${unix(Date.now())}:F>`),
+      rows([
+        ['Talep', `<#${ticket.threadId}>`],
+        ['Talep Sahibi', personText(ticket.ownerId, owner)],
+        ['Üstlenen', ticket.claimedBy ? `<@${ticket.claimedBy}>` : chip('yok')],
+        ['Kapatan', personText(closedBy.id, closedBy)],
+        ['Açılış', `<t:${unix(ticket.createdAt)}:F>`],
+        ['Kapanış', `<t:${unix(Date.now())}:F>`],
       ]),
       `**Konu**\n${quote(ticket.reason)}`,
       reasonText(ticket.closeReason),
