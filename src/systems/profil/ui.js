@@ -33,9 +33,10 @@ const IDS = {
   featured: 'profil-ayar:one-cikan',
   rozet: 'profil-ayar:rozetler',
   shop: 'profil-ayar:magaza',
-  shopTab: 'profil-ayar:magaza:', // + cerceve | tema
+  shopTab: 'profil-ayar:magaza:', // + cerceve | tema | kapak | rozet
   buy: 'profil-ayar:al:', // + tur:anahtar
   wear: 'profil-ayar:giy:', // + tur:anahtar
+  kapakBtn: 'profil-ayar:kapak-btn:', // + buyut | kucult | sola | saga | yukari | asagi | sifirla | gorsel | kaldir
   bioForm: 'profil-ayar:bio-form',
   colorForm: 'profil-ayar:renk-form',
   bannerForm: 'profil-ayar:kapak-form',
@@ -63,7 +64,7 @@ function profile(imageName, editable, currentTheme = null, description = 'Profil
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.color).setLabel('Renk').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapak').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
       ),
     )
     .addActionRowComponents(
@@ -158,12 +159,14 @@ const vitrinModal = (current) =>
         .setTextInputComponent(input('site', TextInputStyle.Short, 100, current.links?.site, 'Örn: https://ornek.com')),
     ]);
 
-// Rozet sayfası: kazanılanlar taşınan sırayla, kalanlar en yakın olana göre ilerleme çizgisiyle listelenir
+// Rozet sayfası: kazanılanlar taşınan sırayla, kalanlar en yakın olana göre ilerleme çizgisiyle listelenir.
+// Görev rozetleri ayrı bloktadır: tamamlanınca karttaki rozetin yanında config.js'te tanımlı rol de verilir.
 function rozetPage(list, earnedCount) {
+  const line = (b) => `**${b.label}** — ${b.goal > 1 ? `${b.value} / ${b.goal} · ` : ''}${b.note}`;
   const done = list.filter((b) => b.done);
-  const todo = list
-    .filter((b) => !b.done)
-    .sort((a, b) => b.value / b.goal - a.value / a.goal);
+  const rest = list.filter((b) => !b.done).sort((a, b) => b.value / b.goal - a.value / a.goal);
+  const gorev = rest.filter((b) => b.gorev);
+  const normal = rest.filter((b) => !b.gorev);
   return core.page({
     title: 'Rozetler',
     sub: 'Rozetler sunucudaki etkinliğinden türetilir; ayrı bir başvuru ya da istek gerekmez. Aşağıda kazandıkların ve kaldığı yerden ilerlemesi gösterilir.',
@@ -172,10 +175,10 @@ function rozetPage(list, earnedCount) {
         `**${earnedCount} rozet kazanıldı**`,
         done.length ? done.map((b) => b.label).join(' · ') : 'Henüz rozetin yok; ilk hedefler mesaj ve ses seviyeleri.',
       ]),
-      fields([
-        '**Yoldaki rozetler**',
-        todo.map((b) => `**${b.label}** — ${b.goal > 1 ? `${b.value} / ${b.goal} · ` : ''}${b.note}`).join('\n'),
-      ]),
+      gorev.length
+        ? fields(['**Görev rozetleri** · hedefe ulaşınca kartına rozetle birlikte sunucu rolü de verilir', gorev.map(line).join('\n')])
+        : null,
+      normal.length ? fields(['**Diğer rozetler**', normal.map(line).join('\n')]) : null,
     ],
   });
 }
