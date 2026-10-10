@@ -343,10 +343,10 @@ function shopPage(tab, tabs, balance, items) {
 function purchase({ user, tur, name, price, balance, worn, note }) {
   return core.receipt({
     title: 'Satın Alma Tamamlandı',
+    // Ürün adı başlık cümlesinde, satırlarda yinelenmez
     sub: `<@${user.id}> profil mağazasından **${name}** ürününü aldı${worn ? ' ve hemen kartına uyguladı' : '; ürün kartında görünüyor'}.`,
     user,
     pairs: [
-      ['Ürün', core.chip(name)],
       ['Tür', core.chip(TUR_LABEL[tur])],
       ['Fiyat', coin(price)],
       ['Yeni Bakiye', coin(balance)],

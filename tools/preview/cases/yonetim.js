@@ -346,7 +346,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Paneldeki Yayın Yetkisi Al düğmesi, sadece basana görünür',
       visibility: 'ephemeral',
       kind: 'message',
-      build: () => ({ components: [yayin.granted({ user: staff })], ...noMentions }),
+      build: () => ({ components: [yayin.granted({ user: staff })], ...ep }),
     },
     {
       id: 'yayin-birakildi',
@@ -354,7 +354,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Paneldeki Yetkiyi Bırak düğmesi, sadece basana görünür',
       visibility: 'ephemeral',
       kind: 'message',
-      build: () => ({ components: [yayin.released({ user: staff })], ...noMentions }),
+      build: () => ({ components: [yayin.released({ user: staff })], ...ep }),
     },
     {
       id: 'pg-panel',

@@ -33,11 +33,12 @@ function panel() {
     );
 }
 
-// Butona basınca çıkan onay kartı: panel kanalda herkese açık durduğu için sonucu sadece basan üye görür
+// Butona basınca çıkan onay kartı: panel kanalda herkese açık durduğu için sonucu sadece basan üye görür.
+// Kişiye özel kartta 3. tekil şahıs ve @etiket yok, dil doğrudan üyeye hitap eder.
 function granted({ user }) {
   return receipt({
     title: 'Yayın Yetkin Verildi',
-    sub: `<@${user.id}> yayın yetkisini aldı; artık sesli kanallarda **ekran paylaşımı** ve **canlı yayın** açabilirsin.`,
+    sub: 'Artık sesli kanallarda **ekran paylaşımı** ve **canlı yayın** açabilirsin. Bırakmak istersen panelden **Yetkiyi Bırak** düğmesini kullan.',
     user,
     pairs: [['Rol', `<@&${config.role}>`]],
   });
@@ -46,7 +47,7 @@ function granted({ user }) {
 function released({ user }) {
   return receipt({
     title: 'Yayın Yetkin Bırakıldı',
-    sub: `<@${user.id}> yayın yetkisini bıraktı. İstediğin zaman panelden yeniden alabilirsin.`,
+    sub: 'Yayın yetkin rolünden çıkarıldın; istediğin zaman panelden yeniden alabilirsin. Yayında **sunucu kuralları** geçerlidir.',
     user,
     pairs: [['Rol', `<@&${config.role}>`]],
   });
