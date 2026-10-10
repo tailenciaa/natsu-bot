@@ -17,6 +17,8 @@ const roomNo = (room) => chip(`#${pad(room.no)}`);
 const minutes = (ms) => `${Math.max(1, Math.round(ms / MIN))} dakika`;
 const waited = (ms) => `${Math.max(0, Math.round((Date.now() - ms) / MIN))} dakika`;
 const channelPair = (room) => `<#${room.voiceChannelId}> · <#${room.textChannelId}>`;
+// Saniye cinsinden beklemeleri kartta okunur hale çevirir: 180 -> 3 dakika
+const waitLabel = (seconds) => chip(seconds >= 60 ? `${Math.round(seconds / 60)} dakika` : `${seconds} saniye`);
 
 // Sıra paneli: nasıl çalıştığı, kurallar ve bekleme süreleri yazılır; iki buton da hep görünürdür
 function queuePanel() {
@@ -45,7 +47,7 @@ function queuePanel() {
       text(
         `**Beklemeler**\n${rows([
           ['Sırada Bekleme Süresi', chip(`${config.queueTimeoutMinutes} dakika`)],
-          ['Yeniden Sıraya Giriş', chip(`${config.requeueCooldownSeconds} saniye`)],
+          ['Yeniden Sıraya Giriş', waitLabel(config.requeueCooldownSeconds)],
           ['Boş Oda Kapanması', chip(`${config.idleCloseMinutes} dakika sonra`)],
           ['En Uzun Oda Süresi', chip(`${config.maxRoomMinutes} dakika`)],
         ])}`,
@@ -146,7 +148,7 @@ function roomList(rooms, queue) {
     ? [
         ...sorted.map((room) =>
           [
-            `**${roomNo(room)}** ${pills([['Süre', waited(room.createdAt)], ['Limit', `${config.userLimit} kişi`]])}`,
+            `**#${pad(room.no)}** ${pills([['Süre', waited(room.createdAt)], ['Limit', `${config.userLimit} kişi`]])}`,
             pair(room),
             channelPair(room),
           ].join('\n'),
