@@ -60,10 +60,11 @@ function queuePanel() {
   return container;
 }
 
-// Sıraya giren üyeye giden, sadece kullanana görünür kart: yerini ve sıra bilgisini gösterir
-function queuedCard(position, waiting) {
+// Sıraya giren üyeye giden, sadece kullanana görünür kart: yerini ve sıra bilgisini gösterir.
+// again: üye zaten sıradayken tekrar bastığında başlık ve açıklama buna göre değişir
+function queuedCard(position, waiting, again) {
   return page({
-    title: 'Sıraya Girdin',
+    title: again ? 'Hâlâ Sıradasın' : 'Sıraya Girdin',
     sub: 'Sırada iki kişi olunca eşleşme kendiliğinden yapılır, odanın kanalları açılır ve sana DM üzerinden iletilir. Sıradan çıkmak için paneldeki butonu kullanabilirsin.',
     accent: colors.primary,
     blocks: [
@@ -72,7 +73,9 @@ function queuedCard(position, waiting) {
         ['Sırada Bekleyen', chip(`${waiting} kişi`)],
         ['Sıra İşleyişi', chip('en eski iki üye eşleşir')],
       ]),
-      'Butona tekrar bastığında sıradaki yerini yeniden öğrenirsin, bekleme süren baştan başlamaz.',
+      again
+        ? 'Butona tekrar bastığında sıradaki yerini yeniden öğrenirsin, beklediğin süre baştan başlamaz.'
+        : 'Eşleşme sıra bekleme süresi dolmadan olursa odan açılır; süren dolarsa sıran düşer ve sana DM yazılır.',
       stamp(),
     ],
   });
@@ -109,7 +112,7 @@ function roomPanel(room) {
         ['Kişi Limiti', chip(`${config.userLimit} kişi`)],
         ['Kanallar', channelPair(room)],
       ]),
-      'Kapattığında iki kanal silinir ve yazışmalar odalarıyla birlikte kalkar.',
+      'Kapattığında iki kanal silinir, yazışmalar da kanallarla birlikte kalkar.',
       stamp(room.createdAt),
     ],
   });
@@ -118,7 +121,7 @@ function roomPanel(room) {
   );
 }
 
-// Oda kapanınca her iki üyeye giden bildirim: hangi odanın, ne kadar sürdüğün ve neden kapandığını yazar
+// Oda kapanınca her iki üyeye giden bildirim: hangi oda olduğu, ne kadar sürdüğü ve neden kapandığı yazar
 function endedCard(room, reason) {
   return page({
     title: 'Muhabbetin Bitti',
@@ -138,16 +141,19 @@ function endedCard(room, reason) {
 
 // Yetkilinin /muhabbet liste kartı: açık odalar, kanalları ve sırada bekleyenlerin sırası
 function roomList(rooms, queue) {
-  const sorted = [...rooms].sort((a, b) => a.no - b.no);
+  const sorted = [...rooms].sort((a, b) => a.no - b.no).slice(0, 15);
   const roomBlock = sorted.length
-    ? sorted
-        .map((room) =>
+    ? [
+        ...sorted.map((room) =>
           [
-            `**${roomNo(room)}**`,
+            `**${roomNo(room)}** ${pills([['Süre', waited(room.createdAt)], ['Limit', `${config.userLimit} kişi`]])}`,
             pair(room),
-            `${channelPair(room)}\n${pills([['Süre', waited(room.createdAt)], ['Limit', `${config.userLimit} kişi`]])}`,
+            channelPair(room),
           ].join('\n'),
-        )
+        ),
+        rooms.length > 15 ? `Ve ${rooms.length - 15} oda daha açık.` : null,
+      ]
+        .filter(Boolean)
         .join('\n\n')
     : '-# Henüz açık muhabbet odası yok.';
 
