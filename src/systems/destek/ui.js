@@ -19,7 +19,7 @@ const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
 
-const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, rows, chip, stamp, pageInfo, pagerRow } = core;
+const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, fields, rows, chip, stamp, pageInfo, pagerRow } = core;
 
 const IDS = {
   create: 'destek:olustur',
@@ -320,7 +320,7 @@ function closeDm(ticketNumber, guildName, rating) {
     title: 'Talebin Kapatıldı',
     sub: 'Destek ekibimizle yaptığın görüşme sona erdi. Aynı konuda ya da başka bir konuda yardıma ihtiyacın olursa destek panelinden istediğin zaman yeni bir talep açabilirsin.',
     accent: colors.danger,
-    blocks: [`**${guildName}** sunucusundaki **#${pad(ticketNumber)}** numaralı destek talebin kapatıldı.`],
+    blocks: [rows([['Sunucu', guildName], ['Talep', chip(`#${pad(ticketNumber)}`)]])],
   });
   if (rating) ratingUi.ratingSection(container, rating);
   return container;
