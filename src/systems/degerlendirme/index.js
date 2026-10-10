@@ -324,7 +324,6 @@ async function handleReview(interaction) {
       sent
         ? core.alert('Yetkili görüşmeye çağrıldı.', `Yetkiliye DM üzerinden ${where}.`, 'success')
         : core.alert('Yetkili görüşmeye çağrıldı.', "Yetkilinin DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.", 'warning'),
-      { ephemeral: !sent },
     );
   }
 

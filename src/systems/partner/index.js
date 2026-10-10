@@ -383,7 +383,7 @@ async function handleReviewDecision(interaction) {
     if (!posted) {
       await interaction.followUp({
         components: [core.alert('Paylaşım kanalına gönderilemedi.', 'Talep onaylandı olarak kaydedildi; kanal izinlerini kontrol edip metni elle paylaşabilirsin.', 'warning')],
-        flags: core.EPHEMERAL_CV2,
+        flags: core.CV2,
         allowedMentions: { parse: [] },
       });
     }
