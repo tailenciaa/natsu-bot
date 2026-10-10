@@ -180,10 +180,22 @@ async function buildSicilCard(user, view) {
   drawBackground(ctx, WIDTH, height, scheme, WIDTH - 180, 80);
 
   await drawAvatar(ctx, user, PAD, 24, 84, scheme.accent);
+
+  // Sağ üstte kimlik rozeti: yetkili cezayı bir komutla ya da kayıt numarasıyla anarken ID'yi karttan okur
+  const idText = `ID ${user.id}`;
+  ctx.font = font(500, 15);
+  const idW = ctx.measureText(idText).width + 30;
+  ctx.fillStyle = hexAlpha('#ffffff', 0.12);
+  roundRect(ctx, WIDTH - PAD - idW, 40, idW, 34, 17);
+  ctx.fill();
+  ctx.fillStyle = c.muted;
+  ctx.textAlign = 'center';
+  ctx.fillText(idText, WIDTH - PAD - idW / 2, 40 + 22);
+
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
   ctx.font = font(700, 32);
-  ctx.fillText(fitText(ctx, user.globalName ?? user.username, WIDTH - PAD * 2 - 84 - 28), PAD + 84 + 24, 24 + 38);
+  ctx.fillText(fitText(ctx, user.globalName ?? user.username, WIDTH - PAD - idW - 16 - (PAD + 84 + 24)), PAD + 84 + 24, 24 + 38);
   ctx.fillStyle = c.muted;
   ctx.font = font(500, 17);
   ctx.fillText(`Kullanıcı Sicili · ${TABS[tab]}`, PAD + 84 + 24, 24 + 70);

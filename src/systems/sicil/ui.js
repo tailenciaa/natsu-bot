@@ -75,8 +75,7 @@ function punishmentState(p) {
 
 const durationLabel = (p) => (p.type === 'uyari' ? null : p.duration ? formatDuration(p.duration) : 'Süresiz');
 
-// Tablolar: kod bloğunda sabit genişlikli sütunlar; uzun yazılar "…" ile kısaltılır, satır kaymaz.
-// Sütun: [başlık, genişlik]; genişliği null olan sütun tek bir emoji taşır.
+// Kart satırları ve menü seçenekleri için tek biçimli tarih yazımı (üye hep aynı saat dilimini görür)
 const TIME_ZONE = 'Europe/Istanbul';
 const dateTime = (ms) =>
   new Date(ms).toLocaleString('tr-TR', { timeZone: TIME_ZONE, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
