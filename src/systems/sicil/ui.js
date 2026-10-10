@@ -380,7 +380,7 @@ function punishDm(p, guildName) {
       : '**Süre:** Süresiz.';
   return pageBlocks({
     title: t.title,
-    sub: 'Sunucudaki davranışların nedeniyle hakkında bir işlem uygulandı. Cezanın türü, süresi ve sebebi aşağıda; bir daha yaşanmaması için mesajı dikkatle oku.',
+    sub: 'Sunucudaki davranışın nedeniyle hakkında bir işlem uygulandı. Cezanın türü, süresi ve sebebi bu mesajda; bir daha yaşanmaması için mesajı dikkatle oku.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusunda ${t.verb}.**\n${detail}`,
@@ -393,7 +393,7 @@ function punishDm(p, guildName) {
 function liftDm(p, guildName) {
   return pageBlocks({
     title: 'Cezan Sona Erdi',
-    sub: 'Sunucudaki cezan sona erdi, artık kısıtlaman yok. Hangi cezanın neden bittiğini aşağıda görebilirsin; kurallara uymaya devam ettiğin sürece iyi eğlenceler.',
+    sub: 'Sunucudaki cezan sona erdi, artık kısıtlaman yok. Kurallara uymaya devam ettiğin sürece iyi eğlenceler.',
     accent: colors.success,
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
@@ -405,7 +405,7 @@ function liftDm(p, guildName) {
 function extendDm(p, extra, guildName) {
   return pageBlocks({
     title: 'Cezanın Süresi Uzatıldı',
-    sub: 'Sunucudaki aktif cezanın süresine ekleme yapıldı. Eklenen süreyi ve cezanın yeni bitiş zamanını aşağıda görebilirsin; kurallara dikkat etmeni bekleriz.',
+    sub: 'Sunucudaki aktif cezanın süresine ekleme yapıldı. Eklenen süreyi ve cezanın yeni bitiş zamanını bu mesajda görebilirsin.',
     accent: colors.warning,
     blocks: [
       `**Ceza Bilgisi**\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezana ${formatDuration(extra)} eklendi.**\n` +

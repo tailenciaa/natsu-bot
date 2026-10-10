@@ -71,7 +71,7 @@ function panel() {
   return page({
     title: `${botName} Log Paneli`,
     blocks: [
-      'Aşağıdaki menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
+      'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
     ],
   })
     .addSeparatorComponents(divider())
@@ -122,7 +122,7 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
 
   return page({
     title: 'Log Kurulumu',
-    sub: 'Log sisteminin kanallarını, panelini ve her kategorinin alt başlığını buradan görebilir; aşağıdaki butonlarla eksikleri kurabilir, paneli yenileyebilir ya da hepsini sıfırlayabilirsin.',
+    sub: 'Log sisteminin kanallarını, panelini ve her kategorinin alt başlığını buradan görebilir; butonlarla eksikleri kurabilir, paneli yenileyebilir ya da hepsini sıfırlayabilirsin.',
     accent: complete ? colors.success : colors.warning,
     blocks,
   })

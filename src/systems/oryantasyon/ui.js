@@ -511,7 +511,7 @@ function cancelledDm(app, guildName) {
   const o = app.orientation;
   return card(
     'Oryantasyon İptal Edildi',
-    'Başvurunun oryantasyonu sonlandırıldı. İptalin kim tarafından ve hangi sebeple yapıldığı, varsa yeniden başvuru yapabileceğin tarih aşağıda; sorularında yetkililere ulaşabilirsin.',
+    'Başvurunun oryantasyonu sonlandırıldı. İptali yapan yetkili, sebebi ve yeniden başvuru yapabileceğin tarih bu mesajda; sorularında yetkililere ulaşabilirsin.',
     [
       `**Başvuru Durumu**\n#${pad(app.number)} numaralı başvurunun oryantasyonu iptal edildi.\n` +
         (o.cancelledBy ? `<@${o.cancelledBy}> oryantasyonu sonlandırdı.` : 'Oryantasyon otomatik olarak sonlandırıldı.'),
