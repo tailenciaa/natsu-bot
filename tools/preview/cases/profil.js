@@ -92,6 +92,32 @@ module.exports = ({ mock, ui, src }) => {
       build: () => p.bannerModal({ banner: 'https://i.imgur.com/ornek.png' }),
     },
     {
+      id: 'kapak-duzenleyici-bos',
+      title: 'Kapak düzenleyici: görsel yok, hareket düğmeleri pasif',
+      where: 'Profilde "Kapağı Düzenle" butonu, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, cover: 'yok' })],
+        files: [card('kapak.png', 300, 'Kapak önizlemesi')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'kapak-duzenleyici-gorsel',
+      title: 'Kapak düzenleyici: görsel %180 yakın, sağa/aşağı kaydırılmış',
+      where: 'Düzenleyicide büyüt/kaydır düğmelerine basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, cover: 'cam' })],
+        files: [card('kapak.png', 300, 'Kapak önizlemesi')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
       id: 'vitrin-modal',
       title: 'Vitrin formu: zamir ve bağlantılar',
       where: 'Vitrin sayfasındaki "Zamir ve Bağlantılar" düğmesi',
@@ -168,6 +194,31 @@ module.exports = ({ mock, ui, src }) => {
       }),
     },
     {
+      id: 'rozet-gorev',
+      title: 'Rozet sayfası: görev rozetleri ve ilerlemeleri',
+      where: 'Profilde Rozetler butonu; uzun vadeli hedefler ayrı blokta, hedef dolunca rol de verilir',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.rozetPage(
+            [
+              { label: 'Kurucu', note: 'Sunucunun sahibi', goal: 1, value: 1, done: true },
+              { label: 'Kararlı', note: 'Yedi günlük giriş serisi', goal: 7, value: 7, done: true },
+              { label: 'Eski Üye', note: 'Sunucuda bir yılı doldurdu', goal: 365, value: 212, done: false },
+              { label: 'Sohbet Efsanesi', note: 'Yirmi beş bin mesaj', goal: 25000, value: 18400, done: false, gorev: true },
+              { label: 'Ses Efsanesi', note: 'Beş yüz saat sesli sohbet', goal: 500, value: 486, done: false, gorev: true },
+              { label: 'Hazine Avcısı', note: 'Yirmi bin coin kazandı', goal: 20000, value: 12480, done: false, gorev: true },
+              { label: 'Koleksiyon Efsanesi', note: 'Sekiz kozmetik sahibi', goal: 8, value: 3, done: false, gorev: true },
+            ],
+            2,
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
       id: 'magaza-cerceve',
       title: 'Mağaza: çerçeveler, bazıları satın alınmış',
       where: 'Profilde Mağaza butonuna basınca, sadece sahibine görünür',
@@ -177,7 +228,7 @@ module.exports = ({ mock, ui, src }) => {
         components: [
           p.shopPage(
             'cerceve',
-            { cerceve: 'Çerçeveler', tema: 'Temalar' },
+            SHOP_TABS,
             5400,
             shopRows([
               { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok`, label: 'Giy', style: 2 },
@@ -202,7 +253,7 @@ module.exports = ({ mock, ui, src }) => {
         components: [
           p.shopPage(
             'tema',
-            { cerceve: 'Çerçeveler', tema: 'Temalar' },
+            SHOP_TABS,
             5400,
             shopRows(
               Object.entries(THEMES)
