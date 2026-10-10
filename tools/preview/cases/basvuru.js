@@ -27,7 +27,7 @@ module.exports = ({ mock, ui, src }) => {
     { title: 'Ad ve Yaş', answer: 'Ahmet Yılmaz Kaya, 18 yaşındayım ve öğrenciyim' },
     { title: 'Aktiflik', answer: 'Hafta içi 3-4 saat, hafta sonu 8 saat' },
     { title: 'Deneyim', answer: 'Daha önce 3 farklı sunucuda görev yaptım. '.repeat(11).trim() },
-    { title: 'Ekipte Olma Nedeni', answer: `${'Ekibe katkı sağlamak, üyelerle ilgilenmek ve sunucuyu daha düzenli hale getirmek istiyorum. '.repeat(7)}\n\nTeşekkürler.` },
+    { title: 'Ekipte Olma Nedeni', answer: `${'Ekibe katkı sağlamak, üyelerle ilgilenmek ve sunucuyu daha düzenli hale getirmek istiyorum.'.repeat(7)}\n\nTeşekkürler.` },
     { title: 'Ek Not', answer: 'Mülakat için her akşam müsaitim.\nDiscord dışında da ulaşabilirim.' },
   ];
 
