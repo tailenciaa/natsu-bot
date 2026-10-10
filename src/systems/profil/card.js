@@ -166,7 +166,7 @@ function paintAmbient(ctx, height, p) {
   const body = height - HEADER;
   const bleed = ctx.createLinearGradient(0, HEADER, 0, HEADER + Math.max(240, Math.round(body * 0.8)));
   bleed.addColorStop(0, hexAlpha(p.to, 0));
-  bleed.addColorStop(0.3, hexAlpha(p.to, 0.16));
+  bleed.addColorStop(0.3, hexAlpha(p.to, 0.12));
   bleed.addColorStop(1, hexAlpha(p.to, 0));
   ctx.fillStyle = bleed;
   ctx.fillRect(0, HEADER, WIDTH, body);
@@ -419,12 +419,12 @@ function paletteOf(theme, custom) {
     muted: scheme.muted,
     track: scheme.track,
     base: mix(theme.from, '#000000', 0.86),
-    // Gövde zemini tek düz tondan değil, kapağın altından başlayıp aşağı koyulaşan hafif bir gradyanından türer.
-    // Düz ton karışınca alta doğru çamurlaşır; gradyan ise temanın rengini koruyarak kartı temiz kapatır.
-    bgTop: mix(theme.from, '#000000', 0.78),
-    bgBottom: mix(theme.from, '#000000', 0.93),
+    // Gövde zemini düz siyah değil, kapağın kendi renginden türer: kapağın altında başlayıp aşağı doğru kararan
+    // opak bir gradyan. Alfa ile boyanan ışıma gibi kirli bir leke bırakmaz, tema rengini temiz taşır.
+    bgTop: mix(theme.to, '#000000', 0.82),
+    bgBottom: mix(theme.from, '#000000', 0.94),
   };
-  c.panel = panelStyle(theme, custom ?? {}, c.base);
+  c.panel = panelStyle(theme, custom ?? {}, c.bgTop);
   return {
     scheme,
     accent: scheme.accent,
