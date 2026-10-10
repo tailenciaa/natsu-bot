@@ -15,7 +15,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, alert, page } = require('../../core/ui');
+const { text, divider, alert, page, rows, chip, stamp } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {

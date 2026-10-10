@@ -49,7 +49,7 @@ function controlPanel(room, channel, state = {}) {
     blocks: [
       rows([
         ['Sahip', `<@${room.ownerId}>`],
-        ['Kişi Limiti', chip(channel.userLimit || 'Sınırsız')],
+        ['Kişi Limiti', chip(channel.userLimit ? `${channel.userLimit} kişi` : 'Sınırsız')],
         ['Durum', pills([['Kilit', locked ? 'Kilitli' : 'Açık'], ['Görünürlük', hidden ? 'Gizli' : 'Görünür']])],
       ]),
       'Bu paneli sadece **oda sahibi** kullanabilir.',
@@ -112,10 +112,25 @@ const GUIDE_TITLE = 'Özel Oda Rehberi';
 // #özel-oda-rehberi kanalına giden bilgi paneli: odanın nasıl açıldığı ve kontrol panelinin ne yaptığı
 function guidePanel() {
   const blocks = [
-    `**Oda nasıl açılır?**\n<#${config.createChannelId}> kanalına girdiğinde senin için **kendi ses kanalın** açılır.\nOdanın adı görünen adından oluşur, istediğin zaman değiştirebilirsin.\nAyarları odanın yazı sohbetindeki **kontrol panelinden** yaparsın.`,
-    '**Oda sahibi neler yapabilir?**\nOdayı **kilitleyerek** yeni girişleri durdurabilir, **gizleyerek** kanal listesinden saklayabilirsin.\nKişi limitini ve odanın adını değiştirebilirsin; kişi limiti **0** ise oda sınırsızdır.',
-    '**Üye yönetimi**\nSeçtiğin üyeyi odadan **atabilir** ya da oda silinene kadar tekrar girmesini **engelleyebilirsin**.\nSahipliği başka bir üyeye **devredebilirsin**.',
-    `**Bilmen gerekenler**\nPaneli sadece **oda sahibi** kullanabilir.\nİşlemler arasında kısa bir bekleme vardır.\nOdada kimse kalmayınca **oda silinir**.\n<#${config.createChannelId}> kanalına her girişinde yeni bir oda açılır.`,
+    [
+      '**Oda nasıl açılır?**',
+      `1. <#${config.createChannelId}> kanalına gir; senin için **kendi ses kanalın** açılır.`,
+      '2. Odanın adı görünen adından oluşur, istediğin zaman değiştirebilirsin.',
+      '3. Ayarları odanın yazı sohbetindeki **kontrol panelinden** yaparsın.',
+    ].join('\n'),
+    [
+      '**Oda sahibi neler yapabilir?**',
+      '1. Odayı **kilitleyerek** yeni girişleri durdurur, **gizleyerek** kanal listesinden saklar.',
+      '2. Kişi limitini ve odanın adını değiştirir; kişi limiti **0** ise oda sınırsızdır.',
+      '3. Odadaki üyeleri **atar**, tekrar girmesini **engeller** ya da sahipliği **devreder**.',
+    ].join('\n'),
+    [
+      '**Bilmen gerekenler**',
+      '1. Paneli sadece **oda sahibi** kullanabilir.',
+      '2. İşlemler arasında kısa bir bekleme vardır.',
+      '3. Odada kimse kalmayınca **oda silinir**.',
+      `4. <#${config.createChannelId}> kanalına her girişinde yeni bir oda açılır.`,
+    ].join('\n'),
   ];
   const container = page({
     title: GUIDE_TITLE,
