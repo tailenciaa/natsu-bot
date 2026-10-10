@@ -71,6 +71,15 @@ module.exports = ({ mock, ui, src }) => {
   const reviewerRole = base().reviewerRoleId;
   const voiceInfo = { staffId: staff.id, waitingIn: meetingChannel, until: Date.now() + 24 * mock.HOUR };
 
+  // Durum paneli kartı: index.js'teki gibi çizilir ve mesajın ekine konur
+  const nameOf = async (id) => (id === staff.id ? 'ayse' : 'bilinmiyor');
+  const durum = (apps, page = 0) => async () => {
+    const card = await src('systems/basvuru/card').buildStatusCard(apps, page, `basvuru-durum-${page}.png`, nameOf);
+    return { components: [b.statusPanel(apps, page, card.name)], files: [card], ...noMentions };
+  };
+  const held = (o = {}) => ({ ...base(), ...o, onHold: { by: staff.id, until: Date.now() + 10 * mock.MIN, auto: false } });
+  const manyApps = (n) => Array.from({ length: n }, (_, i) => ({ ...base(), id: `${guild.id}-${i + 1}`, number: i + 1, username: `uye${i + 1}` }));
+
   return [
     {
       id: 'panel',
@@ -79,6 +88,17 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'panel',
       kind: 'message',
       build: () => ({ components: [b.panel()] }),
+    },
+    durum([base(), meeting(), held()], 0),
+    { id: 'durum-bos', title: 'Durum paneli: başvuru yok (kart)', where: 'Durum kanalı', visibility: 'panel', kind: 'message', build: durum([], 0) },
+    durum(manyApps(9), 1),
+    {
+      id: 'durum-metin',
+      title: 'Durum paneli: kart çizilemedi (metinli yedek)',
+      where: 'Durum kanalı, çizim hatasında',
+      visibility: 'panel',
+      kind: 'message',
+      build: () => ({ components: [b.statusPanel([base(), meeting(), held()])], ...noMentions }),
     },
     {
       id: 'basvuru-modal',

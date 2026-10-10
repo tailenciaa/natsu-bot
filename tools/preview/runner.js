@@ -128,7 +128,8 @@ function run(filter = []) {
       seen.add(base.id);
       try {
         if (typeof def?.build !== 'function') throw new Error('build fonksiyonu yok');
-        const norm = normalize(def.build());
+        // build() çizim kartı üretebildiği için (async) bekletilir
+        const norm = normalize(await def.build());
         system.cases.push({ ...base, kind: norm.kind, norm, error: null, lint: lint(norm) });
       } catch (err) {
         system.cases.push(crashed(base, err));
