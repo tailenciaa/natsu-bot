@@ -12,7 +12,7 @@ const {
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, messageUrl, page, field, fields } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, messageUrl, page, rows, chip } = require('../../core/ui');
 const basvuruConfig = require('../basvuru/config');
 const yetkiConfig = require('../yetki/config');
 const yetkiUi = require('../yetki/ui');
@@ -732,14 +732,14 @@ function choiceResult(app, which, lines = []) {
     return card(
       'Oryantasyonu Sen Veriyorsun',
       'Oryantasyon sana verildi. İkiniz de aynı görüşme kanalına girince oryantasyon kendiliğinden başlar ve panel kanalın sohbetine gelir; adımları sen ilerletirsin.',
-      [`**Başvuru #${pad(app.number)}**\n${lines.join('\n') || `<@${app.userId}> ile oryantasyona geçiliyor.`}`],
+      [`**Başvuru ${appNo(app)}**\n${lines.join('\n') || `<@${app.userId}> ile oryantasyona geçiliyor.`}`],
       'success',
     );
   }
   return card(
     'Yetkililere Bırakıldı',
     'Oryantasyon artık sende değil. Başvurular kanalına bildirim gönderildi; **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir, o zamana kadar başvuran kanalda bekleyebilir.',
-    [`**Başvuru #${pad(app.number)}**\n<@${app.userId}> için oryantasyon yetkilisi bekleniyor.`],
+    [`**Başvuru ${appNo(app)}**\n<@${app.userId}> için oryantasyon yetkilisi bekleniyor.`],
     'primary',
   );
 }
