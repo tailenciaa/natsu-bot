@@ -19,7 +19,7 @@ const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
 
-const { colors, text, divider, pad, messageUrl, unix, quote, shorten, page, alert, field, fields, stamp, pageInfo, pagerRow } = core;
+const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, stamp, pageInfo, pagerRow } = core;
 
 const IDS = {
   create: 'destek:olustur',
@@ -40,7 +40,8 @@ const IDS = {
 const STATUS_TITLE = 'Açık Destek Talepleri';
 const STATUS_SUB =
   'Destek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.';
-const STATUS_PAGE_SIZE = 6;
+// Bir sayfadaki talep sayısı: kartın altındaki detay butonları bir satıra en fazla 5 sığabildiği için 5
+const STATUS_PAGE_SIZE = 5;
 
 // Talebin durum panelindeki hali: karttaki kısa etiket (pill), metinli yedekteki uzun satır ve renk tonu
 function ticketState(ticket) {
