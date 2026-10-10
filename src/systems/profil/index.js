@@ -48,10 +48,8 @@ const featuredOptions = FEATURED.map(({ key, label, note }) => ({ key, label, no
 // Bağlantı kartında kısa yazılır: protokol ve www atılır, yol küçük tutulur
 function linkLabel(url) {
   const host = String(url).replace(/^https?:\/\//, '').replace(/^www\./, '');
-  return kozmetikLink(core.shorten(host.replace(/\/$/, ''), 34));
+  return core.shorten(host.replace(/\/$/, ''), 34);
 }
-
-const kozmetikLink = (value) => value;
 
 // Kartın çizim verisi: ölçümler, rozet bağlamı ve vitrin alanları tek yerde toplanır
 async function viewDataOf(guild, userId) {
@@ -206,8 +204,7 @@ function shopRows(tur, custom, balance) {
 
 function shopMessage(interaction, tab) {
   const custom = store.get(interaction.user.id);
-  return ui.shopPage(tab, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tab, custom, coinStore.balance(interaction.user.id)));
-}
+  return ui.shopPage(tab, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tab, custom, coinStore.balance(interaction.user.id)));}
 
 // Ürün satın alma: para ancak ürün gerçekten sahipliğe geçiyorsa düşürülür
 async function buy(interaction, tur, key) {

@@ -265,11 +265,12 @@ async function buildProfileCard(user, view) {
   ctx.fillRect(0, 0, WIDTH, height);
   await drawHeader(ctx, theme, custom.banner, c.base);
 
-  // Sağ üst: sıralama etiketleri
+  // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
   const rankColor = 'rgba(12,8,16,0.55)';
   let right = WIDTH - PAD;
   right -= pill(ctx, `Ses  ${view.sesRank ? `#${view.sesRank}` : '-'}`, right, 28, rankColor) + 10;
   pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 28, rankColor);
+  pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 74, accent, '#120a10');
 
   // Avatar kapağın altına taşar; zemin renginde kalın halka kapakla arasını ayırır
   const avatarSize = 160;
