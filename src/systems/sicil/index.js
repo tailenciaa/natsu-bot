@@ -166,7 +166,7 @@ async function handleAction(interaction) {
   const user = await fetchUser(interaction, userId);
   if (!user) return replyError(interaction, 'Üye bulunamadı.');
 
-  // "Ceza Ver": tür seçimi sadece yetkiliye görünür, işlem bitince sicil mesajı güncellenir
+  // "Ceza Ver": tür seçimi yetkili kanalında herkese açık mesaj olarak açılır, işlem bitince sicil mesajı güncellenir
   if (action === 'ver') {
     const types = allowedTypes(interaction);
     if (!types.length) return replyError(interaction, 'Ceza verme yetkin yok.');

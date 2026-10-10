@@ -212,7 +212,8 @@ async function sendTestAnnounce(interaction) {
   if (!interaction.memberPermissions?.has('Administrator')) {
     return replyError(interaction, 'Test duyurusunu sadece yöneticiler gönderebilir.', 'Kendi seviyeni görmek için komutu **test** seçeneği olmadan kullan.');
   }
-  await interaction.deferReply({ flags: core.CV2 });
+  // GİZLİ İSTİSNA: bu bir test/önizleme; asıl duyuru kanala düşer, "gönderildi" geri bildirimi yöneticide kalır
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const channel = await fetchTextChannel(interaction.guild, config.channel);
   if (!channel) return replyError(interaction, 'Duyuru kanalı bulunamadı.', 'Kanalın **silinmediğinden** ve botun görebildiğinden emin ol.');
   const roleId = config.roles.mesaj[15];
