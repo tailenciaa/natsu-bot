@@ -1,14 +1,33 @@
-// Profil kartı: kapak (tema gradyanı ya da kullanıcının görseli), avatar, ad, unvan, biyografi, mesaj/ses seviye kartları
-// ve alt bilgi kutuları içeren görsel (PNG, Buffer döner). Yazılar assets/fonts altındaki Poppins ile çizilir.
-const { FONT, canvasLib, fitText, wrapLines, roundRect, hexAlpha, mix, makeScheme, loadImageSafe, drawAvatar, drawBar } = require('../../core/canvas');
+// Profil kartı: kapak (tema gradyanı ya da kullanıcının görseli), avatar, ad, unvan, rozetler, biyografi, mesaj/ses
+// seviye kartları, alt bilgi kutuları ve vitrin şeridi (öne çıkan istatistik, bağlantılar, ziyaret sayısı) içeren
+// görsel (PNG, Buffer döner). Yükseklik çizilecek içeriğe göre hesaplanır; çerçeveler kartın kenarına çizilir.
+// Yazılar assets/fonts altındaki Poppins ile çizilir.
+const {
+  FONT,
+  canvasLib,
+  fitText,
+  wrapLines,
+  roundRect,
+  hexAlpha,
+  mix,
+  makeScheme,
+  loadImageSafe,
+  drawAvatar,
+  drawBar,
+} = require('../../core/canvas');
+const { measureCtx } = require('../../core/card');
 const levelConfig = require('../seviye/config');
 const { levelFromXp } = require('../seviye/level');
 const { resolveTheme } = require('./themes');
 
 const WIDTH = 1000;
-const HEIGHT = 676;
 const PAD = 48;
 const HEADER = 215;
+const BASE_HEIGHT = 676; // rozet satırı ve vitrin şeridi yokken kartın yüksekliği (eskisiyle aynı kalır)
+const BADGE_ROW_H = 30;
+const BADGE_GAP = 8;
+const BADGE_ROWS_MAX = 2;
+const FOOTER_H = 68;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 const number = (n) => n.toLocaleString('tr-TR');
@@ -78,6 +97,74 @@ function pill(ctx, text, right, y, color, textColor = '#ffffff') {
   return width;
 }
 
+// Rozet etiketlerinin satırlara dağılımı: her etiket yazısına göre genişler, sığmayan alt satıra iner. En fazla
+// iki satır ayrılır; taşanlar tek bir "+N" etiketinde toplanır.
+function badgeRows(ctx, badges, maxWidth) {
+  ctx.font = font(500, 14);
+  const widthOf = (b) => ctx.measureText(b.label).width + 30;
+  const rows = [];
+  let row = [];
+  let x = 0;
+  let overflow = 0;
+
+  for (const b of badges) {
+    const w = widthOf(b);
+    if (x + w > maxWidth) {
+      if (rows.length === BADGE_ROWS_MAX - 1) {
+        // Son satıra sığmayanlar birikecek; "+N" için yer bırakılıp satır kapatılır
+        overflow += row.length ? 1 : 0;
+        rows.push(row);
+        row = [];
+        x = 0;
+        overflow += badges.slice(badges.indexOf(b)).length - 1;
+        break;
+      }
+      rows.push(row);
+      row = [];
+      x = 0;
+    }
+    if (x + w > maxWidth) break;
+    row.push({ ...b, w });
+    x += w + BADGE_GAP;
+  }
+  if (row.length) rows.push(row);
+
+  const hidden = badges.length - rows.reduce((n, r) => n + r.length, 0);
+  if (hidden > 0 && rows.length) {
+    const last = rows[rows.length - 1];
+    const used = last.reduce((n, b) => n + b.w + BADGE_GAP, 0);
+    const more = { key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 46 };
+    if (used + more.w <= maxWidth) last.push(more);
+    else if (last.length > 1) {
+      const dropped = last.pop();
+      more.label = `+${hidden + 1}`;
+      last.push(more);
+      void dropped;
+    }
+  }
+  return rows;
+}
+
+function drawBadges(ctx, rows, y) {
+  rows.forEach((row, i) => {
+    let x = PAD;
+    for (const b of row) {
+      ctx.fillStyle = hexAlpha(b.color, 0.16);
+      roundRect(ctx, x, y + i * (BADGE_ROW_H + 10), b.w, BADGE_ROW_H, 15);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 15, y + i * (BADGE_ROW_H + 10) + BADGE_ROW_H / 2, 4, 0, Math.PI * 2);
+      ctx.fillStyle = b.color;
+      ctx.fill();
+      ctx.fillStyle = b.color;
+      ctx.font = font(500, 14);
+      ctx.textAlign = 'left';
+      ctx.fillText(b.label, x + 24, y + i * (BADGE_ROW_H + 10) + 20);
+      x += b.w + BADGE_GAP;
+    }
+  });
+}
+
 // Seviye kutusu: başlık, büyük seviye numarası, XP ve ilerleme çubuğu
 function levelCard(ctx, x, y, w, h, title, xp, c) {
   const accent = c.accent;
@@ -123,22 +210,80 @@ function infoBox(ctx, x, y, w, label, value, c) {
   ctx.fillText(fitText(ctx, value, w - 36), x + 18, y + 43);
 }
 
-// view: { custom: { bio, title, color, theme, banner }, roleColor, mesajXp, sesXp, mesajRank, sesRank, joinedAt, messageCount, voiceSeconds }
+// Vitrin şeridi: solda üyenin öne çıkardığı istatistik, sağda bağlantılar ve ziyaret sayısı
+function drawFooter(ctx, y, view, c) {
+  ctx.fillStyle = c.panel;
+  roundRect(ctx, PAD, y, WIDTH - PAD * 2, FOOTER_H, 18);
+  ctx.fill();
+
+  if (view.featured) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = c.muted;
+    ctx.font = font(500, 12);
+    ctx.fillText(view.featured.label.toLocaleUpperCase('tr-TR'), PAD + 24, y + 24);
+    ctx.fillStyle = c.accent;
+    ctx.font = font(700, 24);
+    ctx.fillText(fitText(ctx, view.featured.value, 360), PAD + 24, y + 50);
+  }
+
+  const right = WIDTH - PAD - 24;
+  ctx.textAlign = 'right';
+  if (view.links?.length) {
+    ctx.fillStyle = '#e6dce2';
+    ctx.font = font(500, 15);
+    ctx.fillText(fitText(ctx, view.links.join('   ·   '), 520), right, y + (view.featured ? 30 : 42));
+  }
+  if (view.visits > 0) {
+    ctx.fillStyle = c.muted;
+    ctx.font = font(400, 13);
+    ctx.fillText(`${number(view.visits)} profil ziyareti`, right, y + (view.featured || view.links?.length ? 52 : 42));
+  }
+}
+
+// Satın alınan çerçeve: kartın kenarına çizilen renkli kenar ve köşelerde yumuşak parlama
+function drawFrame(ctx, height, frame, scheme) {
+  if (!frame || frame.key === 'yok') return;
+  const edge = frame.edge === 'accent' ? scheme.accent : frame.edge;
+  const glow = frame.glow === 'accent' ? scheme.accent : frame.glow;
+
+  for (const [gx, gy] of [[8, 8], [WIDTH - 8, height - 8]]) {
+    const g = ctx.createRadialGradient(gx, gy, 10, gx, gy, 320);
+    g.addColorStop(0, hexAlpha(glow, 0.3));
+    g.addColorStop(1, hexAlpha(glow, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, WIDTH, height);
+  }
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = edge;
+  roundRect(ctx, 4, 4, WIDTH - 8, height - 8, 30);
+  ctx.stroke();
+}
+
+// view: { custom, roleColor, mesajXp, sesXp, mesajRank, sesRank, joinedAt, messageCount, voiceSeconds,
+//         badges: [rozet], featured: { label, value } | null, links: [metin], visits: sayı, frame: çerçeve }
 async function buildProfileCard(user, view) {
-  const canvas = canvasLib().createCanvas(WIDTH, HEIGHT);
-  const ctx = canvas.getContext('2d');
   const custom = view.custom;
   const theme = resolveTheme(custom, view.roleColor);
   const scheme = makeScheme(theme);
   const accent = scheme.accent;
   const c = { accent, muted: scheme.muted, track: scheme.track, base: mix(theme.from, '#000000', 0.86), panel: mix(theme.from, '#000000', 0.7) };
 
+  // Yükseklik çizimden önce bilinmeli: rozet satırları ve vitrin şeridi kartı uzatır
+  const probe = measureCtx();
+  const rows = badgeRows(probe, view.badges ?? [], WIDTH - PAD * 2);
+  const badgesH = rows.length ? rows.length * BADGE_ROW_H + (rows.length - 1) * 10 + 14 : 0;
+  const hasFooter = Boolean(view.featured || view.links?.length || view.visits > 0);
+  const height = BASE_HEIGHT + badgesH + (hasFooter ? FOOTER_H + 20 : 0);
+
+  const canvas = canvasLib().createCanvas(WIDTH, height);
+  const ctx = canvas.getContext('2d');
+
   // Kartın tamamı yuvarlak köşeli; her şey bu şeklin içine çizilir
   ctx.save();
-  roundRect(ctx, 0, 0, WIDTH, HEIGHT, 32);
+  roundRect(ctx, 0, 0, WIDTH, height, 32);
   ctx.clip();
   ctx.fillStyle = c.base;
-  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  ctx.fillRect(0, 0, WIDTH, height);
   await drawHeader(ctx, theme, custom.banner, c.base);
 
   // Sağ üst: sıralama etiketleri
@@ -157,7 +302,7 @@ async function buildProfileCard(user, view) {
   ctx.fill();
   await drawAvatar(ctx, user, avatarX, avatarY, avatarSize, accent);
 
-  // Ad, kullanıcı adı ve unvan
+  // Ad, kullanıcı adı (varsa zamiriyle) ve unvan
   const textX = avatarX + avatarSize + 32;
   const textMax = WIDTH - PAD - textX;
   ctx.textAlign = 'left';
@@ -166,7 +311,7 @@ async function buildProfileCard(user, view) {
   ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER + 40);
   ctx.fillStyle = c.muted;
   ctx.font = font(400, 17);
-  ctx.fillText(`@${user.username}`, textX, HEADER + 68);
+  ctx.fillText(fitText(ctx, `@${user.username}${custom.pronoun ? ` · ${custom.pronoun}` : ''}`, textMax), textX, HEADER + 68);
   if (custom.title) {
     ctx.font = font(500, 16);
     const width = ctx.measureText(custom.title).width + 28;
@@ -177,8 +322,11 @@ async function buildProfileCard(user, view) {
     ctx.fillText(custom.title, textX + 14, HEADER + 102);
   }
 
+  // Rozetler: kazanılanlar unvanın altında sırayla dizilir
+  if (rows.length) drawBadges(ctx, rows, HEADER + 128);
+
   // Biyografi kutusu
-  const bioY = HEADER + 128;
+  const bioY = HEADER + 128 + badgesH;
   ctx.fillStyle = c.panel;
   roundRect(ctx, PAD, bioY, WIDTH - PAD * 2, 90, 20);
   ctx.fill();
@@ -210,8 +358,11 @@ async function buildProfileCard(user, view) {
   infoBox(ctx, PAD + infoW + gap, infoY, infoW, 'Toplam mesaj', number(view.messageCount), c);
   infoBox(ctx, PAD + (infoW + gap) * 2, infoY, infoW, 'Toplam ses süresi', duration(view.voiceSeconds), c);
 
+  if (hasFooter) drawFooter(ctx, infoY + 56 + 20, view, c);
+
+  drawFrame(ctx, height, view.frame, scheme);
   ctx.restore();
   return canvas.toBuffer('image/png');
 }
 
-module.exports = { buildProfileCard };
+module.exports = { buildProfileCard, WIDTH, BASE_HEIGHT };
