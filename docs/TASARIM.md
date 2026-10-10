@@ -156,7 +156,7 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 | Kişisel işlem sonucu, yetkili işlem panelleri | Sadece kullanana |
 | Kazanç ve harcama bildirimi (`/gunluk`, mağaza satın alma, saygınlık verme) | Herkese açık `receipt` kartı, üye etiketiyle |
 | Bilgi komutları (seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`) |
-| Yardım menüsü (`/yardim`) | Herkese açık, kategoriyi herkes değiştirir; liste her basışta o kişiyi gözeten katmanla çizilir |
+| Yardım menüsü (`/yardim`) | Herkese açık; kategoriyi herkes değiştirir ve panel **yerinde** yeniden çizilir (ayrı mesaj yok), liste her basışta o kişiyi gözeten katmanla çizilir |
 | Paneller, duyurular, loglar, talep mesajları | Kanalda herkese görünür |
 | Test ve önizleme | Sadece kullanana, etiket yok |
 
@@ -164,6 +164,8 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 
 - Her komutun ve seçeneğin açıklaması tek cümle, fiille başlayan, noktayla biten ve en çok 100 karakterdir.
 - Yardım menüsü iki katmanlıdır ve kategoriler tek bir menüden seçilir (`/yardim`): üye yalnızca sistemin `help.member` listesindeki komutları görür. Yetkili komutlarının görünmesi gereken izne (`core/config.js staffPermission`) ya da yöneticiliğe sahip olan tüm kategorileri de görür. Mesaj her iki katmanda da **herkese açık** gönderilir ve kategoriyi herkes değiştirebilir; liste her değişimde o kişiyi gözeten katmanla yeniden çizilir. `help.category` kategoriyi, `help.need` komutun yanında görünen "Gerekli: ..." yazısını belirler; listelenen her yetkili komutunun `need` karşılığı olmak zorundadır. `help.access` erişimi belgeleyen kayıttır, arayüzde gösterilmez; komut denetimi her komutun `access` karşılığı olmasını ister. Sağ tık (bağlam menüsü) komutları menüde listelenmez.
+- `help.member` listesine **yalnızca herkesin kullanabildiği** komutlar yazılır. Rol, izin ya da yöneticilik isteyen bir komut (`/sicil`, ceza ve yetki komutları, `log kur`, emoji/çıkartma ekleme...) üye menüsünde görünmez; sadece yetkili katmanında ve yanında `help.need` yazısıyla durur. Kuralı komut denetimi bekler: `help.access` kaydı "Herkes" ile başlamayan bir komut üye listesinde yer alırsa `yardim-uye-erisim` hatası verilir.
+- Kategoriyi seçmek paneli **yerinde** günceller (`interaction.update()`): komut listesi asla panelin altına ayrı bir mesaj ya da sadece seçen kişiye görünen gizli mesaj olarak gönderilmez. Güncelleme tutmazsa (mesaj silinmiş, bağlantı kopmuş) hata bildirimi de atılmaz; durum loga yazılır ve panel olduğu gibi kalır.
 
 ## 8. Doğrulama (Discord'a bağlanmadan)
 
