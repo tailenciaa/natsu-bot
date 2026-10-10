@@ -215,7 +215,7 @@ async function openRoom(guild, app) {
   const memberIds = [app.userId, ...app.members].slice(0, config.maxExtraMembers + 1);
   const overwrites = [
     { id: guild.roles.everyone.id, deny: ['ViewChannel'] },
-    { id: guild.members.me.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] },
+    { id: guild.members.me?.id ?? guild.client.user.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] },
     config.roles.team && { id: config.roles.team, allow: ['ViewChannel', 'Connect', 'SendMessages'] },
     ...memberIds.map((id) => ({ id, allow: ['ViewChannel', 'Connect', 'SendMessages'] })),
   ].filter(Boolean);
