@@ -61,8 +61,8 @@ function panelStyle(theme, custom, base) {
   const opacity = clamp(Number(custom.glassOpacity ?? OPACITY_DEFAULT), 0, 100) / 100;
   return {
     glass: Boolean(theme.glass),
-    // 0 -> 1,4 kat belirgin; 1 -> 0,5 kat saydam (k panelin tüm alfa değerlerini çarpar)
-    k: 1.4 - opacity * 0.9,
+    // panelin tüm alfa değerlerini çarpan katsayı: 0 -> 2 kat belirgin buzlu cam, 1 -> neredeyse görünmez panel
+    k: 2 - opacity * 1.85,
     fill: mix(base, '#ffffff', 0.07),
     edge: mix(base, '#ffffff', 0.16),
   };
@@ -154,6 +154,26 @@ async function paintHeader(ctx, view, theme, p, base) {
   ctx.fillStyle = fade;
   ctx.fillRect(0, HEADER - 70, WIDTH, 70);
   ctx.restore();
+}
+
+// Kapağın rengi gövdeye hafif bir ışımayla sızar. Cam paneller yarı saydam olduğu için arkalarında bu ışımayı
+// görür; saydamlık ayarının fark edilebilir olmasını sağlayan şey budur. Düz panelleri ise kapatır, görünmez.
+function paintAmbient(ctx, height, p) {
+  const bleed = ctx.createLinearGradient(0, HEADER - 30, 0, HEADER + 250);
+  bleed.addColorStop(0, hexAlpha(p.to, 0.45));
+  bleed.addColorStop(1, hexAlpha(p.to, 0));
+  ctx.fillStyle = bleed;
+  ctx.fillRect(0, HEADER - 30, WIDTH, 280);
+
+  const glow = (x, y, r, color, a) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, hexAlpha(color, a));
+    g.addColorStop(1, hexAlpha(color, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  };
+  glow(WIDTH * 0.08, HEADER + 210, 460, p.accent, 0.1);
+  glow(WIDTH * 0.92, height - 170, 430, p.accent, 0.12);
 }
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
@@ -431,6 +451,7 @@ async function buildProfileCard(user, view) {
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, height);
   await paintHeader(ctx, view, theme, p, c.base);
+  paintAmbient(ctx, height, p);
 
   // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
   const rankColor = 'rgba(10,6,12,0.5)';
