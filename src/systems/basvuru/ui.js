@@ -383,7 +383,12 @@ function decisionPanel(app, state = 'open', remindDisabled) {
       'Görüşme Beklemede',
       'Görüşmeyi yürüten yetkili işlemi beklemeye aldı. Başvuran, bir yetkili görüşmeyi üstlenip kanala bağlanana kadar bekler; üstlenen yetkili başvuruyla ilgilenmek zorundadır.',
       [
-        fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Beklemeye alan', `<@${h.by}>`), field('Durum', 'Yetkili bekleniyor')]),
+        rows([
+          ['Başvuru', appNo(app)],
+          ['Başvuran', `<@${app.userId}>`],
+          ['Beklemeye Alan', `<@${h.by}>`],
+          ['Durum', chip('Yetkili bekleniyor')],
+        ]),
         protectedNow
           ? `**<@${h.by}> <t:${unix(h.until)}:R> kadar işlemi geri alabilir.**\nBu süre dolunca başvurular kanalında yetkililere haber verilir ve herhangi bir yetkili üstlenebilir.`
           : '**Yetkili bekleniyor.**\nBaşvurular kanalında yetkililere haber verildi; bir yetkili üstlenince görüşme yeniden başlar.',
@@ -434,7 +439,7 @@ function decisionPanel(app, state = 'open', remindDisabled) {
 // taken (üstlenildi) | superseded (süre dolduğu için yeni bildirim gönderildi)
 function meetingHoldNotice(app, state = 'open') {
   const h = app.onHold ?? {};
-  const head = `**Başvuru #${pad(app.number)}**`;
+  const head = `**Başvuru ${appNo(app)}**`;
   if (state === 'taken') {
     return card(
       'Görüşme Üstlenildi',
@@ -447,7 +452,12 @@ function meetingHoldNotice(app, state = 'open') {
     return card('Görüşme Beklemede', 'Geri alma süresi doldu; yetkililere haber vermek için yeni bir bildirim gönderildi. Bu mesaj kayıt olarak kalır.', [`${head}\n<@${h.by}> görüşmeyi beklemeye almıştı.`], 'warning');
   }
   const roles = app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : '';
-  const info = fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', 'Görüşme'), field('Beklemeye alan', `<@${h.by}>`)]);
+  const info = rows([
+    ['Başvuru', appNo(app)],
+    ['Başvuran', `<@${app.userId}>`],
+    ['Aşama', chip('Görüşme')],
+    ['Beklemeye Alan', `<@${h.by}>`],
+  ]);
   const buttons = [new ButtonBuilder().setCustomId(`${IDS.review}:${app.id}:gorusme`).setStyle(ButtonStyle.Success).setLabel('Görüşmeye Çağır')];
   let sub;
   let status;
@@ -474,7 +484,7 @@ function transferRequestDm(app, requesterId, stage, state = 'pending') {
   const until = stage === 'meeting' ? app.onHold?.until : app.orientation?.holdUntil;
   const what = stage === 'meeting' ? 'görüşmesini' : 'oryantasyonunu';
   const whatAcc = stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu';
-  const head = `**Başvuru #${pad(app.number)} - ${stageName(stage)}**`;
+  const head = `**Başvuru ${appNo(app)} · ${chip(stageName(stage))}**`;
   if (state !== 'pending') {
     const text_ = {
       approved: [`Devir Onaylandı`, `${head}\n**<@${requesterId}> ${whatAcc} devraldı.** Artık başvuruyla o ilgileniyor.`, 'success'],
@@ -487,7 +497,12 @@ function transferRequestDm(app, requesterId, stage, state = 'pending') {
     'Devir İsteği',
     `Beklemeye aldığın başvurunun ${what} başka bir yetkili devralmak istiyor. **Onayla** dersen işlem ona geçer, **Reddet** dersen geri alma süren devam eder.`,
     [
-      fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', stageName(stage)), field('İsteyen', `<@${requesterId}>`)]),
+      rows([
+        ['Başvuru', appNo(app)],
+        ['Başvuran', `<@${app.userId}>`],
+        ['Aşama', chip(stageName(stage))],
+        ['İsteyen', `<@${requesterId}>`],
+      ]),
       `**<@${requesterId}> bu işlemi devralmak istiyor.**\nCevap vermezsen <t:${unix(until)}:R> süre dolunca herhangi bir yetkili işlemi zaten üstlenebilir.`,
     ],
     'warning',
