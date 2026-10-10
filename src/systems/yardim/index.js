@@ -101,33 +101,32 @@ function tabs(guild) {
 }
 
 // /yardim: panel herkese açık gönderilir; içinde komut listesi yoktur, yalnızca kategori menüsü durur.
-async function handleCommand(interaction) {
-  const all = tabs(interaction.guild);
-  return respond(
-    interaction,
-    ui.helpPanel({
-      botName,
-      avatarUrl: interaction.client.user.displayAvatarURL({ size: 256 }),
-      categories: all.categories,
-      total: Object.values(all.entries).reduce((n, list) => n + list.length, 0),
-    }),
-  );
+function panelMessage(interaction, all) {
+  return ui.helpPanel({
+    botName,
+    avatarUrl: interaction.client.user.displayAvatarURL({ size: 256 }),
+    categories: all.categories,
+    total: Object.values(all.entries).reduce((n, list) => n + list.length, 0),
+  });
 }
 
-// Kategori menüsü: yardim:kategori (eski mesajlarda yardim:<kategori>). Seçim, log panelindeki kategori seçimi gibi
-// AYRI bir mesaj olarak o kategorinin komut kartını kanala düşürür; panel olduğu gibi kalır. Panel herkese açık olduğu
-// için kategoriyi herkes seçebilir; kart da herkese açıktır.
+async function handleCommand(interaction) {
+  return respond(interaction, panelMessage(interaction, tabs(interaction.guild)));
+}
+
+// Menü ve düğme aynı mesajı yerinde değiştirir, yeni mesaj atılmaz: kategori seçilince panel o kategorinin kartına,
+// "Yardım Menüsüne Dön" kartın yerini tekrar panele çevirir. Panel herkese açık olduğu için kategoriyi herkes
+// seçebilir; herkesin gördüğü mesajı herkes değiştirebilir.
+// yardim:kategori (eski mesajlarda yardim:<kategori>) ve yardim:panel.
 async function handleNavigate(interaction) {
   const all = tabs(interaction.guild);
-  const category = all.categories.find((c) => c.key === (interaction.values?.[0] ?? interaction.customId.split(':')[1]));
-  if (!category) return interaction.deferUpdate();
+  const key = interaction.values?.[0] ?? interaction.customId.split(':')[1];
+  const update = (container) => interaction.update({ components: [container], allowedMentions: { parse: [] } });
+  if (key === 'panel') return update(panelMessage(interaction, all));
 
-  await interaction.deferReply({ flags: core.CV2 });
-  return interaction.editReply({
-    components: [ui.categoryCard({ category, entries: all.entries[category.key] })],
-    allowedMentions: { parse: [] },
-    flags: core.CV2,
-  });
+  const category = all.categories.find((c) => c.key === key);
+  if (!category) return interaction.deferUpdate();
+  return update(ui.categoryCard({ category, entries: all.entries[category.key] }));
 }
 
 module.exports = {
