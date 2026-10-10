@@ -15,7 +15,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, alert, field, fields, stamp, pagerRow } = require('../../core/ui');
+const { text, divider, colors, unix, quote, shorten, alert, field, fields, stamp, pageInfo, pagerRow } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -366,7 +366,7 @@ function trustedList(entries, page = 0) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Liste Durumu**', field('Toplam', `**${entries.length}** sunucu`), pageCount > 1 ? `-# Sayfa ${current + 1} / ${pageCount}` : null])),
+      text(fields(['**Liste Durumu**', field('Toplam', `**${entries.length}** sunucu`), `-# Sayfa ${current + 1} / ${pageCount}`])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -385,9 +385,8 @@ function trustedList(entries, page = 0) {
           ),
       ),
     );
-  if (pageCount > 1) {
-    container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
-  }
+  // Sayfa butonları her zaman görünür; tek sayfada pasif kalır
+  container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
 }
 
@@ -478,9 +477,11 @@ function trustedListPanel(entries, page = 0) {
       .addActionRowComponents(...trustedActionRow(entry));
   }
 
-  if (pageCount > 1) {
-    container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
-  }
+  // Sayfa bilgisi ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
+  container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, entries.length)}`))
+    .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
 
   return container;
 }

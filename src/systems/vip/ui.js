@@ -27,13 +27,12 @@ function table(guild, ranking, page = 0) {
     thumbnail: guild.iconURL({ size: 256 }),
     blocks: [lines.length ? lines.join('\n') : '**Henüz VIP üye yok.**\nVIP rolünü yöneticiler verir.'],
   });
-  if (pageCount > 1) {
-    const nav = (target, slot) => `${IDS.page}:${target}:${slot}`;
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, ranking.length)}`))
-      .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
-  }
+  // Sayfa bilgisi ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
+  const nav = (target, slot) => `${IDS.page}:${target}:${slot}`;
+  container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, ranking.length)}`))
+    .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
 }
 

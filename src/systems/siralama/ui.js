@@ -83,7 +83,8 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
   });
 
   // Sıra: dönem butonları, rol ve tür menüleri, liste başlığı + liste (başlıktan ayrı bir metin: listedeki küçük satırlar
-  // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi ve en altta sayfa butonları (tek sayfada ikisi de yok)
+  // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi ve en altta sayfa butonları (her zaman görünür, tek
+  // sayfada pasif)
   container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -113,13 +114,11 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**${TYPES[type]} (${periodLabel(period, days)})**`), text(listBlock));
 
-  if (pageCount > 1) {
-    const nav = (target, slot) => `${IDS.navigate}:${state(type, period, days, roleId)}:${target}:${slot}`;
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, ranking.length)}`))
-      .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
-  }
+  const nav = (target, slot) => `${IDS.navigate}:${state(type, period, days, roleId)}:${target}:${slot}`;
+  container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, ranking.length)}`))
+    .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
 }
 
