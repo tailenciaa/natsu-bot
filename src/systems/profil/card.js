@@ -50,9 +50,9 @@ function duration(seconds) {
 // Yuvarlak köşeli kutunun üstüne ince parlak şerit ve iç dolgu: kartın bütün paneleri bu "cam" düzeniyle çizilir
 function glass(ctx, x, y, w, h, r, tint = '255,255,255') {
   const fill = ctx.createLinearGradient(x, y, x, y + h);
-  fill.addColorStop(0, `rgba(${tint},0.09)`);
-  fill.addColorStop(0.5, `rgba(${tint},0.045)`);
-  fill.addColorStop(1, `rgba(${tint},0.02)`);
+  fill.addColorStop(0, `rgba(${tint},0.12)`);
+  fill.addColorStop(0.5, `rgba(${tint},0.06)`);
+  fill.addColorStop(1, `rgba(${tint},0.025)`);
   roundRect(ctx, x, y, w, h, r);
   ctx.fillStyle = fill;
   ctx.fill();
@@ -61,14 +61,14 @@ function glass(ctx, x, y, w, h, r, tint = '255,255,255') {
   roundRect(ctx, x, y, w, h, r);
   ctx.clip();
   const sheen = ctx.createLinearGradient(x, y, x, y + 20);
-  sheen.addColorStop(0, `rgba(${tint},0.2)`);
+  sheen.addColorStop(0, `rgba(${tint},0.24)`);
   sheen.addColorStop(1, `rgba(${tint},0)`);
   ctx.fillStyle = sheen;
   ctx.fillRect(x, y, w, 20);
   ctx.restore();
 
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = `rgba(${tint},0.13)`;
+  ctx.strokeStyle = `rgba(${tint},0.16)`;
   roundRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, Math.max(1, r - 0.75));
   ctx.stroke();
 }
@@ -107,11 +107,12 @@ async function paintHeader(ctx, view, theme, p, base) {
   if (!custom.banner || !(await drawBanner(ctx, custom))) {
     drawCover(ctx, coverOf(custom.cover).effect ?? theme.effect, { x: 0, y: 0, w: WIDTH, h: HEADER }, p);
   }
-  const shade = ctx.createLinearGradient(0, 0, 0, 170);
-  shade.addColorStop(0, 'rgba(8,5,10,0.42)');
+  // Etiketlerin (sıra ve coin) okunması için kapağın üstüne ince bir karartma; görseli bastırmayacak kadar hafif
+  const shade = ctx.createLinearGradient(0, 0, 0, 130);
+  shade.addColorStop(0, 'rgba(8,5,10,0.3)');
   shade.addColorStop(1, 'rgba(8,5,10,0)');
   ctx.fillStyle = shade;
-  ctx.fillRect(0, 0, WIDTH, 170);
+  ctx.fillRect(0, 0, WIDTH, 130);
   const fade = ctx.createLinearGradient(0, HEADER - 70, 0, HEADER);
   fade.addColorStop(0, 'rgba(12,8,16,0)');
   fade.addColorStop(1, base);

@@ -155,32 +155,37 @@ function dalga(ctx, w, h, p) {
   }
 }
 
-// Buzlu cam: üst üste binen yarı saydam lekeler ve parlak kenar halkaları (liquid glass görünümü)
+// Buzlu cam: üst üste binen saydam kabarcıklar, parlak halka kenarlar ve ışık kırılması (liquid glass görünümü)
 function cam(ctx, w, h, p) {
   const g = ctx.createLinearGradient(0, 0, w, h);
-  g.addColorStop(0, mix(p.from, '#ffffff', 0.08));
+  g.addColorStop(0, mix(p.from, '#ffffff', 0.12));
   g.addColorStop(0.5, p.to);
-  g.addColorStop(1, mix(p.from, '#ffffff', 0.16));
+  g.addColorStop(1, mix(p.from, '#ffffff', 0.2));
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
-  const blobs = [[0.12, 0.82, 0.3], [0.38, 0.16, 0.26], [0.62, 0.9, 0.22], [0.8, 0.28, 0.34], [0.98, 0.78, 0.24]];
-  blobs.forEach(([fx, fy, r], i) => {
+  const blobs = [[0.14, 0.72, 0.17], [0.35, 0.2, 0.13], [0.55, 0.88, 0.11], [0.75, 0.34, 0.2], [0.95, 0.82, 0.15], [0.46, 0.52, 0.08]];
+  blobs.forEach(([fx, fy, rf], i) => {
     const cx = w * fx;
     const cy = h * fy;
-    const rad = w * r;
-    const glass = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.4, rad * 0.05, cx, cy, rad);
-    glass.addColorStop(0, hexAlpha('#ffffff', 0.24));
-    glass.addColorStop(0.55, hexAlpha(i % 2 ? p.accent : '#ffffff', 0.1));
-    glass.addColorStop(1, hexAlpha(p.accent, 0));
+    const rad = w * rf;
+    const glass = ctx.createRadialGradient(cx - rad * 0.35, cy - rad * 0.45, rad * 0.05, cx, cy, rad);
+    glass.addColorStop(0, hexAlpha('#ffffff', 0.3));
+    glass.addColorStop(0.45, hexAlpha(i % 2 ? p.accent : '#ffffff', 0.14));
+    glass.addColorStop(1, hexAlpha(p.accent, 0.02));
     ctx.fillStyle = glass;
     ctx.beginPath();
     ctx.arc(cx, cy, rad, 0, Math.PI * 2);
     ctx.fill();
-    // lekelerin kenarı ışığı kırar: ince parlak yay
-    ctx.strokeStyle = hexAlpha('#ffffff', 0.3);
+    // kabarcığın kenarı ışığı kırar: tam halka + sol üstte parlak vurgu
     ctx.lineWidth = 2;
+    ctx.strokeStyle = hexAlpha('#ffffff', 0.22);
     ctx.beginPath();
-    ctx.arc(cx, cy, rad * 0.96, Math.PI * 1.05, Math.PI * 1.85);
+    ctx.arc(cx, cy, rad * 0.98, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = hexAlpha('#ffffff', 0.5);
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad * 0.9, Math.PI * 1.05, Math.PI * 1.45);
     ctx.stroke();
   });
 }
