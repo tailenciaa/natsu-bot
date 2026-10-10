@@ -15,7 +15,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, alert, field, fields, stamp, pageInfo, pagerRow } = require('../../core/ui');
+const { text, divider, colors, unix, quote, shorten, alert, field, fields, rows, chip, stamp, pageInfo, pagerRow } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -206,8 +206,10 @@ function reviewCard(request, decided) {
       text(
         fields([
           '**Talep Bilgileri**',
-          field('Gönderen', `<@${request.requesterId}>`),
-          field('Sunucu ID', `\`${request.serverId}\``),
+          rows([
+            ['Gönderen', `<@${request.requesterId}>`],
+            ['Sunucu ID', chip(request.serverId)],
+          ]),
           decided ? null : `<@&${config.roles.staff}>, **yeni bir partner talebi** var.`,
         ]),
       ),
@@ -269,7 +271,7 @@ function postCard(request, trusted, banned) {
   return container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Paylaşım**', field('Paylaşan', `<@${request.requesterId}>`), field('Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`)])),
+      text(fields(['**Paylaşım**', rows([['Paylaşan', `<@${request.requesterId}>`], ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`]])])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -306,7 +308,16 @@ const requesterResult = (sonuc, request, by) =>
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Talep Bilgileri**', field('Talep', `#${request.number}`), field('Sunucu ID', `\`${request.serverId}\``), field('Değerlendiren', `<@${by}>`)])),
+      text(
+        fields([
+          '**Talep Bilgileri**',
+          rows([
+            ['Talep', chip(`#${request.number}`)],
+            ['Sunucu ID', chip(request.serverId)],
+            ['Değerlendiren', `<@${by}>`],
+          ]),
+        ]),
+      ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(stamp()));
@@ -324,7 +335,7 @@ const serverBannedLog = (serverId, reason, by) =>
   noticeCard(
     'Sunucu Yasaklandı',
     'Bu sunucu **partner sisteminden yasaklandı**. Yasak kaldırılana kadar bu sunucuyla **partner yapılamaz** ve gelen talepler otomatik engellenir.',
-    ['**Yasak Bilgileri**', field('Sunucu ID', `\`${serverId}\``), field('Yasaklayan', `<@${by}>`)],
+    ['**Yasak Bilgileri**', rows([['Sunucu ID', chip(serverId)], ['Yasaklayan', `<@${by}>`]])],
     reason,
   );
 
@@ -342,7 +353,7 @@ const renewalCancelledLog = (entry, staffId, reason) =>
   noticeCard(
     'Teklif İptal Edildi',
     'Teklifte bulunma süreci atanan yetkili tarafından **iptal edildi**. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
-    ['**Teklif Bilgileri**', field('Sunucu ID', `\`${serverLabel(entry)}\``), field('Yetkili', `<@${staffId}>`)],
+    ['**Teklif Bilgileri**', rows([['Sunucu ID', chip(serverLabel(entry))], ['Yetkili', `<@${staffId}>`]])],
     reason,
   );
 
