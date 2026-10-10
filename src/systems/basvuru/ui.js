@@ -89,32 +89,32 @@ function applicationModal() {
     );
 }
 
-// Onaylanan başvurunun oryantasyon durumu: [durum yazısı, renk]
+// Onaylanan başvurunun oryantasyon durumu: [durum yazısı, renk]. Durum her satırda kalın etiket + kod rozetinde kısa değer.
+const durum = (etiket) => `**Durum:** ${chip(etiket)}`;
+
 function orientationStatus(app) {
   const o = app.orientation;
   if (o.status === 'choosing') {
     return [
-      `**Durum: Oryantasyon kararı bekleniyor**
-<@${o.staffId}> başvuruyu uygun buldu; oryantasyonu kendisinin mi vereceğine yoksa oryantasyon yetkililerine mi bırakacağına karar veriyor.`,
+      `${durum('Karar Bekleniyor')}\n<@${o.staffId}> başvuruyu uygun buldu; oryantasyonu kendisinin mi vereceğine yoksa oryantasyon yetkililerine mi bırakacağına karar veriyor.`,
       colors.primary,
     ];
   }
   if (o.status === 'unassigned' && o.holdBy) {
     return [
-      `**Durum: Oryantasyon beklemede**\n<@${o.holdBy}> oryantasyonu beklemeye aldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili kalınan adımdan devam eder.`,
+      `${durum('Beklemede')}\n<@${o.holdBy}> oryantasyonu beklemeye aldı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili kalınan adımdan devam eder.`,
       colors.warning,
     ];
   }
   if (o.status === 'unassigned') {
     return [
-      `**Durum: Oryantasyon yetkilisi bekleniyor**
-<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir.`,
+      `${durum('Yetkili Bekliyor')}\n<@${app.reviewedBy}> başvuruyu onayladı ve oryantasyonu yetkililere bıraktı. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir.`,
       colors.warning,
     ];
   }
   if (o.status === 'waiting') {
     return [
-      `**Durum: Oryantasyon bekleniyor**\n<@${app.reviewedBy}> onayladı, oryantasyonu <@${o.staffId}> verecek. ` +
+      `${durum('Oryantasyon Bekleniyor')}\n<@${app.reviewedBy}> onayladı, oryantasyonu <@${o.staffId}> verecek. ` +
         'İkisi aynı görüşme kanalına girince **oryantasyon kendiliğinden başlar.**',
       colors.primary,
     ];
@@ -122,13 +122,13 @@ function orientationStatus(app) {
   if (o.status === 'active') {
     const waiting = o.staffNeeded ? '\n**Yetkili ayrıldı,** oryantasyonu devralacak başka bir yetkili bekleniyor.' : '';
     return [
-      `**Durum: Oryantasyonda**\n<@${o.staffId}> şu an <#${o.channelId}> kanalında oryantasyon veriyor.${waiting}`,
+      `${durum('Oryantasyonda')}\n<@${o.staffId}> şu an <#${o.channelId}> kanalında oryantasyon veriyor.${waiting}`,
       o.staffNeeded ? colors.warning : colors.primary,
     ];
   }
   if (o.status === 'completed') {
     return [
-      `**Durum: Ekibe katıldı**\n<@${o.staffId}> oryantasyonu tamamladı, **${o.levelLabel}** yetkisiyle ekibe başladı.\n` +
+      `${durum('Ekibe Katıldı')}\n<@${o.staffId}> oryantasyonu tamamladı, **${o.levelLabel}** yetkisiyle ekibe başladı.\n` +
         `**${o.areaLabels.length > 1 ? 'Görev alanları' : 'Görev alanı'}:** ${o.areaLabels.join(', ')}`,
       colors.success,
     ];
@@ -137,7 +137,7 @@ function orientationStatus(app) {
   const penalty = app.penaltyUntil
     ? `\n**Başvuru cezası:** başvuran <t:${unix(app.penaltyUntil)}:D> tarihine kadar yeniden başvuru yapamaz.`
     : '';
-  return [`**Durum: Oryantasyon iptal edildi**\n${by}\n${quote(o.cancelReason)}${penalty}`, colors.danger];
+  return [`${durum('İptal Edildi')}\n${by}\n${quote(o.cancelReason)}${penalty}`, colors.danger];
 }
 
 // Başvurunun reddedilme / oryantasyonunun iptal edilme sebebi (yoksa null); sicil listesinde gösterilir
@@ -193,16 +193,16 @@ function applicationNotice(app, applicantUser) {
 
   const previous = app.previous?.total
     ? `${app.previous.total} başvuru${app.previous.rejected ? ` - ${app.previous.rejected} reddedildi` : ''}`
-    : 'Yok';
+    : chip('yok');
 
   const role = app.reviewerRoleId ? `<@&${app.reviewerRoleId}>, ` : '';
-  const info = [
-    // Başvuran başlıkta etiketli, burada sadece kullanıcı adı
-    `**Kullanıcı Adı:** \`${app.username}\``,
-    `**Hesap Oluşturma:** <t:${unix(app.accountCreatedAt)}:R>`,
-    `**Sunucuya Katılma:** ${app.joinedAt ? `<t:${unix(app.joinedAt)}:R>` : 'Bilinmiyor'}`,
-    `**Önceki Başvurular:** ${previous}`,
-  ].join('\n');
+  // Başvuran başlıkta etiketli, burada sadece kullanıcı adı
+  const info = rows([
+    ['Kullanıcı Adı', chip(app.username)],
+    ['Hesap Oluşturma', `<t:${unix(app.accountCreatedAt)}:R>`],
+    ['Sunucuya Katılma', app.joinedAt ? `<t:${unix(app.joinedAt)}:R>` : chip('bilinmiyor')],
+    ['Önceki Başvurular', previous],
+  ]);
 
   const container = card(
     pending ? `Yeni Başvuru #${pad(app.number)}` : `Başvuru #${pad(app.number)}`,
