@@ -29,6 +29,7 @@ module.exports = [
   require('./yayin'), // yayın yetkisi paneli: butonla yayın yetkisi rolünü alma / bırakma
   require('./siralama'),
   require('./seviye'),
+  require('./coin'), // /gunluk ve coin bakiyesi: etkinliklerden biriken para, profil kozmetiğinde harcanır
   require('./aktif'),
   require('./saygi'),
   require('./vip'),
