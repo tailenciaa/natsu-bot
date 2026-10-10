@@ -59,29 +59,29 @@ function aurora(ctx, w, h, p) {
 // Yıldız alanı: deterministik nokta yıldızlar + iki parlak yıldız ve ufuk parlaması
 function yildiz(ctx, w, h, p) {
   const g = ctx.createLinearGradient(0, 0, w * 0.4, h);
-  g.addColorStop(0, mix(p.from, '#000000', 0.55));
+  g.addColorStop(0, mix(p.from, '#ffffff', 0.06));
   g.addColorStop(1, p.to);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
-  for (let i = 0; i < 190; i++) {
+  for (let i = 0; i < 220; i++) {
     const x = hash(i, 1) * w;
     const y = hash(i, 2) * h;
-    const r = 0.5 + hash(i, 3) * 1.7;
-    ctx.fillStyle = hexAlpha('#ffffff', 0.18 + hash(i, 4) * 0.6);
+    const r = 0.6 + hash(i, 3) * 1.9;
+    ctx.fillStyle = hexAlpha('#ffffff', 0.25 + hash(i, 4) * 0.7);
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  for (const [fx, fy, size] of [[0.72, 0.24, 13], [0.24, 0.62, 9]]) {
+  for (const [fx, fy, size] of [[0.72, 0.24, 18], [0.24, 0.62, 12]]) {
     const x = w * fx;
     const y = h * fy;
-    const glow = ctx.createRadialGradient(x, y, 1, x, y, size * 4);
-    glow.addColorStop(0, hexAlpha(p.accent, 0.85));
+    const glow = ctx.createRadialGradient(x, y, 1, x, y, size * 5);
+    glow.addColorStop(0, hexAlpha(p.accent, 0.9));
     glow.addColorStop(1, hexAlpha(p.accent, 0));
     ctx.fillStyle = glow;
-    ctx.fillRect(x - size * 4, y - size * 4, size * 8, size * 8);
-    ctx.strokeStyle = hexAlpha('#ffffff', 0.55);
-    ctx.lineWidth = 1.4;
+    ctx.fillRect(x - size * 5, y - size * 5, size * 10, size * 10);
+    ctx.strokeStyle = hexAlpha('#ffffff', 0.7);
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.moveTo(x - size, y);
     ctx.lineTo(x + size, y);
@@ -197,7 +197,7 @@ const COVERS = [
   { key: 'yok', label: 'Temadan', note: 'Seçtiğin temanın kendi efekti', price: 0, effect: null },
   { key: 'aurora', label: 'Aurora', note: 'Eğik renkli ışık bulutları', price: 1800, effect: 'aurora' },
   { key: 'yildiz', label: 'Yıldız', note: 'Yıldız alanı ve parlak yıldızlar', price: 2600, effect: 'yildiz' },
-  { key: 'cam', label: 'Buzlu Cam', note: 'Üst üste binen saydam lekeler', price: 3400, effect: 'cam' },
+  { key: 'cam', label: 'Buzlu Cam', note: 'Saydam kabarcıklar ve ışık kırılması', price: 3400, effect: 'cam' },
   { key: 'dalga', label: 'Dalga', note: 'Üst üste binen yumuşak dalgalar', price: 4000, effect: 'dalga' },
   { key: 'izgara', label: 'Izgara', note: 'Retro perspektif zemin', price: 4800, effect: 'izgara' },
 ];
