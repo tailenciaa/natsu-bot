@@ -18,14 +18,13 @@ function helpPanel({ botName, avatarUrl, categories, total = 0 }) {
       ),
     );
 
-  // Panel yalnızca bu mesaj için: başlık, çizgi, açıklama, çizgi, menü
+  // Panel yalnızca bu mesaj için: avatarlı başlık + açıklama, çizgi, menü. Açıklama başlıkla aynı bölümde durur;
+  // ayrı bloğa yazılırsa yanındaki avatar kadar yükselir ve başlığın altında kocaman boşluk oluşur.
   return page({
     title: 'Yardım Menüsü',
+    sub: `Menüden **bir komut kategorisi seç**; ${botName} komutları profil, sıralama ve partner gibi kategorilere ayrılmış durumda ve seçimin o kategorinin komutlarını tek bir kartta karşına getirir. Bu menüde **${total}** komut var, komutun adına basarak hemen kullanabilirsin.`,
     thumbnail: avatarUrl,
     accent: colors.primary,
-    blocks: [
-      `Menüden **bir komut kategorisi seç**; ${botName} komutları profil, sıralama ve partner gibi kategorilere ayrılmış durumda ve seçimin o kategorinin komutlarını tek bir kartta karşına getirir. Bu menüde **${total}** komut var, komutun adına basarak hemen kullanabilirsin.`,
-    ],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(new ActionRowBuilder().addComponents(select));
