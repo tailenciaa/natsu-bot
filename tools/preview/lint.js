@@ -315,9 +315,10 @@ function lint(norm) {
     if (paths.length > 1) warn('tekrar', paths[1], `Aynı satır mesajda ${paths.length} kez geçiyor: "${line.length > 50 ? `${line.slice(0, 47)}...` : line}"`);
   }
 
-  // Durum yazan ama rengi olmayan container
+  // Durum yazan ama rengi olmayan container. Kalıp yalnızca tam durum bildirimini yakalar: "onaylandı", "reddedildi",
+  // "kapatıldı". "nasıl onaylandığını", "onaylanırsa" gibi anlatım ve koşul ekleri durum mesajı sayılmaz.
   if (!isModal) {
-    const statusRe = /kapat[ıi]ld[ıi]|reddedildi|onayland[ıi]/;
+    const statusRe = /(kapatıldı|reddedildi|onaylandı)(?!\p{L})/u;
     roots.forEach((c, i) => {
       if (c?.type !== T.CONTAINER || c.accent_color != null) return;
       const body = [];

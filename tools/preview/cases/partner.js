@@ -34,14 +34,14 @@ module.exports = ({ mock, src }) => {
     ...o,
   });
   // Test listesindeki her satır farklı yetkili/tarih taşır: gerçek veride de satırlar özdeş olmaz
-  const people = [member.id, staff.id];
+  const people = [member.id, staff.id, mock.user({ username: 'fatma', displayName: 'Fatma' }).id];
   const many = (n) =>
     Array.from({ length: n }, (_, i) =>
       entry({
         id: `${guild.id}-${i + 10}`,
         serverId: String(100000000000000000n + BigInt(i)),
         contactIds: i % 3 ? [people[i % people.length]] : [],
-        addedBy: people[(i + 1) % people.length],
+        addedBy: people[i % people.length],
         addedAt: mock.ago((3 + i) * mock.DAY),
       }),
     );
