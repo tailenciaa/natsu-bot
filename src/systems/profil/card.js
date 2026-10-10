@@ -98,51 +98,30 @@ function pill(ctx, text, right, y, color, textColor = '#ffffff') {
 }
 
 // Rozet etiketlerinin satırlara dağılımı: her etiket yazısına göre genişler, sığmayan alt satıra iner. En fazla
-// iki satır ayrılır; taşanlar tek bir "+N" etiketinde toplanır.
+// iki satır ayrılır; hiç sığdıramadıkların yerine son satıra tek bir "+N" etiketi konur.
 function badgeRows(ctx, badges, maxWidth) {
   ctx.font = font(500, 14);
-  const widthOf = (b) => ctx.measureText(b.label).width + 30;
-  const rows = [];
-  let row = [];
-  let x = 0;
-  let overflow = 0;
+  const items = badges.map((b) => ({ ...b, w: Math.round(ctx.measureText(b.label).width + 30) }));
 
-  for (const b of badges) {
-    const w = widthOf(b);
-    if (x + w > maxWidth) {
-      if (rows.length === BADGE_ROWS_MAX - 1) {
-        // Son satıra sığmayanlar birikecek; "+N" için yer bırakılıp satır kapatılır
-        overflow += row.length ? 1 : 0;
-        rows.push(row);
-        row = [];
-        x = 0;
-        overflow += badges.slice(badges.indexOf(b)).length - 1;
-        break;
+  const rows = [[]];
+  let used = 0;
+  let hidden = 0;
+  for (const b of items) {
+    // Satır boşsa etiket tek başına her zaman konur (uzun etiket birkaç piksel taşabilir)
+    if (used && used + b.w > maxWidth) {
+      if (rows.length === BADGE_ROWS_MAX) {
+        hidden += 1;
+        continue;
       }
-      rows.push(row);
-      row = [];
-      x = 0;
+      rows.push([]);
+      used = 0;
     }
-    if (x + w > maxWidth) break;
-    row.push({ ...b, w });
-    x += w + BADGE_GAP;
+    rows[rows.length - 1].push(b);
+    used += b.w + BADGE_GAP;
   }
-  if (row.length) rows.push(row);
 
-  const hidden = badges.length - rows.reduce((n, r) => n + r.length, 0);
-  if (hidden > 0 && rows.length) {
-    const last = rows[rows.length - 1];
-    const used = last.reduce((n, b) => n + b.w + BADGE_GAP, 0);
-    const more = { key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 46 };
-    if (used + more.w <= maxWidth) last.push(more);
-    else if (last.length > 1) {
-      const dropped = last.pop();
-      more.label = `+${hidden + 1}`;
-      last.push(more);
-      void dropped;
-    }
-  }
-  return rows;
+  if (hidden > 0) rows[rows.length - 1].push({ key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 46 });
+  return rows.filter((row) => row.length);
 }
 
 function drawBadges(ctx, rows, y) {
