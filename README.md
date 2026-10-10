@@ -62,6 +62,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
 | `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
 | `/kalici-oda liste`, `kapat`, `devret` | Kalıcı odaları ve bekleyen başvuruları listeler, oda kapatır, sahibi ayrılmış odayı bir üyeye devreder (başvuru panelden yapılır) | Yöneticiler |
+| `/muhabbet liste`, `kapat`, `sirayi-temizle` | Açık muhabbet odalarını ve sırayı listeler, bir odayı kapatır, sırayı boşaltır (sıraya paneldeki butondan girilir) | Yöneticiler |
 | `/log kur` | Log kurulum menüsünü açar | Yöneticiler |
 
 Ceza komutları (`/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban`, `/ceza-kaldir`, `/ceza-sil`) ve `/yetki-ver` ile `/yetki-al` sadece yetkili komut kanalında çalışır.
@@ -76,7 +77,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
 | Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
-| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği odalar), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
+| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği odalar), `muhabbet` (sıraya giren iki üyeyi baş başa getiren geçici odalar), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
 
@@ -120,5 +121,6 @@ node -e "process.env.GUILD_ID='1'; require('./src/systems')"   # bot yükleniyor
 - Görev rozetlerinin rol ödülleri: `src/systems/profil/config.js` içindeki `gorevRolleri`. Rol ID'leri boşsa özellik çalışmaz; doldurulunca bot açılırken tüm sunucu taranır, üye katılırken ve rozet sayfasını açtığında kendi rolleri rozet durumuna göre eşitlenir (hedef gerilerse rol geri alınır).
 - Kozmetik fiyatları: çerçeve ve sergi rozetleri `src/systems/profil/kozmetik.js`, temalar `themes.js`, arka plan efektleri `kapak.js` içinde.
 - Kalıcı oda: `src/systems/kalici-oda/config.js` — başvuru panelinin ve başvuruların düşeceği kanallar, inceleyen rol, ekip rolü, odaların açılacağı kategori ile üye/ses süresi gereksinimleri. Kanal ID'leri boşsa başvuru alınmaz, panel gönderilmez.
+- Muhabbet odası: `src/systems/muhabbet/config.js` — sıra panelinin düşeceği kanal, odaların açılacağı kategori, ekibin görebileceği rol; sıra bekleme süresi, oda kişi/süre limitleri, boş oda kapanması ve tekrar sıraya girme beklemesi ile panelde yazılı kurallar. Panel kanalı boşsa panel gönderilmez, kategori boşsa odalar kategori üstünde açılır.
 - Panel tarzı temadan gelir: `themes.js` içinde `glass: true` olan temalar buzlu cam panel, ötekiler düz opak panel çizer. Cam temalarda saydamlığı üye kartın altındaki **Görünüm** sayfasından ayarlar (`custom.glassOpacity`, 0-100); düz temada düğmeler pasif durur.
 - Botun rolü, verdiği rollerin (otorol, seviye, takviye, VIP vb.) üstünde olmalıdır.
