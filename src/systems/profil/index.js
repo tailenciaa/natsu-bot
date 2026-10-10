@@ -392,7 +392,7 @@ async function buy(interaction, tur, key) {
       worn: Boolean(shop.wear),
       note: uyarı,
     }),
-    { followUp: true, ephemeral: false, allowedMentions: { users: [interaction.user.id] } },
+    { followUp: true, allowedMentions: { users: [interaction.user.id] } },
   );
   return refreshLiveCard(interaction);
 }

@@ -46,7 +46,7 @@ async function handleCommand(interaction) {
   if (!interaction.options.getMember('kullanici')) {
     return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuya girmiş olması gerekir.');
   }
-  return respond(interaction, ui.staffPanel({ user, levelId: null, permIds: [], dutyIds: [] }), { ephemeral: false });
+  return respond(interaction, ui.staffPanel({ user, levelId: null, permIds: [], dutyIds: [] }));
 }
 
 // Seviye menüsü: seviyenin yetkilerini otomatik seçer
@@ -186,7 +186,7 @@ async function handleTakeCommand(interaction) {
   const isStaff = member.roles.cache.has(basvuruConfig.roles.accept) || [held.levelIds, held.permIds, held.dutyIds].some((list) => list.length);
   if (!isStaff) return replyError(interaction, 'Bu üyenin kaldırılacak yetkisi yok.', 'Üyede yetkili rolü bulunmuyor.');
   const picked = { levelIds: [], permIds: [], dutyIds: [] };
-  return respond(interaction, ui.takePanel({ user, held, picked }), { ephemeral: false });
+  return respond(interaction, ui.takePanel({ user, held, picked }));
 }
 
 // Rütbe, yetki ve görev menüleri: sadece kendi seçimini günceller, diğerleri ID'de taşınır

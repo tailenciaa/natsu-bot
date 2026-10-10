@@ -538,7 +538,6 @@ async function handleMemberCommand(interaction) {
     }
     store.updateTicket(channel.id, { addedIds: [...addedIds.add(target.id)] });
     return respond(interaction, core.alert(`<@${target.id}> bu destek talebine eklendi.`, null, 'success'), {
-      ephemeral: false,
       allowedMentions: { users: [target.id] },
     });
   }
@@ -553,7 +552,6 @@ async function handleMemberCommand(interaction) {
   addedIds.delete(target.id);
   store.updateTicket(channel.id, { addedIds: [...addedIds] });
   return respond(interaction, core.alert(`<@${target.id}> bu destek talebinden çıkarıldı.`, null, 'danger'), {
-    ephemeral: false,
   });
 }
 

@@ -659,7 +659,7 @@ async function handleDeletePost(interaction) {
   return respond(interaction, core.alert('Partner gönderisi silindi.', null, 'danger'));
 }
 
-const handleTrustedCommand = (interaction) => respond(interaction, ui.trustedList(store.trustedOf(interaction.guildId)), { ephemeral: false });
+const handleTrustedCommand = (interaction) => respond(interaction, ui.trustedList(store.trustedOf(interaction.guildId)));
 
 // Güvenilir liste sayfa butonları: partner-guven-sayfa:<sayfa>:<buton yeri>; sadece komutu kullanan gezebilir
 async function handleTrustedPage(interaction) {

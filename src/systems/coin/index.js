@@ -47,7 +47,7 @@ async function handleDaily(interaction) {
       balance: result.balance,
       nextAt: store.dailyReadyAt(interaction.user.id),
     }),
-    { ephemeral: false, allowedMentions: { users: [interaction.user.id] } },
+    { allowedMentions: { users: [interaction.user.id] } },
   );
 }
 

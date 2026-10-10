@@ -136,7 +136,6 @@ async function handleGive(interaction) {
   }
 
   return respond(interaction, ui.given(interaction.user.id, target.id, result.newTotal), {
-    ephemeral: false,
     allowedMentions: { users: [target.id] },
   });
 }
@@ -186,7 +185,7 @@ async function handleMessage(message) {
 // /saygi-siralama: tüm zamanların toplam tablosu
 async function handleTable(interaction) {
   const ranking = topUsers(interaction.guild, store.allTotals(), 15);
-  return respond(interaction, ui.table(interaction.guild, ranking), { ephemeral: false });
+  return respond(interaction, ui.table(interaction.guild, ranking));
 }
 
 // /saygi-onizleme: bu haftanın şu ana kadarki durumuna göre duyurunun örneğini sadece komutu kullanana gösterir

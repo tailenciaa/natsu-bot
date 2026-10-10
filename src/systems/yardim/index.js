@@ -118,7 +118,7 @@ function menu(interaction, tab) {
 // /yardim: menü herkese açık gönderilir; içinde kimin kullanabildiği yazılmayan komutlar herkes içindir,
 // gerisinin yanında ne gerektiği ("Gerekli: …") durur. Yetkili menüyü açtığında yetkili komutları da listelenir.
 async function handleCommand(interaction) {
-  return respond(interaction, menu(interaction), { ephemeral: false });
+  return respond(interaction, menu(interaction));
 }
 
 // Kategori menüsü: yardim:<kategori>. Menü herkese açık olduğu için kategoriyi herkes değiştirebilir; liste her

@@ -79,7 +79,7 @@ async function errorReply(interaction, result) {
     allowedMentions: { parse: [] },
   });
 }
-const successReply = (interaction, container) => respond(interaction, container, { ephemeral: false });
+const successReply = (interaction, container) => respond(interaction, container);
 
 // /uyari, /mute, /jail, /ban
 async function runPunish(interaction, type) {

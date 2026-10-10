@@ -111,7 +111,7 @@ const notOwner = (interaction) =>
 const show = (interaction, container) => interaction.update({ components: [container], allowedMentions: { parse: [] } });
 
 async function handleCommand(interaction) {
-  return respond(interaction, view(interaction, 'mesaj', 'genel', 0, '0', 0), { ephemeral: false });
+  return respond(interaction, view(interaction, 'mesaj', 'genel', 0, '0', 0));
 }
 
 // Dönem ve sayfa butonları: siralama:<tür>:<dönem>:<gün>:<rol>:<sayfa>:<buton yeri>

@@ -42,7 +42,6 @@ async function handleGive(interaction) {
   store.grant(target.id, interaction.user.id);
 
   return respond(interaction, ui.given(interaction.user.id, target.id, config.roleId), {
-    ephemeral: false,
     allowedMentions: { users: [target.id] },
   });
 }
@@ -59,7 +58,7 @@ async function vipRanking(guild) {
 
 // /vip-siralama: o an rolü taşıyan üyeler, VIP olma sırasına göre
 async function handleTable(interaction) {
-  return respond(interaction, ui.table(interaction.guild, await vipRanking(interaction.guild), 0), { ephemeral: false });
+  return respond(interaction, ui.table(interaction.guild, await vipRanking(interaction.guild), 0));
 }
 
 // Sayfa butonları: vip-sayfa:<sayfa>:<buton yeri>; sadece komutu kullanan kişi sayfa değiştirebilir
