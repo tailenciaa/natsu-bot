@@ -54,9 +54,15 @@ const { text, divider, fields, stamp } = core;
 // kaldırır ve üye profil kartının düzenleme düğmeleriyle baş başa kalır.
 const geriButton = () => new ButtonBuilder().setCustomId(IDS.geri).setLabel('Geri').setStyle(ButtonStyle.Secondary);
 
-// Mağazanın geri düğmesi, mağazanın hangi karttan açıldığına göre değişir: cüzdan kartından açılan mağaza
-// yerinde açıldığı için geri düğmesi de cüzdan kartına döner (coin-bakiye).
-const SHOP_BACK = { cuzdan: { id: 'coin-bakiye', label: 'Cüzdana Dön' } };
+// Mağazanın alt gezinme satırı, mağazanın hangi karttan açıldığına göre belirlenir: cüzdan kartından açılan mağaza
+// yerinde açıldığı için satır cüzdana döndürür ve siparişleri de taşır, profil kartından açılan sayfada Geri
+// mesajı kaldırır.
+const SHOP_NAV = {
+  cuzdan: [
+    { id: 'coin-bakiye', label: 'Cüzdana Dön' },
+    { id: 'coin-siparis:0', label: 'Siparişlerim' },
+  ],
+};
 
 // currentTheme: kayıtlı tema (yoksa ya da silinmişse menüde hiçbir seçenek seçili gelmez)
 function profile(imageName, editable, currentTheme = null, description = 'Profil kartı') {
@@ -327,13 +333,13 @@ function vitrinPage(current, featuredKey, featuredOptions, visitLine) {
 }
 
 // Mağaza: coin ile alınan kart çerçeveleri ve temalar. Her ürün kendi satırında, sağında al ya da giy düğmesi.
-// kaynak: mağazanın açıldığı kart ('cuzdan'); sekme düğmelerinin sonuna eklenir ki sekme değişince de korunsun.
+// kaynak: mağazanın açıldığı kart ('cuzdan'); sekme ve ürün düğmelerinin sonuna eklenir ki sayfa yerinde
+// yenilenirken alt gezinme satırı aynı yere dönsün.
 function shopPage(tab, tabs, balance, items, kaynak = null) {
-  const back = SHOP_BACK[kaynak];
-  const geri = back
-    ? new ButtonBuilder().setCustomId(back.id).setLabel(back.label).setStyle(ButtonStyle.Secondary)
-    : geriButton();
   const tabId = (key) => `${IDS.shopTab}${key}${kaynak ? `:${kaynak}` : ''}`;
+  const nav = (SHOP_NAV[kaynak] ?? [{ id: IDS.geri, label: 'Geri' }]).map((b) =>
+    new ButtonBuilder().setCustomId(b.id).setLabel(b.label).setStyle(ButtonStyle.Secondary),
+  );
   const container = new ContainerBuilder()
     .addTextDisplayComponents(text('## Profil Mağazası'))
     .addTextDisplayComponents(
@@ -341,7 +347,7 @@ function shopPage(tab, tabs, balance, items, kaynak = null) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Bakiyen:** ${core.chip(`${balance.toLocaleString('tr-TR')} coin`)}`))
-    .addActionRowComponents(core.tabRow(tabs, tab, tabId).addComponents(geri));
+    .addActionRowComponents(core.tabRow(tabs, tab, tabId));
 
   for (const item of items) {
     const button = new ButtonBuilder().setStyle(item.wearStyle ?? ButtonStyle.Secondary);
@@ -352,7 +358,8 @@ function shopPage(tab, tabs, balance, items, kaynak = null) {
         .setButtonAccessory(button.setCustomId(item.id).setDisabled(Boolean(item.disabled))),
     );
   }
-  return container;
+  // Ürünlerin altında çizgiyle ayrılmış gezinme satırı durur: sekmeler en üstte kalır, dönüş oradan yapılır
+  return container.addSeparatorComponents(divider()).addActionRowComponents(new ActionRowBuilder().addComponents(nav));
 }
 
 // ── Mağaza işlemlerinin bildirim kartları ─────────────────────────────────────

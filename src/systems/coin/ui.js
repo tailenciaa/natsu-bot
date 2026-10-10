@@ -2,7 +2,7 @@
 // Cüzdan tek mesajda gezilir: "Mağaza" ve "Siparişlerim" cüzdan kartının yerini alır, oradaki geri düğmesi yeniden
 // cüzdana döner; böylece üye parasının nereye gittiğini ayrı bir mesaj aramadan görür.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { page, divider, chip, rows, rel, receipt, pageInfo, pagerRow } = require('../../core/ui');
+const { page, divider, chip, pills, rel, receipt, pageInfo, pagerRow } = require('../../core/ui');
 
 const IDS = {
   shop: 'profil-ayar:magaza:cerceve:cuzdan', // profil mağazası; sekme ve kaynak taşıdığı için cüzdan kartının yerini alır
