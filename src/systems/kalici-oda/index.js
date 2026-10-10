@@ -59,7 +59,7 @@ const commands = [
         .setName('kapat')
         .setDescription('Bir kalıcı odayı kapatır ve kanallarını siler.')
         .addIntegerOption((o) => o.setName('no').setDescription('Oda numarasını girer.').setMinValue(1).setRequired(true))
-        .addStringOption((o) => o.setName('sebep').setDescription('Oda sahibine yazılacak kapatma sebebini girer.').setMax_length?.(300)),
+        .addStringOption((o) => o.setName('sebep').setDescription('Oda sahibine yazılacak kapatma sebebini girer.').setMaxLength(300)),
     )
     .addSubcommand((s) =>
       s
