@@ -273,14 +273,15 @@ function roomList(rooms, pendingCount) {
 // Başvuru sahibinin kendi aldığını gördüğü özet: sonucu sadece başvuran görür, yetkililer zaten kanaldaki kartı izliyor
 function submitted({ user, app, memberCount }) {
   return receipt({
-    title: 'Başvurun Alındı',
-    sub: 'Başvurun inceleme sırasına girdi; yetkililer kararı **DM** üzerinden bildirecek. Aynı anda tek başvurun bekleyebilir.',
+    title: 'Başvuru Alındı',
+    sub: `<@${user.id}> kalıcı oda başvurusu gönderdi; başvuru inceleme sırasına girdi. Karar başvuran üyeye **DM** üzerinden bildirilecek.`,
     user,
     pairs: [
       ['Başvuru', chip(`#${app.number}`)],
       ['Oda Adı', `**${app.roomName}**`],
       ['Üye', chip(`${memberCount} kişi`)],
     ],
+    note: 'Aynı anda tek bir başvuru bekleyebilir.',
   });
 }
 
