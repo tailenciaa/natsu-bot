@@ -270,6 +270,20 @@ function roomList(rooms, pendingCount) {
   });
 }
 
+// Başvuru sahibinin kendi aldığını gördüğü özet: sonucu sadece başvuran görür, yetkililer zaten kanaldaki kartı izliyor
+function submitted({ user, app, memberCount }) {
+  return receipt({
+    title: 'Başvurun Alındı',
+    sub: 'Başvurun inceleme sırasına girdi; yetkililer kararı **DM** üzerinden bildirecek. Aynı anda tek başvurun bekleyebilir.',
+    user,
+    pairs: [
+      ['Başvuru', chip(`#${app.number}`)],
+      ['Oda Adı', `**${app.roomName}**`],
+      ['Üye', chip(`${memberCount} kişi`)],
+    ],
+  });
+}
+
 module.exports = {
   IDS,
   applyPanel,
