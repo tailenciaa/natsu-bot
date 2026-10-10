@@ -671,8 +671,9 @@ function statusPanel(apps, page = 0, cardName = null) {
     container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, apps.length)}\n-# Son güncelleme: <t:${now}:R>`));
   }
 
-  // Menü ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
-  if (shown.length) {
+  // Detay menüsü yalnız kartlı sürümde var: çizim satırında buton taşınamaz, metinli yedekte her satırın kendi butonu var.
+  // Sayfa butonları her zaman görünür; tek sayfada pasif kalır
+  if (cardName && shown.length) {
     container.addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
