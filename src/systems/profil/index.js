@@ -301,7 +301,18 @@ async function handleSettings(interaction) {
       return interaction.showModal(ui.bannerModal(current));
     case 'sifirla':
       await interaction.deferUpdate();
-      store.set(interaction.user.id, { bio: null, title: null, color: null, theme: null, banner: null });
+      // Sahipli kozmetikler kalıcıdır; sıfırlama yalnızca kartın görünümünü varsayılana döndürür
+      store.set(interaction.user.id, {
+        bio: null,
+        title: null,
+        color: null,
+        theme: null,
+        banner: null,
+        pronoun: null,
+        links: {},
+        featured: null,
+        frame: 'yok',
+      });
       return refresh(interaction);
     case 'tema': {
       const theme = interaction.values[0];
@@ -325,7 +336,9 @@ async function handleSettings(interaction) {
       const key = interaction.values[0];
       if (!FEATURED.some((o) => o.key === key)) return interaction.deferUpdate();
       store.set(interaction.user.id, { featured: key });
-      await interaction.update({ components: [await vitrinMessage(interaction)], allowedMentions: { parse: [] } });
+      // Üye fetch'i uzayabilir: önce yanıt alınıp vitrin mesajı sonra yazılır
+      await interaction.deferUpdate();
+      await interaction.editReply({ components: [await vitrinMessage(interaction)], allowedMentions: { parse: [] } });
       return refreshLiveCard(interaction);
     }
     case 'rozetler': {
@@ -401,6 +414,4 @@ module.exports = {
   help: { category: ['siralama', 'Sıralama'], access: { profil: 'Herkes' } },
   slash: { profil: handleCommand },
   prefixed: [[ui.IDS.prefix, handleSettings]],
-  // Coin ödül tutarları mağaza metinlerinde de kullanılıyor; gereksiz çift listeyi önlemek için tek yerden bildirilir
-  awards: coinConfig.awards,
 };

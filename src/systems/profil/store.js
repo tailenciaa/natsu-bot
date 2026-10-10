@@ -1,7 +1,7 @@
 // Profil özelleştirmesi: biyografi, unvan, renk, tema ve kapak görselinin yanında vitrin (zamir, bağlantılar, öne
 // çıkan istatistik) ile coin ile alınan kozmetiklerin sahipliği. Ziyaret kaydı ayrı tutulur: profiles üyenin
-// kendi yazdığı şeyleri, profileVisits başkalarının kartına ne kadar bakıldığını taşır.
-// İleride coin/para sistemi de buraya eklenecek.
+// kendi yazdığı şeyleri, profileVisits başkalarının kartına ne kadar bakıldığını taşır. Coin bakiyesi ayrı bir
+// sistemde (coins) tutulur, buraya sadece alınan kozmetiklerin listesi yazılır.
 const { data, save } = require('../../core/db');
 
 data.profiles ??= {};
