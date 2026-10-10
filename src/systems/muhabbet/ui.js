@@ -93,11 +93,11 @@ function leftQueue({ user }) {
   });
 }
 
-// Eşleşen üyelere giden kart: odanın kanalları ve bundan sonra ne yapılacağı
+// Eşleşen üyelere giden kart: kanala düşer, üyeler 3. tekil şahısla anılır; kanalların kendisi yalnızca ikisine görünür
 function matchedCard(room) {
   return page({
     title: 'Muhabbet Eşleşti',
-    sub: 'Sırada seni bekleyen bir üye vardı; ikiniz için özel bir ses ve yazı odası açıldı. Kanallar yalnızca ikinize görünür, sunucudaki diğer üyeler bu odaları görmez.',
+    sub: `${pair(room)} eşleşti; ikisi için özel bir ses ve yazı odası açıldı. Kanallar yalnızca odadaki üyeler tarafından görülür.`,
     accent: colors.success,
     blocks: [
       rows([

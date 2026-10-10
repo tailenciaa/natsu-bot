@@ -85,7 +85,15 @@ async function handleStart(interaction) {
   const room = store.roomOfUser(guild.id, interaction.user.id);
   if (room) return respond(interaction, ui.matchedCard(room));
 
-  return respond(interaction, ui.queuedCard(store.position(guild.id, interaction.user.id), store.queueOf(guild.id).length, already));
+  return respond(
+    interaction,
+    ui.queuedCard({
+      user: interaction.user,
+      position: store.position(guild.id, interaction.user.id),
+      waiting: store.queueOf(guild.id).length,
+      already,
+    }),
+  );
 }
 
 // Paneldeki "Sıradan Ayrıl"
