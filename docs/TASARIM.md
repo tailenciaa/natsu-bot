@@ -64,6 +64,20 @@ açıklama satırı (normal yazı)
 - Her blok kalın bir başlık ya da ana cümleyle başlar, ardından düz değer satırları, en sonda normal yazıyla açıklama gelir; önemli sözcükler kalın yazılır. Bir blok en fazla yaklaşık 8 satırdır.
 - Serbest metin (konu, sebep, yorum) `quote()` ile alıntı bloğunda, etiket-değer satırları `**Etiket:** değer` biçimindedir.
 
+### Etiket-değer satırları: `rows`, `chip`, `pills`
+
+```
+**Başvuru:** `#0012`                      → kısa ve taranacak değer kod rozetinde
+**Durum:** `Yetkili Bekliyor` · <t:...:R>  → rozet + yanında normal yazı
+**Kilit:** `Açık` · **Görünürlük:** `Gizli` → aynı satırda birden çok durum: pills
+```
+
+- `rows([['Etiket', değer], ...])`, `fields`/`field` ile aynı çıktıyı verir; farkı çiftleri koşulla beslemeye izin vermesidir (`app.onHold && ['Beklemeye Alan', <@...>]`). Kartlardaki bilgi satırlarında `fields` yerine bu kullanılır.
+- `chip(değer)`: numara, süre, sayı, durum ve seçim gibi **kısa** değerler rozette durur (`#0012`, `3 gün`, `Müsait`, `12/25`, `5/8`). Cümleler, üye/kanal etiketleri (`<@id>`, `<#id>`) ve rol listeleri rozete girmez; düz yazı kalır.
+- `pills([['Etiket', değer], ...])`: aynı satırda duran birkaç durum tek satırda `Etiket: değer` kapsülleri olarak yazılır.
+- Boş değer rozette küçük harfle verilir (`yok`, `sınırsız`, `bilinmiyor`); durum etiketleri Başlık Düzeni'ndedir (`Yetkili Bekliyor`, `Ekibe Katıldı`).
+- Kart başlığı bloğu zaten anlatıyorsa (**Talep Bilgileri** gibi) blok başlığı yinelenmez; başlığın ayrı bir grup bilgisi topladığı kartlarda (sicil detayı, itiraz kartı) başlık yerinde kalır.
+
 ### Bildirim: `alert(mesaj, ipucu, renk)` / `notice(bölümler, renk)`
 
 Kısa hata, onay ve uyarı. Biçim `**Ana cümle.**` + isteğe bağlı normal yazıyla ikinci satır. Hata cümlesi "ne oldu + ne yapmalı" sırasındadır.
@@ -140,10 +154,11 @@ Yeni mesaj eklerken `tools/preview/cases/<sistem>.js` içine bir case eklenir; `
 
 1. Embed, emoji ya da ok simgesi var mı (⭐ hariç)?
 2. Ana cümle ve anahtar sözcükler kalın, açıklama normal boyutta (`-#` yalnızca izin verilen yerlerde), ilgisiz bloklar çizgiyle ayrılmış mı?
-3. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
-4. Başlık kısa ve tek satır mı? Buton en çok 20 karakter ve Başlık Düzeni mi?
-5. Yön sözcüğü gerçekten doğru mu, buton adı metinde doğru yazılmış mı?
-6. Boş durum, uzun metin, 40 bileşen / 4000 karakter ve 25 seçenek sınırı düşünülmüş mü?
-7. Etiket yalnızca gerekenleri mi çağırıyor?
-8. Türkçe: yazım, ek uyumu, tutarlı terim, ünlem sayısı.
-9. Her etkileşimli bileşen bir işleyiciye bağlı mı (`check.js` doğrular)?
+3. Bilgi satırları `rows` ile mi kuruluyor ve kısa değerler (numara, süre, durum, sayı) `chip` içinde mi?
+4. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
+5. Başlık kısa ve tek satır mı? Buton en çok 20 karakter ve Başlık Düzeni mi?
+6. Yön sözcüğü gerçekten doğru mu, buton adı metinde doğru yazılmış mı?
+7. Boş durum, uzun metin, 40 bileşen / 4000 karakter ve 25 seçenek sınırı düşünülmüş mü?
+8. Etiket yalnızca gerekenleri mi çağırıyor?
+9. Türkçe: yazım, ek uyumu, tutarlı terim, ünlem sayısı.
+10. Her etkileşimli bileşen bir işleyiciye bağlı mı (`check.js` doğrular)?
