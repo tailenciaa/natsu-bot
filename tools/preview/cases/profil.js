@@ -177,6 +177,7 @@ module.exports = ({ mock, ui, src }) => {
             { cerceve: 'Çerçeveler', tema: 'Temalar' },
             5400,
             shopRows([
+              { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok`, label: 'Giy', style: 2 },
               { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz`, label: 'Al · 1.200', style: 2 },
               { name: 'Gümüş', note: kozmetik.FRAMES[2].note, state: 'Sahipsin', id: `${p.IDS.wear}cerceve:gumus`, label: 'Giy', style: 1 },
               { name: 'Altın', note: kozmetik.FRAMES[3].note, state: 'Kartında bu var', id: `${p.IDS.wear}cerceve:altin`, label: 'Giyili', disabled: true },

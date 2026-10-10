@@ -175,17 +175,18 @@ async function checkImage(url) {
 
 const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar' };
 
-// Ürün kataloğu: { tur, key, name, note, price } — ücretsiz olanlar sahibiyse "Giy" ile seçilir
+// Ürün kataloğu: { tur, key, name, note, price } — çerçevesiz hâl ücretsizdir, mağazada "Giy" olarak durur
 function catalog(tur) {
   if (tur === 'tema') {
     return Object.entries(THEMES)
       .filter(([, theme]) => theme.price > 0)
       .map(([key, theme]) => ({ tur, key, name: theme.label, note: theme.description, price: theme.price }));
   }
-  return kozmetik.FRAMES.filter((f) => f.price > 0).map((f) => ({ tur: 'cerceve', key: f.key, name: f.label, note: f.note, price: f.price }));
+  return kozmetik.FRAMES.map((f) => ({ tur: 'cerceve', key: f.key, name: f.label, note: f.note, price: f.price }));
 }
 
-const ownsItem = (tur, custom, key) => (tur === 'tema' ? (custom.ownedThemes ?? []).includes(key) : (custom.ownedFrames ?? []).includes(key));
+const ownsItem = (tur, custom, key) =>
+  tur === 'tema' ? (custom.ownedThemes ?? []).includes(key) : key === 'yok' || (custom.ownedFrames ?? []).includes(key);
 
 const wornItem = (tur, custom, key) => (tur === 'tema' ? custom.theme === key : (custom.frame ?? 'yok') === key);
 
@@ -196,6 +197,7 @@ function shopRows(tur, custom) {
     const worn = wornItem(tur, custom, item.key);
     const base = { name: item.name, note: item.note };
     if (worn) return { ...base, state: 'Kartında bu var', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giyili', disabled: true };
+    if (item.price === 0) return { ...base, state: 'Ücretsiz', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: ButtonStyle.Secondary };
     if (owned) return { ...base, state: 'Sahipsin', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: ButtonStyle.Primary };
     return { ...base, state: `${number(item.price)} coin`, id: `${ui.IDS.buy}${tur}:${item.key}`, label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
   });
@@ -238,20 +240,15 @@ async function buy(interaction, tur, key) {
   return refreshLiveCard(interaction);
 }
 
-// Sahip olunan ürünü giyme
+// Sahip olunan ürünü giyme (çerçevesiz hâl de bir seçenektir, ücretsiz sayılır)
 async function wear(interaction, tur, key) {
   const item = catalog(tur).find((i) => i.key === key);
-  const free = tur === 'cerceve' && key === 'yok';
-  if (!item && !free) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
-  if (!free && !ownsItem(tur, store.get(interaction.user.id), key)) return replyError(interaction, 'Önce satın alman gerekiyor.', 'Mağaza sayfasından bakiyeni görebilirsin.');
+  if (!item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
+  if (!ownsItem(tur, store.get(interaction.user.id), key)) return replyError(interaction, 'Önce satın alman gerekiyor.', 'Mağaza sayfasından bakiyeni görebilirsin.');
 
   store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
-  await respond(
-    interaction,
-    core.alert('Kartın güncellendi.', `${free ? 'Çerçevesiz' : item.name} görünümü seçildi; profil kartın da hemen böyle çizildi.`),
-    { followUp: true },
-  );
+  await respond(interaction, core.alert('Kartın güncellendi.', `${item.name} görünümü seçildi; profil kartın da hemen böyle çizildi.`), { followUp: true });
   return refreshLiveCard(interaction);
 }
 
