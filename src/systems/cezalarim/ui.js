@@ -162,11 +162,12 @@ const itirazTicketReason = (p) => `Ceza İtirazı: ${label(p)}`;
 
 // Cezanın kısa durumu (uyarılarda yok)
 function durumText(p) {
-  if (p.type === 'uyari') return null;
-  if (p.status === 'lifted' || p.status === 'deleted') return 'Kaldırıldı';
-  if (p.status === 'expired') return 'Süresi doldu';
-  if (!p.expiresAt) return 'Aktif, süresiz';
-  return p.expiresAt <= Date.now() ? 'Süresi doldu' : `Aktif, <t:${unix(p.expiresAt)}:R> bitiyor`;
+  if (p.status === 'deleted') return chip('Kaldırıldı');
+  const word = stateWord(p);
+  if (!word) return null;
+  if (word !== 'Aktif') return chip(word);
+  if (!p.expiresAt) return `${chip('Aktif')} · ${chip('Süresiz')}`;
+  return p.expiresAt <= Date.now() ? chip('Süresi doldu') : `${chip('Aktif')} · <t:${unix(p.expiresAt)}:R> bitiyor`;
 }
 
 // İtiraz talebi açılınca alt başlığa giden, cezanın bilgisini gösteren ve yetkiliye onay/red butonu sunan kart.
