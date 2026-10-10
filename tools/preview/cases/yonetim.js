@@ -73,7 +73,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Panelde Süreyi Öğren butonuna basınca',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.sureView([mute, jail, warn])], ...ep }),
+      build: () => ({ components: [cz.sureView([mute, jail, warn])], ...noMentions }),
     },
     {
       id: 'cz-sure-bos',
@@ -81,7 +81,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Süreyi Öğren butonuna basınca',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.sureView([])], ...ep }),
+      build: () => ({ components: [cz.sureView([])], ...noMentions }),
     },
     {
       id: 'cz-sure-cok',
@@ -89,7 +89,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Süreyi Öğren butonuna basınca, 30 aktif kayıt',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.sureView(many(30))], ...ep }),
+      build: () => ({ components: [cz.sureView(many(30))], ...noMentions }),
     },
     {
       id: 'cz-sebep',
@@ -97,7 +97,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Panelde Sebebi Öğren butonuna basınca',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.sebepView([mute, ban, long])], ...ep }),
+      build: () => ({ components: [cz.sebepView([mute, ban, long])], ...noMentions }),
     },
     {
       id: 'cz-sebep-bos',
@@ -105,7 +105,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Sebebi Öğren butonuna basınca',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.sebepView([])], ...ep }),
+      build: () => ({ components: [cz.sebepView([])], ...noMentions }),
     },
     {
       id: 'cz-sebep-cok',
@@ -113,7 +113,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Sebebi Öğren butonuna basınca, 30 aktif kayıt',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.sebepView(many(30))], ...ep }),
+      build: () => ({ components: [cz.sebepView(many(30))], ...noMentions }),
     },
     {
       id: 'cz-itiraz-yok',
@@ -121,7 +121,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Panelde İtiraz Et butonuna basınca',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.itirazNoneView()], ...ep }),
+      build: () => ({ components: [cz.itirazNoneView()], ...noMentions }),
     },
     {
       id: 'cz-itiraz-sec',
@@ -129,7 +129,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Panelde İtiraz Et butonuna basınca',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.itirazPicker([mute, jail, ban, long])], ...ep }),
+      build: () => ({ components: [cz.itirazPicker([mute, jail, ban, long])], ...noMentions }),
     },
     {
       id: 'cz-itiraz-sec-cok',
@@ -137,7 +137,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'İtiraz Et butonuna basınca, 30 aktif kayıt',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [cz.itirazPicker(many(30))], ...ep }),
+      build: () => ({ components: [cz.itirazPicker(many(30))], ...noMentions }),
     },
     {
       id: 'cz-itiraz-modal',
@@ -346,15 +346,15 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Paneldeki Yayın Yetkisi Al düğmesi',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [yayin.granted({ user: staff })], ...ep }),
+      build: () => ({ components: [yayin.granted({ user: staff })], ...noMentions }),
     },
     {
       id: 'yayin-birakildi',
       title: 'Yayın yetkisi bırakıldı',
       where: 'Paneldeki Yetkiyi Bırak düğmesi',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [yayin.released({ user: staff })], ...ep }),
+      build: () => ({ components: [yayin.released({ user: staff })], ...noMentions }),
     },
     {
       id: 'pg-panel',

@@ -19,7 +19,7 @@ module.exports = ({ mock, ui }) => {
       where: 'İşlem başarıyla tamamlanınca, sadece kullanana',
       visibility: 'public',
       kind: 'message',
-      build: () => msg(ui.alert('Ekibe hatırlatma gönderildi.', 'Bir yetkili kısa süre içinde talebini üstlenecek.', 'success'), eph),
+      build: () => msg(ui.alert('Ekibe hatırlatma gönderildi.', 'Bir yetkili kısa süre içinde talebini üstlenecek.', 'success'), { allowedMentions: { parse: [] } }),
     },
     {
       id: 'alert-bekliyor',
@@ -27,7 +27,7 @@ module.exports = ({ mock, ui }) => {
       where: 'İşlem sürerken ya da bekleme gerektirince, sadece kullanana',
       visibility: 'public',
       kind: 'message',
-      build: () => msg(ui.alert('Talebin şu an oluşturuluyor.', 'Birkaç saniye bekle.', 'warning'), eph),
+      build: () => msg(ui.alert('Talebin şu an oluşturuluyor.', 'Birkaç saniye bekle.', 'warning'), { allowedMentions: { parse: [] } }),
     },
     {
       id: 'alert-notr',
@@ -43,7 +43,7 @@ module.exports = ({ mock, ui }) => {
       where: 'Birbirinden bağımsız iki bilginin tek mesajda verildiği yerler',
       visibility: 'public',
       kind: 'message',
-      build: () => msg(ui.notice(['**Ayarlar kaydedildi.**\nDeğişiklikler hemen geçerli.', '**Sonraki adım**\nPanel mesajı yenilenecek.'], 'success'), eph),
+      build: () => msg(ui.notice(['**Ayarlar kaydedildi.**\nDeğişiklikler hemen geçerli.', '**Sonraki adım**\nPanel mesajı yenilenecek.'], 'success'), { allowedMentions: { parse: [] } }),
     },
     {
       id: 'panel-bannerli',

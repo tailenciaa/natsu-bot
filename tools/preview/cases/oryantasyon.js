@@ -88,7 +88,7 @@ module.exports = ({ mock, ui, src }) => {
     { id: 'devral-alindi', title: 'Oryantasyon devralındı', where: 'Başvurular kanalı', visibility: 'log', kind: 'message', build: () => msg(o.takeoverNotice(app({ transfers: [{ from: other.id, to: staff.id }] }), 'taken')) },
     { id: 'devral-bitti', title: 'Oryantasyon sona erdi (devral)', where: 'Başvurular kanalı', visibility: 'log', kind: 'message', build: () => msg(o.takeoverNotice(app(), 'closed')) },
     { id: 'panel-tasindi', title: 'Panel taşındı', where: 'Eski kanalın sohbeti', visibility: 'public', kind: 'message', build: () => msg(o.panelMoved(app())) },
-    { id: 'aktar-sec', title: 'Aktarma: yetkili seçimi', where: 'Yetkiliye Aktar butonu', visibility: 'public', kind: 'message', build: () => ({ components: [o.transferPicker(app())], ...eph }) },
+    { id: 'aktar-sec', title: 'Aktarma: yetkili seçimi', where: 'Yetkiliye Aktar butonu', visibility: 'public', kind: 'message', build: () => ({ components: [o.transferPicker(app())], ...noMentions }) },
     { id: 'aktar-bildirim', title: 'Aktarma bildirimi (kanal)', where: 'Görüşme kanalının sohbeti', visibility: 'public', kind: 'message', build: () => ({ components: [o.transferNotice(app({ step: 3 }), other.id)], allowedMentions: { users: [] } }) },
     { id: 'iptal-form', title: 'Form: oryantasyonu iptal et', where: 'Oryantasyonu İptal butonu', visibility: 'ephemeral', kind: 'modal', build: () => o.cancelModal(app()) },
   ];
