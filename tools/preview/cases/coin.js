@@ -1,8 +1,10 @@
-// Coin sistemi (src/systems/coin): /gunluk ödülü ve hata/onay metinleri. Tutarlar gerçek config'den alınır, böylece
-// ayar değişince önizleme de değişir ve metindeki sayılarla config aynı kalır.
-module.exports = ({ ui, src }) => {
+// Coin sistemi (src/systems/coin): /gunluk ödülü, /bakiye cüzdanı, sipariş listesi ve hata/onay metinleri.
+// Tutarlar gerçek config'den alınır, böylece ayar değişince önizleme de değişir ve metindeki sayılarla config aynı kalır.
+module.exports = ({ mock, ui, src }) => {
   const config = src('systems/coin/config');
+  const coin = src('systems/coin/ui');
   const noMentions = { allowedMentions: { parse: [] } };
+  const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
   const base = config.daily.base;
   // Seri bonusi (streak - 1) * streakBonus, seviye bonusu seviye * perLevel; beşinci günde altı seviyelik üye
   const streakBonus = 4 * config.daily.streakBonus;

@@ -371,6 +371,8 @@ async function buy(interaction, tur, key) {
   store.addOwned(interaction.user.id, shop.field, key);
   // Satın alınan hemen giyilir; kart hem mağaza mesajında hem profil mesajında güncellenir
   if (shop.wear) store.set(interaction.user.id, { [shop.wear]: key });
+  // Harcama sipariş olarak kaydedilir: üye /bakiye üzerinden parasının nereye gittiğini görebilsin
+  coinStore.recordPurchase(interaction.user.id, { tur, key, name: item.name, price: item.price });
 
   // Kapağında kendi görseli olan üye satın aldığı arka planı kartta göremez: nedenini hemen söyle
   const uyarı = shop.wear === 'cover' && custom.banner ? '\nKartında kendi görselin durduğu için arka plan şimdilik görünmez; kapak düzenleyiciden görseli kaldırabilirsin.' : '';

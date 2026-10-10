@@ -320,7 +320,7 @@ function shopPage(tab, tabs, balance, items) {
       text('Coinler günlük giriş, seviye atlama, haftalık derece ve saygınlık vermekten birikir. Alınan kozmetik kalıcıdır; istediğin zaman değiştirip tekrar giyebilirsin.'),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Bakiyen:** ${balance.toLocaleString('tr-TR')} coin`))
+    .addTextDisplayComponents(text(`**Bakiyen:** ${core.chip(`${balance.toLocaleString('tr-TR')} coin`)}`))
     .addActionRowComponents(core.tabRow(tabs, tab, (key) => `${IDS.shopTab}${key}`));
 
   for (const item of items) {

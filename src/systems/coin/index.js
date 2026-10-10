@@ -35,12 +35,11 @@ async function handleDaily(interaction) {
   }
 
   const { base } = config.daily;
-  const number = ui.number;
   return respond(
     interaction,
     core.alert(
-      `${number(result.amount)} coin topladın.`,
-      `**${result.streak}. gün** serin. Taban **${base}**, seri ve seviye bonusu **${result.bonus}**, bakiyen **${number(result.balance)}** coin.`,
+      `${ui.number(result.amount)} coin topladın.`,
+      `**${result.streak}. gün** serin. Taban **${base}**, seri ve seviye bonusu **${result.bonus}**, bakiyen **${ui.number(result.balance)}** coin.`,
       'success',
     ),
   );
