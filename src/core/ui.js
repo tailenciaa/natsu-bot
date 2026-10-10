@@ -47,6 +47,17 @@ const messageUrl = (guildId, channelId, messageId) => `https://discord.com/chann
 const hasValue = (value) => value !== null && value !== undefined && value !== false && value !== '';
 const fields = (rows) => rows.filter(hasValue).join('\n');
 const field = (label, value) => `**${label}:** ${value}`;
+// Bir metnin içine kısa değer (numara, süre, durum, kimlik) gömme biçimi: kod rozeti. Rozetin içi Discord'da
+// kutucuk gibi görünür, uzun açıklamalarla yan yana geldiğinde kartın okunmasını kolaylaştırır.
+const chip = (value) => `\`${value}\``;
+// Etiket-değer bloğu: [[etiket, değer], ...] çiftleri; koşullu satırlar için false ya da boş değerli çift atlanır
+const rows = (pairs) =>
+  pairs.filter((pair) => Array.isArray(pair) && hasValue(pair[1])).map(([label, value]) => field(label, value)).join('\n');
+// Kapsül sırası: `Ceza Puanı: 30` · `Aktif: 1` — sayısal özetler tek satırda toplanır
+const pills = (pairs) =>
+  pairs.filter((pair) => Array.isArray(pair) && hasValue(pair[1])).map(([label, value]) => chip(`${label}: ${value}`)).join(' · ');
+// Discord'un kendi saat dilimine çevirdiği göreceli zaman ("3 dakika önce")
+const rel = (ms) => `<t:${unix(ms)}:R>`;
 // Açıklama/ipucu satırı: normal boyutta yazılır. Küçük gri yazı (-#) çok okunaksız olduğu için sadece başlığın hemen
 // altındaki açıklamada (page/panel), zaman damgasında ve sayfa bilgisinde kullanılır (tools/preview/lint.js bunu denetler).
 const hint = (value) => String(value);
@@ -248,6 +259,10 @@ module.exports = {
   hasValue,
   fields,
   field,
+  chip,
+  rows,
+  pills,
+  rel,
   hint,
   block,
   pageInfo,
