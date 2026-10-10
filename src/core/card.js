@@ -188,6 +188,7 @@ module.exports = {
   relTime,
   createCard,
   measureCtx,
+  listHeight,
   drawHeading,
   drawRow,
   drawEmpty,

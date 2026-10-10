@@ -6,6 +6,8 @@ const {
   ContainerBuilder,
   FileBuilder,
   LabelBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ModalBuilder,
   SectionBuilder,
   StringSelectMenuBuilder,
@@ -17,7 +19,7 @@ const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
 
-const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, stamp } = core;
+const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, stamp, pageInfo, pagerRow } = core;
 
 const IDS = {
   create: 'destek:olustur',
@@ -31,7 +33,21 @@ const IDS = {
   closeReason: 'destek:kapat-sebep',
   closeNote: 'destek:kapat-not',
   statusDetail: 'destek-durum-detay', // destek-durum-detay:<alt başlık id>
+  statusPage: 'destek-durum-sayfa', // destek-durum-sayfa:<sayfa>:<buton yeri>
 };
+
+// Durum kartının başlığı ve açıklaması; kartı çizen (card.js) ve metinli yedeği kuran aynı metinleri kullanır
+const STATUS_TITLE = 'Açık Destek Talepleri';
+const STATUS_SUB =
+  'Destek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.';
+const STATUS_PAGE_SIZE = 6;
+
+// Talebin durum panelindeki hali: karttaki kısa etiket (pill), metinli yedekteki uzun satır ve renk tonu
+function ticketState(ticket) {
+  return ticket.claimedBy
+    ? { pill: 'Üstlenildi', line: `<@${ticket.claimedBy}> üstlendi`, tone: 'claim' }
+    : { pill: 'Bekliyor', line: 'Üstlenilmedi', tone: 'wait' };
+}
 
 // Log kanalı kapalıysa konuşma kaydı kimseye gitmez, mesajlarda bahsedilmez
 const logEnabled = () => Boolean(config.channels.log);
@@ -43,14 +59,13 @@ const reasonText = (closeReason) =>
 // Log satırlarındaki kişi: etiket ve (biliniyorsa) kullanıcı adı
 const personText = (id, user) => `<@${id}>${user ? ` (\`${user.username}\`)` : ''}`;
 
-// cardName: çizim kartı ekteyse açıklama ve not kartta olduğu için mesajda tekrar yazılmaz
-function panel(cardName) {
+function panel() {
   return core.panel({
     title: config.panel.title,
-    sub: cardName ? undefined : '**Talep Oluştur** butonuyla destek talebi açabilirsin. Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda talebini yaz; destek ekibimiz inceleyip en kısa sürede seninle ilgilenir.',
+    sub: '**Talep Oluştur** butonuyla destek talebi açabilirsin. Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda talebini yaz; destek ekibimiz inceleyip en kısa sürede seninle ilgilenir.',
     button: { id: IDS.create, label: config.panel.buttonLabel },
-    image: cardName ?? config.banner,
-    note: cardName ? undefined : config.panel.footer,
+    image: config.banner,
+    note: config.panel.footer,
   });
 }
 
