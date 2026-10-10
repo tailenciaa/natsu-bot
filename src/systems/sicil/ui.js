@@ -84,15 +84,11 @@ const dateOnly = (ms) => new Date(ms).toLocaleDateString('tr-TR', { timeZone: TI
 
 const ticketResult = (t) => (t.closedAt ? (t.closeReason?.label ?? 'Kapatıldı') : 'Açık');
 
-// Bölümlerdeki kayıtların listesi (kalın başlık + altında normal yazıyla özet satırı),
-// detay menüsündeki seçenekleri ve boşken görünen yazı. Sebep ve yorumlar listede kısaltılır.
+// Bölüm menüsünün seçenekleri. Kayıtların listesi kartta çizilir (card.js), mesajda yalnızca menü durur.
+// Sebep ve yorumlar menü seçeneğinde kısaltılır.
 const LISTS = {
   genel: {
-    title: 'Ceza Kayıtları',
-    empty: '-# Ceza kaydı yok.',
     placeholder: 'Ceza seç',
-    entry: (p) =>
-      `**Ceza #${p.number} - ${TYPES[p.type].label}**\n${[stateWord(p) && `**${stateWord(p)}**`, dateTime(p.createdAt), brief(p.reason)].filter(Boolean).join(' - ')}`,
     option: (p) => ({
       id: p.id,
       label: `Ceza #${p.number}`,
@@ -100,21 +96,15 @@ const LISTS = {
     }),
   },
   talepler: {
-    empty: '-# Destek talebi yok.',
     placeholder: 'Talep seç',
-    entry: (t) => `**Talep #${t.number}**\n${dateOnly(t.createdAt)} - **${ticketResult(t)}** - ${brief(t.reason)}`,
     option: (t) => ({ id: t.threadId, label: `Talep #${t.number}`, description: brief(`${ticketResult(t)} - ${t.reason}`, 100) }),
   },
   basvurular: {
-    empty: '-# Başvuru yok.',
     placeholder: 'Başvuru seç',
-    entry: (a) => `**Başvuru #${a.number}**\n${dateOnly(a.createdAt)} - **${applicationStatus(a)}**${cancelReasonOf(a) ? ` - ${brief(cancelReasonOf(a), 60)}` : ''}`,
     option: (a) => ({ id: a.id, label: `Başvuru #${a.number}`, description: `${applicationStatus(a)} - ${dateOnly(a.createdAt)}` }),
   },
   puan: {
-    empty: '-# Değerlendirme yok.',
     placeholder: 'Değerlendirme seç',
-    entry: (r) => `**${r.score}/5 - ${categoryOf(r).short}**\n${dateOnly(r.ratedAt)}${r.comment ? ` - ${brief(r.comment)}` : ''}`,
     option: (r) => ({ id: r.id, label: `${r.score}/5 - ${categoryOf(r).short}`, description: brief(`${refText(r)}${r.comment ? ` - ${r.comment}` : ''}`, 100) }),
   },
 };
