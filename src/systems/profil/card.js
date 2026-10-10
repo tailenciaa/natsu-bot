@@ -407,14 +407,14 @@ function paletteOf(theme, custom) {
 async function buildProfileCard(user, view) {
   const custom = view.custom;
   const theme = resolveTheme(custom, view.roleColor);
-  const { scheme, accent, c, p } = paletteOf(theme);
+  const { scheme, accent, c, p } = paletteOf(theme, custom);
 
   // Yükseklik çizimden önce bilinmeli: rozet satırları ve vitrin şeridi kartı uzatır
   const probe = measureCtx();
   const rows = badgeRows(probe, view.badges ?? [], WIDTH - PAD * 2);
   const badgesH = rows.length ? rows.length * BADGE_ROW_H + (rows.length - 1) * BADGE_ROW_GAP + 14 : 0;
   const hasFooter = Boolean(view.featured || view.links?.length || view.visits > 0);
-  const badgesTop = HEADER + 112;
+  const badgesTop = HEADER + 132;
   const bioY = badgesTop + badgesH;
   const levelY = bioY + BIO_H + GAP;
   const infoY = levelY + LEVEL_H + GAP;
