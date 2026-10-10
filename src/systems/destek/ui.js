@@ -326,14 +326,19 @@ function closeDm(ticketNumber, guildName, rating) {
   return container;
 }
 
+// Durum panelinin görünecek sayfası: kartı çizenle mesajı kuranın aynı dilimi kullanması için tek yerde
+function statusPage(tickets, page = 0) {
+  const pageCount = Math.max(1, Math.ceil(tickets.length / STATUS_PAGE_SIZE));
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  return { current, pageCount, shown: tickets.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE) };
+}
+
 // Durum kanalındaki canlı panel: açık tüm talepleri tek mesajda listeler; durum değiştikçe düzenlenir.
 // cardName: çizim kartı ekteyse başlık/açıklama ve talep satırları kartta olduğu için mesajda tekrar yazılmaz;
 // kartın altında menüden talep seçmeye ve sayfa gezmeye yarayan kontroller kalır
 function statusPanel(tickets, page = 0, cardName = null) {
   const now = Math.floor(Date.now() / 1000);
-  const pageCount = Math.max(1, Math.ceil(tickets.length / STATUS_PAGE_SIZE));
-  const current = Math.min(Math.max(page, 0), pageCount - 1);
-  const shown = tickets.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE);
+  const { current, pageCount, shown } = statusPage(tickets, page);
   const nav = (target, slot) => `${IDS.statusPage}:${target}:${slot}`;
 
   const container = new ContainerBuilder();
