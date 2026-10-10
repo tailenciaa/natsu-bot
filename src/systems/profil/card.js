@@ -57,8 +57,8 @@ function duration(seconds) {
 // Panel tarzı: cam temalarda gradyan + parlama + ince kenar, saydamlık üyenin ayarıyla ölçeklenir;
 // düz temalarda panel zeminden açılmış tek renkle doldurulur ( opak, parlama yok ).
 function panelStyle(theme, custom, base) {
-  const raw = Number(custom.glassOpacity);
-  const opacity = clamp(Number.isFinite(raw) ? raw : OPACITY_DEFAULT, 0, 100) / 100;
+  // null/undefined "ayar yok" demektir (Number(null) 0 olduğu için doğrudan Number() kullanılmaz)
+  const opacity = clamp(Number(custom.glassOpacity ?? OPACITY_DEFAULT), 0, 100) / 100;
   return {
     glass: Boolean(theme.glass),
     // 0 -> 1,4 kat belirgin; 1 -> 0,5 kat saydam (k panelin tüm alfa değerlerini çarpar)

@@ -11,13 +11,13 @@ const coinStore = require('../coin/store');
 const saygiStore = require('../saygi/store');
 const seviyeStore = require('../seviye/store');
 const siralamaStore = require('../siralama/store');
-const { buildHeaderPreview, buildProfileCard } = require('./card');
+const { buildHeaderPreview, buildProfileCard, OPACITY_DEFAULT, OPACITY_STEP } = require('./card');
 const kapak = require('./kapak');
 const kozmetik = require('./kozmetik');
 const gorev = require('./gorev');
 const rozet = require('./rozet');
 const store = require('./store');
-const { THEMES } = require('./themes');
+const { THEMES, resolveTheme } = require('./themes');
 const ui = require('./ui');
 
 const commands = [
@@ -204,7 +204,6 @@ async function kapakAction(interaction, neylem) {
 }
 
 // Kapak görseli bağlantısı: https olmalı; botun kendi ağındaki adreslere (localhost, IP) istek atmasın diye bunlar reddedilir
-function isImageUrl(value) {
   try {
     const url = new URL(value);
     if (url.protocol !== 'https:') return false;

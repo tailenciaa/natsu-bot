@@ -335,4 +335,4 @@ function shopPage(tab, tabs, balance, items) {
   return container;
 }
 
-module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, rozetPage, vitrinPage, shopPage };
+module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, gorunumPage, rozetPage, vitrinPage, shopPage };
