@@ -6,7 +6,10 @@ const { THEMES } = require('../../../src/systems/profil/themes');
 module.exports = ({ mock, ui, src }) => {
   const p = src('systems/profil/ui');
   const kozmetik = src('systems/profil/kozmetik');
+  const kapak = src('systems/profil/kapak');
   const rozet = src('systems/profil/rozet');
+  // index.js'teki SHOP_TABS ile aynı sekmeler
+  const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar', kapak: 'Arka Planlar', rozet: 'Rozetler' };
   // index.js'teki FEATURED listesiyle aynı içerik; kartta öne çıkan istatistik seçenekleri
   const featuredOptions = [
     { key: 'mesaj', label: 'Mesaj sıralaması', note: 'Tüm zamanların mesaj sıran' },
