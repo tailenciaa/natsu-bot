@@ -218,7 +218,7 @@ function readOnly(container, actions = []) {
 
 // Ceza detayı (cezaların başka yerde mesajı yok); canEdit ise süre ekle / kaldır / sil butonları
 function punishmentDetail(p, messageId, canEdit, banner) {
-  const lines = rows([
+  const info = rows([
     ['Hedef', `<@${p.userId}>`],
     ['Tür', chip(TYPES[p.type].label)],
     punishmentState(p) && ['Durum', punishmentState(p)],
@@ -239,7 +239,7 @@ function punishmentDetail(p, messageId, canEdit, banner) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Ceza Bilgileri**\n${lines.join('\n')}`))
+    .addTextDisplayComponents(text(`**Ceza Bilgileri**\n${info}`))
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Sebep**\n${quote(p.reason)}`));
   if (p.liftReason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Kaldırma Sebebi**\n${quote(p.liftReason)}`));
