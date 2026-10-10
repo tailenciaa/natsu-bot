@@ -160,12 +160,13 @@ async function paintHeader(ctx, view, theme, p, c) {
 
 // Kapağın rengi gövdeye hafif bir ışımayla sızar. Cam paneller yarı saydam olduğu için arkalarında bu ışımayı
 // görür; saydamlık ayarının fark edilebilir olmasını sağlayan şey budur. Düz panelleri ise kapatır, görünmez.
-// Sızıntı kapağın ALTINDA başlar ve kartın altı boyunca sıfıra iner: kapağın kendi altına taşıp orayı bulandırmaz,
-// gövdede keskin bir banttansa uzun, yumuşak bir geçiş bırakır.
+// Işıma kapağın hemen altında başlamaz (koyu bir kapağın altındaki açık bant kartı kirli gösterir): sıfırdan açılır,
+// gövdenin içinde güçlenir ve kartın altına doğru yeniden söner.
 function paintAmbient(ctx, height, p) {
   const body = height - HEADER;
-  const bleed = ctx.createLinearGradient(0, HEADER, 0, HEADER + Math.max(180, Math.round(body * 0.62)));
-  bleed.addColorStop(0, hexAlpha(p.to, 0.18));
+  const bleed = ctx.createLinearGradient(0, HEADER, 0, HEADER + Math.max(240, Math.round(body * 0.8)));
+  bleed.addColorStop(0, hexAlpha(p.to, 0));
+  bleed.addColorStop(0.3, hexAlpha(p.to, 0.16));
   bleed.addColorStop(1, hexAlpha(p.to, 0));
   ctx.fillStyle = bleed;
   ctx.fillRect(0, HEADER, WIDTH, body);
@@ -178,8 +179,8 @@ function paintAmbient(ctx, height, p) {
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   };
   // İki parlama aynı güçte ve gövdeye yayılmış durur; bir köşeye toplanan güçlü parlama kartı dengesiz gösterir
-  glow(WIDTH * 0.1, HEADER + Math.round(body * 0.28), 430, p.accent, 0.06);
-  glow(WIDTH * 0.9, height - Math.round(body * 0.22), 400, p.accent, 0.07);
+  glow(WIDTH * 0.1, HEADER + Math.round(body * 0.45), 430, p.accent, 0.055);
+  glow(WIDTH * 0.9, height - Math.round(body * 0.22), 400, p.accent, 0.06);
 }
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
@@ -559,7 +560,7 @@ async function buildHeaderPreview(view, note = null) {
   ctx.clip();
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, HEADER);
-  await paintHeader(ctx, view, theme, p, c.base);
+  await paintHeader(ctx, view, theme, p, c);
   ctx.restore();
 
   if (note) {
