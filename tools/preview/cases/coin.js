@@ -3,6 +3,13 @@
 module.exports = ({ ui, src }) => {
   const config = src('systems/coin/config');
   const noMentions = { allowedMentions: { parse: [] } };
+  const base = config.daily.base;
+  // Seri bonusi (streak - 1) * streakBonus, seviye bonusu seviye * perLevel; beşinci günde altı seviyelik üye
+  const streakBonus = 4 * config.daily.streakBonus;
+  const levelBonus = 6 * config.daily.perLevel;
+  const besinci = base + streakBonus + levelBonus;
+  // İlk dört gün seri bonusuyla, beşinci gün ayrıca seviye bonusu birikir
+  const bakiye = [0, 1, 2, 3].reduce((toplam, i) => toplam + base + i * config.daily.streakBonus, besinci);
 
   return [
     {
@@ -14,8 +21,8 @@ module.exports = ({ ui, src }) => {
       build: () => ({
         components: [
           ui.alert(
-            `${coinConfig.daily.base} coin topladın.`,
-            `**1. gün** serin. Taban **${coinConfig.daily.base}**, seri ve seviye bonusu **0**, bakiyen **${coinConfig.daily.base}** coin.`,
+            `${base} coin topladın.`,
+            `**1. gün** serin. Taban **${base}**, seri ve seviye bonusu **0**, bakiyen **${base}** coin.`,
             'success',
           ),
         ],
@@ -26,14 +33,14 @@ module.exports = ({ ui, src }) => {
     {
       id: 'gunluk-seri',
       title: '/gunluk: seri devam ediyor, seviye bonusu var',
-      where: '/gunluk komutu, art arda giriş yapan üyede',
+      where: '/gunluk komutu, art arda giriş yapan ve seviye atlamış üyede',
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
           ui.alert(
-            '106 coin topladın.',
-            `**5. gün** serin. Taban **${coinConfig.daily.base}**, seri ve seviye bonusu **66**, bakiyen **1.284** coin.`,
+            `${besinci} coin topladın.`,
+            `**5. gün** serin. Taban **${base}**, seri ve seviye bonusu **${streakBonus + levelBonus}**, bakiyen **${bakiye.toLocaleString('tr-TR')}** coin.`,
             'success',
           ),
         ],

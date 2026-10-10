@@ -29,11 +29,12 @@ async function handleDaily(interaction) {
   }
 
   const { base } = config.daily;
+  const number = (n) => Number(n).toLocaleString('tr-TR');
   return respond(
     interaction,
     core.alert(
-      `${result.amount} coin topladın.`,
-      `**${result.streak}. gün** serin. Taban **${base}**, seri ve seviye bonusu **${result.bonus}**, bakiyen **${result.balance}** coin.`,
+      `${number(result.amount)} coin topladın.`,
+      `**${result.streak}. gün** serin. Taban **${base}**, seri ve seviye bonusu **${result.bonus}**, bakiyen **${number(result.balance)}** coin.`,
       'success',
     ),
   );
