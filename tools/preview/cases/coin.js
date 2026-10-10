@@ -89,8 +89,8 @@ module.exports = ({ mock, ui, src }) => {
     {
       id: 'bakiye',
       title: '/bakiye: cüzdan kartı',
-      where: '/bakiye komutu, sadece kullanana görünür',
-      visibility: 'ephemeral',
+      where: '/bakiye komutu',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [coin.wallet({ user, balance: 18400, earned: 42000, spent: 23600, streak: 5, readyAt: Date.now() + 9 * 3600 * 1000 })],
@@ -102,7 +102,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'bakiye-odul-hazir',
       title: '/bakiye: günlük ödül hazır',
       where: '/bakiye, günün ödülünü henüz toplamamış üye',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [coin.wallet({ user, balance: 800, earned: 800, spent: 0, streak: 0, readyAt: Date.now() })],
@@ -114,7 +114,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'siparisler',
       title: 'Siparişlerim: alınmış ürünler',
       where: 'Cüzdan kartındaki Siparişlerim butonu',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [coin.orders({ user, items: purchases, page: 0 })],
@@ -126,7 +126,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'siparisler-bos',
       title: 'Siparişlerim: henüz alışveriş yok',
       where: 'Cüzdan kartındaki Siparişlerim butonu',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({ components: [coin.orders({ user, items: [], page: 0 })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
@@ -134,7 +134,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'siparisler-uzun',
       title: 'Siparişlerim: sayfalama',
       where: 'Sipariş listesi ikinci sayfada',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({ components: [coin.orders({ user, items: manyPurchases, page: 1 })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },

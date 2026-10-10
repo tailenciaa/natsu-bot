@@ -144,8 +144,8 @@ module.exports = ({ mock, ui, src }) => {
     {
       id: 'talep-acildi',
       title: 'Talep açıldı onayı',
-      where: 'Form gönderilince talebi açan üyeye, sadece ona görünür',
-      visibility: 'ephemeral',
+      where: 'Form gönderilince talebi açan üyeye',
+      visibility: 'public',
       kind: 'message',
       build: () => ({ components: [d.ticketCreated(thread)], flags: ui.EPHEMERAL_CV2, allowedMentions: { parse: [] } }),
     },

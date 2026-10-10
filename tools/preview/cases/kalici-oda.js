@@ -72,9 +72,9 @@ module.exports = ({ mock, src }) => {
     { id: 'form', title: 'Form: kalıcı oda başvurusu', where: 'Başvuru Yap butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.applicationModal() },
     {
       id: 'basvuru-alindi',
-      title: 'Başvuru alındı: başvuranın kendi gördüğü özet',
+      title: 'Başvuru alındı: kanala düşen özet',
       where: 'Başvuru formu gönderilince',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => message(k.submitted({ user: owner, app: app(), memberCount: 4 })),
     },
@@ -110,12 +110,12 @@ module.exports = ({ mock, src }) => {
     },
     { id: 'form-ret', title: 'Form: başvuru red sebebi', where: 'Reddet butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.rejectModal(app()) },
 
-    { id: 'teslim', title: 'Sahibine giden teslim kartı', where: 'DM', visibility: 'ephemeral', kind: 'message', build: () => message(k.readyCard(room())) },
+    { id: 'teslim', title: 'Sahibine giden teslim kartı', where: 'Doğrudan mesaj', visibility: 'dm', kind: 'message', build: () => message(k.readyCard(room())) },
     {
       id: 'dm-ret',
       title: 'Başvurana giden ret kartı',
-      where: 'DM',
-      visibility: 'ephemeral',
+      where: 'Doğrudan mesaj',
+      visibility: 'dm',
       kind: 'message',
       build: () => message(k.rejectedCard(app({ status: 'rejected', reviewedBy: reviewer.id, reviewedAt: mock.ago(20 * mock.MIN), note: 'Odayı birlikte kullanacak kadar aktif üye görünmedi.' }))),
     },
@@ -124,7 +124,7 @@ module.exports = ({ mock, src }) => {
     { id: 'form-limit', title: 'Form: kişi limiti', where: 'Limiti Ayarla butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.limitModal(20) },
     { id: 'form-isim', title: 'Form: oda ismi', where: 'İsmi Değiştir butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.renameModal('Müzik Odası') },
 
-    { id: 'liste', title: '/kalici-oda liste: iki oda ve bekleyen başvuru', where: 'Yetkili komut kanalı', visibility: 'ephemeral', kind: 'message', build: () => message(k.roomList([room(), second], 3)) },
-    { id: 'liste-bos', title: '/kalici-oda liste: hiç oda yok', where: 'Yetkili komut kanalı', visibility: 'ephemeral', kind: 'message', build: () => message(k.roomList([], 0)) },
+    { id: 'liste', title: '/kalici-oda liste: iki oda ve bekleyen başvuru', where: 'Yetkili komut kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomList([room(), second], 3)) },
+    { id: 'liste-bos', title: '/kalici-oda liste: hiç oda yok', where: 'Yetkili komut kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomList([], 0)) },
   ];
 };

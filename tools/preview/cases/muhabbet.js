@@ -45,31 +45,31 @@ module.exports = ({ mock, src }) => {
   return [
     { id: 'panel', title: 'Sıra paneli: nasıl çalışır ve beklemeler', where: 'Muhabbet bilgi kanalı', visibility: 'panel', kind: 'message', build: () => message(k.queuePanel()) },
 
-    { id: 'sira', title: 'Sıraya girme kartı: yeni giren', where: 'Muhabbet Başlat butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.queuedCard(3, 7)) },
-    { id: 'sira-cikis', title: 'Sıradan çıkma onayı', where: 'Sıradan Ayrıl butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.leftQueue({ user: mehmet })) },
-    { id: 'sira-tekrar', title: 'Sıraya girme kartı: sırada beklerken tekrar basıldı', where: 'Muhabbet Başlat butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.queuedCard(2, 6, true)) },
+    { id: 'sira', title: 'Sıraya girme kartı: yeni giren', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.queuedCard(3, 7)) },
+    { id: 'sira-cikis', title: 'Sıradan çıkma onayı', where: 'Sıradan Ayrıl butonu', visibility: 'public', kind: 'message', build: () => message(k.leftQueue({ user: mehmet })) },
+    { id: 'sira-tekrar', title: 'Sıraya girme kartı: sırada beklerken tekrar basıldı', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.queuedCard(2, 6, true)) },
 
-    { id: 'eslesme', title: 'Eşleşen üyeye giden kart: oda açıldı', where: 'DM', visibility: 'ephemeral', kind: 'message', build: () => message(k.matchedCard(room())) },
+    { id: 'eslesme', title: 'Eşleşen üyeye giden kart: oda açıldı', where: 'Doğrudan mesaj', visibility: 'public', kind: 'message', build: () => message(k.matchedCard(room())) },
     { id: 'oda-paneli', title: 'Odanın kendi paneli: bitir butonu', where: "Odanın yazı kanalı", visibility: 'public', kind: 'message', build: () => message(k.roomPanel(room())) },
 
     {
       id: 'bitti',
       title: 'Oda kapandı bildirimi: üye bitirdi',
-      where: 'DM',
-      visibility: 'ephemeral',
+      where: 'Doğrudan mesaj',
+      visibility: 'dm',
       kind: 'message',
       build: () => message(k.endedCard(room(), `${mehmet.displayName} muhabbeti bitirdi.`)),
     },
     {
       id: 'bitti-bos',
       title: 'Oda kapandı bildirimi: ses kanalında kimse kalmadı',
-      where: 'DM',
-      visibility: 'ephemeral',
+      where: 'Doğrudan mesaj',
+      visibility: 'dm',
       kind: 'message',
       build: () => message(k.endedCard(second, 'Ses kanalında 5 dakikadır kimse kalmadı.')),
     },
 
-    { id: 'liste', title: '/muhabbet liste: iki açık oda ve sıra', where: 'Yetkili komut kanalı', visibility: 'ephemeral', kind: 'message', build: () => message(k.roomList([room(), second], queue)) },
-    { id: 'liste-bos', title: '/muhabbet liste: oda yok, sıra boş', where: 'Yetkili komut kanalı', visibility: 'ephemeral', kind: 'message', build: () => message(k.roomList([], [])) },
+    { id: 'liste', title: '/muhabbet liste: iki açık oda ve sıra', where: 'Yetkili komut kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomList([room(), second], queue)) },
+    { id: 'liste-bos', title: '/muhabbet liste: oda yok, sıra boş', where: 'Yetkili komut kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomList([], [])) },
   ];
 };

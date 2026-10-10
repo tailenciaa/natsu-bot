@@ -70,8 +70,8 @@ module.exports = ({ mock, src }) => {
     {
       id: 'yonetim-paneli',
       title: 'Çekiliş yönetimi: açık ve sonuçlanmış çekilişler',
-      where: '/cekilis liste, sadece yöneticiye görünür',
-      visibility: 'ephemeral',
+      where: '/cekilis liste, yetkili kanalı',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -100,7 +100,7 @@ module.exports = ({ mock, src }) => {
       id: 'yonetim-paneli-bos',
       title: 'Çekiliş yönetimi: açık çekiliş yok',
       where: '/cekilis liste, yeni sunucuda',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({ components: [c.managementPanel({ active: [], ended: [], channelId: base.channelId })], ...noMentions }),
     },
