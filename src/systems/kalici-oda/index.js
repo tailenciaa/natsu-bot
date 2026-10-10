@@ -365,22 +365,24 @@ async function setAccess(guild, room, targetId, allow) {
   }
 }
 
-// Üye menülerinin ortak ön kontrolü; hata dönerse null, işlem yoksa [mesaj, açıklama]
-async function memberAction(interaction, action, { targetId, notFound, guard }) {
+// Üye menülerinin ortak ön kontrolü: oda, sahip, hız sınırı. Hata varsa { error } ya da { wait }, değilse { room } döner
+async function memberAction(interaction, action, guard) {
   const room = roomOf(interaction);
   const error = ownerError(interaction, room);
   if (error) return { error };
-  if (guard) return { error: guard(room, targetId) };
+  const blocked = guard(room);
+  if (blocked) return { error: blocked };
   const wait = takeCooldown(room.id, action);
   if (wait) return { wait };
-  return { room, targetId, notFound };
+  return { room };
 }
 
 async function handleAddMember(interaction) {
   const targetId = interaction.values[0];
-  const step = await memberAction(interaction, ui.IDS.add, {
-    targetId,
-    guard: (room) =>
+  const step = await memberAction(
+    interaction,
+    ui.IDS.add,
+    (room) =>
       targetId === room.ownerId
         ? 'Bu üye zaten odanın sahibi.'
         : room.members.includes(targetId)
@@ -388,7 +390,7 @@ async function handleAddMember(interaction) {
           : room.members.length >= config.maxExtraMembers
             ? `Odaya en fazla ${config.maxExtraMembers} üye ekleyebilirsin.`
             : null,
-  });
+  );
   if (step.error) return replyError(interaction, step.error, 'Üye listesini kontrol edip tekrar dene.');
   if (step.wait) return slowDown(interaction, step.wait);
 
@@ -403,10 +405,11 @@ async function handleAddMember(interaction) {
 
 async function handleRemoveMember(interaction) {
   const targetId = interaction.values[0];
-  const step = await memberAction(interaction, ui.IDS.remove, {
-    targetId,
-    guard: (room) => (room.ownerId === targetId ? 'Sahipliği devretmeden kendin odadan çıkaramazsın.' : room.members.includes(targetId) ? null : 'Bu üye odanın üyelerinden değil.'),
-  });
+  const step = await memberAction(
+    interaction,
+    ui.IDS.remove,
+    (room) => (room.ownerId === targetId ? 'Sahipliği devretmeden kendin odadan çıkaramazsın.' : room.members.includes(targetId) ? null : 'Bu üye odanın üyelerinden değil.'),
+  );
   if (step.error) return replyError(interaction, step.error, 'Üye listesini kontrol edip tekrar dene.');
   if (step.wait) return slowDown(interaction, step.wait);
 
@@ -420,10 +423,11 @@ async function handleRemoveMember(interaction) {
 
 async function handleTransfer(interaction) {
   const targetId = interaction.values[0];
-  const step = await memberAction(interaction, ui.IDS.transfer, {
-    targetId,
-    guard: (room) => (targetId === room.ownerId ? 'Oda zaten senin.' : room.members.includes(targetId) ? null : 'Sahipliği sadece odanda bulunan bir üyeye devredebilirsin.'),
-  });
+  const step = await memberAction(
+    interaction,
+    ui.IDS.transfer,
+    (room) => (targetId === room.ownerId ? 'Oda zaten senin.' : room.members.includes(targetId) ? null : 'Sahipliği sadece odanda bulunan bir üyeye devredebilirsin.'),
+  );
   if (step.error) return replyError(interaction, step.error, 'Önce üyeyi odaya ekle.');
   if (step.wait) return slowDown(interaction, step.wait);
 
@@ -495,10 +499,6 @@ async function handleRenameSubmit(interaction) {
   if (!changed) return replyError(interaction, 'Oda ismi değiştirilemedi.', 'Discord kanal adını kısa aralıklarla en fazla iki kez değiştirmeye izin verir; biraz sonra tekrar dene.');
 
   const updated = store.updateRoom(room.id, { name });
-  await interaction.client.channels
-    .fetch(room.textChannelId)
-    .then((channel) => (channel.id === interaction.channelId ? null : null))
-    .catch(() => {});
   return redraw(interaction, updated);
 }
 
