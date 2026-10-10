@@ -10,7 +10,7 @@ module.exports = ({ mock, src }) => {
   const guild = mock.guild({ name: 'Kazuki Sunucusu' });
   const names = ['Mehmet', 'Ayşe', 'Can', 'Elif', 'Burak', 'Zeynep', 'Emre', 'Deniz', 'Selin', 'Kerem', 'Ece', 'Onur', 'Pınar', 'Tuna', 'Melis', 'Arda', 'Naz', 'Kaan', 'İrem', 'Baran'];
   const users = names.map((n) => mock.user({ username: n.toLocaleLowerCase('tr'), displayName: n }));
-  const ranking = (type) => users.map((u, i) => ({ userId: u.id, value: type === 'mesaj' ? 4800 - i * 213 : 90000 - i * 3700 }));
+  const ranking = (type) => users.map((u, i) => ({ userId: u.id, value: type === 'mesaj' ? 4800 - i * 213 : type === 'yayin' ? 26000 - i * 1300 : 90000 - i * 3700 }));
   const role = mock.role({ name: 'Üye', color: '#57f287' });
   const view = (o) => ({ guild, viewerId: users[17].id, type: 'mesaj', period: 'genel', days: 0, roleId: '0', page: 0, ranking: ranking(o.type ?? 'mesaj'), ...o });
   const msg = (o) => ({ components: [s.leaderboard(view(o))], allowedMentions: { parse: [] } });
@@ -29,6 +29,7 @@ module.exports = ({ mock, src }) => {
       build: () => msg({ page: 1, viewerId: users[2].id }),
     },
     { id: 'ses-haftalik', title: 'Ses sıralaması, haftalık', where, visibility: 'public', kind: 'message', build: () => msg({ type: 'ses', period: 'haftalik' }) },
+    { id: 'yayin-genel', title: 'Yayın sıralaması, genel', where, visibility: 'public', kind: 'message', build: () => msg({ type: 'yayin' }) },
     {
       id: 'rol-filtreli',
       title: 'Mesaj sıralaması, rol filtreli',

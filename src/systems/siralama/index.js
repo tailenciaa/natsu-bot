@@ -80,9 +80,12 @@ function handleMessage(message) {
   store.add('messages', message.author.id, 1, message.createdTimestamp);
 }
 
+// Sıralama türünün store'daki karşılığı
+const STAT_KIND = { mesaj: 'messages', ses: 'voice', yayin: 'stream' };
+
 // Sıralamayı hesaplar: türün dönemdeki toplamları (sunucudan ayrılanlar hariç), rol seçildiyse sadece o roldeki üyeler
 function ranking(guild, type, period, days, roleId) {
-  const totals = store.totals(type === 'mesaj' ? 'messages' : 'voice', period === 'genel' ? null : period === 'haftalik' ? 7 : days);
+  const totals = store.totals(STAT_KIND[type], period === 'genel' ? null : period === 'haftalik' ? 7 : days);
   return [...totals]
     .filter(([userId]) => (roleId === '0' ? stillMember(guild, userId) : guild.members.cache.get(userId)?.roles.cache.has(roleId)))
     .map(([userId, value]) => ({ userId, value }))

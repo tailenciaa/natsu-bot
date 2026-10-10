@@ -24,7 +24,7 @@ const IDS = {
 };
 
 const PAGE_SIZE = 15;
-const TYPES = { mesaj: 'Mesaj Sıralaması', ses: 'Ses Sıralaması' };
+const TYPES = { mesaj: 'Mesaj Sıralaması', ses: 'Ses Sıralaması', yayin: 'Yayın Sıralaması' };
 const PERIODS = { genel: 'Genel', haftalik: 'Haftalık', ozel: 'Özel Süre' };
 // Sayfa 1'deki ilk üç sıra büyük yazılır
 const PODIUM = ['# ', '## ', '### '];
@@ -72,13 +72,13 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
 
   const listBlock = lines.length
     ? lines.join('\n')
-    : `**Henüz kayıt yok.**\n${role ? 'Bu rolde bu dönemde sayılan üye yok.' : 'Bu dönemde sayılan bir mesaj ya da ses süresi yok.'}`;
+    : `**Henüz kayıt yok.**\n${role ? 'Bu rolde bu dönemde sayılan üye yok.' : 'Bu dönemde sayılan bir mesaj, ses ya da yayın süresi yok.'}`;
 
   const container = pageLayout({
     title: 'Sıralama',
     sub:
       (role ? `<@&${role}> rolündeki üyeler listeleniyor; ` : 'Sunucudaki bütün üyeler listeleniyor; ') +
-      'mesaj sayısı ve ses süresine göre sıralanır, dönemi, türü ve rolü seçerek listeyi daraltabilirsin. Sayım sistem kurulduğundan beri sürüyor.',
+      'mesaj sayısı, ses ve yayın (ekran paylaşımı) süresine göre sıralanır, dönemi, türü ve rolü seçerek listeyi daraltabilirsin. Sayım sistem kurulduğundan beri sürüyor.',
     thumbnail: guild.iconURL({ size: 256 }),
   });
 
