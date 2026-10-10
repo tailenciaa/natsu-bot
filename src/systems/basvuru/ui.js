@@ -56,17 +56,14 @@ const answersText = (answers) =>
 const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks, accent: color ? colors[color] : undefined, thumbnail });
 const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
 
-// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, en altta uyarı notu.
-// cardName: çizim kartı ekteyse açıklama ve not kartta olduğu için mesajda tekrar yazılmaz
-const panel = (cardName) =>
+// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, en altta uyarı notu
+const panel = () =>
   standardPanel({
     title: config.panel.title,
-    sub: cardName
-      ? undefined
-      : 'Yetkili ekibine katılmak için **Başvur** butonuyla başvuru formunu doldur. Başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.',
+    sub: 'Yetkili ekibine katılmak için **Başvur** butonuyla başvuru formunu doldur. Başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.',
     button: { id: IDS.apply, label: config.panel.buttonLabel },
-    image: cardName ?? config.banner,
-    note: cardName ? undefined : config.panel.footer,
+    image: config.banner,
+    note: config.panel.footer,
   });
 
 // "Başvur" butonuyla açılan form; sorular config.js'ten gelir
@@ -642,43 +639,53 @@ function connectingDm(app, guildName) {
   });
 }
 
-// Durum kanalındaki canlı panel: bekleyen tüm başvuruları tek mesajda listeler; durum değiştikçe düzenlenir
-function statusPanel(apps) {
+// Durum kanalındaki canlı panel: bekleyen tüm başvuruları tek mesajda listeler; durum değiştikçe düzenlenir.
+// cardName: çizim kartı ekteyse başlık/açıklama ve başvuru satırları kartta olduğu için mesajda tekrar yazılmaz;
+// kartın altında menüden başvuru seçmeye ve sayfa gezmeye yarayan kontroller kalır
+function statusPanel(apps, page = 0, cardName = null) {
   const now = Math.floor(Date.now() / 1000);
-  const panelStatusLabel = (app) => {
-    if (app.onHold) return `Görüşme beklemede — <@${app.onHold.by}>`;
-    if (app.directConnect && app.meetingBy && app.meeting?.startedAt) return `Bağlandı — <@${app.meetingBy}>`;
-    if (app.directConnect && app.meetingBy) return `Üstlenildi — <@${app.meetingBy}>`;
-    if (app.meetingBy) return `Görüşmede — <@${app.meetingBy}>`;
-    return 'İnceleniyor';
-  };
-  const container = new ContainerBuilder().addTextDisplayComponents(
-    text(
-      '## Bekleyen Başvurular\nYetkili alım sistemindeki tüm bekleyen başvurular ve anlık durumları burada listelenir; başvuru durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
-    ),
-  );
-  if (apps.length) {
-    for (const app of apps) {
-      container
-        .addSeparatorComponents(divider())
-        .addSectionComponents(
-          new SectionBuilder()
-            .addTextDisplayComponents(
-              text(`**#${pad(app.number)}** · <@${app.userId}> · ${panelStatusLabel(app)}`),
-            )
-            .setButtonAccessory(
-              new ButtonBuilder()
-                .setCustomId(`${IDS.statusDetail}:${app.id}`)
-                .setLabel('Detay')
-                .setStyle(ButtonStyle.Secondary),
-            ),
-        );
-    }
+  const pageCount = Math.max(1, Math.ceil(apps.length / STATUS_PAGE_SIZE));
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  const shown = apps.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE);
+  const nav = (target, slot) => `${IDS.statusPage}:${target}:${slot}`;
+
+  const container = new ContainerBuilder();
+  if (cardName) {
+    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${cardName}`)));
+    container.addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
   } else {
-    container.addSeparatorComponents(divider()).addTextDisplayComponents(text('Şu an incelenmeyi bekleyen başvuru yok.'));
+    container.addTextDisplayComponents(text(`## ${STATUS_TITLE}\n${STATUS_SUB}`));
+    for (const app of shown) {
+      container.addSeparatorComponents(divider()).addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(text(`**#${pad(app.number)}** · <@${app.userId}> · ${statusState(app).line}`))
+          .setButtonAccessory(new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${app.id}`).setLabel('Detay').setStyle(ButtonStyle.Secondary)),
+      );
+    }
+    if (!shown.length) container.addSeparatorComponents(divider()).addTextDisplayComponents(text('Şu an incelenmeyi bekleyen başvuru yok.'));
+    container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, apps.length)}\n-# Son güncelleme: <t:${now}:R>`));
   }
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
+
+  // Menü ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
+  if (shown.length) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.statusDetail}:menu`)
+          .setPlaceholder('Ayrıntısını görmek istediğin başvuruyu seç')
+          .addOptions(
+            shown.map((app) =>
+              new StringSelectMenuOptionBuilder()
+                .setValue(app.id)
+                .setLabel(`#${pad(app.number)}`)
+                .setDescription(shorten(`${app.username} · ${statusState(app).line.replace(/<@\d+>/g, 'yetkili')}`, 100)),
+            ),
+          ),
+      ),
+    );
+  }
+  container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
 }
 
-module.exports = { IDS, STATUS, statusLabel, cancelReasonOf, statusPanel, connectingDm, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+module.exports = { IDS, STATUS, STATUS_TITLE, STATUS_SUB, STATUS_PAGE_SIZE, statusState, statusLabel, cancelReasonOf, statusPanel, connectingDm, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
