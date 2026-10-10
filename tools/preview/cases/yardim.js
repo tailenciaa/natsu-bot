@@ -9,10 +9,10 @@ module.exports = ({ mock, src }) => {
   const guild = mock.guild({ name: 'Kazuki Sunucusu', commands: commandNames });
   const bot = mock.user({ username: 'kazuki', displayName: 'Kazuki', bot: true });
 
-  // İki katman: üye yalnızca kendi komutlarını, yetkili tüm kategorileri görür
+  // İki katman: üye yalnızca kendi komutlarını, yetkili tüm kategorileri görür; menü her ikisinde de herkese açıktır
   const views = [
-    { staff: false, who: 'üye', where: '/yardim komutu, herkese açık; kategoriyi sadece komutu kullanan değiştirebilir' },
-    { staff: true, who: 'yetkili', where: '/yardim komutu, yetkilide; sadece komutu kullanana görünür' },
+    { staff: false, who: 'üye', where: '/yardim komutu, herkese açık; kategoriyi herkes değiştirebilir' },
+    { staff: true, who: 'yetkili', where: '/yardim komutu, herkese açık; yetkilide yetkili komutları da listelenir' },
   ];
 
   return views.flatMap(({ staff, who, where }) => {
@@ -22,7 +22,7 @@ module.exports = ({ mock, src }) => {
       id: `kategori-${who}-${category.key}`,
       title: `Yardım menüsü (${who}): ${category.label}`,
       where,
-      visibility: staff ? 'ephemeral' : 'public',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [

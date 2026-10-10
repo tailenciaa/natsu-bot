@@ -44,7 +44,7 @@ function helpMenu({ botName, avatarUrl, categories, tab, entries, total = 0 }) {
   let perBlock = 1;
   while (used + 2 * Math.ceil(lines.length / perBlock) > MAX_COMPONENTS && perBlock < lines.length) perBlock += 1;
   for (let i = 0; i < lines.length; i += perBlock) {
-    const block = active && i === 0 ? [`**${active.label}**`, ...lines.slice(i, i + perBlock)].join('\n\n') : lines.slice(i, i + perBlock).join('\n\n');
+    const block = active && i === 0 ? [`**${active.label} · ${lines.length} komut**`, ...lines.slice(i, i + perBlock)].join('\n\n') : lines.slice(i, i + perBlock).join('\n\n');
     container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));
   }
 

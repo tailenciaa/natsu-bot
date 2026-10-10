@@ -7,7 +7,7 @@
 // otomatik alınır. "access" alanı erişim denetimi ve komut denetimi için durmaya devam eder.
 const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const { botName, staffPermission } = require('../../core/config');
-const { respond, replyError, isMenuOwner } = require('../../core/helpers');
+const { respond } = require('../../core/helpers');
 const ui = require('./ui');
 
 const SUBCOMMAND = 1;
