@@ -6,6 +6,8 @@ const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, fetchTextChannel, stillMember } = require('../../core/helpers');
+const coin = require('../coin/store');
+const coinConfig = require('../coin/config');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');

@@ -15,6 +15,8 @@
 //   boosterRoles / boosterNicks    : takviye süresince geçerli özel rol ve değiştirilen takma ad (takviye bitince geri alınır)
 //   levelXp / levelAnnounced       : seviye sisteminin kalıcı XP'si ve duyurulan seviyeler, mesaj ve ses için ayrı (kullanıcı ID'si ile)
 //   profiles                       : profil özelleştirmesi, biyografi ve profil rengi (kullanıcı ID'si ile)
+//   coins                          : coin cüzdanları, bakiye / toplam kazanç / günlük giriş serisi (kullanıcı ID'si ile)
+//   profileVisits                  : profil kartını başkalarının kaç kez gördüğü ve son görenler (kullanıcı ID'si ile)
 //   newAccountRole                 : yeni/şüpheli hesap kısıtlama rolünün ID'si (sunucu ID'si ile)
 //   privateRooms                   : açık özel odalar, sahibiyle birlikte (ses kanalı ID'si ile)
 //   partnerRequests                : oto ya da elle yapılan tüm partner talepleri (talep ID'si ile)
