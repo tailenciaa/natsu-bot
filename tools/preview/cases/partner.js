@@ -43,8 +43,8 @@ module.exports = ({ mock, src }) => {
     where: 'Güvenilir partnerler kanalı, liste değiştikçe aynı mesaj güncellenir',
     visibility: 'panel',
     kind: 'message',
-    build: async () => {
-      const card = await src('systems/partner/card').buildTrustedCard(entries, page, `${id}-${page}.png`);
+    build: () => {
+      const card = src('systems/partner/card').buildTrustedCard(entries, page, `${id}-${page}.png`);
       return { components: [ui.trustedListPanel(entries, page, card.name)], files: [card], ...noMentions };
     },
   });

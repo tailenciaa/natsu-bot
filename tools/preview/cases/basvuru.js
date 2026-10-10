@@ -72,15 +72,15 @@ module.exports = ({ mock, ui, src }) => {
   const voiceInfo = { staffId: staff.id, waitingIn: meetingChannel, until: Date.now() + 24 * mock.HOUR };
 
   // Durum paneli kartı: index.js'teki gibi çizilir ve mesajın ekine konur
-  const nameOf = async (id) => (id === staff.id ? 'ayse' : 'bilinmiyor');
+  const nameOf = (id) => (id === staff.id ? 'ayse' : 'bilinmiyor');
   const durum = (id, title, apps, page = 0) => ({
     id,
     title,
     where: 'Durum kanalı, başvuru durumu değiştikçe aynı mesaj güncellenir',
     visibility: 'panel',
     kind: 'message',
-    build: async () => {
-      const card = await src('systems/basvuru/card').buildStatusCard(apps, page, `${id}-${page}.png`, nameOf);
+    build: () => {
+      const card = src('systems/basvuru/card').buildStatusCard(apps, page, `${id}-${page}.png`, nameOf);
       return { components: [b.statusPanel(apps, page, card.name)], files: [card], ...noMentions };
     },
   });

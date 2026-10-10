@@ -17,15 +17,15 @@ module.exports = ({ mock, ui, src }) => {
   const staffRole = waiting().staffRoleId;
 
   // Durum paneli kartı: index.js'teki gibi çizilir ve mesajın ekine konur
-  const nameOf = async (id) => (id === staff.id ? 'ayse' : 'mehmet');
+  const nameOf = (id) => (id === staff.id ? 'ayse' : 'mehmet');
   const durum = (id, title, tickets, page = 0) => ({
     id,
     title,
     where: 'Durum kanalı, talep durumu değiştikçe aynı mesaj güncellenir',
     visibility: 'panel',
     kind: 'message',
-    build: async () => {
-      const card = await src('systems/destek/card').buildStatusCard(tickets, page, `${id}-${page}.png`, nameOf);
+    build: () => {
+      const card = src('systems/destek/card').buildStatusCard(tickets, page, `${id}-${page}.png`, nameOf);
       return { components: [d.statusPanel(tickets, page, card.name)], files: [card], ...noMentions };
     },
   });
