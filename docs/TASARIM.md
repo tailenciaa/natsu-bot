@@ -145,20 +145,28 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 ## 5. Dil
 
 - Üyeye ve yetkiliye "sen"; "siz" yok. Ünlem en çok bir tane ve sadece kutlamada. Başlıklar noktasız, cümleler noktayla biter.
+- Kanala düşen işlem kartlarında üye "sen" diye değil, `<@etiket>` ile 3. tekil şahıs olarak anılır ("`<@id>` ürünü aldı" gibi); gizli hata mesajları doğrudan hitap eder.
 - İngilizce kelime yok ("ticket" yerine "talep"); tutarlı terimler: Talep, Yetkili, Üye, Başvuru, Mülakat, Değerlendirme, İtiraz, Ceza, Sicil, Takviye, Özel Oda, Çekiliş, Partner.
 - Süre birimleri "gün", "saat", "dakika" (dar listelerde "dk"). Boş durum tek kalın cümledir ("**Henüz kayıt yok.**").
 
 ## 6. Cevap politikası
 
+**Kural: botun verdiği her cevap herkese açıktır.** Gizli (kişiye özel) mesaj yalnızca iki durumda kullanılır: hata/reddetme ve bu belgede açıkça sayılan istisnalar. Yeni bir akış yazarken gizli olması için bir sebep arılmaz; `respond` varsayılan olarak açık verir, gizlilik `{ ephemeral: true }` ile **elle** istenir.
+
 | Durum | Görünürlük |
 | --- | --- |
-| Hata, izin reddi, doğrulama uyarısı | Sadece kullanana |
-| Kişisel işlem sonucu, yetkili işlem panelleri | Sadece kullanana |
-| Kazanç ve harcama bildirimi (`/gunluk`, mağaza satın alma, saygınlık verme) | Herkese açık `receipt` kartı, üye etiketiyle |
-| Bilgi komutları (seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`) |
-| Yardım menüsü (`/yardim`) | Herkese açık; kategoriyi herkes değiştirir ve panel **yerinde** yeniden çizilir (ayrı mesaj yok), liste her basışta o kişiyi gözeten katmanla çizilir |
-| Paneller, duyurular, loglar, talep mesajları | Kanalda herkese görünür |
-| Test ve önizleme | Sadece kullanana, etiket yok |
+| İşlem sonucu ve onay kartları (satın alma, giyme, vitrin, başvuru, sıra, yayın yetkisi, `/gunluk`, `/bakiye`, siparişler) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs |
+| Bilgi komutları (seviye, profil, sıralama, sicil, yardım menüsü) | Herkese açık; gezinme butonları yine `isMenuOwner` ile sadece komutu kullanana çalışır |
+| Paneller, duyurular, loglar, talep mesajları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
+| Hata, izin reddi, doğrulama uyarısı | Sadece kullanana (`replyError`) |
+| Kişisel düzenleyiciler: profil kapak ve görünüm sayfaları | Sadece kullanana (kodda `GİZLİ İSTİSNA` diye işaretli) |
+| Çekilişte "zaten katıldın" tekrarı ve bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanala düşer |
+| `/sicil` yetkili komut kanalı dışında (üye kendi sicilini bakıyor) | Sadece kullanana; ceza kaydı kanalda görünmez |
+| Test ve önizleme (`/seviye test`, `/aktif test`, `/saygi test`, `/etiket test`) | Sadece kullanana, etiket yok; asıl duyuru kanala düşer |
+| Modallar (formlar) | Discord gereği zaten sadece açana görünür |
+
+- Görünürlük **defer anında kilitlenir**: `deferReply({ flags: core.CV2 })` ile açılan bir akışın sonundaki `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Akışın yarısı gizli yarısı açık kalamaz; bu yüzden gizli bir akış baştan gizli ertelenir, açık akış baştan açık.
+- Herkese açık kartlarda "sen" dili kullanılmaz: kartı okuyan kişi işlemi yapan değildir. Kart `receipt` ise `user` alanı avatarı taşır, `<@id>` etiketi başlık cümlesinde geçer.
 
 ## 7. Komut politikası
 
