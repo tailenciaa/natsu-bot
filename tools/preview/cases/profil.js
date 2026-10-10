@@ -1,0 +1,299 @@
+// Profil sistemi (src/systems/profil): kart görseli canvas ile çizildiği için önizlemede aynı boyutta yer tutucu PNG
+// kullanılır; mesaj düzeni ve metinler gerçek ui fonksiyonlarından gelir. Rozet ve vitrin listeleri buradan elle
+// verilir, böylece boş/dolu durumların ikisi de denetlenir.
+const { THEMES } = require('../../../src/systems/profil/themes');
+
+module.exports = ({ mock, ui, src }) => {
+  const p = src('systems/profil/ui');
+  const kozmetik = src('systems/profil/kozmetik');
+  const rozet = src('systems/profil/rozet');
+  // index.js'teki FEATURED listesiyle aynı içerik; kartta öne çıkan istatistik seçenekleri
+  const featuredOptions = [
+    { key: 'mesaj', label: 'Mesaj sıralaması', note: 'Tüm zamanların mesaj sıran' },
+    { key: 'ses', label: 'Ses sıralaması', note: 'Tüm zamanların ses sıran' },
+    { key: 'yayin', label: 'Yayın süresi', note: 'Toplam ekran paylaşımı' },
+    { key: 'saygi', label: 'Saygınlık', note: 'Toplam aldığın saygınlık' },
+    { key: 'seri', label: 'Giriş serisi', note: 'Art arda günlük ödül' },
+    { key: 'coin', label: 'Coin bakiyesi', note: 'Harcayabileceğin coin' },
+  ];
+  const noMentions = { allowedMentions: { parse: [] } };
+  const card = (name, height, label) => mock.pngFile(name, { width: 1000, height, label });
+
+  // Mağaza satırları: index.js'teki shopRows aynı biçimde üretilir, burada statik veriyle denenir
+  const shopRows = (items) =>
+    items.map((item) => ({
+      name: item.name,
+      note: item.note,
+      state: item.state,
+      id: item.id,
+      label: item.label,
+      wearStyle: item.style,
+      disabled: item.disabled,
+    }));
+
+  return [
+    {
+      id: 'profil-sahibi',
+      title: 'Profil kartı: kendi profili, tema seçili',
+      where: '/profil komutu, herkese açık; kontrolleri sadece sahibi kullanır',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 676, 'Profil kartı')], ...noMentions }),
+    },
+    {
+      id: 'profil-sahibi-temasiz',
+      title: 'Profil kartı: kendi profili, tema seçilmemiş',
+      where: '/profil komutu, ilk açılış ya da Sıfırla sonrası',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 676, 'Profil kartı')], ...noMentions }),
+    },
+    {
+      id: 'profil-baskasi',
+      title: 'Profil kartı: başka üyenin profili',
+      where: '/profil komutu başka üyeyle; kontrol yok',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 744, 'Profil kartı')], ...noMentions }),
+    },
+    {
+      id: 'bio-modal-bos',
+      title: 'Biyografi formu: boş',
+      where: 'Profilde Biyografi butonuna basınca açılır',
+      visibility: 'ephemeral',
+      kind: 'modal',
+      build: () => p.bioModal({}),
+    },
+    {
+      id: 'bio-modal-dolu',
+      title: 'Biyografi formu: dolu',
+      where: 'Profilde Biyografi butonuna basınca açılır, kayıtlı değerlerle',
+      visibility: 'ephemeral',
+      kind: 'modal',
+      build: () => p.bioModal({ bio: 'Anime izlemeyi ve gece sohbetlerini severim.', title: 'Anime Sever' }),
+    },
+    {
+      id: 'renk-modal',
+      title: 'Renk formu',
+      where: 'Profilde Renk butonuna basınca açılır',
+      visibility: 'ephemeral',
+      kind: 'modal',
+      build: () => p.colorModal({ color: 0xff5599 }),
+    },
+    {
+      id: 'kapak-modal',
+      title: 'Kapak formu',
+      where: 'Profilde Kapak butonuna basınca açılır',
+      visibility: 'ephemeral',
+      kind: 'modal',
+      build: () => p.bannerModal({ banner: 'https://i.imgur.com/ornek.png' }),
+    },
+    {
+      id: 'vitrin-modal',
+      title: 'Vitrin formu: zamir ve bağlantılar',
+      where: 'Vitrin sayfasındaki "Zamir ve Bağlantılar" düğmesi',
+      visibility: 'ephemeral',
+      kind: 'modal',
+      build: () => p.vitrinModal({ pronoun: 'o/onlar', links: { twitch: 'https://twitch.tv/kullanici', youtube: 'https://youtube.com/@kullanici' } }),
+    },
+    {
+      id: 'vitrin-bos',
+      title: 'Vitrin sayfası: hiçbiri doldurulmamış',
+      where: 'Profilde Vitrin butonuna basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [p.vitrinPage({}, null, featuredOptions, '**Profil ziyaretleri:** 0')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
+    },
+    {
+      id: 'vitrin-dolu',
+      title: 'Vitrin sayfası: zamir, bağlantılar ve öne çıkan dolu',
+      where: 'Profilde Vitrin butonuna basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.vitrinPage(
+            { pronoun: 'o/onlar', featured: 'seri', links: { twitch: 'https://twitch.tv/kullanici', youtube: 'https://youtube.com/@kullanici', site: 'https://ornek.com' } },
+            'seri',
+            featuredOptions,
+            '**Profil ziyaretleri:** 128 · son görenler: mehmet, ayşe',
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'rozet-bos',
+      title: 'Rozet sayfası: henüz rozet yok',
+      where: 'Profilde Rozetler butonuna basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.rozetPage(
+            rozet.BADGES.map((b) => ({ ...b, value: 0, done: false })),
+            0,
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'rozet-kismen',
+      title: 'Rozet sayfası: kazanılanlar ve ilerlemeler',
+      where: 'Profilde Rozetler butonuna basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.rozetPage(
+            [
+              { label: 'Kurucu', note: 'Sunucunun sahibi', goal: 1, value: 1, done: true },
+              { label: 'Takviye', note: 'Sunucuyu takviye ediyor', goal: 1, value: 1, done: true },
+              { label: 'Kararlı', note: 'Yedi günlük giriş serisi', goal: 7, value: 7, done: true },
+              { label: 'Eski Üye', note: 'Sunucuda bir yılı doldurdu', goal: 365, value: 212, done: false },
+              { label: 'Sohbet Kuşu', note: 'Binden fazla mesaj', goal: 1000, value: 640, done: false },
+              { label: 'Ses Ustası', note: 'Ses seviyesi 25', goal: 25, value: 9, done: false },
+            ],
+            3,
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'magaza-cerceve',
+      title: 'Mağaza: çerçeveler, bazıları satın alınmış',
+      where: 'Profilde Mağaza butonuna basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.shopPage(
+            'cerceve',
+            { cerceve: 'Çerçeveler', tema: 'Temalar' },
+            5400,
+            shopRows([
+              { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz`, label: 'Al · 1.200', style: 2 },
+              { name: 'Gümüş', note: kozmetik.FRAMES[2].note, state: 'Sahipsin', id: `${p.IDS.wear}cerceve:gumus`, label: 'Giy', style: 1 },
+              { name: 'Altın', note: kozmetik.FRAMES[3].note, state: 'Kartında bu var', id: `${p.IDS.wear}cerceve:altin`, label: 'Giyili', disabled: true },
+              { name: 'Neon', note: kozmetik.FRAMES[4].note, state: '7.200 coin', id: `${p.IDS.buy}cerceve:neon`, label: 'Al · 7.200', style: 2 },
+            ]),
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'magaza-tema',
+      title: 'Mağaza: temalar sekmesi',
+      where: 'Mağaza sayfasındaki Temalar sekmesi',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.shopPage(
+            'tema',
+            { cerceve: 'Çerçeveler', tema: 'Temalar' },
+            5400,
+            shopRows(
+              Object.entries(THEMES)
+                .filter(([, theme]) => theme.price > 0)
+                .map(([key, theme], i) =>
+                  i === 0
+                    ? { name: theme.label, note: theme.description, state: 'Sahipsin', id: `${p.IDS.wear}tema:${key}`, label: 'Giy', style: 1 }
+                    : { name: theme.label, note: theme.description, state: `${theme.price} coin`, id: `${p.IDS.buy}tema:${key}`, label: `Al · ${theme.price}`, style: 2 },
+                ),
+            ),
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'hata-bos-bakiye',
+      title: 'Mağaza: bakiye yetmiyor',
+      where: 'Ürün alma düğmesine basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          ui.alert(
+            'Bakiyen bu ürün için yetmiyor.',
+            'Fiyatı **7.200** coin, senin bakiyen **5.400** coin. Günlük ödüller ve haftalık derecelerle artırabilirsin.',
+            'danger',
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'hata-uygun-tema',
+      title: 'Tema seçimi: ücretli tema satın alınmamış',
+      where: 'Tema menüsünden ücretli bir tema seçilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [ui.alert('Bu tema ücretli.', '**Elmas** teması mağazada **6.000** coin. Mağaza sekmesinden satın alıp kullanabilirsin.', 'danger')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'hata-vitrin-baglanti',
+      title: 'Vitrin formu: bağlantılardan biri geçersiz',
+      where: 'Vitrin formu gönderilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          ui.alert(
+            'Bağlantıların kaydedildi.',
+            'github için verdiğin adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.',
+            'warning',
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'onay-satin-alma',
+      title: 'Mağaza: satın alma tamam',
+      where: 'Ürün alma düğmesine basınca, sadece sahibine görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [ui.alert('Altın satın alındı ve kartına uygulandı.', '**4.800** coin düşüldü, bakiyen **600** coin.', 'success')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'hata-renk',
+      title: 'Hata: geçersiz renk',
+      where: 'Renk formu gönderilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [ui.alert('Renk kodu geçersiz.', 'Altı haneli bir hex kod yaz, örneğin #ff5599.', 'danger')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'hata-bot-profil',
+      title: 'Hata: bot profili',
+      where: '/profil komutu bir botla',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [ui.alert('Botların profili bulunmaz.', 'Bir üye seçerek tekrar dene.', 'danger')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
+    },
+  ];
+};
