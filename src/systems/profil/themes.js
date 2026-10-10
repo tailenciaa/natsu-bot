@@ -1,18 +1,20 @@
-// Profil kartı temaları: kapak (üst alan) gradyanı ve varsayılan vurgu rengi. Kullanıcı renk seçtiyse vurgu o renk olur,
-// kapak görseli eklediyse görsel temanın yerine geçer. price alanı olan temalar coin ile satın alınır (coin/mağaza).
+// Profil kartı temaları: kapak (üst alan) gradyanı, varsayılan vurgu rengi ve kapağın nasıl çizileceği (`effect`,
+// kapak.js'teki çizicinin adı). Kullanıcı renk seçtiyse vurgu o renk olur, kapak görseli eklediyse görsel temanın
+// yerine geçer. price alanı olan temalar coin ile satın alınır (coin/mağaza).
 const { mix, luminance } = require('../../core/canvas');
 
 const THEMES = {
-  sakura: { label: 'Sakura', description: 'Pembe tonları', from: '#3a1020', to: '#9a3560', accent: '#ff6b9a' },
-  gece: { label: 'Gece', description: 'Lacivert ve indigo', from: '#0d1022', to: '#33388a', accent: '#7c8cff' },
-  okyanus: { label: 'Okyanus', description: 'Turkuaz ve mavi', from: '#06222e', to: '#117a9c', accent: '#38c6e8' },
-  orman: { label: 'Orman', description: 'Koyu ve açık yeşil', from: '#07210f', to: '#237a43', accent: '#5be08a' },
-  gunbatimi: { label: 'Gün Batımı', description: 'Turuncu ve mor', from: '#2b0f2e', to: '#cc5a2c', accent: '#ff9b5e' },
-  ruya: { label: 'Mor Rüya', description: 'Menekşe tonları', from: '#1b0b33', to: '#7230c2', accent: '#b57bff' },
-  kor: { label: 'Kor', description: 'Kızıl ve turuncu', from: '#2a0708', to: '#a3271b', accent: '#ff6a4d', price: 2500 },
-  krom: { label: 'Krom', description: 'Çelik grisi', from: '#141619', to: '#5b646e', accent: '#c3ccd6', price: 3200 },
-  zumrut: { label: 'Zümrüt', description: 'Yeşil ve altın', from: '#04211a', to: '#0f7a5a', accent: '#3ee0a1', price: 4500 },
-  elmas: { label: 'Elmas', description: 'Buz mavisi', from: '#071a2b', to: '#2f7fbf', accent: '#9fe6ff', price: 6000 },
+  sakura: { label: 'Sakura', description: 'Pembe tonları', from: '#3a1020', to: '#9a3560', accent: '#ff6b9a', effect: 'gradyan' },
+  gece: { label: 'Gece', description: 'Lacivert ve indigo', from: '#0d1022', to: '#33388a', accent: '#7c8cff', effect: 'yildiz' },
+  okyanus: { label: 'Okyanus', description: 'Turkuaz ve mavi', from: '#06222e', to: '#117a9c', accent: '#38c6e8', effect: 'dalga' },
+  orman: { label: 'Orman', description: 'Koyu ve açık yeşil', from: '#07210f', to: '#237a43', accent: '#5be08a', effect: 'gradyan' },
+  gunbatimi: { label: 'Gün Batımı', description: 'Turuncu ve mor', from: '#2b0f2e', to: '#cc5a2c', accent: '#ff9b5e', effect: 'gradyan' },
+  ruya: { label: 'Mor Rüya', description: 'Menekşe tonları', from: '#1b0b33', to: '#7230c2', accent: '#b57bff', effect: 'aurora' },
+  kor: { label: 'Kor', description: 'Kızıl ve turuncu', from: '#2a0708', to: '#a3271b', accent: '#ff6a4d', effect: 'aurora', price: 2500 },
+  krom: { label: 'Krom', description: 'Çelik grisi', from: '#141619', to: '#5b646e', accent: '#c3ccd6', effect: 'gradyan', price: 3200 },
+  zumrut: { label: 'Zümrüt', description: 'Yeşil ve altın', from: '#04211a', to: '#0f7a5a', accent: '#3ee0a1', effect: 'cam', price: 4500 },
+  elmas: { label: 'Elmas', description: 'Buz mavisi', from: '#071a2b', to: '#2f7fbf', accent: '#9fe6ff', effect: 'yildiz', price: 6000 },
+  nebula: { label: 'Nebula', description: 'Uzay bulutu renkleri', from: '#150a29', to: '#6a2c8f', accent: '#ff8fd6', effect: 'aurora', price: 7800 },
 };
 
 const DEFAULT_THEME = 'sakura';
@@ -30,7 +32,7 @@ function readableAccent(color) {
 // Tek renkten tema üretir; kartın tonu seçilen renkten, vurgusu okunabilirliğe çekilmiş halinden türer
 function themeFromColor(color) {
   const accent = readableAccent(hex(color));
-  return { from: mix(accent, '#000000', 0.78), to: mix(accent, '#000000', 0.35), accent };
+  return { from: mix(accent, '#000000', 0.78), to: mix(accent, '#000000', 0.35), accent, effect: 'gradyan' };
 }
 
 // Kartların rengi: profilde seçilen tema/renk; yoksa üyenin rol rengi; o da yoksa varsayılan tema.

@@ -191,8 +191,9 @@ const COVERS = [
   { key: 'yok', label: 'Temadan', note: 'Seçtiğin temanın kendi efekti', price: 0, effect: null },
   { key: 'aurora', label: 'Aurora', note: 'Eğik renkli ışık bulutları', price: 1800, effect: 'aurora' },
   { key: 'yildiz', label: 'Yıldız', note: 'Yıldız alanı ve parlak yıldızlar', price: 2600, effect: 'yildiz' },
-  { key: 'dalga', label: 'Dalga', note: 'Üst üste binen yumuşak dalgalar', price: 3200, effect: 'dalga' },
-  { key: 'izgara', label: 'Izgara', note: 'Retro perspektif zemin', price: 4200, effect: 'izgara' },
+  { key: 'cam', label: 'Buzlu Cam', note: 'Üst üste binen saydam lekeler', price: 3400, effect: 'cam' },
+  { key: 'dalga', label: 'Dalga', note: 'Üst üste binen yumuşak dalgalar', price: 4000, effect: 'dalga' },
+  { key: 'izgara', label: 'Izgara', note: 'Retro perspektif zemin', price: 4800, effect: 'izgara' },
 ];
 
 const coverOf = (key) => COVERS.find((c) => c.key === key) ?? COVERS[0];
