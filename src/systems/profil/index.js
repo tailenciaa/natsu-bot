@@ -5,6 +5,7 @@
 // plan, sergi rozeti) kartın kenarına, kapağına ve rozet şeridine çizilir.
 const { AttachmentBuilder, ButtonStyle, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
+const { guildId } = require('../../core/config');
 const { replyError, respond, isMenuOwner } = require('../../core/helpers');
 const coinStore = require('../coin/store');
 const saygiStore = require('../saygi/store');
