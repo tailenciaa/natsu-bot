@@ -31,7 +31,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 
 ## 3. Mesaj anatomisi
 
-Ortak yardımcılar `src/core/ui.js` içindedir (`page`, `alert`, `notice`, `panel`, `fields`, `rows`, `field`, `chip`, `pills`, `hint`, `block`, `pageInfo`, `stamp`, `pagerRow`, `tabRow`...) ve `src/core/helpers.js` içindeki `respond`, `replyError`, `isStaff`, `isMenuOwner` ile birlikte kullanılır.
+Ortak yardımcılar `src/core/ui.js` içindedir (`page`, `receipt`, `alert`, `notice`, `panel`, `fields`, `rows`, `field`, `chip`, `pills`, `hint`, `block`, `pageInfo`, `stamp`, `pagerRow`, `tabRow`...) ve `src/core/helpers.js` içindeki `respond`, `replyError`, `isStaff`, `isMenuOwner` ile birlikte kullanılır.
 
 ### Panel (kalıcı, bot açılınca kanala gönderilir)
 
@@ -154,6 +154,7 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 | --- | --- |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana |
 | Kişisel işlem sonucu, yetkili işlem panelleri | Sadece kullanana |
+| Kazanç ve harcama bildirimi (`/gunluk`, mağaza satın alma, saygınlık verme) | Herkese açık `receipt` kartı, üye etiketiyle |
 | Bilgi komutları (seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`) |
 | Yardım menüsü (`/yardim`) | Herkese açık, kategoriyi herkes değiştirir; liste her basışta o kişiyi gözeten katmanla çizilir |
 | Paneller, duyurular, loglar, talep mesajları | Kanalda herkese görünür |
@@ -179,10 +180,11 @@ Yeni mesaj eklerken `tools/preview/cases/<sistem>.js` içine bir case eklenir; `
 1. Embed, emoji ya da ok simgesi var mı (⭐ hariç)?
 2. Ana cümle ve anahtar sözcükler kalın, açıklama normal boyutta (`-#` yalnızca izin verilen yerlerde), ilgisiz bloklar çizgiyle ayrılmış mı?
 3. Bilgi satırları `rows` ile mi kuruluyor ve kısa değerler (numara, süre, durum, sayı) `chip` içinde mi?
-4. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
-5. Başlık kısa ve tek satır mı? Buton en çok 20 karakter ve Başlık Düzeni mi?
-6. Yön sözcüğü gerçekten doğru mu, buton adı metinde doğru yazılmış mı?
-7. Boş durum, uzun metin, 40 bileşen / 4000 karakter ve 25 seçenek sınırı düşünülmüş mü?
-8. Etiket yalnızca gerekenleri mi çağırıyor?
-9. Türkçe: yazım, ek uyumu, tutarlı terim, ünlem sayısı.
-10. Her etkileşimli bileşen bir işleyiciye bağlı mı (`check.js` doğrular)?
+4. İşlem bildirimi `receipt` kartıyla mı çiziliyor; kazanç/harcama herkese açık, kişisel ayar sadece kullanana mı?
+5. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
+6. Başlık kısa ve tek satır mı? Buton en çok 20 karakter ve Başlık Düzeni mi?
+7. Yön sözcüğü gerçekten doğru mu, buton adı metinde doğru yazılmış mı?
+8. Boş durum, uzun metin, 40 bileşen / 4000 karakter ve 25 seçenek sınırı düşünülmüş mü?
+9. Etiket yalnızca gerekenleri mi çağırıyor?
+10. Türkçe: yazım, ek uyumu, tutarlı terim, ünlem sayısı.
+11. Her etkileşimli bileşen bir işleyiciye bağlı mı (`check.js` doğrular)?
