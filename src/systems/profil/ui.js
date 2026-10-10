@@ -146,7 +146,7 @@ function kapakPage(imageName, custom) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       text(
-        '## Kapağı Düzenle\nKartının üst alanındaki görseli büyütüp küçültebilir ve dört yönde kaydırabilirsin. Her dokunuşta aşağıdaki önizleme hemen çizilir; profil kartın da aynı anda yenilenir.',
+        '## Kapağı Düzenle\nKartının üst alanındaki görseli büyütüp küçültebilir ve dört yönde kaydırabilirsin. Her dokunuşta kapak önizlemesi hemen çizilir; profil kartın da aynı anda yenilenir.',
       ),
     )
     .addMediaGalleryComponents(
