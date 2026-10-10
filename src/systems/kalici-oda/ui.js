@@ -114,7 +114,8 @@ function applicationCard(app, room) {
         ['Oda Adı', chip(app.roomName)],
         ['Başvuran', `<@${app.userId}>`],
         ['Kişi Sayısı', chip(memberTotal(app.members.length))],
-        ['Haftalık Ses', `${hoursLabel(app.voiceSeconds)} · ${app.voiceOk ? 'gereksinimi karşılıyor' : 'gereksinimin altında'} ${chip(`${config.minWeeklyVoiceHours} saat`)}`],
+        ['Haftalık Ses', chip(hoursLabel(app.voiceSeconds))],
+        ['Ses Hedefi', `${chip(`${config.minWeeklyVoiceHours} saat`)} · ${app.voiceOk ? 'karşılandı' : 'karşılanmadı'}`],
       ])}`,
       app.members.length ? `**Odayı Kullanacaklar**\n${mentions(app.members)}` : null,
       `**Amaç**\n${quote(app.purpose)}`,
@@ -263,7 +264,7 @@ function roomList(rooms, pendingCount) {
     sub: 'Sunucudaki tüm kalıcı odalar, sahipleri ve kanalları burada listelenir; bir odayı kapatmak ya da sahipsiz bir odayı devretmek için aynı komuttaki diğer adımları kullanabilirsin.',
     blocks: [
       rooms.length ? rooms.map(line).join('\n\n') : '-# Henüz kalıcı oda yok.',
-      hasValue(pendingCount) && `**Bekleyen Başvuru** ${chip(`${pendingCount} adet`)}`,
+      pendingCount ? `**Bekleyen Başvuru** ${chip(`${pendingCount} adet`)}` : null,
       stamp(),
     ],
   });
