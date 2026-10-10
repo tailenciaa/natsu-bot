@@ -75,10 +75,6 @@ function punishmentState(p) {
 
 const durationLabel = (p) => (p.type === 'uyari' ? null : p.duration ? formatDuration(p.duration) : 'Süresiz');
 
-// Maddeler: "**Başlık:** değer (ek)", Discord'un madde işaretiyle
-const code = (value) => `\`${value}\``;
-const stat = (label, value, extra) => `**${label}:** ${value}${extra ? ` (${extra})` : ''}`;
-
 // Tablolar: kod bloğunda sabit genişlikli sütunlar; uzun yazılar "…" ile kısaltılır, satır kaymaz.
 // Sütun: [başlık, genişlik]; genişliği null olan sütun tek bir emoji taşır.
 const TIME_ZONE = 'Europe/Istanbul';
