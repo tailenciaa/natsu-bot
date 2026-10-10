@@ -53,6 +53,6 @@ async function handleSil(interaction) {
 module.exports = {
   name: 'temizle',
   commands,
-  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { sil: 'Mesajları Yönet yetkisi olanlar' } },
+  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { sil: 'Mesajları Yönet yetkisi olanlar' }, need: { sil: 'Mesajları Yönet izni' } },
   slash: { sil: handleSil },
 };

@@ -6,7 +6,7 @@
 // komutlarda ne gerektiği "help.need" ile yazılır. Komut açıklamaları ve seçenekleri komut tanımlarından
 // otomatik alınır. "access" alanı erişim denetimi ve komut denetimi için durmaya devam eder.
 const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
-const { botName, staffCommandChannel, staffPermission } = require('../../core/config');
+const { botName, staffPermission } = require('../../core/config');
 const { respond, replyError, isMenuOwner } = require('../../core/helpers');
 const ui = require('./ui');
 
@@ -99,7 +99,8 @@ function tabs(guild, staff) {
 }
 
 function menu(interaction, tab) {
-  const all = tabs(interaction.guild, staffAudience(interaction));
+  const staff = staffAudience(interaction);
+  const all = tabs(interaction.guild, staff);
   const key = all.categories.some((category) => category.key === tab) ? tab : all.categories[0]?.key;
   return ui.helpMenu({
     botName,
@@ -107,8 +108,6 @@ function menu(interaction, tab) {
     categories: all.categories,
     tab: key,
     entries: all.entries[key] ?? [],
-    staff: staffAudience(interaction),
-    staffChannel,
     total: Object.values(all.entries).reduce((n, list) => n + list.length, 0),
   });
 }

@@ -258,6 +258,7 @@ module.exports = {
       'yetki-ver': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında`,
       'yetki-al': `Yöneticiler, sadece <#${staffCommandChannel}> kanalında`,
     },
+    need: { 'yetki-ver': `Yöneticiler · sadece <#${staffCommandChannel}>`, 'yetki-al': `Yöneticiler · sadece <#${staffCommandChannel}>` },
   },
   slash: { 'yetki-ver': handleCommand, 'yetki-al': handleTakeCommand },
   events: {

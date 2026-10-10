@@ -7,8 +7,8 @@ const IDS = { navigate: 'yardim' }; // yardim:<kategori> (eski mesajlardaki buto
 const MAX_COMPONENTS = 40;
 const countComponents = (json) => 1 + (json.components ?? []).reduce((n, c) => n + countComponents(c), 0) + (json.accessory ? 1 : 0);
 
-// view: { botName, avatarUrl, categories: [{ key, label, desc }], tab, entries: [{ description, usage, need }], staff, staffChannel, total }
-function helpMenu({ botName, avatarUrl, categories, tab, entries, staff = false, staffChannel, total = 0 }) {
+// view: { botName, avatarUrl, categories: [{ key, label, desc }], tab, entries: [{ description, usage, need }], total }
+function helpMenu({ botName, avatarUrl, categories, tab, entries, total = 0 }) {
   const container = page({
     title: 'Yardım Menüsü',
     sub: `${botName} komutlarını kategoriler halinde burada görebilir, komutun adına tıklayarak hemen kullanabilirsin. Bu menüde senin kullanabildiğin **${total}** komut listeleniyor.`,
@@ -48,12 +48,6 @@ function helpMenu({ botName, avatarUrl, categories, tab, entries, staff = false,
     container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));
   }
 
-  // Yetkili menüsünde listelenen komutların çoğu yalnızca yetkili komut kanalında çalışır
-  if (staff) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`Yetkili komutları yalnızca <#${staffChannel}> kanalında çalışır.`));
-  }
   return container;
 }
 
