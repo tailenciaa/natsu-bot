@@ -616,14 +616,14 @@ function meetingLog(app) {
   const ended = Boolean(m.endedAt);
   const duration = ended ? Math.max(1, Math.round((m.endedAt - m.startedAt) / 60000)) : 0;
   return card(
-    ended ? `Görüşme Tamamlandı - Başvuru #${pad(app.number)}` : `Görüşme Başladı - Başvuru #${pad(app.number)}`,
-    'Başvuranla yapılan sesli görüşmenin kayıt kanalındaki özeti. Görüşme başlayınca gönderilir, bitince bu mesaj güncellenir ve görüşmenin süresi ile kanalı burada saklanır.',
+    ended ? `Görüşme Tamamlandı #${pad(app.number)}` : `Görüşme Başladı #${pad(app.number)}`,
+    'Başvuranla yapılan sesli görüşmenin kayıt altındaki özeti.',
     [
       ended
         ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +
           `<#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
         : `**Görüşme**\n<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.\n` +
-          `Başlangıç <t:${unix(m.startedAt)}:t> - Görüşme bitince bu mesaj güncellenir.`,
+          `Başlangıç: <t:${unix(m.startedAt)}:t>`,
     ],
     ended ? 'success' : 'primary',
   );
