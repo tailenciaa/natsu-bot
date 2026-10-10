@@ -17,9 +17,9 @@ function blocks() {
     '**Sesli Kanallar**\n' +
       `Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin. Sana ait bir oda için <#${c.createRoom}> kanalına gir, odanı nasıl yöneteceğin <#${c.roomGuide}> kanalında anlatılıyor. **Kalıcı odalar** için <#${c.permanentRooms}> kanalına bakabilirsin.`,
     '**Ses Seviyesi**\n' +
-      `Sesli kanalda geçen her dakika **${seviye.voice.xpPerMinute} XP** kazandırır ve mesaj seviyenden **ayrı birikir**. Her **5 seviyede** yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
+      `Sesli kanalda vakit geçirdikçe seviye atlarsın ve bu seviye mesaj seviyenden **ayrı birikir**. Her **5 seviyede** yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
     `**Ses Rolleri**\n${early}`,
-    `**Üst Seviye Ses Rolleri**\n${late}\nAradaki seviyelerde (35, 45, 55...) sadece rolünü kazanırsın.`,
+    `**Üst Seviye Ses Rolleri**\n${late}`,
     '**Yayın**\n' +
       `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından **yayın yetkisini** alabilirsin, **15. seviye** ses rolü de yayın hakkı verir.`,
     '**Haftanın Ses Aktifleri**\n' +
