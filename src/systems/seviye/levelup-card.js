@@ -57,11 +57,12 @@ async function buildLevelUpCard(user, view) {
   panel(ctx, x, 150, levelW, 108);
   label(ctx, 'ESKİ SEVİYE', x + 26, 182, muted);
   label(ctx, 'YENİ SEVİYE', newX, 182, accent, newAlign);
-  ctx.textAlign = newAlign;
   ctx.fillStyle = '#ffffff';
   ctx.font = `700 32px ${FONT}`;
+  ctx.textAlign = 'left';
   ctx.fillText(`LVL ${view.from}`, x + 26, 230);
   ctx.fillStyle = accent;
+  ctx.textAlign = newAlign;
   ctx.fillText(`LVL ${view.to}`, newX, 230);
   // Ok işareti yazı tipinde yok; çizgiyle çizilir
   const cx = x + levelW / 2;
