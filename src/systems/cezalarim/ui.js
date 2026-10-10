@@ -33,6 +33,8 @@ const MAX_LIST = 10;
 const MAX_REASON = 250;
 
 const label = (p) => `${TYPES[p.type].label} #${p.number}`;
+// Listelerdeki ceza başlığı: tür kalın, numara kod rozetinde (menü seçenekleri ve modal başlığı düz metin kullanır)
+const listTitle = (p) => `**${TYPES[p.type].label} ${chip(`#${p.number}`)}**`;
 
 // Her satır kendi açıklamasıyla birlikte, tam yanında o satırın butonuyla durur
 const row = (title, description, buttonId, buttonLabel, style) =>
@@ -81,8 +83,8 @@ const overflowNote = (total) => (total > MAX_LIST ? `**+${total - MAX_LIST} ceza
 
 // Bitiş bilgisi: süresi dolmuş ama kaldırma taraması henüz çalışmamış ceza "sona erecek" demez
 function endText(p) {
-  if (!p.expiresAt) return '**Süresiz**, bir yetkili kaldırana kadar sürer.';
-  if (p.expiresAt <= Date.now()) return '**Süresi doldu**, birazdan kaldırılacak.';
+  if (!p.expiresAt) return `${chip('Süresiz')} bir yetkili kaldırana kadar sürer.`;
+  if (p.expiresAt <= Date.now()) return `${chip('Süresi doldu')} birazdan kaldırılacak.`;
   return `**Bitiş:** <t:${unix(p.expiresAt)}:F> (<t:${unix(p.expiresAt)}:R>)`;
 }
 
@@ -98,7 +100,7 @@ function sureView(active) {
     title: 'Ceza Sürelerin',
     sub: 'Sunucuda aktif olan cezalarının **ne zaman sona ereceğini** burada görebilirsin. Süresiz verilen cezalar bir yetkili kaldırana kadar sürer.',
     accent: colors.warning,
-    blocks: [...timed.slice(0, MAX_LIST).map((p) => `**${label(p)}**\n${endText(p)}`), overflowNote(timed.length)],
+    blocks: [...timed.slice(0, MAX_LIST).map((p) => `${listTitle(p)}\n${endText(p)}`), overflowNote(timed.length)],
   });
 }
 
@@ -109,7 +111,7 @@ function sebepView(active) {
     title: 'Ceza Sebeplerin',
     sub: `Sunucuda aktif olan cezalarının hangi sebeple verildiğini burada görebilirsin. Cezayı haksız buluyorsan <#${config.channel}> kanalındaki panelden **İtiraz Et** butonunu kullanabilirsin.`,
     accent: colors.warning,
-    blocks: [...active.slice(0, MAX_LIST).map((p) => `**${label(p)}**\n${quote(shorten(p.reason, MAX_REASON))}`), overflowNote(active.length)],
+    blocks: [...active.slice(0, MAX_LIST).map((p) => `${listTitle(p)}\n${quote(shorten(p.reason, MAX_REASON))}`), overflowNote(active.length)],
   });
 }
 
@@ -183,8 +185,14 @@ function itirazCard(p, sebep, karar) {
     ? rows([
         ['Karar', chip(approved ? 'Onaylandı' : 'Reddedildi')],
         ['Karar Veren', `<@${karar.by}>`],
-        karar.status !== 'active' && ['Ceza Durumu', durumText(p)],
       ])
+    : null;
+  const kararNotu = karar
+    ? approved
+      ? hint('Ceza **kaldırıldı** ve sicilden silindi, ceza puanı düşürüldü.')
+      : p.status === 'active'
+        ? hint('Ceza **sürmeye devam ediyor.**')
+        : null
     : null;
 
   const container = page({
@@ -197,7 +205,8 @@ function itirazCard(p, sebep, karar) {
       `**Ceza Bilgileri**\n${info}`,
       `**Ceza Sebebi**\n${quote(p.reason)}`,
       `**İtiraz Sebebi**\n${quote(sebep)}`,
-      karar ? `${kararSatiri}\n${approved ? hint('Ceza **kaldırıldı** ve sicilden silindi, ceza puanı düşürüldü.') : p.status === 'active' ? hint('Ceza **sürmeye devam ediyor.**') : ''}` : null,
+      kararSatiri,
+      kararNotu,
     ],
   });
   if (karar) return container;
