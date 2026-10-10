@@ -519,17 +519,18 @@ function transferRequestDm(app, requesterId, stage, state = 'pending') {
 // Devir isteği sonuçlanınca isteyen yetkiliye giden DM. state: approved | rejected
 function transferResultDm(app, holderId, stage, state) {
   const until = stage === 'meeting' ? app.onHold?.until : app.orientation?.holdUntil;
+  const head = `**Başvuru ${appNo(app)} · ${chip(stageName(stage))}**`;
   return state === 'approved'
     ? card(
         'Devir Onaylandı',
         'İstediğin işlemi beklemeye alan yetkili sana devretti. Başvuranla artık sen ilgileniyorsun; ayrıntılar başvuran ve yetkili için ayrıca gönderildi.',
-        [`**Başvuru #${pad(app.number)} - ${stageName(stage)}**\n**<@${holderId}> işlemi sana devretti.**`],
+        [`${head}\n**<@${holderId}> işlemi sana devretti.**`],
         'success',
       )
     : card(
         'Devir Reddedildi',
         'Beklemeye alan yetkili isteğini reddetti. Geri alma süresi dolunca herhangi bir yetkili işlemi üstlenebilir; o zamana kadar yalnızca o geri alabilir.',
-        [`**Başvuru #${pad(app.number)} - ${stageName(stage)}**\n**<@${holderId}> devir isteğini reddetti.**\n${until > Date.now() ? `<t:${unix(until)}:R> sonra işlemi üstlenebilirsin.` : 'Süre doldu, işlemi doğrudan üstlenebilirsin.'}`],
+        [`${head}\n**<@${holderId}> devir isteğini reddetti.**\n${until > Date.now() ? `<t:${unix(until)}:R> sonra işlemi üstlenebilirsin.` : 'Süre doldu, işlemi doğrudan üstlenebilirsin.'}`],
         'danger',
       );
 }
@@ -541,7 +542,12 @@ function waitingResolved(app, stage) {
     'Yetkili Bağlandı',
     `Başvuranı bekleyen yetkili kanala bağlandı ve ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} başladı. Bu mesaj kanalın sohbetinde kayıt olarak kalır.`,
     [
-      fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', stageName(stage)), field('Yetkili', `<@${staffId}>`)]),
+      rows([
+        ['Başvuru', appNo(app)],
+        ['Başvuran', `<@${app.userId}>`],
+        ['Aşama', chip(stageName(stage))],
+        ['Yetkili', `<@${staffId}>`],
+      ]),
       `**<@${app.userId}>, <@${staffId}> yetkilisi ${stageWord(stage)} bağlandı.**`,
     ],
     'success',
@@ -553,11 +559,11 @@ function waitingResolved(app, stage) {
 function waitingChat(app, stage, askStaffId, remindDisabled) {
   const staffId = stage === 'meeting' ? app.meetingBy : app.orientation?.staffId;
   const what = stage === 'meeting' ? 'görüşme' : 'oryantasyon';
-  const info = fields([
-    field('Başvuru', `#${pad(app.number)}`),
-    field('Başvuran', `<@${app.userId}>`),
-    field('Aşama', stageName(stage)),
-    field('Yetkili', stage === 'unassigned' ? 'Henüz üstlenen yok' : `<@${staffId}>`),
+  const info = rows([
+    ['Başvuru', appNo(app)],
+    ['Başvuran', `<@${app.userId}>`],
+    ['Aşama', chip(stageName(stage))],
+    ['Yetkili', stage === 'unassigned' ? chip('Henüz üstlenen yok') : `<@${staffId}>`],
   ]);
   const status = askStaffId
     ? `**<@${askStaffId}>, <@${app.userId}> için bekleyen bir oryantasyon işlemi var, ilgilenmek ister misin?**\nÜstlenmek için **Oryantasyonu Üstlen**, şimdilik geçmek için **Şimdi Değil** butonuna bas.`
