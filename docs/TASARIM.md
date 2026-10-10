@@ -78,6 +78,30 @@ açıklama satırı (normal yazı)
 - Boş değer rozette küçük harfle verilir (`yok`, `sınırsız`, `bilinmiyor`); durum etiketleri Başlık Düzeni'ndedir (`Yetkili Bekliyor`, `Ekibe Katıldı`).
 - Kart başlığı bloğu zaten anlatıyorsa (**Talep Bilgileri** gibi) blok başlığı yinelenmez; başlığın ayrı bir grup bilgisi topladığı kartlarda (sicil detayı, itiraz kartı) başlık yerinde kalır.
 
+### İşlem kartı: `receipt({ title, sub, pairs, note, user, accent, at })`
+
+Bir üyenin tamamladığı işlemin (ödül, harcama, saygınlık verme, kart ayarı, başvuru) bildirimi. `page`in tek amaçlı
+küçüğüdür: başlık, altında tek cümlelik özet, çizgiyle ayrılmış `rows` satırları, en altta zaman damgası; butonu yoktur.
+
+```
+## Günlük Ödül Toplandı                     [üyenin avatarı]
+<@üye> **/gunluk** ile günlük ödülünü topladı. ...
+---
+**Kazanç:** `127 coin`
+**Seri:** `5. gün`
+**Yeni Bakiye:** `167 coin`
+---
+-# <t:unix:F>
+```
+
+- `user` verilirse başlığın sağında üyenin avatarı durur.
+- **Görünürlük:** kazanç ve harcama kartları **herkese açık** gönderilir (`respond(..., { ephemeral: false })`, `<@üye>`
+  `allowedMentions.users` içinde tutulur) ki üye kazandığını göstersin; kart ayarı, sıra ve başvuru özeti gibi kişisel
+  işlemler **sadece kullanana** kalır. Hata ve reddetmeler `alert` olarak kişiye özel kalır, kart haline getirilmez.
+- Herkese açık kart 3. tekil şahısla yazılır (`<@üye> ... topladı`), kişiye özel kart üyeye hitap eder (`... topladın`)
+  ve @etiket içermez.
+- Sayılar `chip` içinde durur; başlık cümlesinde geçen ürün adı satırlarda yinelenmez.
+
 ### Bildirim: `alert(mesaj, ipucu, renk)` / `notice(bölümler, renk)`
 
 Kısa hata, onay ve uyarı. Biçim `**Ana cümle.**` + isteğe bağlı normal yazıyla ikinci satır. Hata cümlesi "ne oldu + ne yapmalı" sırasındadır.
