@@ -297,8 +297,8 @@ async function handleApprove(interaction, app) {
     return respond(
       interaction,
       core.alert('Oda açılamadı.', 'Botun kanal yönetme izni olmayabilir ya da kategori/kanal sınırı dolmuş olabilir; bir sunucu yöneticisine bildir.', 'danger'),
-      { followUp: true },,
-      { ephemeral: true });
+      { followUp: true, ephemeral: true },
+    );
   }
   const updated = store.updateApplication(app.id, { status: 'approved', reviewedBy: interaction.user.id, reviewedAt: Date.now(), roomId: room.id });
   store.updateRoom(room.id, { approvedBy: interaction.user.id });

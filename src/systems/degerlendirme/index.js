@@ -195,8 +195,9 @@ async function handleReplySubmit(interaction) {
     interaction,
     sent
       ? core.alert('Yorumun eklendi.', 'Değerlendirmeyi yapan üyeye DM üzerinden bildirildi.', 'success')
-      : core.alert('Yorumun eklendi.', "Üyenin DM'si kapalı olduğu için bildirim gönderilemedi.", 'warning'),,
-    { ephemeral);
+      : core.alert('Yorumun eklendi.', "Üyenin DM'si kapalı olduğu için bildirim gönderilemedi.", 'warning'),
+    { ephemeral: !sent },
+  );
 }
 
 // Değerlendirme kanalındaki "İtiraz Et" butonu: sadece değerlendirilen yetkili kullanabilir
@@ -323,8 +324,9 @@ async function handleReview(interaction) {
       interaction,
       sent
         ? core.alert('Yetkili görüşmeye çağrıldı.', `Yetkiliye DM üzerinden ${where}.`, 'success')
-        : core.alert('Yetkili görüşmeye çağrıldı.', "Yetkilinin DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.", 'warning'),,
-      { ephemeral);
+        : core.alert('Yetkili görüşmeye çağrıldı.', "Yetkilinin DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.", 'warning'),
+      { ephemeral: !sent },
+    );
   }
 
   store.updateRating(id, {
