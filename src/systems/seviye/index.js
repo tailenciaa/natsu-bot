@@ -14,6 +14,8 @@ const { levelFromXp } = require('./level');
 const ui = require('./ui');
 const { buildLevelCard } = require('./card');
 const { buildLevelUpCard } = require('./levelup-card');
+const coin = require('../coin/store');
+const coinConfig = require('../coin/config');
 const profileStore = require('../profil/store');
 const rankingStore = require('../siralama/store');
 
@@ -115,6 +117,7 @@ async function grantXp(guild, userId, kind, amount) {
   for (let level = before + 1; level <= after; level++) {
     if (level <= store.announcedLevel(kind, userId)) continue;
     store.markAnnounced(kind, userId, level);
+    coin.add(userId, coinConfig.awards.levelUp, `${kind} seviye ${level}`);
 
     // Rol işlemleri sadece ana seviyelerde; ara seviyede role null kalır, kartta "sıradaki rol" paneli gösterilir
     let role = null;

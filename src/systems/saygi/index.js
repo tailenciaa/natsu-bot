@@ -111,6 +111,8 @@ function evaluateGive(giverId, target) {
 
   store.add(target.id, weekKey());
   store.setLastGiven(giverId, Date.now());
+  // Saygınlık veren de ödül alır: sosyal etkileşimi büyüten taraf teşvik edilsin
+  coin.add(giverId, coinConfig.awards.repGiven, 'saygınlık verdi');
   return { ok: true, newTotal: store.allTotals()[target.id] ?? 0 };
 }
 

@@ -120,7 +120,15 @@ async function announceWeek(guild, target) {
     return false;
   }
   return channel.send({ components: [ui.weeklyAnnounce(guild, results)], flags: core.CV2, allowedMentions: { users: winnerIds } }).then(
-    () => true,
+    () => {
+      // Coin ödülleri duyuru gerçekten gönderildikten sonra verilir: duyuru tekrar denenirse aynı hafta iki kez ödenmez
+      for (const kind of ['ses', 'mesaj', 'yayin']) {
+        results[kind].slice(0, coinConfig.awards.weekly.length).forEach((entry, index) =>
+          coin.add(entry.userId, coinConfig.awards.weekly[index], `haftanın ${kind} ${index + 1}.si`),
+        );
+      }
+      return true;
+    },
     (err) => {
       console.error('[aktif] Haftalık duyuru gönderilemedi:', err.message);
       return false;
