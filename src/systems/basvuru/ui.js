@@ -35,14 +35,17 @@ const answersText = (answers) =>
 const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks, accent: color ? colors[color] : undefined, thumbnail });
 const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
 
-// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, en altta uyarı notu
-const panel = () =>
+// Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, en altta uyarı notu.
+// cardName: çizim kartı ekteyse açıklama ve not kartta olduğu için mesajda tekrar yazılmaz
+const panel = (cardName) =>
   standardPanel({
     title: config.panel.title,
-    sub: 'Yetkili ekibine katılmak için **Başvur** butonuyla başvuru formunu doldur. Başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.',
+    sub: cardName
+      ? undefined
+      : 'Yetkili ekibine katılmak için **Başvur** butonuyla başvuru formunu doldur. Başvurun yetkililer tarafından dikkatle incelenir ve sonuç sana DM üzerinden iletilir.',
     button: { id: IDS.apply, label: config.panel.buttonLabel },
-    image: config.banner,
-    note: config.panel.footer,
+    image: cardName ?? config.banner,
+    note: cardName ? undefined : config.panel.footer,
   });
 
 // "Başvur" butonuyla açılan form; sorular config.js'ten gelir
