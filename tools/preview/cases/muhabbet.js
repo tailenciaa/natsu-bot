@@ -45,11 +45,11 @@ module.exports = ({ mock, src }) => {
   return [
     { id: 'panel', title: 'Sıra paneli: nasıl çalışır ve beklemeler', where: 'Muhabbet bilgi kanalı', visibility: 'panel', kind: 'message', build: () => message(k.queuePanel()) },
 
-    { id: 'sira', title: 'Sıraya girme kartı: yeni giren', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.queuedCard(3, 7)) },
-    { id: 'sira-cikis', title: 'Sıradan çıkma onayı', where: 'Sıradan Ayrıl butonu', visibility: 'public', kind: 'message', build: () => message(k.leftQueue({ user: mehmet })) },
-    { id: 'sira-tekrar', title: 'Sıraya girme kartı: sırada beklerken tekrar basıldı', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.queuedCard(2, 6, true)) },
+    { id: 'sira', title: 'Sıraya girme kartı: yeni giren', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.queuedCard({ user: mehmet, position: 3, waiting: 7 })) },
+    { id: 'sira-cikis', title: 'Sıradan çıkma kartı', where: 'Sıradan Ayrıl butonu', visibility: 'public', kind: 'message', build: () => message(k.leftQueue({ user: mehmet })) },
+    { id: 'sira-tekrar', title: 'Sıraya girme kartı: sırada beklerken tekrar basıldı', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.queuedCard({ user: mehmet, position: 2, waiting: 6, again: true })) },
 
-    { id: 'eslesme', title: 'Eşleşen üyeye giden kart: oda açıldı', where: 'Doğrudan mesaj', visibility: 'public', kind: 'message', build: () => message(k.matchedCard(room())) },
+    { id: 'eslesme', title: 'Eşleşen üyeye giden kart: oda açıldı', where: 'Sıra panelindeki Muhabbet Başlat butonu', visibility: 'public', kind: 'message', build: () => message(k.matchedCard(room())) },
     { id: 'oda-paneli', title: 'Odanın kendi paneli: bitir butonu', where: "Odanın yazı kanalı", visibility: 'public', kind: 'message', build: () => message(k.roomPanel(room())) },
 
     {
