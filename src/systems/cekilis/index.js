@@ -272,19 +272,23 @@ async function cancel(interaction) {
 
 async function list(interaction) {
   const url = (g) => core.messageUrl(guildId, g.channelId, g.messageId);
-  const active = store.active().map((g) => `**#${g.no} ${g.prize}**\n**Kanal:** <#${g.channelId}>\n**Bitiş:** <t:${core.unix(g.endsAt)}:R>\n**Katılımcı:** ${g.participants.length}\n[Çekilişe git](${url(g)})`);
-  const ended = store.recentEnded().map((g) => `**#${g.no} ${g.prize}:** ${g.winners.length ? g.winners.map((id) => `<@${id}>`).join(', ') : 'kazanan yok'}`);
   return respond(
     interaction,
-    core.page({
-      title: 'Çekilişler',
-      sub: 'Şu an açık olan çekilişleri ve yeni bitenleri görüyorsun; bitmiş bir çekilişte /cekilis yeniden-cek komutuna numarasını yazarak yeni kazanan seçebilirsin.',
-      blocks: [
-        ...(active.length ? active : ['**Şu an açık çekiliş yok.**']),
-        ended.length ? `**Son Biten Çekilişler**\n${ended.join('\n')}` : null,
-      ],
-    }),
+    ui.managementPanel({ active: store.active().map((g) => ({ ...g, url: url(g) })), ended: store.recentEnded(), channelId: interaction.channelId }),
   );
+}
+
+// Yönetim panelindeki "Çekiliş Başlat": form panelin açıldığı kanal için açılır, rol gereksinimi eklenmez
+async function startFromPanel(interaction) {
+  if (!isStaff(interaction)) return replyError(interaction, 'Bu butonu sadece yöneticiler kullanabilir.');
+  if (store.active().length >= config.maxActive) return maxActiveError(interaction);
+  const [, channelId] = interaction.customId.split(':');
+  const target = await fetchTextChannel(interaction.guild, channelId);
+  if (!target) return replyError(interaction, 'Kanal bulunamadı.', 'Çekilişi **/cekilis baslat** komutuyla, istediğin kanalda açabilirsin.');
+  if (!target.permissionsFor(interaction.guild.members.me)?.has(['ViewChannel', 'SendMessages'])) {
+    return replyError(interaction, 'Botun bu kanala mesaj gönderme izni yok.', 'Botun kanalı **görme** ve **mesaj gönderme** izni olmalı ya da komutta başka bir kanal seçmelisin.');
+  }
+  return interaction.showModal(ui.createModal(target.id, null));
 }
 
 async function handleCommand(interaction) {
@@ -446,6 +450,7 @@ module.exports = {
     [ui.IDS.confirm, handleConfirm],
     [ui.IDS.form, handleEditSubmit],
     [ui.IDS.create, create],
+    [ui.IDS.start, startFromPanel],
   ],
   events: {
     [Events.ClientReady]: (client) => {

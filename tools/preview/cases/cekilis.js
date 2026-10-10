@@ -64,6 +64,6 @@ module.exports = ({ mock, src }) => {
     { id: 'onay-bitir', title: 'Onay: çekilişi bitir', where: 'Bitir butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [c.confirm('bitir', base)], ...noMentions }) },
     { id: 'onay-iptal', title: 'Onay: çekilişi iptal et', where: 'İptal Et butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [c.confirm('iptal', base)], ...noMentions }) },
     { id: 'form-olustur', title: 'Form: çekiliş oluştur', where: '/cekilis baslat', visibility: 'ephemeral', kind: 'modal', build: () => c.createModal(mock.snowflake(), role.id) },
-    { id: 'form-duzenle', title: 'Form: çekilişi düzenle', where: 'Düzenle butonu', visibility: 'ephemeral', kind: 'modal', build: () => c.editModal(base) },
+    { id: 'form-cekbasarit', title: 'Form: çekilişi düzenle', where: 'Düzenle butonu', visibility: 'ephemeral', kind: 'modal', build: () => c.editModal(base) },
   ];
 };
