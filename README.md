@@ -43,6 +43,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/seviye [kullanici]` | Mesaj ve ses seviyesini kartla gösterir | Herkes |
 | `/profil [kullanici]` | Profil kartı: rozetler, seviye, vitrin ve kozmetikler (altındaki butonlarla biyografi, renk, kapak, panel görünümü, tema ve mağaza düzenlenir) | Herkes |
 | `/gunluk` | Günlük coin ödülünü toplar, art arda günlerle seri bonusu büyür | Herkes |
+| `/bakiye` | Coin cüzdanı: bakiye, kazanç, harcanan, seri ve mağazadan alınanlar (butonlarla mağaza ve siparişler açılır) | Herkes |
 | `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
 | `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
 | `/saygi-siralama` | Tüm zamanların saygınlık tablosu | Herkes |
