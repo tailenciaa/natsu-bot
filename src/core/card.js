@@ -21,15 +21,6 @@ const FOOTER_H = 46;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 
-// Görsel kartlarda <t:...:R> etiketi işlenmediği için göreli zaman kendimiz yazılır: "3 saat önce", "az önce"
-const REL_UNITS = [['yıl', 31536000], ['ay', 2592000], ['gün', 86400], ['saat', 3600], ['dakika', 60]];
-function relTime(ms) {
-  const seconds = Math.max(0, Math.round((Date.now() - Number(ms)) / 1000));
-  if (seconds < 60) return 'az önce';
-  const [name, size] = REL_UNITS.find(([, s]) => seconds >= s) ?? REL_UNITS.at(-1);
-  return `${Math.floor(seconds / size)} ${name} önce`;
-}
-
 // Kart: köşeleri kırpılmış zemin + parıltı hazır gelir; çizim bitince canvas.toBuffer('image/png') ile alınır.
 // Boyut baştan belliyse createCard çağrılmadan önce measureLines/lineCount ile satır sayıları ölçülüp yükseklik
 // hesaplanır (oluşturma tek geçişte yapılır).
@@ -185,7 +176,6 @@ module.exports = {
   ROW_GAP,
   FOOTER_H,
   font,
-  relTime,
   createCard,
   measureCtx,
   listHeight,

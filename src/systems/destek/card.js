@@ -1,52 +1,48 @@
-// Destek panelinin üstündeki çizim kartı: başlık, sistemin nasıl işlediği adımları ve uyarı notu.
-// İçeriği sabit olduğu için her çizimde aynı görsel üretilir; panel (core/panel.js) içerik değişmedikçe mesajı yenilemez.
-const {
-  WIDTH,
-  ROW_H,
-  ROW_GAP,
-  FOOTER_H,
-  font,
-  createCard,
-  measureCtx,
-  drawHeading,
-  drawRow,
-  drawFooter,
-} = require('../../core/card');
-const { wrapLines } = require('../../core/canvas');
-const config = require('./config');
+// Durum kanalındaki "Açık Destek Talepleri" panelinin çizim kartı: başlık, sayfadaki talep satırları
+// (numara, talep sahibi, konu, üstlenme durumu) ve altta sayfa bilgisi. Mesaj her değişimde yeniden
+// çizildiği için kart dosya adı her seferinde eşsiz verilir; aynı adla yüklenen yeni görsel Discord'da
+// eski görseli güncellemeyebiliyor.
+const { WIDTH, ROW_H, ROW_GAP, createCard, listHeight, drawHeading, drawRow, drawEmpty, drawFooter } = require('../../core/card');
+const { pad } = require('../../core/ui');
+const { STATUS_TITLE, STATUS_SUB, STATUS_PAGE_SIZE, ticketState } = require('./ui');
 
-const CARD_NAME = 'destek-panel.png';
 const THEME = { from: '#0e1a2b', to: '#155e75', accent: '#38bdf8' };
+const WAIT_COLOR = '#fbbf24';
 
-const SUB =
-  'Talep Oluştur butonuyla destek talebi açabilirsin. Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda talebini yaz; destek ekibimiz inceleyip en kısa sürede seninle ilgilenir.';
+// tickets: tüm açık talepler (sayfalama kartın içinde yapılır), nameOf: kullanıcı ID'sinden ad çözer,
+// name: bu çizime özel dosya adı
+async function buildStatusCard(tickets, page, name, nameOf) {
+  const pageCount = Math.max(1, Math.ceil(tickets.length / STATUS_PAGE_SIZE));
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  const shown = tickets.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE);
 
-const STEPS = [
-  { title: '1 · Talep Oluştur', sub: 'Butona bas, sorununu kısaca ve net şekilde anlat.' },
-  { title: '2 · Yetkili Üstlensin', sub: 'Destek ekibi talebini inceler ve bu kanalda seninle ilgilenir.' },
-  { title: '3 · Çözüm ve Puanlama', sub: 'Talep kapanınca deneyimini yıldızlayıp yorum bırakabilirsin.' },
-];
+  const rows = await Promise.all(
+    shown.map(async (t) => {
+      const state = ticketState(t);
+      const color = state.tone === 'claim' ? THEME.accent : WAIT_COLOR;
+      return {
+        color,
+        title: `#${pad(t.number)} · ${await nameOf(t.ownerId) ?? 'bilinmiyor'}`,
+        sub: `Konu: ${t.reason}`,
+        status: state.pill,
+        statusColor: color,
+      };
+    }),
+  );
 
-const plain = (value) => String(value).replace(/\*\*/g, '');
-
-// Panel kartının PNG'sini üretir; syncPanel'e {name, buffer} olarak verilir
-async function buildPanelCard() {
-  const measure = measureCtx();
-  measure.font = font(400, 16);
-  const subLines = wrapLines(measure, SUB, WIDTH - 80, 2).length;
-  const headingBottom = 48 + 34 + (subLines - 1) * 24 + 20;
-  const rowsH = STEPS.length * ROW_H + (STEPS.length - 1) * ROW_GAP;
-  const height = headingBottom + rowsH + 24 + FOOTER_H;
-
-  const { canvas, ctx, scheme, c } = createCard(WIDTH, height, THEME);
-  let y = drawHeading(ctx, config.panel.title, SUB, WIDTH, c);
-  STEPS.forEach((step, i) => {
-    drawRow(ctx, { color: scheme.accent, ...step }, y, WIDTH, c);
+  const { canvas, ctx, c } = createCard(WIDTH, listHeight(STATUS_SUB, Math.max(1, rows.length)), THEME);
+  let y = drawHeading(ctx, STATUS_TITLE, STATUS_SUB, WIDTH, c);
+  for (const row of rows) {
+    drawRow(ctx, row, y, WIDTH, c);
     y += ROW_H + ROW_GAP;
-  });
-  drawFooter(ctx, plain(config.panel.footer), y, WIDTH, c);
+  }
+  if (!rows.length) {
+    drawEmpty(ctx, 'Şu an açık destek talebi yok.', y, WIDTH, c);
+    y += ROW_H + ROW_GAP;
+  }
+  drawFooter(ctx, `Sayfa ${current + 1} / ${pageCount} · ${tickets.length} açık talep`, y, WIDTH, c);
 
-  return { name: CARD_NAME, buffer: canvas.toBuffer('image/png') };
+  return { name, buffer: canvas.toBuffer('image/png') };
 }
 
-module.exports = { buildPanelCard };
+module.exports = { buildStatusCard };
