@@ -32,6 +32,8 @@ const IDS = {
   vitrinForm: 'profil-ayar:vitrin-form',
   vitrinLinks: 'profil-ayar:vitrin-baglanti',
   featured: 'profil-ayar:one-cikan',
+  gorunum: 'profil-ayar:gorunum',
+  gorunumBtn: 'profil-ayar:gorunum-btn:', // + azalt | artir | sifirla
   rozet: 'profil-ayar:rozetler',
   shop: 'profil-ayar:magaza',
   shopTab: 'profil-ayar:magaza:', // + cerceve | tema | kapak | rozet
@@ -65,6 +67,7 @@ function profile(imageName, editable, currentTheme = null, description = 'Profil
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.color).setLabel('Renk').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.gorunum).setLabel('Görünüm').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
       ),
     )
@@ -175,6 +178,44 @@ function kapakPage(imageName, custom) {
         new ButtonBuilder().setCustomId(`${IDS.kapakBtn}gorsel`).setLabel('Görsel Bağlantısı').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(`${IDS.shopTab}kapak`).setLabel('Arka Planlar').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(`${IDS.kapakBtn}kaldir`).setLabel('Görseli Kaldır').setStyle(ButtonStyle.Danger).setDisabled(!hasImage),
+      ),
+    );
+}
+
+// Görünüm sayfası: kartın tamamı çizilir, panel tarzı (düz ya da buzlu cam) ve saydamlık buradan ayarlanır.
+// Saydamlık yalnızca cam temalarda işler; cam olmayan temada düğmeler görünür kalır ama pasiftir.
+function gorunumPage(imageName, { themeLabel, glass, opacity }) {
+  const btn = (neylem, label, style = ButtonStyle.Secondary) =>
+    new ButtonBuilder().setCustomId(`${IDS.gorunumBtn}${neylem}`).setLabel(label).setStyle(style).setDisabled(!glass);
+
+  return new ContainerBuilder()
+    .addTextDisplayComponents(
+      text(
+        '## Kart Görünümü\nKartındaki kutular temasına göre düz ya da buzlu cam panel olarak çizilir. Cam bir tema seçtiğinde saydamlığı artırıp azaltarak panellerin kapağın üzerinden ne kadar okunduğunu kendin ayarlayabilirsin.',
+      ),
+    )
+    .addMediaGalleryComponents(
+      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`).setDescription('Profil kartı')),
+    )
+    .addTextDisplayComponents(
+      text(
+        fields([
+          `**Tema:** ${themeLabel}`,
+          `**Panel:** ${glass ? 'Buzlu cam' : 'Düz'}`,
+          glass ? `**Saydamlık:** %${opacity}` : null,
+          glass
+            ? 'Saydamlık arttıkça kutular şeffaflaşır, kapağın rengi panellerin içinden daha çok görünür.'
+            : 'Bu temada kutular düz çizildiği için saydamlık ayarı işlemez; buzlu cam paneller cam temalara özeldir.',
+        ]),
+      ),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(btn('azalt', 'Saydamlığı Azalt'), btn('artir', 'Saydamlığı Artır'), btn('sifirla', 'Sıfırla', ButtonStyle.Danger)),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.shopTab}tema`).setLabel('Temalar').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
       ),
     );
 }
