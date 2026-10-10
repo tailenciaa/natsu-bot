@@ -172,6 +172,10 @@ for (const sys of cmdSystems) {
     for (const key of sys.help.member ?? []) {
       if (!paths.includes(key)) add('komut', sys.name, 'HATA', `help.member`, 'yardim-fazla', '', `help.member listesindeki "${key}" komutu yok`);
       else if (!access[key]) add('komut', sys.name, 'HATA', `/${key}`, 'yardim-fazla', '', `"${key}" yardım menüsünde listeleniyor ama help.access'i yok`);
+      // Üye menüsünde yalnızca herkesin kullanabildiği komutlar durur: rol, izin ya da yöneticilik isteyen komut
+      // (sicil, ceza, yetki, log, emoji ekleme...) üye listesinde yazılmaz, yetkili katmanında "Gerekli" satırıyla görünür
+      else if (!/^Herkes\b/.test(access[key]))
+        add('komut', sys.name, 'HATA', `/${key}`, 'yardim-uye-erisim', '', `"${key}" üye yardım menüsünde listeleniyor ama erişimi "Herkes" değil: "${access[key]}"`);
     }
     // help.need: yardım menüsünde komutun yanında görünen "ne gerekir" yazısı. Yetkili katmanında listelenen her
     // komutta olması beklenir; üye komutlarında isteğe bağlıdır (herkesin kullanabildiği komutta yazıya gerek yok).
