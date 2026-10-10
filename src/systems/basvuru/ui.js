@@ -12,7 +12,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, fields, field, rows, chip, pageInfo, pagerRow, panel: standardPanel } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, rows, chip, pageInfo, pagerRow, panel: standardPanel } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -605,12 +605,12 @@ function waitingLog(app, stage, channelId, reminder) {
       ? 'Başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla yetkiliye haber verdi. **Kanala Katıl** butonuyla hemen bağlanabilirsin.'
       : `Başvuran ${stage === 'meeting' ? 'görüşme' : 'oryantasyon'} için kanala girdi ve yetkiliyi bekliyor. **Kanala Katıl** butonuyla hemen bağlanabilirsin.`,
     [
-      fields([
-        field('Başvuru', `#${pad(app.number)}`),
-        field('Başvuran', `<@${app.userId}>`),
-        field('Aşama', stageName(stage)),
-        field('Yetkili', `<@${staffId}>`),
-        field('Kanal', `<#${channelId}>`),
+      rows([
+        ['Başvuru', appNo(app)],
+        ['Başvuran', `<@${app.userId}>`],
+        ['Aşama', chip(stageName(stage))],
+        ['Yetkili', `<@${staffId}>`],
+        ['Kanal', `<#${channelId}>`],
       ]),
       `**<@${app.userId}>, <#${channelId}> kanalında <@${staffId}> yetkilisinin ${toWhat} bağlanmasını${reminder ? ' hâlâ' : ''} bekliyor.**`,
     ],
@@ -627,7 +627,12 @@ function meetingStaffWaitingDm(app, guildName, channelId) {
       'Yetkilin Seni Bekliyor',
       'Görüşmeye çağıran yetkili görüşme kanalına girdi ve seni bekliyor. **Kanala Katıl** butonuyla hemen bağlanabilirsin; kanal senin için açık ve görüşme ikiniz de kanaldayken kendiliğinden başlar.',
       [
-        fields([field('Başvuru', `#${pad(app.number)}`), field('Aşama', 'Görüşme'), field('Yetkili', `<@${app.meetingBy}>`), field('Kanal', `<#${channelId}>`)]),
+        rows([
+          ['Başvuru', appNo(app)],
+          ['Aşama', chip('Görüşme')],
+          ['Yetkili', `<@${app.meetingBy}>`],
+          ['Kanal', `<#${channelId}>`],
+        ]),
         `**<@${app.meetingBy}> yetkilisi görüşmen için <#${channelId}> kanalında seni bekliyor.**`,
       ],
       'primary',
@@ -647,11 +652,14 @@ function meetingLog(app) {
     ended ? `Görüşme Tamamlandı #${pad(app.number)}` : `Görüşme Başladı #${pad(app.number)}`,
     'Başvuranla yapılan sesli görüşmenin kayıt altındaki özeti.',
     [
-      ended
-        ? `**Görüşme**\n<@${app.meetingBy}> ile <@${app.userId}> arasındaki görüşme bitti.\n` +
-          `<#${m.channelId}> kanalında <t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t> arası, ${duration} dakika sürdü.`
-        : `**Görüşme**\n<@${app.meetingBy}>, <@${app.userId}> ile <#${m.channelId}> kanalında görüşüyor.\n` +
-          `Başlangıç: <t:${unix(m.startedAt)}:t>`,
+      rows([
+        ['Görüşenler', `<@${app.meetingBy}> · <@${app.userId}>`],
+        ['Kanal', `<#${m.channelId}>`],
+        ended
+          ? ['Aralık', `<t:${unix(m.startedAt)}:t> - <t:${unix(m.endedAt)}:t>`]
+          : ['Başlangıç', `<t:${unix(m.startedAt)}:t>`],
+        ended && ['Süre', chip(`${duration} dakika`)],
+      ]),
     ],
     ended ? 'success' : 'primary',
   );
