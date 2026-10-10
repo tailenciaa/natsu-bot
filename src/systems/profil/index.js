@@ -147,6 +147,8 @@ const COLOR = /^#?([0-9a-fA-F]{6})$/;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 // ── Kapak düzenleyici ────────────────────────────────────────────────────────
+// GİZLİ İSTİSNA: kapak ve görünüm düzenleyicileri kişiye özel kalır. Büyütme/kaydırma adımları üyenin kendi
+// ayarıdır ve her dokunuşta aynı mesajı yeniden çizer; kanala açılsa herkesin önünde bir düzenleme oturumu açılır.
 
 // Yalnızca kapağı çizmek için gerekenler: tema/renk seçimi ve üyenin rol rengi (pahalı ölçümler toplanmaz)
 async function headerViewOf(guild, userId) {
@@ -566,7 +568,7 @@ async function handleSettings(interaction) {
       const problem = value ? await checkImage(value) : null;
       if (problem) return replyError(interaction, 'Kapak görseli kaydedilmedi.', problem);
       store.set(interaction.user.id, { banner: value || null });
-      // Modal gönderimi eski mesajı güncelleyemez: düzenleyici yeni bir geçici mesaj olarak, kaydedilen görselle açılır
+      // Modal gönderimi eski mesajı güncelleyemez: düzenleyici yeni bir kişiye özel mesaj olarak, kaydedilen görselle açılır
       await interaction.followUp({ ...(await kapakPageMessage(interaction)), flags: core.EPHEMERAL_CV2 });
       return refreshLiveCard(interaction);
     }

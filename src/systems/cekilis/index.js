@@ -311,11 +311,13 @@ async function handleJoin(interaction) {
     return replyError(interaction, 'Bu çekilişe katılmak için gereken role sahip değilsin.', `Gerekli rol: <@&${g.roleId}>`);
   }
   if (g.participants.includes(interaction.user.id)) {
+    // GİZLİ İSTİSNA: "zaten katıldın" tekrarları kişiye özel. Yüzlerce katılımcının butona basışı kanala
+    // ayrı ayrı mesaj düşürürdü; sonuçta değişen bir şey olmadığı için duyurulacak bir işlem de yok.
     return interaction.reply({ components: [ui.joined(g)], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
   }
   g.participants.push(interaction.user.id);
   store.save();
-  // Butondaki sayı güncellenir, katılana ayrıca sadece kendisinin gördüğü bir onay gider
+  // Butondaki sayı güncellenir; katılma onayı kişiye özel kalır (yukarıdaki aynı gerekçe)
   await interaction.update({ components: [ui.panel(g)], allowedMentions: { parse: [] } });
   return interaction.followUp({ components: [ui.joined(g)], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
 }
@@ -378,6 +380,7 @@ async function handleEndButton(interaction) {
   const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.');
+  // GİZLİ İSTİSNA: onay penceresi işlem henüz yapılmadığı için sadece yetkilide durur; onaylayınca sonuç kanala düşer
   return interaction.reply({ components: [ui.confirm('bitir', g)], flags: core.EPHEMERAL_CV2 });
 }
 
@@ -385,6 +388,7 @@ async function handleCancelButton(interaction) {
   const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.');
+  // GİZLİ İSTİSNA: onay penceresi sonuçlanmamış bir işlem için; onay çıkınca kart kanala düşer
   return interaction.reply({ components: [ui.confirm('iptal', g)], flags: core.EPHEMERAL_CV2 });
 }
 
