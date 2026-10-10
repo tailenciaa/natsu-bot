@@ -647,7 +647,7 @@ function statusPage(apps, page = 0) {
 
 // Durum kanalındaki canlı panel: bekleyen tüm başvuruları tek mesajda listeler; durum değiştikçe düzenlenir.
 // cardName: çizim kartı ekteyse başlık/açıklama ve başvuru satırları kartta olduğu için mesajda tekrar yazılmaz;
-// kartın altında menüden başvuru seçmeye ve sayfa gezmeye yarayan kontroller kalır
+// kartın altında başvuru numarası butonları ve sayfa gezme kontrolleri kalır
 function statusPanel(apps, page = 0, cardName = null) {
   const now = Math.floor(Date.now() / 1000);
   const { current, pageCount, shown } = statusPage(apps, page);
@@ -656,7 +656,9 @@ function statusPanel(apps, page = 0, cardName = null) {
   const container = new ContainerBuilder();
   if (cardName) {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${cardName}`)));
-    container.addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
+    container.addTextDisplayComponents(
+      text(`-# Son güncelleme: <t:${now}:R>${shown.length ? ' · Ayrıntı için başvuru numarası butonuna bas' : ''}`),
+    );
   } else {
     container.addTextDisplayComponents(text(`## ${STATUS_TITLE}\n${STATUS_SUB}`));
     for (const app of shown) {
@@ -673,15 +675,13 @@ function statusPanel(apps, page = 0, cardName = null) {
   // Kart satırlarında buton taşınamadığı için detay butonları kartın altına ayrı satıra konur. Aynı kaydı tekrar
   // seçince hiçbir etkileşim gitmediği için menü değil buton kullanılır; sayfa butonları her zaman görünür
   if (cardName && shown.length) {
-    container
-      .addTextDisplayComponents(text('-# Ayrıntısını görmek istediğin başvurunun numarasına bas.'))
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          shown.map((app) =>
-            new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${app.id}`).setLabel(`#${pad(app.number)}`).setStyle(ButtonStyle.Secondary),
-          ),
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        shown.map((app) =>
+          new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${app.id}`).setLabel(`#${pad(app.number)}`).setStyle(ButtonStyle.Secondary),
         ),
-      );
+      ),
+    );
   }
   container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
