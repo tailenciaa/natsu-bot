@@ -444,13 +444,22 @@ function trustedActionRow(entry) {
 
 const PANEL_PAGE_SIZE = 3;
 
-function trustedListPanel(entries, page = 0) {
-  const container = new ContainerBuilder().addTextDisplayComponents(
-    head(
-      'Güvenilir Partnerler',
-      'Bu kanalda sürekli partner olduğumuz sunucular ve o sunucuların partner yetkilileri listelenir. Liste her ekleme ya da çıkarmada **bu mesaj düzenlenerek güncel tutulur**.',
-    ),
-  );
+// cardName: çizim kartı ekteyse başlık/açıklama/sayfa bilgisi kartta olduğu için mesajda tekrar yazılmaz;
+// kayıt satırlarının yerini kart alır, yetkili ve ekleyen etiketleri (görsele basılamadığı için) kısa metin olarak kalır
+function trustedListPanel(entries, page = 0, cardName = null) {
+  const container = new ContainerBuilder();
+  if (cardName) {
+    container.addMediaGalleryComponents(
+      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${cardName}`)),
+    );
+  } else {
+    container.addTextDisplayComponents(
+      head(
+        'Güvenilir Partnerler',
+        'Bu kanalda sürekli partner olduğumuz sunucular ve o sunucuların partner yetkilileri listelenir. Liste her ekleme ya da çıkarmada **bu mesaj düzenlenerek güncel tutulur**.',
+      ),
+    );
+  }
 
   if (!entries.length) {
     return container.addSeparatorComponents(divider()).addTextDisplayComponents(text('**Henüz güvenilir listeye eklenmiş bir partner yok.**'));
@@ -465,23 +474,24 @@ function trustedListPanel(entries, page = 0) {
     container
       .addSeparatorComponents(divider())
       .addTextDisplayComponents(
-        text(
-          fields([
-            field('Sunucu', `\`${serverLabel(entry)}\``),
-            field('Partner Yetkilisi', contactsText(entry)),
-            field('Eklenme', `<t:${unix(entry.addedAt)}:D>`),
-            field('Ekleyen', `<@${entry.addedBy}>`),
-          ]),
-        ),
+        cardName
+          ? text(`**Partner Yetkilisi:** ${contactsText(entry)} · **Ekleyen:** <@${entry.addedBy}>`)
+          : text(
+              fields([
+                field('Sunucu', `\`${serverLabel(entry)}\``),
+                field('Partner Yetkilisi', contactsText(entry)),
+                field('Eklenme', `<t:${unix(entry.addedAt)}:D>`),
+                field('Ekleyen', `<@${entry.addedBy}>`),
+              ]),
+            ),
       )
       .addActionRowComponents(...trustedActionRow(entry));
   }
 
-  // Sayfa bilgisi ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
-  container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, entries.length)}`))
-    .addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
+  // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
+  container.addSeparatorComponents(divider());
+  if (!cardName) container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, entries.length)}`));
+  container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
 
   return container;
 }
