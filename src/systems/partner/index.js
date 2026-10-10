@@ -1014,6 +1014,7 @@ module.exports = {
   commands,
   help: {
     category: ['partner', 'Partner'],
+    member: ['guvenilir-partnerler'],
     access: {
       'guvenilir-partnerler': 'Herkes görebilir; işlemler partner yetkilileri için',
       'partner-musaitlik': 'Partner yetkilileri',

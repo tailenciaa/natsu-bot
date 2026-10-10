@@ -207,6 +207,7 @@ module.exports = {
   commands,
   help: {
     category: ['siralama', 'Sıralama'],
+    member: ['saygi-ver', 'saygi-siralama'],
     access: { 'saygi-ver': 'Herkes', 'saygi-siralama': 'Herkes', 'saygi-onizleme': 'Yöneticiler' },
   },
   slash: { 'saygi-ver': handleGive, 'saygi-siralama': handleTable, 'saygi-onizleme': handlePreview },

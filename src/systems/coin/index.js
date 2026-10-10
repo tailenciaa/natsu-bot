@@ -43,6 +43,6 @@ async function handleDaily(interaction) {
 module.exports = {
   name: 'coin',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { gunluk: 'Herkes' } },
+  help: { category: ['hesap', 'Hesabım'], member: ['gunluk'], access: { gunluk: 'Herkes' } },
   slash: { gunluk: handleDaily },
 };

@@ -155,7 +155,7 @@ async function handleCustomSubmit(interaction) {
 module.exports = {
   name: 'siralama',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { siralama: 'Herkes' } },
+  help: { category: ['siralama', 'Sıralama'], member: ['siralama'], access: { siralama: 'Herkes' } },
   slash: { siralama: handleCommand },
   prefixed: [
     [ui.IDS.navigate, handleNavigate],

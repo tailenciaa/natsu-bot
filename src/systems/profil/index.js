@@ -586,7 +586,7 @@ async function sweepMissionRoles(client) {
 module.exports = {
   name: 'profil',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { profil: 'Herkes' } },
+  help: { category: ['hesap', 'Hesabım'], member: ['profil'], access: { profil: 'Herkes' } },
   slash: { profil: handleCommand },
   prefixed: [[ui.IDS.prefix, handleSettings]],
   events: {

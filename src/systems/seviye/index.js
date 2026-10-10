@@ -248,7 +248,7 @@ async function handleCommand(interaction) {
 module.exports = {
   name: 'seviye',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { seviye: 'Herkes' } },
+  help: { category: ['hesap', 'Hesabım'], member: ['seviye'], access: { seviye: 'Herkes' } },
   slash: { seviye: handleCommand },
   events: {
     [Events.ClientReady]: handleReady,

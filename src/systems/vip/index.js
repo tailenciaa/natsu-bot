@@ -76,6 +76,7 @@ module.exports = {
   commands,
   help: {
     category: ['siralama', 'Sıralama'],
+    member: ['vip-siralama'],
     access: { 'vip-ver': 'Yöneticiler', 'vip-siralama': 'Herkes' },
   },
   slash: { 'vip-ver': handleGive, 'vip-siralama': handleTable },
