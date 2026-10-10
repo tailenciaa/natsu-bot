@@ -2,10 +2,9 @@
 // profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak görseli, tema, vitrin) kartı canlı olarak
 // özelleştirir; her değişiklikte kart yeniden çizilip aynı mesaj güncellenir. Rozetler etkinlikten türetilir,
 // mağazadan alınan kozmetikler kartın kenarına ve vitrin şeridine çizilir.
-const { AttachmentBuilder, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { AttachmentBuilder, ButtonStyle, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { replyError, respond, isMenuOwner } = require('../../core/helpers');
-const coinConfig = require('../coin/config');
 const coinStore = require('../coin/store');
 const saygiStore = require('../saygi/store');
 const seviyeStore = require('../seviye/store');
@@ -191,20 +190,20 @@ const ownsItem = (tur, custom, key) => (tur === 'tema' ? (custom.ownedThemes ?? 
 const wornItem = (tur, custom, key) => (tur === 'tema' ? custom.theme === key : (custom.frame ?? 'yok') === key);
 
 // Mağaza sayfasının satırları: sahiplik ve bakiye durumuna göre düğme etiketi belirlenir
-function shopRows(tur, custom, balance) {
+function shopRows(tur, custom) {
   return catalog(tur).map((item) => {
     const owned = ownsItem(tur, custom, item.key);
     const worn = wornItem(tur, custom, item.key);
     const base = { name: item.name, note: item.note };
     if (worn) return { ...base, state: 'Kartında bu var', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giyili', disabled: true };
-    if (owned) return { ...base, state: 'Sahipsin', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: 1 };
-    return { ...base, state: `${number(item.price)} coin`, id: `${ui.IDS.buy}${tur}:${item.key}`, label: `Al · ${number(item.price)}`, wearStyle: 2 };
+    if (owned) return { ...base, state: 'Sahipsin', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: ButtonStyle.Primary };
+    return { ...base, state: `${number(item.price)} coin`, id: `${ui.IDS.buy}${tur}:${item.key}`, label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
   });
 }
 
 function shopMessage(interaction, tab) {
-  const custom = store.get(interaction.user.id);
-  return ui.shopPage(tab, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tab, custom, coinStore.balance(interaction.user.id)));}
+  return ui.shopPage(tab, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tab, store.get(interaction.user.id)));
+}
 
 // Ürün satın alma: para ancak ürün gerçekten sahipliğe geçiyorsa düşürülür
 async function buy(interaction, tur, key) {
