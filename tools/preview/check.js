@@ -173,9 +173,20 @@ for (const sys of cmdSystems) {
       if (!paths.includes(key)) add('komut', sys.name, 'HATA', `help.member`, 'yardim-fazla', '', `help.member listesindeki "${key}" komutu yok`);
       else if (!access[key]) add('komut', sys.name, 'HATA', `/${key}`, 'yardim-fazla', '', `"${key}" yardım menüsünde listeleniyor ama help.access'i yok`);
     }
+    // help.need: yardım menüsünde komutun yanında görünen "ne gerekir" yazısı. Yetkili katmanında listelenen her
+    // komutta olması beklenir; üye komutlarında isteğe bağlıdır (herkesin kullanabildiği komutta yazıya gerek yok).
+    const need = sys.help.need ?? {};
+    const member = sys.help.member ?? [];
+    for (const p of paths) {
+      if (menuNames.has(p) || p === 'yardim' || member.includes(p) || need[p]) continue;
+      add('komut', sys.name, 'HATA', `/${p}`, 'yardim-need-eksik', '', `"${p}" komutu yetkili menüsünde listeleniyor ama help.need karşılığı yok`);
+    }
+    for (const key of Object.keys(need)) {
+      if (!paths.includes(key)) add('komut', sys.name, 'HATA', 'help.need', 'yardim-need-fazla', '', `help.need'de "${key}" var ama böyle bir komut/alt komut yok`);
+    }
     const [key, label] = sys.help.category ?? [];
     if (!key || !label) add('komut', sys.name, 'HATA', sys.name, 'yardim-kategori', '', 'help.category [anahtar, ad] biçiminde olmalı');
-    else if (label.length > 20) add('komut', sys.name, 'UYARI', sys.name, 'yardim-kategori', '', `Kategori adı ${label.length} karakter (sekme butonu için hedef en çok 20)`);
+    else if (label.length > 20) add('komut', sys.name, 'UYARI', sys.name, 'yardim-kategori', '', `Kategori adı ${label.length} karakter (kategori menüsü seçeneği için hedef en çok 20)`);
   }
 }
 
@@ -195,7 +206,7 @@ if (!filter.length) {
     if (cats.has(key) && cats.get(key) !== label) add('komut', s.name, 'UYARI', s.name, 'yardim-kategori', '', `"${key}" kategorisi farklı adlarla tanımlı: "${cats.get(key)}" / "${label}"`);
     cats.set(key, label);
   }
-  if (cats.size > 25) add('komut', '(genel)', 'HATA', 'help', 'yardim-kategori-25', '', `${cats.size} yardım kategorisi var (sekme butonları en çok 25)`);
+  if (cats.size > 25) add('komut', '(genel)', 'HATA', 'help', 'yardim-kategori-25', '', `${cats.size} yardım kategorisi var (kategori menüsü en çok 25 seçenek alır)`);
 }
 
 // ── Çıktı ────────────────────────────────────────────────────────────────────

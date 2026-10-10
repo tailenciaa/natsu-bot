@@ -134,4 +134,6 @@ module.exports = {
   help: { category: ['genel', 'Genel'], access: { yardim: 'Herkes' } },
   slash: { yardim: handleCommand },
   prefixed: [[ui.IDS.navigate, handleNavigate]],
+  // Önizleme (tools/preview) menü içeriğini aynı fonksiyondan üretsin diye dışarı verilir
+  tabs,
 };
