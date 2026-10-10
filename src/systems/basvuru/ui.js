@@ -12,7 +12,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, fields, field, pageInfo, pagerRow, panel: standardPanel } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, fields, field, rows, chip, pageInfo, pagerRow, panel: standardPanel } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -54,6 +54,8 @@ const answersText = (answers) =>
 // Standart sayfa düzeni: renk adı (primary, success...) ile page() kurar
 const card = (title, sub, blocks, color, thumbnail) => page({ title, sub, blocks, accent: color ? colors[color] : undefined, thumbnail });
 const withFooter = (container, footer) => container.addSeparatorComponents(divider()).addTextDisplayComponents(text(footer));
+// Başvuru numarası her kartta aynı biçimde: kod rozeti kutucuğu içinde
+const appNo = (app) => chip(`#${pad(app.number)}`);
 
 // Kalıcı başvuru paneli: başlık ve sağında buton, uzun gri açıklama, görsel, en altta uyarı notu
 const panel = () =>
@@ -335,7 +337,12 @@ function applicantWaitingDm(app, guildName, channelId, orientation, reminder) {
         ? `Başvuran hâlâ ${stage} için kanalda bekliyor ve **Hatırlat** butonuyla sana haber verdi. **Kanala Katıl** butonuyla hemen bağlanabilirsin.`
         : `Başvuran ${stage} için kanala girdi ve senin bağlanmanı bekliyor. **Kanala Katıl** butonuyla hemen bağlanabilirsin; ayrıntılar başvurular kanalında.`,
       [
-        fields([field('Başvuru', `#${pad(app.number)}`), field('Başvuran', `<@${app.userId}>`), field('Aşama', orientation ? 'Oryantasyon' : 'Görüşme'), field('Kanal', `<#${channelId}>`)]),
+        rows([
+          ['Başvuru', appNo(app)],
+          ['Başvuran', `<@${app.userId}>`],
+          ['Aşama', chip(orientation ? 'Oryantasyon' : 'Görüşme')],
+          ['Kanal', `<#${channelId}>`],
+        ]),
         `**<@${app.userId}>, ${stage} için <#${channelId}> kanalında${reminder ? ' hâlâ' : ''} seni bekliyor.**`,
       ],
       'primary',
@@ -349,7 +356,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation, reminder) {
 // Görüşme başlayınca (ikisi aynı görüşme kanalına girince) kanalın sohbetine atılan karar paneli: görüşmeye çağıran yetkili
 // başvurunun devam edip etmeyeceğine buradan karar verir. state: open | rejected | hold (beklemeye alındı) | resumed (başka yetkili üstlendi)
 function decisionPanel(app, state = 'open', remindDisabled) {
-  const head = `**Başvuru #${pad(app.number)}**`;
+  const head = `**Başvuru ${appNo(app)}**`;
   if (state === 'rejected') {
     const auto = !app.reviewedBy;
     return card(
