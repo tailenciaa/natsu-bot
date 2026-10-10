@@ -228,6 +228,8 @@ async function buy(interaction, tur, key) {
   // Satın alınan hemen giyilir; kart hem mağaza mesajında hem profil mesajında güncellenir
   store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
 
+  // Mağaza sayfası yerinde yenilenir: bakiye ve düğme durumu hemen doğru görünsün
+  await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
   await respond(
     interaction,
     core.alert(`${item.name} satın alındı ve kartına uygulandı.`, `**${number(item.price)}** coin düşüldü, bakiyen **${number(coinStore.balance(interaction.user.id))}** coin.`, 'success'),
@@ -244,9 +246,12 @@ async function wear(interaction, tur, key) {
   if (!free && !ownsItem(tur, store.get(interaction.user.id), key)) return replyError(interaction, 'Önce satın alman gerekiyor.', 'Mağaza sayfasından bakiyeni görebilirsin.');
 
   store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
-  await respond(interaction, core.alert('Kartın güncellendi.', `${free ? 'Çerçevesiz' : item.name} görünüründe; profil kartın bir sonraki açılışta böyle çizilir.`), {
-    followUp: true,
-  });
+  await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
+  await respond(
+    interaction,
+    core.alert('Kartın güncellendi.', `${free ? 'Çerçevesiz' : item.name} görünümü seçildi; profil kartın da hemen böyle çizildi.`),
+    { followUp: true },
+  );
   return refreshLiveCard(interaction);
 }
 
