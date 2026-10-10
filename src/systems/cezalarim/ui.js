@@ -44,7 +44,7 @@ function panel() {
   const container = new ContainerBuilder().addTextDisplayComponents(
     text(
       `## ${botName} Ceza Bilgilendirme\n` +
-        'Aktif cezalarının süresini **Süreyi Öğren**, sebebini **Sebebi Öğren** butonuyla öğrenebilir, haksız bulduğun bir cezaya **İtiraz Et** butonuyla itiraz edebilirsin.',
+        'Aktif cezalarını, sürelerini ve sebeplerini buradan görebilir, haksız bulduğun bir cezaya itiraz edebilirsin.',
     ),
   );
   if (config.banner) container.addMediaGalleryComponents(bannerGallery(config.banner));
@@ -119,8 +119,7 @@ const itirazNoneView = () => alert('İtiraz edebileceğin aktif bir cezan yok.',
 function itirazPicker(active) {
   return page({
     title: 'Cezaya İtiraz Et',
-    sub: '**İtiraz etmek istediğin cezayı menüden seç.** Ardından açılan formda sebebini yaz; sana özel bir destek talebi açılır ve itirazın yetkililer tarafından orada incelenir.',
-    blocks: ['**Ceza Seçimi**\nİtiraz etmek istediğin **aktif cezayı** menüden seç.'],
+    sub: 'Seçtiğin ceza için açılan formda sebebini yazarsın; sana özel bir destek talebi açılır ve itirazın yetkililer tarafından orada incelenir.',
   }).addActionRowComponents(
     new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()

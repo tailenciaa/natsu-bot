@@ -23,9 +23,9 @@ function table(guild, ranking, page = 0) {
   );
   const container = pageLayout({
     title: 'VIP Listesi',
-    sub: 'VIP rolüne sahip üyeleri VIP olma sırasına göre listeliyoruz; bu rolü yöneticiler sunucuya katkısı olan üyelere kalıcı olarak verir ve geri almak da onların elindedir.',
+    sub: 'VIP rolüne sahip üyeler, VIP olma sırasına göre listelenir.',
     thumbnail: guild.iconURL({ size: 256 }),
-    blocks: [lines.length ? lines.join('\n') : '**Henüz VIP üye yok.**\nVIP rolünü yöneticiler verir.'],
+    blocks: [lines.length ? lines.join('\n') : '**Henüz VIP üye yok.**'],
   });
   // Sayfa bilgisi ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
   const nav = (target, slot) => `${IDS.page}:${target}:${slot}`;

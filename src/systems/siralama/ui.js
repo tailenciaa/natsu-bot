@@ -78,7 +78,7 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
     title: 'Sıralama',
     sub:
       (role ? `<@&${role}> rolündeki üyeler listeleniyor; ` : 'Sunucudaki bütün üyeler listeleniyor; ') +
-      'mesaj sayısı, ses ve yayın (ekran paylaşımı) süresine göre sıralanır, dönemi, türü ve rolü seçerek listeyi daraltabilirsin. Sayım sistem kurulduğundan beri sürüyor.',
+      'mesaj sayısı, ses ve yayın (ekran paylaşımı) süresine göre sıralanır.',
     thumbnail: guild.iconURL({ size: 256 }),
   });
 

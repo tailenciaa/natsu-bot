@@ -38,8 +38,7 @@ const IDS = {
 
 // Durum kartının başlığı ve açıklaması; kartı çizen (card.js) ve metinli yedeği kuran aynı metinleri kullanır
 const STATUS_TITLE = 'Açık Destek Talepleri';
-const STATUS_SUB =
-  'Destek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.';
+const STATUS_SUB = 'Açık destek talepleri ve anlık durumları burada listelenir.';
 // Bir sayfadaki talep sayısı: kartın altındaki detay butonları bir satıra en fazla 5 sığabildiği için 5
 const STATUS_PAGE_SIZE = 5;
 

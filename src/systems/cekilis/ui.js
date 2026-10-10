@@ -31,8 +31,8 @@ const noWinnerReason = (g) => (g.participants.length ? 'Katılanların hiçbiri 
 const SUB = {
   active:
     '**Katıl** butonuna basarak çekilişe katılabilirsin; süre dolunca katılanlar arasından kazananlar rastgele seçilip bu kanalda duyurulur, butona tekrar basarak katılımdan ayrılabilirsin.',
-  ended: '**Çekiliş sona erdi**; kazananlar katılanlar arasından rastgele seçilip duyuruldu, katılım kapandı ve gerekirse bir yönetici yeniden kazanan çekebilir.',
-  cancelled: 'Bu çekiliş düzenleyen tarafından **iptal edildi** ve kazanan seçilmedi; katılım kapandı, yeni çekilişleri bu kanaldan takip edebilirsin.',
+  ended: '**Çekiliş sona erdi**; kazananlar katılanlar arasından rastgele seçildi ve duyuruldu, katılım kapandı.',
+  cancelled: 'Bu çekiliş **iptal edildi** ve kazanan seçilmedi; yeni çekilişleri bu kanaldan takip edebilirsin.',
 };
 
 // Çekiliş mesajı: başlık, ödül, bilgiler; açıkken katıl butonu ve (yöneticiler için) yönetim butonları, bitince kazananlar
