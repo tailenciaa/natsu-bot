@@ -205,7 +205,7 @@ async function createTicket(interaction, reason, afterCreate) {
 
   creating.add(lockKey);
   try {
-    await interaction.deferReply({ flags: core.EPHEMERAL });
+    await interaction.deferReply({ flags: core.CV2 });
 
     const existing = await findOpenTicket(guild, user.id);
     if (existing) return replyError(interaction, `Zaten açık bir destek talebin var: <#${existing}>`);
@@ -431,7 +431,7 @@ async function handleCloseSubmit(interaction) {
 
   // closeTicket kilidini (closing) ilk await'ten önce eşzamanlı alır; aynı anda gelen ikinci form kapatmayı tekrarlamaz
   const closed = closeTicket(interaction.channel, interaction.user, closeReason);
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   await closed;
   await interaction.editReply({
     components: [core.alert('Talep kapatıldı.', 'Alt başlık kilitlendi ve arşivlendi.', 'success')],
@@ -561,7 +561,7 @@ async function handleStatusDetail(interaction) {
   const threadId = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const ticket = store.getTicket(threadId);
   if (!ticket) return replyError(interaction, 'Bu talep artık mevcut değil.');
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   await interaction.editReply({ components: [ui.claimRequest(ticket)], flags: core.CV2, allowedMentions: { parse: [] } });
 }
 

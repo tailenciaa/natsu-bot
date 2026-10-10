@@ -235,7 +235,7 @@ async function handleApplySubmit(interaction) {
 
   submitting.add(lockKey);
   try {
-    await interaction.deferReply({ flags: core.EPHEMERAL });
+    await interaction.deferReply({ flags: core.CV2 });
 
     const channel = await fetchTextChannel(guild, config.channels.applications);
     if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
@@ -858,7 +858,7 @@ async function handleRemind(interaction) {
   }
   return interaction.followUp({
     components: [core.alert('Yetkililere hatırlatıldı.', `<t:${Math.floor((Date.now() + REMIND_COOLDOWN) / 1000)}:R> tekrar hatırlatabilirsin.`, 'success')],
-    flags: core.EPHEMERAL_CV2,
+    flags: core.CV2,
     allowedMentions: { parse: [] },
   });
 }
@@ -996,7 +996,7 @@ async function handleStatusDetail(interaction) {
   const id = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const app = store.getApplication(id);
   if (!app) return respond(interaction, core.alert('Bu başvuru artık mevcut değil.'), { ephemeral: true });
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
   const container = ui.applicationNotice(app, applicant);
   // Başvuran bir ses kanalındaysa ve görüşme henüz başlamadıysa "Bağlan" butonu göster

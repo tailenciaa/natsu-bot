@@ -233,7 +233,7 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
   }
 
   // Bundan sonraki işlemler (DM, kanal mesajları) 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
 
   // Yasaklı sunucu kontrolü
   const bannedInfo = store.isServerBanned(serverId);
@@ -535,7 +535,7 @@ async function handlePanelOfferSubmit(interaction) {
   }
 
   // DM ve yetkili kanalı işlemleri 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
 
   const number = store.nextRequestNumber(entry.guildId);
   const alreadyAccepted = store.hasAcceptedTerms(interaction.user.id);
@@ -602,7 +602,7 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   }
 
   // Yetkililere gönderilen DM'ler 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const entry = createTrustedRecord(interaction, request, contactIds);
 
   const channel = await fetchTextChannel(interaction.guild, config.channels.posts);
@@ -715,7 +715,7 @@ async function handleTrustedAction(interaction) {
   }
 
   // Yetkili listesini çekmek 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const members = await fetchStaffMembers(interaction.guild);
   if (!members.length) return replyError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
 
@@ -742,7 +742,7 @@ async function handleContactAddSubmit(interaction) {
     return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
   }
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const newContacts = contactIds.filter((contactId) => !entry.contactIds?.includes(contactId));
   const updated = store.updateTrusted(id, { contactIds });
   await refreshTrustedPanel(interaction.client, interaction.guildId);

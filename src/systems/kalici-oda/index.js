@@ -139,7 +139,7 @@ async function handleApplySubmit(interaction) {
   submitting.add(lockKey);
 
   try {
-    await interaction.deferReply({ flags: core.EPHEMERAL });
+    await interaction.deferReply({ flags: core.CV2 });
     const channel = await fetchTextChannel(interaction.guild, config.channels.applications);
     if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
 
@@ -549,7 +549,7 @@ async function handleList(interaction) {
 async function handleClose(interaction) {
   const room = roomByNumber(interaction);
   if (!room) return;
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   await closeRoom(interaction.guild, room, interaction.options.getString('sebep'));
   return respond(interaction, core.alert(`Kalıcı oda #${core.pad(room.no)} kapatıldı.`, 'Kanallar silindi, sahibine haber verildi.', 'success'));
 }
@@ -563,7 +563,7 @@ async function handleAssign(interaction) {
   if (target.user.id === room.ownerId) return replyError(interaction, 'Oda zaten bu üyenin.');
   if (target.user.bot) return replyError(interaction, 'Oda sahipliği bir bota verilemez.', 'Bir üye seç.');
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const previousId = room.ownerId;
   const previous = await interaction.guild.members.fetch(previousId).catch(() => null);
   await setAccess(interaction.guild, room, target.id, true);

@@ -165,7 +165,7 @@ async function runEmojiAdd(interaction, emojiInput, customNameInput) {
   }
   const customName = items.length === 1 ? customNameInput : null;
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const { added, failed } = await addEmojis(interaction, items, customName);
   if (!perm.unlimited && added.length) boostStore.use(interaction.user.id, 'emoji');
   return respond(interaction, ui.result(added, [...failed, ...invalid]));
@@ -196,7 +196,7 @@ async function handleStickerCommand(interaction) {
   const name = interaction.options.getString('isim', true).trim();
   const tags = interaction.options.getString('etiket', true).trim();
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const sticker = await interaction.guild.stickers
     .create({ file: file.url, name, tags, reason: `Çıkartma ekleyen: ${interaction.user.username}` })
     .catch((err) => {

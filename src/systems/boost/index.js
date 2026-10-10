@@ -113,7 +113,7 @@ async function handleNickForm(interaction) {
   const newNick = interaction.fields.getTextInputValue(ui.IDS.nickField).trim();
   if (!newNick) return replyError(interaction, 'Takma ad boş olamaz.', 'Bir ad yazıp tekrar dene.');
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const previousNick = member.nickname ?? null;
   const ok = await member
     .setNickname(newNick, 'Booster işlemleri: takma ad değişikliği')
@@ -176,7 +176,7 @@ async function handleRoleForm(interaction) {
     return replyError(interaction, 'Emoji anlaşılamadı.', 'Tek bir emoji yazmalısın, bu alanı boş da bırakabilirsin.');
   }
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const existingId = store.getRole(interaction.user.id);
   let role = existingId ? await guild.roles.fetch(existingId).catch(() => null) : null;
 
@@ -222,7 +222,7 @@ async function handleColorRole(interaction) {
   const allIds = config.colorRoles.map((c) => c.roleId);
   if (!allIds.includes(roleId)) return replyError(interaction, 'Bu renk rolü artık geçerli değil.', 'Güncel panelden başka bir renk seçebilirsin.');
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   // Önce yeni rol verilir; başarılıysa eskileri alınır (hata olursa üyenin rengi kaybolmaz)
   const ok = await interaction.member.roles
     .add(roleId, 'Booster işlemleri: renk rolü seçildi')
@@ -246,7 +246,7 @@ async function handleIconRole(interaction) {
   const allIds = config.iconRoles.map((c) => c.roleId);
   if (!allIds.includes(roleId)) return replyError(interaction, 'Bu simge rolü artık geçerli değil.', 'Güncel panelden başka bir simge seçebilirsin.');
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const ok = await interaction.member.roles
     .add(roleId, 'Booster işlemleri: simge rolü seçildi')
     .then(() => true)

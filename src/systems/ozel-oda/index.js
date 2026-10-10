@@ -140,7 +140,7 @@ const redraw = (interaction, room, state) =>
   interaction.editReply({ components: [ui.controlPanel(room, interaction.channel, state)], allowedMentions: { parse: [] } });
 
 // Panelin butonundan açılan formlar mesajı günceller; 3 saniye dolmadan cevap verilir, yavaş işler sonra yapılır
-const acknowledge = (interaction) => (interaction.isFromMessage() ? interaction.deferUpdate() : interaction.deferReply({ flags: core.EPHEMERAL }));
+const acknowledge = (interaction) => (interaction.isFromMessage() ? interaction.deferUpdate() : interaction.deferReply({ flags: core.CV2 }));
 const finishEdit = (interaction, room, confirmation) =>
   interaction.isFromMessage() ? redraw(interaction, room) : respond(interaction, core.alert(confirmation, null, 'success'));
 

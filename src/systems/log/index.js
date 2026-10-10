@@ -78,7 +78,7 @@ async function setupView(guild, note) {
 }
 
 async function handleLog(interaction) {
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   return respond(interaction, await setupView(interaction.guild));
 }
 
@@ -112,7 +112,7 @@ async function handleSelect(interaction) {
   const category = categories.find((c) => c.key === interaction.values[0]);
   if (!category) return interaction.deferUpdate();
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const thread = await engine.ensureThread(interaction.client, category.key);
   if (!thread) {
     return interaction.editReply({
@@ -130,7 +130,7 @@ async function handleDetail(interaction) {
     return replyError(interaction, 'Bu logun detayı artık saklanmıyor.', 'Detaylar sadece **en son 600 kayıt** için tutulur.');
   }
   const category = categories.find((c) => c.key === meta.category);
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   return interaction.editReply({ components: [ui.detail(meta, category ? category.label : 'Log')], flags: core.CV2 });
 }
 

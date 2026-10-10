@@ -74,7 +74,7 @@ async function handleStart(interaction) {
   const error = queueError(interaction);
   if (error) return replyError(interaction, ...error);
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const { guild } = interaction;
   const already = store.inQueue(guild.id, interaction.user.id);
   if (!already) store.enqueue(guild.id, interaction.user.id);
@@ -93,7 +93,7 @@ async function handleLeave(interaction) {
   if (!store.inQueue(interaction.guildId, interaction.user.id)) {
     return replyError(interaction, 'Şu an sırada değilsin.', 'Sıraya girmek için **Muhabbet Başlat** butonunu kullan.');
   }
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   store.dequeue(interaction.guildId, interaction.user.id);
   return respond(interaction, ui.leftQueue({ user: interaction.user }));
 }
@@ -240,14 +240,14 @@ async function handleClose(interaction) {
   const room = roomByNumber(interaction.guild, interaction.options.getInteger('no'));
   if (!room) return replyError(interaction, 'Bu numarada açık bir muhabbet odası yok.', '/muhabbet liste ile açık odaları görebilirsin.');
 
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const closed = await closeRoom(interaction.guild, room, interaction.options.getString('sebep') ?? 'Bir yetkili odayı kapattı.');
   if (!closed) return replyError(interaction, 'Oda kapatılamadı.', 'Oda zaten kapanmış olabilir, /muhabbet liste ile kontrol et.');
   return respond(interaction, core.alert(`Oda #${core.pad(room.no)} kapatıldı.`, 'İki üye bilgilendirildi, kanallar silindi.', 'success'));
 }
 
 async function handleClearQueue(interaction) {
-  await interaction.deferReply({ flags: core.EPHEMERAL });
+  await interaction.deferReply({ flags: core.CV2 });
   const removed = store.clearQueue(interaction.guildId);
   return respond(
     interaction,

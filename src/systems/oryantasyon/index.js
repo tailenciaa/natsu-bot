@@ -38,7 +38,7 @@ const mentionRoles = (ids) => ids.map((id) => `<@&${id}>`).join(', ');
 const isAdmin = (interaction) => Boolean(interaction.memberPermissions?.has(PermissionFlagsBits.Administrator));
 const fetchUser = (client, userId) => client.users.fetch(userId).catch(() => null);
 const followUp = (interaction, container) =>
-  interaction.followUp({ components: [container], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
+  interaction.followUp({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } });
 const voiceChannelOf = (guild, userId) => guild.voiceStates.cache.get(userId)?.channelId ?? null;
 const inRecruitment = (guild, userId) => voice.isRecruitmentChannel(voiceChannelOf(guild, userId));
 const activeApp = (id) => {
