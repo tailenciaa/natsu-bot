@@ -6,6 +6,7 @@
 const aktifStore = require('../aktif/store');
 const basvuruConfig = require('../basvuru/config');
 const coinStore = require('../coin/store');
+const siralamaStore = require('../siralama/store');
 const saygiStore = require('../saygi/store');
 const seviyeStore = require('../seviye/store');
 const { levelFromXp } = require('../seviye/level');

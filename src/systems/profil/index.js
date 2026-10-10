@@ -414,7 +414,9 @@ async function handleSettings(interaction) {
     case 'renk':
       return interaction.showModal(ui.colorModal(current));
     case 'kapak':
-      return interaction.showModal(ui.bannerModal(current));
+      return openKapak(interaction);
+    case 'kapak-btn':
+      return kapakAction(interaction, arg);
     case 'sifirla':
       await interaction.deferUpdate();
       // Sahipli kozmetikler kalıcıdır; sıfırlama yalnızca kartın görünümünü varsayılana döndürür
@@ -424,6 +426,10 @@ async function handleSettings(interaction) {
         color: null,
         theme: null,
         banner: null,
+        bannerZoom: 1,
+        bannerX: 0,
+        bannerY: 0,
+        cover: 'yok',
         pronoun: null,
         links: {},
         featured: null,
