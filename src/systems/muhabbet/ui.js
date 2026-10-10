@@ -1,7 +1,7 @@
 // Muhabbet odası sisteminin mesajları: sıra paneli, sıraya girme ve eşleşme kartları, odanın kendi yazı
 // kanalındaki kontrol paneli, oda kapandığında üyelere giden bildirim ve yetkilinin gördüğü oda listesi.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { colors, pad, panel, page, rows, chip, pills, quote, stamp, divider, text, unix } = require('../../core/ui');
+const { colors, pad, panel, page, rows, chip, pills, stamp, divider, text, unix } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -15,7 +15,7 @@ const MIN = 60 * 1000;
 const pair = (room) => room.users.map((id) => `<@${id}>`).join(' ve ');
 const roomNo = (room) => chip(`#${pad(room.no)}`);
 const minutes = (ms) => `${Math.max(1, Math.round(ms / MIN))} dakika`;
-const waited = (joinedAt) => `${Math.max(0, Math.round((Date.now() - joinedAt) / MIN))} dk`;
+const waited = (ms) => `${Math.max(0, Math.round((Date.now() - ms) / MIN))} dakika`;
 const channelPair = (room) => `<#${room.voiceChannelId}> · <#${room.textChannelId}>`;
 
 // Sıra paneli: nasıl çalıştığı, kurallar ve bekleme süreleri yazılır; iki buton da hep görünürdür
@@ -25,13 +25,6 @@ function queuePanel() {
     sub: 'Tanıdığın ya da tanımadığın bir üyeyle baş başa konuşmak için sıraya gir; sırada iki kişi olunca ikiniz için özel bir ses ve yazı odası açılır, muhabbet bitince oda kapanır.',
   });
 
-  const waitings = rows([
-    ['Sırada Bekleme Süresi', chip(`${config.queueTimeoutMinutes} dakika`)],
-    ['Yeniden Sıraya Giriş', chip(`${config.requeueCooldownSeconds} saniye`)],
-    ['Boş Oda Kapanması', chip(`${config.idleCloseMinutes} dakika sonra`)],
-    ['En Uzun Oda Süresi', chip(`${config.maxRoomMinutes} dakika`)],
-  ]);
-
   container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
@@ -39,8 +32,8 @@ function queuePanel() {
         [
           '**Nasıl Çalışır**',
           '1. **Muhabbet Başlat** butonuyla sıraya gir.',
-          '2. Sırada iki kişi olunca ikiniz için özel bir oda açılır, sana DM üzerinden haber verilir.',
-          '3. Ses kanalına gir; odanın yazı kanalı ikinizin konuşması için açık durur.',
+          '2. Sırada iki kişi olunca eşleşme kendiliğinden yapılır, odanın kanalları açılır ve sana DM olarak iletilir.',
+          '3. Ses kanalına gir; yazı kanalı ikinizin konuşması için açık durur.',
           '4. Muhabbet bittiğinde **Muhabbeti Bitir** butonuna bas.',
         ].join('\n'),
       ),
@@ -48,7 +41,16 @@ function queuePanel() {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Kurallar**\n${config.rules.map((rule, i) => `${i + 1}. ${rule}`).join('\n')}`))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Beklemeler**\n${waitings}`))
+    .addTextDisplayComponents(
+      text(
+        `**Beklemeler**\n${rows([
+          ['Sırada Bekleme Süresi', chip(`${config.queueTimeoutMinutes} dakika`)],
+          ['Yeniden Sıraya Giriş', chip(`${config.requeueCooldownSeconds} saniye`)],
+          ['Boş Oda Kapanması', chip(`${config.idleCloseMinutes} dakika sonra`)],
+          ['En Uzun Oda Süresi', chip(`${config.maxRoomMinutes} dakika`)],
+        ])}`,
+      ),
+    )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.start).setLabel('Muhabbet Başlat').setStyle(ButtonStyle.Primary),
@@ -58,25 +60,25 @@ function queuePanel() {
   return container;
 }
 
-// Sıraya giren üyeye (ve eşleşmeyen durumda kalanlara) giden, sadece kullanana görünür kart
+// Sıraya giren üyeye giden, sadece kullanana görünür kart: yerini ve sıra bilgisini gösterir
 function queuedCard(position, waiting) {
   return page({
     title: 'Sıraya Girdin',
-    sub: 'Sırada iki kişi olunca eşleşme kendiliğinden yapılır; odanın kanalları açılır ve sana DM olarak iletilir. Sıradan çıkmak için paneldeki butonu kullanabilirsin.',
+    sub: 'Sırada iki kişi olunca eşleşme kendiliğinden yapılır, odanın kanalları açılır ve sana DM üzerinden iletilir. Sıradan çıkmak için paneldeki butonu kullanabilirsin.',
     accent: colors.primary,
     blocks: [
       rows([
         ['Sıran', chip(`${position}.`)],
         ['Sırada Bekleyen', chip(`${waiting} kişi`)],
-        ['Eşleşme Sırası', chip('en eski iki üye')],
+        ['Sıra İşleyişi', chip('en eski iki üye eşleşir')],
       ]),
-      'Bu paneli tekrar kullanırsan sıradaki yerini yeniden öğrenirsin, sırada kaldığın süre uzamaz.',
+      'Butona tekrar bastığında sıradaki yerini yeniden öğrenirsin, bekleme süren baştan başlamaz.',
       stamp(),
     ],
   });
 }
 
-// Eşleşen iki üyeye giden kart: odanın kanalları ve ne yapılacağı
+// Eşleşen üyelere giden kart: odanın kanalları ve bundan sonra ne yapılacağı
 function matchedCard(room) {
   return page({
     title: 'Muhabbet Eşleşti',
@@ -95,74 +97,76 @@ function matchedCard(room) {
   });
 }
 
-// Odanın yazı kanalındaki panel: iki üye de kullanabilir, oda burada kapanır
+// Odanın yazı kanalındaki panel: iki üye de kullanabilir, oda buradan kapanır
 function roomPanel(room) {
   const container = page({
     title: 'Muhabbet Odası',
-    sub: 'Bu oda iki kişinin muhabbeti için açıldı; kanallar yalnızca odadaki üyeleri gösterir. Muhabbet bittiğinde bu panelden odayı kapatabilirsin, ses kanalında kimse kalmadığında oda kendiliğinden kapanır.',
+    sub: 'Bu oda iki kişinin muhabbeti için açıldı ve kanallar yalnızca odadaki üyeleri gösterir. Muhabbet bittiğinde odayı buradan kapatırsın; ses kanalında kimse kalmadığında oda kendiliğinden kapanır.',
     blocks: [
       rows([
         ['Oda', roomNo(room)],
         ['Üyeler', pair(room)],
         ['Kişi Limiti', chip(`${config.userLimit} kişi`)],
         ['Kanallar', channelPair(room)],
-        ['Açılış', `<t:${unix(room.createdAt)}:F>`],
       ]),
-      `**Konu**\n${quote(room.topic)}`,
+      'Kapattığında iki kanal silinir ve yazışmalar odalarıyla birlikte kalkar.',
+      stamp(room.createdAt),
     ],
   });
-  container
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.end).setLabel('Muhabbeti Bitir').setStyle(ButtonStyle.Danger)),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(stamp(room.createdAt)));
-  return container;
+  return container.addActionRowComponents(
+    new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.end).setLabel('Muhabbeti Bitir').setStyle(ButtonStyle.Danger)),
+  );
 }
 
-// Oda kapanınca her iki üyeye giden kısa bildirim
+// Oda kapanınca her iki üyeye giden bildirim: hangi odanın, ne kadar sürdüğün ve neden kapandığını yazar
 function endedCard(room, reason) {
-  return panel({
+  return page({
     title: 'Muhabbetin Bitti',
-    sub: 'Aşağıdaki oda kapatıldı ve kanalları silindi; yeni bir muhabbet için sıra panelinden tekrar sıraya girebilirsin.',
+    sub: 'Muhabbet odan kapatıldı ve iki kanalı silindi; yazışmalar odayla birlikte kalktı. Yeni bir muhabbet için sıra panelinden tekrar sıraya girebilirsin.',
+    accent: colors.primary,
     blocks: [
       rows([
         ['Oda', roomNo(room)],
         ['Muhabbetin', pair(room)],
         ['Süre', chip(minutes(Date.now() - room.createdAt))],
-        ['Sebep', reason],
+        ['Kapanma Sebebi', reason],
+        ['Tekrar Sıraya Giriş', `<t:${unix(Date.now() + config.requeueCooldownSeconds * 1000)}:R>`],
       ]),
     ],
   });
 }
 
-// Yetkilinin /muhabbet liste kartı: açık odalar ve sırada bekleyenler
+// Yetkilinin /muhabbet liste kartı: açık odalar, kanalları ve sırada bekleyenlerin sırası
 function roomList(rooms, queue) {
   const sorted = [...rooms].sort((a, b) => a.no - b.no);
-  const roomBlocks = sorted.length
-    ? sorted.map((room) =>
-        [
-          `**${roomNo(room)}**`,
-          pair(room),
-          `${channelPair(room)}\n${pills([['Süre', waited(room.createdAt) * 1 || 1], ['Konu', room.topic]])}`,
-        ].join('\n'),
-      )
-    : ['-# Henüz açık muhabbet odası yok.'];
+  const roomBlock = sorted.length
+    ? sorted
+        .map((room) =>
+          [
+            `**${roomNo(room)}**`,
+            pair(room),
+            `${channelPair(room)}\n${pills([['Süre', waited(room.createdAt)], ['Limit', `${config.userLimit} kişi`]])}`,
+          ].join('\n'),
+        )
+        .join('\n\n')
+    : '-# Henüz açık muhabbet odası yok.';
 
+  const queueLines = queue.slice(0, 20).map((entry, i) => `${i + 1}. <@${entry.userId}> · ${chip(waited(entry.joinedAt))} bekliyor`);
   const queueBlock = queue.length
     ? [
-        `**Sırada Bekleyen** ${chip(`${queue.length} kişi`)} ${pills([['En Fazla', `${config.maxQueue} kişi`]])}`,
-        ...queue.slice(0, 20).map((entry, i) => `${i + 1}. <@${entry.userId}> · ${chip(`${waited(entry.joinedAt)} dk`)} bekliyor`),
-        queue.length > 20 ? `-# Ve ${queue.length - 20} kişi daha sırada.` : null,
-      ].join('\n')
+        `**Sırada Bekleyen** ${chip(`${queue.length} kişi`)} ${pills([['Sıra Limiti', `${config.maxQueue} kişi`]])}`,
+        ...queueLines,
+        queue.length > 20 ? `Ve ${queue.length - 20} kişi daha sırada bekliyor.` : null,
+      ]
+        .filter(Boolean)
+        .join('\n')
     : `**Sırada Bekleyen** ${chip('0 kişi')}\n-# Sırada bekleyen üye yok.`;
 
   return page({
     title: 'Muhabbet Odaları',
-    sub: 'Şu an muhabbet eden odalar, kanalları ve sırada bekleyen üyeler burada durur; bir odayı kapatmak ya da sırayı tamamen boşaltmak için aynı komuttaki diğer adımları kullanabilirsin.',
-    blocks: [...roomBlocks, divider ? null : null, queueBlock],
-  }).addTextDisplayComponents(text(stamp()));
+    sub: 'Şu an muhabbet eden odalar, kanalları ve sırada bekleyen üyeler burada durur; bir odayı kapatmak ya da sırayı boşaltmak için aynı komuttaki diğer adımları kullanabilirsin.',
+    blocks: [roomBlock, queueBlock, stamp()],
+  });
 }
 
 module.exports = { IDS, queuePanel, queuedCard, matchedCard, roomPanel, endedCard, roomList };
