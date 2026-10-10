@@ -1,16 +1,19 @@
 // Profil: /profil ile açılır, sunucu üzerindeki her şeyin tek görsel kartta göründüğü kişisel profil. Sahibi kendi
-// profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak görseli, tema, vitrin) kartı canlı olarak
+// profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak düzenleyici, tema, vitrin) kartı canlı olarak
 // özelleştirir; her değişiklikte kart yeniden çizilip aynı mesaj güncellenir. Rozetler etkinlikten türetilir,
-// mağazadan alınan kozmetikler kartın kenarına ve vitrin şeridine çizilir.
-const { AttachmentBuilder, ButtonStyle, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+// uzun vadeli görev rozetlerinin rol ödülü vardır (gorev.js); mağazadan alınan kozmetikler (çerçeve, tema, arka
+// plan, sergi rozeti) kartın kenarına, kapağına ve rozet şeridine çizilir.
+const { AttachmentBuilder, ButtonStyle, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { replyError, respond, isMenuOwner } = require('../../core/helpers');
 const coinStore = require('../coin/store');
 const saygiStore = require('../saygi/store');
 const seviyeStore = require('../seviye/store');
 const siralamaStore = require('../siralama/store');
-const { buildProfileCard } = require('./card');
+const { buildHeaderPreview, buildProfileCard } = require('./card');
+const kapak = require('./kapak');
 const kozmetik = require('./kozmetik');
+const gorev = require('./gorev');
 const rozet = require('./rozet');
 const store = require('./store');
 const { THEMES } = require('./themes');
@@ -71,9 +74,9 @@ async function viewDataOf(guild, userId) {
     streak: coinStore.streak(userId),
     balance: coinStore.balance(userId),
   };
-  const badges = rozet.earned(
-    rozet.context({ guild, member, userId, messageCount, streamSeconds, visits: visits.count }),
-  );
+  const ctx = rozet.context({ guild, member, userId, messageCount, voiceSeconds, streamSeconds, visits: visits.count });
+  // Satın alınan sergi rozetleri başa yazılır: kartta iki satır yer olduğu için kazanılan rozetlerin arasında kaybolmasınlar
+  const badges = [...kozmetik.badgesOf(custom.ownedBadges), ...rozet.earned(ctx)];
   const featured = FEATURED.find((o) => o.key === custom.featured);
 
   return {
@@ -141,7 +144,6 @@ async function refreshLiveCard(interaction) {
 
 const COLOR = /^#?([0-9a-fA-F]{6})$/;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-
 // Kapak görseli bağlantısı: https olmalı; botun kendi ağındaki adreslere (localhost, IP) istek atmasın diye bunlar reddedilir
 function isImageUrl(value) {
   try {
