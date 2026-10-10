@@ -1,8 +1,8 @@
-// Yardım menüsü: /yardim ile açılır, komutlar tek menüden seçilen kategoriler halinde listelenir.
-// Menü iki katmanlıdır: üye yalnızca kendi kullanabildiği komutları görür, o yüzden her sistem menüye girecek
-// komutları index.js'indeki "help.member" listesiyle söyler. Yetkili komutlarının görünmesi gereken izni
-// (core/config.js staffPermission) ya da yöneticiliği olan üyeler ayrıca yetkili ve kurulum komutlarını da görür;
-// bu katman sadece komutu kullanana görünür gönderilir. Görünen her komutun yanında, herkesin kullanamadığı
+// Yardım menüsü: /yardim ile açılır, komutlar tek menüden seçilen kategoriler halinde listelenir. Menü herkese açık
+// gönderilir. İçeriği iki katmanlıdır: üye yalnızca kendi kullanabildiği komutları görür, o yüzden her sistem menüye
+// girecek komutları index.js'indeki "help.member" listesiyle söyler. Yetkili komutlarının görünmesi gereken izni
+// (core/config.js staffPermission) ya da yöneticiliği olan üye menüyü açtığında yetkili ve kurulum komutları da
+// listelenir. Görünen her komutun yanında, herkesin kullanamadığı
 // komutlarda ne gerektiği "help.need" ile yazılır. Komut açıklamaları ve seçenekleri komut tanımlarından
 // otomatik alınır. "access" alanı erişim denetimi ve komut denetimi için durmaya devam eder.
 const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
@@ -111,9 +111,10 @@ function menu(interaction, tab) {
   });
 }
 
-// /yardim: üye menüsü herkese açık, yetkili menüsü sadece komutu kullanana görünür
+// /yardim: menü herkese açık gönderilir; içinde kimin kullanabildiği yazılmayan komutlar herkes içindir,
+// gerisinin yanında ne gerektiği ("Gerekli: …") durur. Yetkili menüyü açtığında yetkili komutları da listelenir.
 async function handleCommand(interaction) {
-  return respond(interaction, menu(interaction), { ephemeral: staffAudience(interaction) });
+  return respond(interaction, menu(interaction), { ephemeral: false });
 }
 
 // Kategori menüsü: yardim:<kategori>
