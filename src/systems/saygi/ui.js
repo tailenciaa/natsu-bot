@@ -1,5 +1,5 @@
 // Saygınlık mesajları: verme onayı, tüm zamanların tablosu ve haftalık kazanan duyurusu (ödül bölümüyle birlikte)
-const { alert, field, fields, page } = require('../../core/ui');
+const { alert, rows, chip, page } = require('../../core/ui');
 
 const PODIUM = ['# ', '## ', '### '];
 const PAGE_SIZE = 15;
@@ -32,7 +32,11 @@ function weeklyAnnounce(guild, results, roleId) {
     thumbnail: guild?.iconURL({ size: 256 }),
     blocks: [
       winner
-        ? fields([field('Kişi', `<@${winner.userId}>`), field('Toplam Saygınlık', `${winner.value}`), field('Ödül', `${roleText} rolü`)])
+        ? rows([
+            ['Kişi', `<@${winner.userId}>`],
+            ['Toplam Saygınlık', chip(winner.value)],
+            ['Ödül', `${roleText} rolü`],
+          ])
         : '**Henüz Kazanan Yok**\nGeçen hafta kimse saygınlık kazanmadı.',
     ],
   });
