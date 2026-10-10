@@ -95,7 +95,7 @@ async function handleLeave(interaction) {
   }
   await interaction.deferReply({ flags: core.EPHEMERAL });
   store.dequeue(interaction.guildId, interaction.user.id);
-  return respond(interaction, core.alert('Sıradan çıktın.', 'İstediğin zaman tekrar sıraya girebilirsin.', 'primary'));
+  return respond(interaction, ui.leftQueue({ user: interaction.user }));
 }
 
 // ── Oda açma / kapama ──────────────────────────────────────────────────────────

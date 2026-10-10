@@ -46,6 +46,7 @@ module.exports = ({ mock, src }) => {
     { id: 'panel', title: 'Sıra paneli: nasıl çalışır ve beklemeler', where: 'Muhabbet bilgi kanalı', visibility: 'panel', kind: 'message', build: () => message(k.queuePanel()) },
 
     { id: 'sira', title: 'Sıraya girme kartı: yeni giren', where: 'Muhabbet Başlat butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.queuedCard(3, 7)) },
+    { id: 'sira-cikis', title: 'Sıradan çıkma onayı', where: 'Sıradan Ayrıl butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.leftQueue({ user: owner })) },
     { id: 'sira-tekrar', title: 'Sıraya girme kartı: sırada beklerken tekrar basıldı', where: 'Muhabbet Başlat butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.queuedCard(2, 6, true)) },
 
     { id: 'eslesme', title: 'Eşleşen üyeye giden kart: oda açıldı', where: 'DM', visibility: 'ephemeral', kind: 'message', build: () => message(k.matchedCard(room())) },

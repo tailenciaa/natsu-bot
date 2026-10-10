@@ -1,7 +1,7 @@
 // Muhabbet odası sisteminin mesajları: sıra paneli, sıraya girme ve eşleşme kartları, odanın kendi yazı
 // kanalındaki kontrol paneli, oda kapandığında üyelere giden bildirim ve yetkilinin gördüğü oda listesi.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { colors, pad, panel, page, rows, chip, pills, stamp, divider, text, unix } = require('../../core/ui');
+const { colors, pad, panel, page, receipt, rows, chip, pills, stamp, divider, text, unix } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -80,6 +80,16 @@ function queuedCard(position, waiting, again) {
         : 'Eşleşme sıra bekleme süresi dolmadan olursa odan açılır; süren dolarsa sıran düşer ve sana DM yazılır.',
       stamp(),
     ],
+  });
+}
+
+// Sıradan çıkma onayı: sıra yalnızca üyenin kendisini ilgilendirdiği için sadece ona görünür
+function leftQueue({ user }) {
+  return receipt({
+    title: 'Sıradan Çıktın',
+    sub: 'Muhabbet sırasından çıkarıldın; istediğin zaman paneldeki **Muhabbet Başlat** düğmesiyle yeniden sıraya girebilirsin.',
+    user,
+    accent: 'primary',
   });
 }
 
@@ -177,4 +187,4 @@ function roomList(rooms, queue) {
   });
 }
 
-module.exports = { IDS, queuePanel, queuedCard, matchedCard, roomPanel, endedCard, roomList };
+module.exports = { IDS, queuePanel, queuedCard, leftQueue, matchedCard, roomPanel, endedCard, roomList };
