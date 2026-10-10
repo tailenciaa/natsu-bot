@@ -465,14 +465,10 @@ async function handleSettings(interaction) {
     }
     case 'rozetler': {
       const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-      const ctx = rozet.context({
-        guild: interaction.guild,
-        member,
-        userId: interaction.user.id,
-        messageCount: siralamaStore.totals('messages', null).get(interaction.user.id) ?? 0,
-        streamSeconds: siralamaStore.totals('stream', null).get(interaction.user.id) ?? 0,
-        visits: store.visits(interaction.user.id).count,
-      });
+      const m = rozet.measures();
+      // Sayfa açılırken görev rolleri de eşitlenir: hedef yeni aşıldıysa rol beklemeden verilsin
+      if (member) await gorev.syncMember(member, m).catch((err) => console.error('[profil] Görev rolleri sayfa açılışında eşitlenemedi:', err.message));
+      const ctx = rozet.contextOfMember(interaction.guild, member, interaction.user.id, m);
       return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length));
     }
     case 'magaza':
@@ -523,7 +519,9 @@ async function handleSettings(interaction) {
       const problem = value ? await checkImage(value) : null;
       if (problem) return replyError(interaction, 'Kapak görseli kaydedilmedi.', problem);
       store.set(interaction.user.id, { banner: value || null });
-      return refresh(interaction);
+      // Modal gönderimi eski mesajı güncelleyemez: düzenleyici yeni bir geçici mesaj olarak, kaydedilen görselle açılır
+      await interaction.followUp({ ...(await kapakPageMessage(interaction)), flags: core.EPHEMERAL_CV2 });
+      return refreshLiveCard(interaction);
     }
     default:
       return interaction.deferUpdate();
