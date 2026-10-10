@@ -1,6 +1,9 @@
 // Yardım menüsü: /yardim ile açılır, komutlar tek menüden seçilen kategoriler halinde listelenir. Menü herkese açık
-// gönderilir. İçeriği iki katmanlıdır: üye yalnızca kendi kullanabildiği komutları görür, o yüzden her sistem menüye
-// girecek komutları index.js'indeki "help.member" listesiyle söyler. Yetkili komutlarının görünmesi gereken izni
+// gönderilir ve kategoriyi seçen herkes paneli YERİNDE yeniden çizer (komutlar asla menünün altına ayrı bir mesaj
+// olarak atılmaz). İçeriği iki katmanlıdır: üye yalnızca kendi kullanabildiği komutları görür, o yüzden her sistem
+// menüye girecek komutları index.js'indeki "help.member" listesiyle söyler. KURAL: "help.member" listesine sadece
+// HERKESİN kullanabildiği komutlar yazılır — rol, izin ya da yöneticilik gerektiren hiçbir komut (sicil, ceza,
+// yetki, log, emoji ekleme...) üye listesinde durmaz. Yetkili komutlarının görünmesi gereken izni
 // (core/config.js staffPermission) ya da yöneticiliği olan üye menüyü açtığında yetkili ve kurulum komutları da
 // listelenir. Görünen her komutun yanında, herkesin kullanamadığı
 // komutlarda ne gerektiği "help.need" ile yazılır. Komut açıklamaları ve seçenekleri komut tanımlarından
@@ -119,12 +122,18 @@ async function handleCommand(interaction) {
 }
 
 // Kategori menüsü: yardim:<kategori>. Menü herkese açık olduğu için kategoriyi herkes değiştirebilir; liste her
-// basışta o kişiyi gözeten katmanla yeniden çizilir.
+// basışta o kişiyi gözeten katmanla yeniden çizilir. Panel YERİNDE güncellenir: seçilen kategorinin komutları aynı
+// panelin içinde çizilir, asla ayrı bir mesaj olarak atılmaz. Güncelleme tutmazsa (mesaj çoktan silinmiş, bağlantı
+// kısa süreli kopmuş) hata bildirimi de gönderilmez — panel olduğu gibi kalır, kişi tekrar dener.
 async function handleNavigate(interaction) {
-  return interaction.update({
-    components: [menu(interaction, interaction.values?.[0] ?? interaction.customId.split(':')[1])],
-    allowedMentions: { parse: [] },
-  });
+  try {
+    return await interaction.update({
+      components: [menu(interaction, interaction.values?.[0] ?? interaction.customId.split(':')[1])],
+      allowedMentions: { parse: [] },
+    });
+  } catch (err) {
+    console.error('[yardim] panel yerinde güncellenemedi:', err.message);
+  }
 }
 
 module.exports = {

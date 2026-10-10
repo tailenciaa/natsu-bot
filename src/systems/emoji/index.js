@@ -252,7 +252,7 @@ module.exports = {
   commands,
   help: {
     category: ['emoji', 'Emoji'],
-    member: ['emoji-ekle', 'cikartma-ekle'],
+    // Üye yardım menüsünde listelenmez: her iki komut da "Emoji ve Çıkartmaları Yönet" izni ister
     access: {
       'emoji-ekle':
         `Emoji yönetme izni olanlar; takviye edenler ${boostConfig.perks.emoji} emoji ekleyebilir. Bir mesaja sağ tık > Uygulamalar > ${MENU_NAME} ile de eklenir (sadece yetkililer).`,
