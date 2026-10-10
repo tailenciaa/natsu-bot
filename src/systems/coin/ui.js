@@ -1,8 +1,8 @@
-// Coin mesajları: /bakiye ile açılan cüzdan kartı ve mağazadan alınanların listelendiği sipariş sayfası.
+// Coin mesajları: /gunluk ödül kartı, /bakiye ile açılan cüzdan ve mağazadan alınanların listelendiği sipariş sayfası.
 // Cüzdandan mağaza aynı dokunuşla açılır (profil-ayar:magaza), siparişler ise cüzdanın yerini alır; böylece
 // üye parasının nereye gittiğini ayrı bir mesaj aramadan görür.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { page, divider, chip, rows, rel, pageInfo, pagerRow } = require('../../core/ui');
+const { page, divider, chip, rows, rel, receipt, pageInfo, pagerRow } = require('../../core/ui');
 
 const IDS = {
   shop: 'profil-ayar:magaza', // profil mağazası; aynı buton profil ayarlarında da duruyor
@@ -20,7 +20,6 @@ const number = (value) => Number(value).toLocaleString('tr-TR');
 const coin = (value) => chip(`${number(value)} coin`);
 
 // Cüzdan kartı: bakiye, biriken, harcanan ve seri. Günlük ödülün ne zaman hazır olacağı da burada yazılır.
-function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now() }) {
   const container = page({
     title: 'Coin Cüzdanım',
     sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece** ve **saygınlık vermekten** birikir; harcadığın yer profil mağazasıdır.',

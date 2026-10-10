@@ -111,6 +111,22 @@ function panel({ title, sub, button, image, note, thumbnail }) {
   return container;
 }
 
+// KISA İŞLEM KARTI: bir üyenin tamamladığı işlemin (ödül, satın alma, saygınlık verme, kart ayarı) düzenli bildirimi.
+// page'in tek amaçlı küçüğüdür: başlık, altında tek cümlelik özet, çizgiyle ayrılmış etiket-değer satırları,
+// en altta zaman damgası. Kazanç ve harcama kartları HERKESE AÇIK gönderilir (üye kazandığını göstersin);
+// hatalar, reddetmeler ve onay istemeyen uyarılar alert olarak kişiye özel kalır.
+// user: başlığın sağındaki küçük görsel (avatar) ve mesajın sahibi; sub'da @etiket istenirse çağıran yazar.
+function receipt({ title, sub, pairs = [], note, user, accent = 'success', at = Date.now() }) {
+  const container = page({
+    title,
+    sub,
+    thumbnail: user?.displayAvatarURL?.({ size: 256 }),
+    accent: typeof accent === 'number' ? accent : config.colors[accent],
+    blocks: [pairs.length ? rows(pairs) : null, hasValue(note) ? hint(note) : null],
+  });
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(at)));
+}
+
 // Sayfa butonları: "«" ve "»" (emoji gibi görünen ok simgeleri yok); uçlarda pasif
 function pagerRow({ prevId, nextId, page, pageCount }) {
   return new ActionRowBuilder().addComponents(
@@ -269,6 +285,7 @@ module.exports = {
   stamp,
   notice,
   alert,
+  receipt,
   bannerGallery,
   panel,
   panelMessage,
