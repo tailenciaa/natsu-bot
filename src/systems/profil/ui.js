@@ -17,6 +17,7 @@ const {
   TextInputStyle,
 } = require('discord.js');
 const core = require('../../core/ui');
+const { coverOf } = require('./kapak');
 const { THEMES } = require('./themes');
 
 // Hepsi profil-ayar:<eylem> ile gelir; index.js'te tek önek altında karşılanır
@@ -127,9 +128,56 @@ const bannerModal = (current) =>
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Görsel bağlantısı')
-        .setDescription('https ile başlayan bir görsel bağlantısı gir; boş bırakırsan tema gradyanı kullanılır.')
+        .setDescription('https ile başlayan bir görsel bağlantısı gir; boş bırakırsan temanın ya da satın aldığın arka planın efekti çizilir.')
         .setTextInputComponent(input('kapak', TextInputStyle.Short, 400, current.banner, 'Örn: https://i.imgur.com/ornek.png')),
     ]);
+
+// Kapak düzenleyici: kartın üst alanı tek başına çizilir, görsel buradan büyütülüp dört yöne kaydırılır.
+// Görsel yokken hareket düğmeleri görünür kalır ama pasiftir (önce görsel ya da arka plan gerekir).
+function kapakPage(imageName, custom) {
+  const zoom = Math.round((Number(custom.bannerZoom) || 1) * 100);
+  const x = Math.round((Number(custom.bannerX) || 0) * 100);
+  const y = Math.round((Number(custom.bannerY) || 0) * 100);
+  const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
+  const hasImage = Boolean(custom.banner);
+  const btn = (neylem, label, style = ButtonStyle.Secondary) =>
+    new ButtonBuilder().setCustomId(`${IDS.kapakBtn}${neylem}`).setLabel(label).setStyle(style).setDisabled(!hasImage);
+
+  return new ContainerBuilder()
+    .addTextDisplayComponents(
+      text(
+        '## Kapağı Düzenle\nKartının üst alanındaki görseli büyütüp küçültebilir ve dört yönde kaydırabilirsin. Her dokunuşta aşağıdaki önizleme hemen çizilir; profil kartın da aynı anda yenilenir.',
+      ),
+    )
+    .addMediaGalleryComponents(
+      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`).setDescription('Kapak önizlemesi')),
+    )
+    .addTextDisplayComponents(
+      text(
+        fields([
+          `**Yakınlaştırma:** %${zoom}`,
+          `**Konum:** yatay ${signed(x)}, dikey ${signed(y)}`,
+          `**Arka plan:** ${coverOf(custom.cover).label}`,
+          hasImage
+            ? 'Kaydırma yalnızca görselin taşan kısmı kadar yapılır; kenarlarda boşluk oluşmaz.'
+            : 'Hareket düğmeleri bir görsel bağlantısı verdiğinde açılır; arka plan efektlerini mağazadan alabilirsin.',
+        ]),
+      ),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(btn('buyut', 'Büyüt'), btn('kucult', 'Küçült'), btn('sola', 'Sola'), btn('saga', 'Sağa')),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(btn('yukari', 'Yukarı'), btn('asagi', 'Aşağı'), btn('sifirla', 'Sıfırla', ButtonStyle.Danger)),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.kapakBtn}gorsel`).setLabel('Görsel Bağlantısı').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`${IDS.shopTab}kapak`).setLabel('Arka Planlar').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`${IDS.kapakBtn}kaldir`).setLabel('Görseli Kaldır').setStyle(ButtonStyle.Danger).setDisabled(!hasImage),
+      ),
+    );
+}
 
 // Vitrin formu: kartta görünen zamir ve en fazla üç bağlantı
 const vitrinModal = (current) =>
@@ -246,4 +294,4 @@ function shopPage(tab, tabs, balance, items) {
   return container;
 }
 
-module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, rozetPage, vitrinPage, shopPage };
+module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, rozetPage, vitrinPage, shopPage };
