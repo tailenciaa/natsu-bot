@@ -55,6 +55,7 @@ function entriesByTab(guild, staff) {
     if (!tab || (!staff && !member?.length)) continue;
 
     for (const command of (system.commands ?? []).map((c) => c.toJSON())) {
+      if (command.type !== 1) continue; // sağ tık (bağlam menüsü) komutları menüde listelenmez
       const id = guild.commands.cache.find((c) => c.name === command.name)?.id;
       const subcommands = (command.options ?? []).filter((o) => o.type === SUBCOMMAND);
       const variants = subcommands.length
@@ -62,8 +63,9 @@ function entriesByTab(guild, staff) {
         : [{ path: command.name, description: command.description, options: command.options ?? [] }];
 
       for (const variant of variants) {
-        if (variant.path === SELF || (member && !member.includes(variant.path) && !staff)) continue;
-        if (staff && member?.includes(variant.path) === false && !system.help.need?.[variant.path]) continue;
+        if (variant.path === SELF) continue;
+        // üye menüsüne yalnızca sistemin "member" listesindeki komutlar girer
+        if (!staff && !member?.includes(variant.path)) continue;
         const options = variant.options.map((o) => `\`${o.required ? o.name : `[${o.name}]`}\``).join(' ');
         const usage = `${id ? `</${variant.path}:${id}>` : `\`/${variant.path}\``} ${options}`.trim();
         const entries = byTab.get(tab) ?? [];

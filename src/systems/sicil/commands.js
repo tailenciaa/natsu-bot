@@ -6,6 +6,7 @@ const { staffCommandChannel, staffPermission } = require('../../core/config');
 const core = require('../../core/ui');
 const { inStaffChannel, respond, replyError } = require('../../core/helpers');
 const config = require('./config');
+const yetkiConfig = require('../yetki/config');
 const moderation = require('./moderation');
 const store = require('./store');
 const ui = require('./ui');
@@ -149,6 +150,14 @@ async function handleCezaSil(interaction) {
 const staffText = (label) => `${label} verme yetkisi olanlar, sadece <#${staffCommandChannel}> kanalında`;
 const liftText = (label) => `${label} kaldırma yetkisi olanlar, sadece <#${staffCommandChannel}> kanalında`;
 
+// Yardım menüsündeki gereksinim yazısı: cezayı verebilen en düşük yetki rolü (üst rütbeler onu da içerir)
+const permRole = (type) => {
+  const perm = config.punishPerms[type]?.[0];
+  const roleId = yetkiConfig.perms.find((p) => p.id === perm)?.roleId;
+  return roleId ? `<@&${roleId}> rolü` : 'yetkili rolü';
+};
+const typeText = 'Ceza türünün yetkisi';
+
 module.exports = {
   name: 'ceza',
   commands,
@@ -164,6 +173,17 @@ module.exports = {
       unban: liftText('Yasaklama'),
       'ceza-kaldir': `Ceza numarasıyla hızlı kaldırma; yetkisi olanlar, sadece <#${staffCommandChannel}> kanalında`,
       'ceza-sil': `Ceza numarasıyla sicilden silme (sürüyorsa önce kaldırır); yetkisi olanlar, sadece <#${staffCommandChannel}> kanalında`,
+    },
+    need: {
+      uyari: permRole('uyari'),
+      mute: permRole('mute'),
+      unmute: permRole('mute'),
+      jail: permRole('jail'),
+      unjail: permRole('jail'),
+      ban: permRole('ban'),
+      unban: permRole('ban'),
+      'ceza-kaldir': typeText,
+      'ceza-sil': typeText,
     },
   },
   slash: {
