@@ -158,24 +158,23 @@ const vitrinModal = (current) =>
         .setTextInputComponent(input('site', TextInputStyle.Short, 100, current.links?.site, 'Örn: https://ornek.com')),
     ]);
 
-// Rozet sayfası: kazanılanlar taşınan sırayla, kalanları ilerleme çizgisiyle listelenir
+// Rozet sayfası: kazanılanlar taşınan sırayla, kalanlar en yakın olana göre ilerleme çizgisiyle listelenir
 function rozetPage(list, earnedCount) {
   const done = list.filter((b) => b.done);
-  const todo = list.filter((b) => !b.done);
+  const todo = list
+    .filter((b) => !b.done)
+    .sort((a, b) => b.value / b.goal - a.value / a.goal);
   return core.page({
     title: 'Rozetler',
     sub: 'Rozetler sunucudaki etkinliğinden türetilir; ayrı bir başvuru ya da istek gerekmez. Aşağıda kazandıkların ve kaldığı yerden ilerlemesi gösterilir.',
     blocks: [
       fields([
-        `**Kazanılan ${earnedCount} rozet**`,
+        `**${earnedCount} rozet kazanıldı**`,
         done.length ? done.map((b) => b.label).join(' · ') : 'Henüz rozetin yok; ilk hedefler mesaj ve ses seviyeleri.',
       ]),
       fields([
         '**Yoldaki rozetler**',
-        todo
-          .slice(0, 10)
-          .map((b) => `**${b.label}** — ${b.goal > 1 ? `${b.value} / ${b.goal} · ` : ''}${b.note}`)
-          .join('\n'),
+        todo.map((b) => `**${b.label}** — ${b.goal > 1 ? `${b.value} / ${b.goal} · ` : ''}${b.note}`).join('\n'),
       ]),
     ],
   });
@@ -187,7 +186,7 @@ function vitrinPage(current, featuredKey, featuredOptions, visitLine) {
   return new ContainerBuilder()
     .addTextDisplayComponents(text('## Vitrin'))
     .addTextDisplayComponents(
-      text('Kartında öne çıkarmak istediğin istatistiği seç, bağlantılarını ve zamarini düzenle. Seçtiklerin profil kartının alt şeridinde görünür.'),
+      text('Kartında öne çıkarmak istediğin istatistiği seç, bağlantılarını ve zamirini düzenle. Seçtiklerin profil kartının alt şeridinde görünür.'),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
