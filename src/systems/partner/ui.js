@@ -377,7 +377,7 @@ function trustedList(entries, page = 0) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Liste Durumu**', field('Toplam', `**${entries.length}** sunucu`), `-# Sayfa ${current + 1} / ${pageCount}`])),
+      text(fields(['**Liste Durumu**', field('Toplam', chip(`${entries.length} sunucu`)), `-# Sayfa ${current + 1} / ${pageCount}`])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -526,7 +526,7 @@ function trustedDetail(entry) {
           field('Eklenme', `<t:${unix(entry.addedAt)}:F>`),
           field('Ekleyen', `<@${entry.addedBy}>`),
           field('Partner Yetkilisi', contactsText(entry)),
-          field('Partner Durumu', isBusy(entry) ? 'Meşgul' : 'Müsait'),
+          field('Partner Durumu', chip(isBusy(entry) ? 'Meşgul' : 'Müsait')),
         ]),
       ),
     )
@@ -759,7 +759,7 @@ function partnerPanel(entry, guildName) {
           '**Partner Bilgileri**',
           field('Sunucu', `\`${serverLabel(entry)}\``),
           field('Partnerlik', `<t:${unix(entry.addedAt)}:D>`),
-          field('Durum', busy ? 'Meşgul' : 'Müsait'),
+          field('Durum', chip(busy ? 'Meşgul' : 'Müsait')),
         ]),
       ),
     )
