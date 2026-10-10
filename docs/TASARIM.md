@@ -31,7 +31,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 
 ## 3. Mesaj anatomisi
 
-Ortak yardımcılar `src/core/ui.js` içindedir (`page`, `alert`, `notice`, `panel`, `fields`, `hint`, `block`, `pageInfo`, `stamp`, `pagerRow`, `tabRow`...) ve `src/core/helpers.js` içindeki `respond`, `replyError`, `isStaff`, `isMenuOwner` ile birlikte kullanılır.
+Ortak yardımcılar `src/core/ui.js` içindedir (`page`, `alert`, `notice`, `panel`, `fields`, `rows`, `field`, `chip`, `pills`, `hint`, `block`, `pageInfo`, `stamp`, `pagerRow`, `tabRow`...) ve `src/core/helpers.js` içindeki `respond`, `replyError`, `isStaff`, `isMenuOwner` ile birlikte kullanılır.
 
 ### Panel (kalıcı, bot açılınca kanala gönderilir)
 
