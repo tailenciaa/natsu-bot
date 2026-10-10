@@ -1,6 +1,6 @@
-// Yardım menüsü: /yardim ile açılır, komutlar tek menüden seçilen kategoriler halinde listelenir. Düzen olarak log
-// paneliyle birebir aynıdır: /yardim kısa bir panel açar (başlık, tek açıklama, kategori menüsü) ve panelde komut
-// listesi yoktur; bir kategori seçilince o kategorinin komutları AYRI bir mesaj olarak kanala düşer.
+// Yardım menüsü: /yardim ile açılır, komutlar tek menüden seçilen kategoriler halinde listelenir. Tek mesajda
+// gezilir: /yardim kısa bir panel açar (başlık, tek açıklama, kategori menüsü) ve panelde komut listesi yoktur;
+// bir kategori seçilince panelin yerini o kategorinin komut kartı alır, kartın altındaki düğme panele döndürür.
 // TEK KATMAN KURALI: menü kim açarsa açsın yalnızca HERKESİN kullanabildiği komutları gösterir; o liste her sistemin
 // index.js'indeki "help.member" alanıdır. Rol, izin ya da yöneticilik gerektiren hiçbir komut (sicil, ceza, yetki,
 // log, emoji ekleme...) menüde durmaz — yetkili bu komutları panellerden ve yetkili kanalından öğrenir, üyenin
@@ -11,7 +11,6 @@
 const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const { botName } = require('../../core/config');
 const { respond } = require('../../core/helpers');
-const core = require('../../core/ui');
 const ui = require('./ui');
 
 const SUBCOMMAND = 1;

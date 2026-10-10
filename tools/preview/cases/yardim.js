@@ -1,6 +1,6 @@
 // Yardım menüsü (src/systems/yardim/ui.js): kategori ve komut listesi gerçek sistem tanımlarından üretilir.
 // İçerik toplama doğrudan yardim/index.js'in "tabs" fonksiyonundan alınır, böylece önizleme ile canlı aynı listedir.
-// Menü log paneli gibi iki mesajdır: açılışta yalnızca kategori menülü panel, seçimde ayrı kategori kartı.
+// Tek mesajda gezilir: açılışta kategori menülü panel, seçimde panelin yerini alan kategori kartı (altında dönüş düğmesi).
 module.exports = ({ mock, src }) => {
   const help = src('systems/yardim/ui');
   const { tabs } = src('systems/yardim');
@@ -36,7 +36,7 @@ module.exports = ({ mock, src }) => {
     ...all.categories.map((category) => ({
       id: `kategori-${category.key}`,
       title: `Yardım kartı: ${category.label}`,
-      where: '/yardim panelinden kategori seçilince gelen ayrı mesaj, herkese açık',
+      where: '/yardim panelinde kategori seçilince panelin yerini alan kart, herkese açık',
       visibility: 'public',
       kind: 'message',
       build: () => ({
