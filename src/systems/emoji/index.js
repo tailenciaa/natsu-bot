@@ -258,10 +258,6 @@ module.exports = {
         `Emoji yönetme izni olanlar; takviye edenler ${boostConfig.perks.emoji} emoji ekleyebilir. Bir mesaja sağ tık > Uygulamalar > ${MENU_NAME} ile de eklenir (sadece yetkililer).`,
       'cikartma-ekle': `Emoji yönetme izni olanlar; takviye edenler ${boostConfig.perks.sticker} çıkartma ekleyebilir.`,
     },
-    need: {
-      'emoji-ekle': '"Emoji ve Çıkartmaları Yönet" izni ya da takviye',
-      'cikartma-ekle': '"Emoji ve Çıkartmaları Yönet" izni ya da takviye',
-    },
   },
   slash: { 'emoji-ekle': handleCommand, 'cikartma-ekle': handleStickerCommand, [MENU_NAME]: handleMessageMenu },
   prefixed: [[ui.IDS.pick, handlePick]],

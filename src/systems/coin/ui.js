@@ -1,13 +1,13 @@
 // Coin mesajları: /gunluk ödül kartı, /bakiye ile açılan cüzdan ve mağazadan alınanların listelendiği sipariş sayfası.
-// Cüzdandan mağaza aynı dokunuşla açılır (profil-ayar:magaza), siparişler ise cüzdanın yerini alır; böylece
-// üye parasının nereye gittiğini ayrı bir mesaj aramadan görür.
+// Cüzdan tek mesajda gezilir: "Mağaza" ve "Siparişlerim" cüzdan kartının yerini alır, oradaki geri düğmesi yeniden
+// cüzdana döner; böylece üye parasının nereye gittiğini ayrı bir mesaj aramadan görür.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { page, divider, chip, rows, rel, receipt, pageInfo, pagerRow } = require('../../core/ui');
 
 const IDS = {
-  shop: 'profil-ayar:magaza', // profil mağazası; aynı buton profil ayarlarında da duruyor
+  shop: 'profil-ayar:magaza:cerceve:cuzdan', // profil mağazası; sekme ve kaynak taşıdığı için cüzdan kartının yerini alır
   orders: 'coin-siparis', // coin-siparis:<sayfa>
-  wallet: 'coin-bakiye', // sipariş sayfasından cüzdana dönüş
+  wallet: 'coin-bakiye', // mağaza ve sipariş sayfasından cüzdana dönüş
 };
 
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz

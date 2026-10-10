@@ -366,11 +366,6 @@ module.exports = {
       'muhabbet kapat': 'Yöneticiler',
       'muhabbet sirayi-temizle': 'Yöneticiler',
     },
-    need: {
-      'muhabbet liste': 'Yöneticiler',
-      'muhabbet kapat': 'Yöneticiler',
-      'muhabbet sirayi-temizle': 'Yöneticiler',
-    },
   },
   slash: { muhabbet: handleCommand },
   buttons: {

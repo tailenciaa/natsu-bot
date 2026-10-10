@@ -137,7 +137,7 @@ async function handleDetail(interaction) {
 module.exports = {
   name: 'log',
   commands,
-  help: { category: ['log', 'Log'], access: { 'log kur': 'Yöneticiler' }, need: { 'log kur': 'Yöneticiler' } },
+  help: { category: ['log', 'Log'], access: { 'log kur': 'Yöneticiler' }, },
   slash: { log: handleLog },
   // Diğer sistemlerin (ör. sicil) zengin detaylı moderasyon logu göndermesi için
   // type: ceza türü (ban, mute, jail, uyari); her tür kendi log alt başlığına gider

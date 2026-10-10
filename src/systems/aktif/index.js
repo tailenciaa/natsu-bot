@@ -173,7 +173,7 @@ function handleReady(client) {
 module.exports = {
   name: 'aktif',
   commands,
-  help: { category: ['siralama', 'Sıralama'], access: { 'aktif-onizleme': 'Yöneticiler' }, need: { 'aktif-onizleme': 'Yöneticiler' } },
+  help: { category: ['siralama', 'Sıralama'], access: { 'aktif-onizleme': 'Yöneticiler' }, },
   slash: { 'aktif-onizleme': handlePreview },
   events: {
     [Events.ClientReady]: handleReady,

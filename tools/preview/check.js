@@ -172,21 +172,10 @@ for (const sys of cmdSystems) {
     for (const key of sys.help.member ?? []) {
       if (!paths.includes(key)) add('komut', sys.name, 'HATA', `help.member`, 'yardim-fazla', '', `help.member listesindeki "${key}" komutu yok`);
       else if (!access[key]) add('komut', sys.name, 'HATA', `/${key}`, 'yardim-fazla', '', `"${key}" yardım menüsünde listeleniyor ama help.access'i yok`);
-      // Üye menüsünde yalnızca herkesin kullanabildiği komutlar durur: rol, izin ya da yöneticilik isteyen komut
-      // (sicil, ceza, yetki, log, emoji ekleme...) üye listesinde yazılmaz, yetkili katmanında "Gerekli" satırıyla görünür
+      // Yardım menüsü tek katmanlıdır: yalnızca herkesin kullanabildiği komutlar listelenir. Rol, izin ya da
+      // yöneticilik isteyen komut (sicil, ceza, yetki, log, emoji ekleme...) help.member listesine yazılmaz.
       else if (!/^Herkes\b/.test(access[key]))
         add('komut', sys.name, 'HATA', `/${key}`, 'yardim-uye-erisim', '', `"${key}" üye yardım menüsünde listeleniyor ama erişimi "Herkes" değil: "${access[key]}"`);
-    }
-    // help.need: yardım menüsünde komutun yanında görünen "ne gerekir" yazısı. Yetkili katmanında listelenen her
-    // komutta olması beklenir; üye komutlarında isteğe bağlıdır (herkesin kullanabildiği komutta yazıya gerek yok).
-    const need = sys.help.need ?? {};
-    const member = sys.help.member ?? [];
-    for (const p of paths) {
-      if (menuNames.has(p) || p === 'yardim' || member.includes(p) || need[p]) continue;
-      add('komut', sys.name, 'HATA', `/${p}`, 'yardim-need-eksik', '', `"${p}" komutu yetkili menüsünde listeleniyor ama help.need karşılığı yok`);
-    }
-    for (const key of Object.keys(need)) {
-      if (!paths.includes(key)) add('komut', sys.name, 'HATA', 'help.need', 'yardim-need-fazla', '', `help.need'de "${key}" var ama böyle bir komut/alt komut yok`);
     }
     const [key, label] = sys.help.category ?? [];
     if (!key || !label) add('komut', sys.name, 'HATA', sys.name, 'yardim-kategori', '', 'help.category [anahtar, ad] biçiminde olmalı');

@@ -641,11 +641,6 @@ module.exports = {
       'kalici-oda kapat': 'Yöneticiler',
       'kalici-oda devret': 'Yöneticiler',
     },
-    need: {
-      'kalici-oda liste': 'Yöneticiler',
-      'kalici-oda kapat': 'Yöneticiler',
-      'kalici-oda devret': 'Yöneticiler',
-    },
   },
   slash: { 'kalici-oda': handleCommand },
   buttons: {

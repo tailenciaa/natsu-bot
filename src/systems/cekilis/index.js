@@ -433,13 +433,6 @@ module.exports = {
       'cekilis iptal': 'Yöneticiler',
       'cekilis liste': 'Yöneticiler',
     },
-    need: {
-      'cekilis baslat': 'Yöneticiler',
-      'cekilis bitir': 'Yöneticiler',
-      'cekilis yeniden-cek': 'Yöneticiler',
-      'cekilis iptal': 'Yöneticiler',
-      'cekilis liste': 'Yöneticiler',
-    },
   },
   slash: { cekilis: handleCommand },
   buttons: {

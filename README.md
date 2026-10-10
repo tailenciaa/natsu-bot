@@ -34,7 +34,7 @@ Sık değişen kayıtlar (XP, sıralama, haftalık aktifler, saygınlık) birka�
 
 ## Komutlar
 
-Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` menüsü iki katmanlıdır: üyeler yalnızca **Herkes** ve takviye/izin gerektiren üye komutlarını görür, yetkili izni olanlar ayrıca yetkili ve kurulum komutlarını da görür; menü ve kategori menüsü herkese açıktır. Her komutun ne gerektirdiği `help.need`'de, ayrıntılı erişimi `help.access`'te durur:
+Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` log paneli gibi çalışır: kısa bir panel açılır (başlık, tek açıklama, kategori menüsü), kategori seçilince o kategorinin komutları ayrı bir kart olarak kanala düşer. Panel tek katmanlıdır ve kim açarsa açsın yalnızca sistemin `help.member` listesindeki, yani HERKESİN kullanabildiği komutları gösterir; yetkili ve kurulum komutları menüde hiç yer almaz. Ayrıntılı erişim her komutun `help.access` kaydındadır:
 
 | Komut | Açıklama | Kimler |
 | --- | --- | --- |

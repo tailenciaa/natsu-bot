@@ -271,6 +271,30 @@ module.exports = ({ mock, ui, src }) => {
       }),
     },
     {
+      id: 'magaza-cuzdan',
+      title: 'Mağaza: cüzdan kartından açılmış, geri düğmesi cüzdana döner',
+      where: '/bakiye cüzdanındaki Mağaza düğmesi; kartın yerini alır, ayrı mesaj atmaz',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.shopPage(
+            'cerceve',
+            SHOP_TABS,
+            5400,
+            shopRows([
+              { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok:cuzdan`, label: 'Giy', style: 2 },
+              { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz:cuzdan`, label: 'Al · 1.200', style: 2 },
+              { name: 'Altın', note: kozmetik.FRAMES[3].note, state: 'Kartında bu var', id: `${p.IDS.wear}cerceve:altin:cuzdan`, label: 'Giyili', disabled: true },
+            ]),
+            'cuzdan',
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
       id: 'magaza-tema',
       title: 'Mağaza: temalar sekmesi',
       where: 'Mağaza sayfasındaki Temalar sekmesi',

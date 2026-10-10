@@ -1,54 +1,46 @@
-// Yardım menüsünün mesajı
+// Yardım menüsünün mesajları — düzen olarak log panelinin aynısı:
+//  1) helpPanel: /yardim ile açılan kısa panel (başlık, tek açıklama, kategori menüsü). İçinde komut listesi yoktur.
+//  2) categoryCard: panelden bir kategori seçilince log panelinin kategori seçimine verdiği cevap gibi ayrı bir
+//     kart basılır; başlık kategorinin adıdır, altında açıklaması ve o kategorinin komutları durur.
 const { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
-const { colors, page, divider, text } = require('../../core/ui');
+const { colors, page, divider } = require('../../core/ui');
 
-const IDS = { navigate: 'yardim' }; // yardim:<kategori> (eski mesajlardaki butonlar) ve yardim:kategori (kategori menüsü)
+const IDS = { navigate: 'yardim' }; // yardim:kategori
 
-const MAX_COMPONENTS = 40;
-const countComponents = (json) => 1 + (json.components ?? []).reduce((n, c) => n + countComponents(c), 0) + (json.accessory ? 1 : 0);
-
-// view: { botName, avatarUrl, categories: [{ key, label, desc }], tab, entries: [{ description, usage, need }], total }
-function helpMenu({ botName, avatarUrl, categories, tab, entries, total = 0 }) {
-  const container = page({
-    title: 'Yardım Menüsü',
-    sub: `${botName} komutları kategoriler halinde burada listelenir, komutun adına tıklayıp hemen kullanabilirsin. Bu menüde **${total}** komut var; kategoriyi menüden değiştirirsin.`,
-    thumbnail: avatarUrl,
-    accent: colors.primary,
-  });
-
-  // Kategoriler tek menüden seçilir; menü mesajın üstünde kalır, böylece liste ne kadar uzarsa uzasın kategori
-  // değiştirmek için kaydırmak gerekmez
-  container
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId(`${IDS.navigate}:kategori`)
-          .setPlaceholder('Komut kategorisi seç')
-          .addOptions(
-            categories.map((category) =>
-              new StringSelectMenuOptionBuilder().setValue(category.key).setLabel(category.label).setDescription(category.desc),
-            ),
-          ),
+// view: { botName, avatarUrl, categories: [{ key, label, desc }], total }
+function helpPanel({ botName, avatarUrl, categories, total = 0 }) {
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`${IDS.navigate}:kategori`)
+    .setPlaceholder('Komut kategorisi seç')
+    .addOptions(
+      categories.map((category) =>
+        new StringSelectMenuOptionBuilder().setValue(category.key).setLabel(category.label).setDescription(category.desc),
       ),
     );
 
-  const active = categories.find((category) => category.key === tab);
-  // need: komut herkesin kullanabildiği bir komut değilse ne gerektiği (rol etiketi ya da Discord izni)
-  const lines = entries.map((entry) =>
-    [`**${entry.description}**`, entry.usage, entry.need ? `Gerekli: ${entry.need}` : null].filter(Boolean).join('\n'),
-  );
-  // Discord bir mesajda en fazla 40 bileşene izin verir: komut sayısı çoksa komutlar ikişer ikişer (gerekirse daha fazla)
-  // aynı bloğa konur, böylece liste uzasa da mesaj gönderilebilir kalır
-  const used = countComponents(container.toJSON()) + (active ? 1 : 0);
-  let perBlock = 1;
-  while (used + 2 * Math.ceil(lines.length / perBlock) > MAX_COMPONENTS && perBlock < lines.length) perBlock += 1;
-  for (let i = 0; i < lines.length; i += perBlock) {
-    const block = active && i === 0 ? [`**${active.label} · ${lines.length} komut**`, ...lines.slice(i, i + perBlock)].join('\n\n') : lines.slice(i, i + perBlock).join('\n\n');
-    container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));
-  }
-
-  return container;
+  // Panel yalnızca bu mesaj için: başlık, çizgi, açıklama, çizgi, menü
+  return page({
+    title: 'Yardım Menüsü',
+    thumbnail: avatarUrl,
+    accent: colors.primary,
+    blocks: [
+      `Menüden **bir komut kategorisi seç**; ${botName} komutları profil, sıralama ve partner gibi kategorilere ayrılmış durumda ve seçimin o kategorinin komutlarını tek bir kartta karşına getirir. Bu menüde **${total}** komut var, komutun adına basarak hemen kullanabilirsin.`,
+    ],
+  })
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select));
 }
 
-module.exports = { IDS, helpMenu };
+// category: { label, desc } — entries: [{ description, usage }]
+// Düzen olarak log girdisinin kutusu: başlık, gri açıklama, çizgi ve tek bilgi bloğu. Komutlar bir blokta toplandığı
+// için kategori ne kadar büyük olursa olsun mesaj tek başlık + tek blok kalır ve bileşen sınırına yaklaşmaz.
+function categoryCard({ category, entries }) {
+  return page({
+    title: category.label,
+    sub: `${category.desc}. Bu komutların adına tıklayıp hemen kullanabilirsin.`,
+    accent: colors.primary,
+    blocks: [`**Komutlar**\n${entries.map((entry) => `**${entry.description}**\n${entry.usage}`).join('\n\n')}`],
+  });
+}
+
+module.exports = { IDS, helpPanel, categoryCard };

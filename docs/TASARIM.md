@@ -113,6 +113,10 @@ Renk durumu söyler: yeşil tamamlandı/onaylandı, sarı bekliyor, kırmızı h
 
 Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı günceller** (`interaction.update`), yeni mesaj atmaz; mesajda bir görsel varsa `attachments: []` ile temizlenir. Yeni mesaj yalnızca ilk açılışta ve modal gönderiminde (modal, eski mesajı güncelleyemez) atılır.
 
+Bir panelin düğmesi **yeni bir mesaj** açtığında (profil kartının mağaza, rozet ve vitrin sayfaları) o sayfanın **Geri** düğmesi olmak zorundadır; Geri sayfa mesajını kaldırır (`interaction.message.delete()`) ve kişi açtığı panele döner. Geri düğmesi görünür kontrollerin içinde durur — sekme satırı varsa aynı satıra eklenir.
+
+Cüzdan (`/bakiye`) bundan ayrıdır ve **tek mesajda gezilir**: Mağaza ve Siparişlerim cüzdan kartının yerini alır, asla yeni mesaj atmaz. Mağazanın geri düğmesi mağazanın nereden açıldığına göre belirlenir: cüzdandan açılan sayfada **Cüzdana Dön** cüzdan kartını yeniden yazar, profil kartından açılan sayfada Geri mesajı kaldırır. Kaynak, mağazanın sekme, al ve giy düğmelerinin customId sonunda taşınır (`profil-ayar:magaza:tema:cuzdan`), böylece yerinde yenilenen sayfada yön kaybolmaz.
+
 ### Form, DM ve log
 
 - **Form:** başlık en çok 45 karakter ve eylem odaklı ("Talebi Kapat"), alan açıklaması tek cümle, yer tutucu "Örn: ..." biçiminde. Boş değer ve boş yer tutucu Discord'a gönderilmez.
@@ -171,9 +175,10 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 ## 7. Komut politikası
 
 - Her komutun ve seçeneğin açıklaması tek cümle, fiille başlayan, noktayla biten ve en çok 100 karakterdir.
-- Yardım menüsü iki katmanlıdır ve kategoriler tek bir menüden seçilir (`/yardim`): üye yalnızca sistemin `help.member` listesindeki komutları görür. Yetkili komutlarının görünmesi gereken izne (`core/config.js staffPermission`) ya da yöneticiliğe sahip olan tüm kategorileri de görür. Mesaj her iki katmanda da **herkese açık** gönderilir ve kategoriyi herkes değiştirebilir; liste her değişimde o kişiyi gözeten katmanla yeniden çizilir. `help.category` kategoriyi, `help.need` komutun yanında görünen "Gerekli: ..." yazısını belirler; listelenen her yetkili komutunun `need` karşılığı olmak zorundadır. `help.access` erişimi belgeleyen kayıttır, arayüzde gösterilmez; komut denetimi her komutun `access` karşılığı olmasını ister. Sağ tık (bağlam menüsü) komutları menüde listelenmez.
-- `help.member` listesine **yalnızca herkesin kullanabildiği** komutlar yazılır. Rol, izin ya da yöneticilik isteyen bir komut (`/sicil`, ceza ve yetki komutları, `log kur`, emoji/çıkartma ekleme...) üye menüsünde görünmez; sadece yetkili katmanında ve yanında `help.need` yazısıyla durur. Kuralı komut denetimi bekler: `help.access` kaydı "Herkes" ile başlamayan bir komut üye listesinde yer alırsa `yardim-uye-erisim` hatası verilir.
-- Kategoriyi seçmek paneli **yerinde** günceller (`interaction.update()`): komut listesi asla panelin altına ayrı bir mesaj ya da sadece seçen kişiye görünen gizli mesaj olarak gönderilmez. Güncelleme tutmazsa (mesaj silinmiş, bağlantı kopmuş) hata bildirimi de atılmaz; durum loga yazılır ve panel olduğu gibi kalır.
+- Yardım menüsü **tek katmanlıdır**: `/yardim` kim açarsa açsın yalnızca sistemin `help.member` listesindeki, yani HERKESİN kullanabildiği komutları listeler. Rol, izin ya da yöneticilik isteyen bir komut (`/sicil`, ceza, yetki, `log kur`, emoji/çıkartma ekleme...) menüde hiç yer almaz — yetkili o komutları panellerden ve yetkili kanalından öğrenir, üyenin işine olmayan komutu üye listesi karmaşa üretir. Yöneticiye özel seçenekler de gösterilmez (`yardim/index.js` içindeki `HIDDEN_OPTIONS`; ör. `/seviye`'in `test` seçeneği). `help.category` kategoriyi belirler, `help.access` erişimi belgeleyen kayıttır ve arayüzde gösterilmez; sağ tık (bağlam menüsü) komutları menüde listelenmez.
+- Komut denetimi kuralı: `help.access` kaydı "Herkes" ile başlamayan bir komut `help.member` listesinde yer alırsa `yardim-uye-erisim` hatası verilir.
+- Yardım menüsü **log paneliyle birebir aynı düzeni kullanır**: `/yardim` kısa bir panel açar (başlık, tek cümlelik yönlendirme, kategori menüsü) ve o panelde **komut listesi yoktur**. Kategoriyi seçmek paneli güncellemez; seçilen kategorinin komutları, log panelinin kategori seçimine verdiği cevap gibi, **ayrı bir mesaj** olarak kanala düşer. Panel ve kart **herkese açıktır**, kategoriyi herkes seçebilir.
+- Kategori kartının başlığı kategorinin adıdır, altındaki gri açıklamada komutların adına tıklayarak kullanılabileceği söylenir; o kategorinin bütün komutları, tıpkı bir log girdisinin bilgi bloğu gibi, **tek bir blokta** toplanır.
 
 ## 8. Doğrulama (Discord'a bağlanmadan)
 

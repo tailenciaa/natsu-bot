@@ -39,6 +39,7 @@ const IDS = {
   rozet: 'profil-ayar:rozetler',
   shop: 'profil-ayar:magaza',
   shopTab: 'profil-ayar:magaza:', // + cerceve | tema | kapak | rozet
+  geri: 'profil-ayar:geri', // mağaza, rozet ve vitrin sayfalarını kapatır
   buy: 'profil-ayar:al:', // + tur:anahtar
   wear: 'profil-ayar:giy:', // + tur:anahtar
   kapakBtn: 'profil-ayar:kapak-btn:', // + buyut | kucult | sola | saga | yukari | asagi | sifirla | gorsel | kaldir
@@ -48,6 +49,14 @@ const IDS = {
 };
 
 const { text, divider, fields, stamp } = core;
+
+// Mağaza, rozet ve vitrin sayfaları kart mesajının üstüne ayrı bir mesaj olarak açılır; bu düğme o sayfayı
+// kaldırır ve üye profil kartının düzenleme düğmeleriyle baş başa kalır.
+const geriButton = () => new ButtonBuilder().setCustomId(IDS.geri).setLabel('Geri').setStyle(ButtonStyle.Secondary);
+
+// Mağazanın geri düğmesi, mağazanın hangi karttan açıldığına göre değişir: cüzdan kartından açılan mağaza
+// yerinde açıldığı için geri düğmesi de cüzdan kartına döner (coin-bakiye).
+const SHOP_BACK = { cuzdan: { id: 'coin-bakiye', label: 'Cüzdana Dön' } };
 
 // currentTheme: kayıtlı tema (yoksa ya da silinmişse menüde hiçbir seçenek seçili gelmez)
 function profile(imageName, editable, currentTheme = null, description = 'Profil kartı') {
@@ -258,20 +267,22 @@ function rozetPage(list, earnedCount) {
   const rest = list.filter((b) => !b.done).sort((a, b) => b.value / b.goal - a.value / a.goal);
   const gorev = rest.filter((b) => b.gorev);
   const normal = rest.filter((b) => !b.gorev);
-  return core.page({
-    title: 'Rozetler',
-    sub: 'Rozetler sunucudaki etkinliğinden türetilir; ayrı bir başvuru ya da istek gerekmez. Kazandıkların ve kalanların ilerlemesi burada listelenir.',
-    blocks: [
-      fields([
-        `**${earnedCount} rozet kazanıldı**`,
-        done.length ? done.map((b) => b.label).join(' · ') : 'Henüz rozetin yok; ilk hedefler mesaj ve ses seviyeleri.',
-      ]),
-      gorev.length
-        ? fields(['**Görev rozetleri** · hedefe ulaşınca kartına rozetle birlikte sunucu rolü de verilir', gorev.map(line).join('\n')])
-        : null,
-      normal.length ? fields(['**Diğer rozetler**', normal.map(line).join('\n')]) : null,
-    ],
-  });
+  return core
+    .page({
+      title: 'Rozetler',
+      sub: 'Rozetler sunucudaki etkinliğinden türetilir; ayrı bir başvuru ya da istek gerekmez. Kazandıkların ve kalanların ilerlemesi burada listelenir.',
+      blocks: [
+        fields([
+          `**${earnedCount} rozet kazanıldı**`,
+          done.length ? done.map((b) => b.label).join(' · ') : 'Henüz rozetin yok; ilk hedefler mesaj ve ses seviyeleri.',
+        ]),
+        gorev.length
+          ? fields(['**Görev rozetleri** · hedefe ulaşınca kartına rozetle birlikte sunucu rolü de verilir', gorev.map(line).join('\n')])
+          : null,
+        normal.length ? fields(['**Diğer rozetler**', normal.map(line).join('\n')]) : null,
+      ],
+    })
+    .addActionRowComponents(new ActionRowBuilder().addComponents(geriButton()));
 }
 
 // Vitrin sayfası: kartta görünecek ek alanlar; bağlantılar formla, öne çıkan istatistik menüyle seçilir
@@ -298,6 +309,7 @@ function vitrinPage(current, featuredKey, featuredOptions, visitLine) {
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.vitrinLinks).setLabel('Zamir ve Bağlantılar').setStyle(ButtonStyle.Secondary),
+        geriButton(),
       ),
     )
     .addActionRowComponents(
@@ -315,7 +327,13 @@ function vitrinPage(current, featuredKey, featuredOptions, visitLine) {
 }
 
 // Mağaza: coin ile alınan kart çerçeveleri ve temalar. Her ürün kendi satırında, sağında al ya da giy düğmesi.
-function shopPage(tab, tabs, balance, items) {
+// kaynak: mağazanın açıldığı kart ('cuzdan'); sekme düğmelerinin sonuna eklenir ki sekme değişince de korunsun.
+function shopPage(tab, tabs, balance, items, kaynak = null) {
+  const back = SHOP_BACK[kaynak];
+  const geri = back
+    ? new ButtonBuilder().setCustomId(back.id).setLabel(back.label).setStyle(ButtonStyle.Secondary)
+    : geriButton();
+  const tabId = (key) => `${IDS.shopTab}${key}${kaynak ? `:${kaynak}` : ''}`;
   const container = new ContainerBuilder()
     .addTextDisplayComponents(text('## Profil Mağazası'))
     .addTextDisplayComponents(
@@ -323,7 +341,7 @@ function shopPage(tab, tabs, balance, items) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Bakiyen:** ${core.chip(`${balance.toLocaleString('tr-TR')} coin`)}`))
-    .addActionRowComponents(core.tabRow(tabs, tab, (key) => `${IDS.shopTab}${key}`));
+    .addActionRowComponents(core.tabRow(tabs, tab, tabId).addComponents(geri));
 
   for (const item of items) {
     const button = new ButtonBuilder().setStyle(item.wearStyle ?? ButtonStyle.Secondary);

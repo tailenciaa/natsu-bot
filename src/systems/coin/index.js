@@ -22,8 +22,8 @@ const commands = [
     .setContexts(InteractionContextType.Guild),
 ];
 
-// /gunluk: bugün henüz alınmadıysa ödül yazar ve kart kanala düşer. Kazanç herkese açık duyurulur (ekonomi
-// görünür olsun diye); "bugün alındı" reddi ise gürültü olmasın diye sadece kişiye gösterilir.
+// /gunluk: bugün henüz alınmadıysa ödül yazar ve kart kanala düşer. Kazanç da "bugün zaten alındı" bilgisi de
+// herkese açıktır; ikincisi 3. tekil şahısla yazılır ki kanalda kimin aldığı belli olsun.
 async function handleDaily(interaction) {
   const level = Math.max(levelFromXp(seviyeStore.xpOf('mesaj', interaction.user.id)), levelFromXp(seviyeStore.xpOf('ses', interaction.user.id)));
   const result = store.claim(interaction.user.id, level);
@@ -31,8 +31,8 @@ async function handleDaily(interaction) {
   if (!result.ok) {
     return respond(
       interaction,
-      core.alert('Günlük ödülünü bugün zaten topladın.', `Sıradaki ödül ${core.rel(result.nextAt)} içinde hazır oluyor.`),
-      { ephemeral: true },
+      core.alert('Günlük ödül bugün zaten toplandı.', `<@${interaction.user.id}> bu günün ödülünü daha önce aldı; sıradaki ödül ${core.rel(result.nextAt)} içinde hazır oluyor.`),
+      { allowedMentions: { users: [interaction.user.id] } },
     );
   }
 
@@ -64,7 +64,7 @@ const walletView = (interaction) =>
 
 const ordersView = (interaction, page = 0) => ui.orders({ user: interaction.user, items: store.purchasesOf(interaction.user.id), page });
 
-// /bakiye: cüzdan kartı herkese açık yazılır; butonlar ya yeni bir mesaj açar (mağaza) ya da kartın yerini alır
+// /bakiye: cüzdan kartı herkese açık yazılır; mağaza ve siparişler kartın yerini alır, ayrı mesaj atmaz
 async function handleWallet(interaction) {
   return respond(interaction, walletView(interaction));
 }
@@ -76,7 +76,7 @@ async function handleOrders(interaction) {
   return interaction.update({ components: [ordersView(interaction, Number(page) || 0)], allowedMentions: { parse: [] } });
 }
 
-// coin-bakiye: sipariş sayfasından cüzdana geri dön
+// coin-bakiye: mağaza ve sipariş sayfasından cüzdana geri dön
 async function handleBack(interaction) {
   if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
   return interaction.update({ components: [walletView(interaction)], allowedMentions: { parse: [] } });

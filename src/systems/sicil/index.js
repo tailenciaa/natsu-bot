@@ -300,12 +300,11 @@ module.exports = {
   commands,
   help: {
     category: ['hesap', 'Profil'],
-    // Üye yardım menüsünde listelenmez: sicil paneli yetkili işlemleri için kuruldu, üyeler kendi sicillerini
-    // komutu bilip yazarak görür. Yetkili katmanında "Gerekli" satırıyla durur.
+    // Üye yardım menüsünde listelenmez: sicil paneli yetkili işlemleri için kuruldu. Üye kendi geçmişini
+    // #cezalarım panelinden görür; komutu yazmasına gerek yok.
     access: {
       sicil: `Herkes kendi sicilini görebilir; başkalarının sicili ve ceza işlemleri yetkililer için, sadece <#${staffCommandChannel}> kanalında`,
     },
-    need: { sicil: `Sicil yetkilileri · sadece <#${staffCommandChannel}>` },
   },
   slash: { sicil: handleCommand },
   prefixed: [

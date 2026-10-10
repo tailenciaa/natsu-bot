@@ -324,11 +324,13 @@ const wornItem = (tur, custom, key) => {
   return Boolean(shop?.wear) && (custom[shop.wear] ?? shop.def) === key;
 };
 
-// Mağaza sayfasının satırları: sahiplik ve bakiye durumuna göre düğme etiketi belirlenir
-function shopRows(tur, custom) {
+// Mağaza sayfasının satırları: sahiplik ve bakiye durumuna göre düğme etiketi belirlenir. kaynak, ürün düğmesinin
+// sonuna eklenir ki satın alma/giyme sonrası yenilenen sayfada geri düğmesi aynı yere dönsün.
+function shopRows(tur, custom, kaynak = null) {
   const shop = SHOP[tur];
-  const wearId = (key) => `${ui.IDS.wear}${tur}:${key}`;
-  const buyId = (key) => `${ui.IDS.buy}${tur}:${key}`;
+  const suffix = kaynak ? `:${kaynak}` : '';
+  const wearId = (key) => `${ui.IDS.wear}${tur}:${key}${suffix}`;
+  const buyId = (key) => `${ui.IDS.buy}${tur}:${key}${suffix}`;
   const priceTag = (price) => `${number(price)} coin`;
   return catalog(tur).map((item) => {
     const base = { name: item.name, note: item.note };
@@ -346,13 +348,13 @@ function shopRows(tur, custom) {
   });
 }
 
-function shopMessage(interaction, tab) {
+function shopMessage(interaction, tab, kaynak) {
   const tur = SHOP[tab] ? tab : 'cerceve';
-  return ui.shopPage(tur, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tur, store.get(interaction.user.id)));
+  return ui.shopPage(tur, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tur, store.get(interaction.user.id), kaynak), kaynak);
 }
 
 // Ürün satın alma: para ancak ürün gerçekten sahipliğe geçiyorsa düşürülür
-async function buy(interaction, tur, key) {
+async function buy(interaction, tur, key, kaynak) {
   const shop = SHOP[tur];
   const item = catalog(tur).find((i) => i.key === key);
   if (!shop || !item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
@@ -380,7 +382,7 @@ async function buy(interaction, tur, key) {
   const uyarı = shop.wear === 'cover' && custom.banner ? 'Kartında kendi görseli durduğu için alınan arka plan şimdilik görünmez; kapak düzenleyiciden görsel kaldırılabilir.' : null;
 
   // Mağaza sayfası yerinde yenilenir: bakiye ve düğme durumu hemen doğru görünsün
-  await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
+  await interaction.update({ components: [shopMessage(interaction, tur, kaynak)], allowedMentions: { parse: [] } });
   await respond(
     interaction,
     ui.purchase({
@@ -398,7 +400,7 @@ async function buy(interaction, tur, key) {
 }
 
 // Sahip olunan ürünü giyme (çerçevesiz hâl ve "Temadan" kapak ücretsiz bir seçenektir; rozetlerin giyme adımı yoktur)
-async function wear(interaction, tur, key) {
+async function wear(interaction, tur, key, kaynak) {
   const shop = SHOP[tur];
   const item = catalog(tur).find((i) => i.key === key);
   if (!shop || !item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
@@ -406,7 +408,7 @@ async function wear(interaction, tur, key) {
   if (!ownsItem(tur, store.get(interaction.user.id), key)) return replyError(interaction, 'Önce satın alman gerekiyor.', 'Mağaza sayfasından bakiyeni görebilirsin.');
 
   store.set(interaction.user.id, { [shop.wear]: key });
-  await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
+  await interaction.update({ components: [shopMessage(interaction, tur, kaynak)], allowedMentions: { parse: [] } });
   await respond(interaction, ui.equip({ user: interaction.user, tur, name: item.name }), { followUp: true });
   return refreshLiveCard(interaction);
 }
@@ -450,7 +452,7 @@ async function handleSettings(interaction) {
   if (!isMenuOwner(interaction)) {
     return replyError(interaction, 'Sadece kendi profilini düzenleyebilirsin.', '**/profil** yazarak kendi profilini açıp düzenleyebilirsin.');
   }
-  const [action, arg, arg2] = interaction.customId.split(':').slice(1);
+  const [action, arg, arg2, arg3] = interaction.customId.split(':').slice(1);
   const current = store.get(interaction.user.id);
 
   switch (action) {
@@ -502,6 +504,10 @@ async function handleSettings(interaction) {
     }
     case 'vitrin':
       return respond(interaction, await vitrinMessage(interaction));
+    // Mağaza, rozet ve vitrin kartın üstüne ayrı mesaj olarak açılır: geri düğmesi o mesajı kaldırır,
+    // profil kartı ve düzenleme düğmeleri olduğu gibi kalır
+    case 'geri':
+      return interaction.message.delete().catch((err) => console.error('[profil] Sayfa kapatılamadı:', err.message));
     case 'vitrin-baglanti':
       return interaction.showModal(ui.vitrinModal({ pronoun: current.pronoun, links: current.links }));
     case 'one-cikan': {
@@ -522,16 +528,17 @@ async function handleSettings(interaction) {
       return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length));
     }
     case 'magaza': {
-      const page = shopMessage(interaction, arg ?? 'cerceve');
-      // Sekme değişimi yazıldığı mesajı yerinde yeniler; mağaza düğmesiyle ilk açılışta kanalda herkese açık mesaj yazılır
+      const page = shopMessage(interaction, arg ?? 'cerceve', arg2);
+      // Sekme değişimi ve cüzdandan açılış (düğme sekme taşıdığı için) yazıldığı mesajı yerinde yeniler;
+      // profil kartındaki düğme sekme taşımadığı için mağaza ilk açılışta kanalda herkese açık ayrı mesaj olur
       return arg
         ? interaction.update({ components: [page], attachments: [], allowedMentions: { parse: [] } })
         : respond(interaction, page);
     }
     case 'al':
-      return buy(interaction, arg, arg2);
+      return buy(interaction, arg, arg2, arg3);
     case 'giy':
-      return wear(interaction, arg, arg2);
+      return wear(interaction, arg, arg2, arg3);
     case 'bio-form':
       await interaction.deferUpdate();
       store.set(interaction.user.id, {
