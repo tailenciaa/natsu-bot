@@ -29,37 +29,45 @@ module.exports = ({ mock, ui, src }) => {
     {
       id: 'gunluk-ilk',
       title: '/gunluk: ilk gün, ödül toplandı',
-      where: '/gunluk komutu, sadece kullanana görünür',
-      visibility: 'ephemeral',
+      where: '/gunluk komutu, kanala düşen kazanç kartı',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
-          ui.alert(
-            `${base} coin topladın.`,
-            `**1. gün** serin. Taban **${base}**, seri ve seviye bonusu **0**, bakiyen **${base}** coin.`,
-            'success',
-          ),
+          coin.daily({
+            user,
+            amount: base,
+            streak: 1,
+            base,
+            bonus: 0,
+            balance: base,
+            nextAt: Date.now() + mock.DAY,
+          }),
         ],
-        flags: ui.EPHEMERAL_CV2,
-        ...noMentions,
+        flags: ui.CV2,
+        allowedMentions: { users: [user.id] },
       }),
     },
     {
       id: 'gunluk-seri',
       title: '/gunluk: seri devam ediyor, seviye bonusu var',
       where: '/gunluk komutu, art arda giriş yapan ve seviye atlamış üyede',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
-          ui.alert(
-            `${besinci} coin topladın.`,
-            `**5. gün** serin. Taban **${base}**, seri ve seviye bonusu **${streakBonus + levelBonus}**, bakiyen **${bakiye.toLocaleString('tr-TR')}** coin.`,
-            'success',
-          ),
+          coin.daily({
+            user,
+            amount: besinci,
+            streak: 5,
+            base,
+            bonus: streakBonus + levelBonus,
+            balance: bakiye,
+            nextAt: Date.now() + mock.DAY,
+          }),
         ],
-        flags: ui.EPHEMERAL_CV2,
-        ...noMentions,
+        flags: ui.CV2,
+        allowedMentions: { users: [user.id] },
       }),
     },
     {

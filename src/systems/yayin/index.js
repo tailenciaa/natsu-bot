@@ -1,7 +1,6 @@
 // Yayın yetkisi sistemi: ayarlı kanaldaki panelin butonuna basan üyeye yayın yetkisi rolü verilir, "Yetkiyi Bırak" ile geri alınır.
 // Panel diğer sistemlerdeki gibi bot açılınca kendiliğinden gönderilir (core/panel.js).
 const { Events } = require('discord.js');
-const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const config = require('./config');
