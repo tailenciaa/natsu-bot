@@ -798,6 +798,7 @@ function panelOfferModal(trustedId) {
 module.exports = {
   IDS,
   isBusy,
+  PANEL_PAGE_SIZE,
   partnerPanel,
   panelOfferModal,
   sanitize,

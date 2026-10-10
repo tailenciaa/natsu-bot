@@ -8,7 +8,7 @@
 // bir partner yetkilisi atar; atanan yetkili kabul edip metni onaylar/düzenler/iptal eder, onaylanınca karşı
 // taraf (daha önce hiç kabul etmediyse) şartları kabul edip otomatik paylaşılır, ardından karşı tarafa bizim
 // tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını ayarlayabilir. Güvenilir listeye alınan partnerin yetkilileri DM'den bir Partner Paneli alır: müsaitlik durumlarını seçer (meşgulken yetkililerimiz teklif göndermez) ve istedikleri zaman kendi tarafından partnerlik teklifi gönderir; teklif oto partner talebiyle aynı yoldan inceleme kanalına düşer.
-const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const { Events, InteractionContextType, SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isStaff, isMenuOwner, menuOwnerError, fetchTextChannel } = require('../../core/helpers');
@@ -392,6 +392,25 @@ async function handleReviewDecision(interaction) {
 
 // ── Güvenilir partnerler listesi ────────────────────────────────────────────────
 
+// Güvenilir partnerler panelinin (bileşenler + kart eki) güncel hali. Kart çizilemezse eski metinli panel gösterilir.
+// Liste mesajı sürekli düzenlendiği için kart adı her seferinde eşsiz üretilir; eski ekler düzenlemede temizlenir
+async function trustedPanelView(guildId_, page = 0) {
+  const entries = store.trustedOf(guildId_);
+  let card = null;
+  if (entries.length) {
+    const name = `guvenilir-${Date.now().toString(36)}.png`;
+    try {
+      card = await require('./card').buildTrustedCard(entries, page, name);
+    } catch (err) {
+      console.error('[partner] Güvenilir panel kartı çizilemedi, metinli panel gösterilecek:', err.message);
+    }
+  }
+  return {
+    components: [ui.trustedListPanel(entries, page, card?.name ?? null)],
+    files: card ? [new AttachmentBuilder(card.buffer, { name: card.name })] : [],
+  };
+}
+
 // Güvenilir partnerler kanalındaki sürekli güncel panel: liste değiştiğinde aynı mesaj düzenlenir, yoksa/silinmişse yeniden gönderilir
 async function refreshTrustedPanel(client, guildId_) {
   if (!config.channels.trustedList) return;
@@ -399,22 +418,24 @@ async function refreshTrustedPanel(client, guildId_) {
   const channel = await fetchTextChannel(guild, config.channels.trustedList);
   if (!channel) return;
 
-  const container = ui.trustedListPanel(store.trustedOf(guildId_));
+  const view = await trustedPanelView(guildId_);
   const messageId = store.trustedPanelMessageId(guildId_);
   let missing = !messageId;
   if (messageId) {
-    const edited = await channel.messages.edit(messageId, { components: [container], allowedMentions: { parse: [] } }).catch((err) => {
-      // Yalnızca mesaj gerçekten silinmişse yenisi gönderilir; geçici hatada (ağ, hız sınırı) çift panel oluşmasın
-      if (err.code === UNKNOWN_MESSAGE) missing = true;
-      else console.error('[partner] Güvenilir partnerler paneli düzenlenemedi:', err.message);
-      return null;
-    });
+    const edited = await channel.messages
+      .edit(messageId, { components: view.components, files: view.files, attachments: [], allowedMentions: { parse: [] } })
+      .catch((err) => {
+        // Yalnızca mesaj gerçekten silinmişse yenisi gönderilir; geçici hatada (ağ, hız sınırı) çift panel oluşmasın
+        if (err.code === UNKNOWN_MESSAGE) missing = true;
+        else console.error('[partner] Güvenilir partnerler paneli düzenlenemedi:', err.message);
+        return null;
+      });
     if (edited) return;
   }
   if (!missing) return;
 
   const message = await channel
-    .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } })
+    .send({ components: view.components, files: view.files, flags: core.CV2, allowedMentions: { parse: [] } })
     .catch((err) => console.error('[partner] Güvenilir partnerler paneli gönderilemedi:', err.message));
   if (message) store.setTrustedPanelMessageId(guildId_, message.id);
 }
@@ -652,7 +673,8 @@ async function handleTrustedPage(interaction) {
 // Güvenilir partnerler paneli sayfa butonları: partner-guven-panel-sayfa:<sayfa>:<buton yeri>
 async function handleTrustedPanelPage(interaction) {
   const page = Number(interaction.customId.split(':')[1]) || 0;
-  return interaction.update({ components: [ui.trustedListPanel(store.trustedOf(interaction.guildId), page)], allowedMentions: { parse: [] } });
+  const view = await trustedPanelView(interaction.guildId, page);
+  return interaction.update({ components: view.components, files: view.files, attachments: [], allowedMentions: { parse: [] } });
 }
 
 async function handleStaffStatusCommand(interaction) {
