@@ -181,7 +181,7 @@ async function handleApplySubmit(interaction) {
     }
     store.updateApplication(id, { messageId: message.id });
 
-    return respond(interaction, core.alert('Başvurun alındı.', 'Yetkililer inceleme bitince sonucu sana DM üzerinden iletecek.', 'success'));
+    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }));
   } finally {
     submitting.delete(lockKey);
   }

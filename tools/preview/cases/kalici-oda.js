@@ -70,6 +70,14 @@ module.exports = ({ mock, src }) => {
   return [
     { id: 'panel', title: 'Başvuru paneli: kurallar ve gereksinimler', where: 'Kalıcı oda bilgi kanalı', visibility: 'panel', kind: 'message', build: () => message(k.applyPanel()) },
     { id: 'form', title: 'Form: kalıcı oda başvurusu', where: 'Başvuru Yap butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.applicationModal() },
+    {
+      id: 'basvuru-alindi',
+      title: 'Başvuru alındı: başvuranın kendi gördüğü özet',
+      where: 'Başvuru formu gönderilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => message(k.submitted({ user: owner, app: app(), memberCount: 4 })),
+    },
 
     { id: 'kart-bekleyen', title: 'Başvuru kartı: inceleniyor', where, visibility: 'public', kind: 'message', build: () => message(k.applicationCard(app())) },
     {
