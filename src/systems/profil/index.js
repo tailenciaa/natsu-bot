@@ -203,7 +203,45 @@ async function kapakAction(interaction, neylem) {
   return refreshLiveCard(interaction);
 }
 
+// ── Kart görünümü ─────────────────────────────────────────────────────────────
+
+// Panelin düz ya da buzlu cam çizilmesi temaya bağlıdır (themes.js); saydamlık ise üyenin kendi ayarıdır.
+const opacityOf = (custom) => clamp(Number(custom.glassOpacity ?? OPACITY_DEFAULT), 0, 100);
+
+// Sayfa kartın tamamını çizdiği için ölçümler toplanır; açılırken ve her ayar değişiminde yeniden çizilir
+async function gorunumMessage(interaction) {
+  const view = await viewDataOf(interaction.guild, interaction.user.id);
+  const theme = resolveTheme(view.custom, view.roleColor);
+  const buffer = await buildProfileCard(interaction.user, view);
+  return {
+    components: [
+      ui.gorunumPage('profil.png', {
+        themeLabel: theme.label ?? 'Seçtiğin renk',
+        glass: Boolean(theme.glass),
+        opacity: opacityOf(view.custom),
+      }),
+    ],
+    files: [new AttachmentBuilder(buffer, { name: 'profil.png' })],
+    allowedMentions: { parse: [] },
+  };
+}
+
+async function openGorunum(interaction) {
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  return interaction.editReply(await gorunumMessage(interaction));
+}
+
+// Saydamlık adımı: panel koyulaşır ya da şeffaflaşır; hem düzenleme sayfası hem herkese açık kart yenilenir
+async function gorunumAction(interaction, neylem) {
+  const current = opacityOf(store.get(interaction.user.id));
+  const next = neylem === 'azalt' ? current - OPACITY_STEP : neylem === 'artir' ? current + OPACITY_STEP : OPACITY_DEFAULT;
+  store.set(interaction.user.id, { glassOpacity: clamp(Math.round(next), 0, 100) });
+  await interaction.update({ ...(await gorunumMessage(interaction)), attachments: [], flags: core.EPHEMERAL_CV2 });
+  return refreshLiveCard(interaction);
+}
+
 // Kapak görseli bağlantısı: https olmalı; botun kendi ağındaki adreslere (localhost, IP) istek atmasın diye bunlar reddedilir
+function isImageUrl(value) {
   try {
     const url = new URL(value);
     if (url.protocol !== 'https:') return false;
@@ -417,6 +455,10 @@ async function handleSettings(interaction) {
       return openKapak(interaction);
     case 'kapak-btn':
       return kapakAction(interaction, arg);
+    case 'gorunum':
+      return openGorunum(interaction);
+    case 'gorunum-btn':
+      return gorunumAction(interaction, arg);
     case 'sifirla':
       await interaction.deferUpdate();
       // Sahipli kozmetikler kalıcıdır; sıfırlama yalnızca kartın görünümünü varsayılana döndürür
@@ -429,6 +471,7 @@ async function handleSettings(interaction) {
         bannerZoom: 1,
         bannerX: 0,
         bannerY: 0,
+        glassOpacity: null,
         cover: 'yok',
         pronoun: null,
         links: {},
@@ -471,8 +514,13 @@ async function handleSettings(interaction) {
       const ctx = rozet.contextOfMember(interaction.guild, member, interaction.user.id, m);
       return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length));
     }
-    case 'magaza':
-      return respond(interaction, shopMessage(interaction, arg ?? 'cerceve'));
+    case 'magaza': {
+      const page = shopMessage(interaction, arg ?? 'cerceve');
+      // Sekme değişimi yazıldığı mesajı yerinde yeniler; mağaza düğmesiyle ilk açılışta yeni geçici mesaj yazılır
+      return arg
+        ? interaction.update({ components: [page], attachments: [], allowedMentions: { parse: [] } })
+        : respond(interaction, page);
+    }
     case 'al':
       return buy(interaction, arg, arg2);
     case 'giy':
