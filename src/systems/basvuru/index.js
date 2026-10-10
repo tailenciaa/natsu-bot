@@ -6,10 +6,10 @@
 // başvuru onaylanır, oryantasyonu kimin vereceği sorulur (oryantasyon sistemi); İptal Et ile reddedilir ve kanallar kilitlenir.
 // Yetkili ya da başvuran kanala diğerinden önce girerse kanalın sohbetine, başvurular kanalına ve karşı tarafın DM'ine
 // "bekleniyor" bildirimi gider.
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, isStaff, fetchTextChannel, userName } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const orientation = require('../oryantasyon');
 const config = require('./config');
@@ -22,18 +22,35 @@ const DAY = 24 * 60 * 60 * 1000;
 const submitting = new Set();
 const UNKNOWN_MESSAGE = 10008;
 
+// Durum panelinin güncel hali (bileşenler + kart eki). Kart çizilemezse metinli liste gösterilir.
+// Mesaj her güncellemede yeniden düzenlendiği için kart dosya adı eşsiz üretilir; eski ekler temizlenir
+async function statusPanelView(client, gid, page = 0) {
+  const apps = store.pendingApplications(gid);
+  const guild = client.guilds.cache.get(gid);
+  let card = null;
+  try {
+    card = await require('./card').buildStatusCard(apps, page, `basvuru-durum-${Date.now().toString(36)}.png`, (id) => userName(guild, id));
+  } catch (err) {
+    console.error('[basvuru] Durum paneli kartı çizilemedi, metinli panel gösterilecek:', err.message);
+  }
+  return {
+    components: [ui.statusPanel(apps, page, card?.name ?? null)],
+    files: card ? [new AttachmentBuilder(card.buffer, { name: card.name })] : [],
+  };
+}
+
 // Durum kanalındaki panel mesajını bekleyen başvurulara göre günceller; mesaj silinmişse yeniden gönderilir
 async function refreshStatusPanel(client, gid) {
   if (!config.channels.statusPanel) return;
   const guild = client.guilds.cache.get(gid);
   const channel = guild && (await fetchTextChannel(guild, config.channels.statusPanel));
   if (!channel) return;
-  const container = ui.statusPanel(store.pendingApplications(gid));
+  const view = await statusPanelView(client, gid);
   const messageId = store.statusPanelMessageId(gid);
   let missing = !messageId;
   if (messageId) {
     const edited = await channel.messages
-      .edit(messageId, { components: [container], allowedMentions: { parse: [] } })
+      .edit(messageId, { components: view.components, files: view.files, attachments: [], allowedMentions: { parse: [] } })
       .catch((err) => {
         if (err.code === UNKNOWN_MESSAGE) missing = true;
         else console.error('[basvuru] Durum paneli düzenlenemedi:', err.message);
@@ -43,7 +60,7 @@ async function refreshStatusPanel(client, gid) {
   }
   if (!missing) return;
   const message = await channel
-    .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } })
+    .send({ components: view.components, files: view.files, flags: core.CV2, allowedMentions: { parse: [] } })
     .catch((err) => console.error('[basvuru] Durum paneli gönderilemedi:', err.message));
   if (message) store.setStatusPanelMessageId(gid, message.id);
 }
@@ -183,13 +200,6 @@ async function handleReady(client) {
     for (const app of store.heldMeetings()) scheduleMeetingHold(guild, app);
   }
   refreshStatusPanel(client, guildId).catch((err) => console.error('[basvuru] Durum paneli güncellenemedi:', err.message));
-  // Kart çizilemezse metinli panel gönderilir
-  let card = null;
-  try {
-    card = await require('./card').buildPanelCard();
-  } catch (err) {
-    console.error('[basvuru] Panel kartı çizilemedi, metinli panel gönderilecek:', err.message);
-  }
   return syncPanel(client, {
     key: 'basvuru',
     label: 'Yetkili alım',
@@ -197,7 +207,6 @@ async function handleReady(client) {
     buttonId: ui.IDS.apply,
     build: ui.panel,
     image: '',
-    card,
   });
 }
 
@@ -977,7 +986,8 @@ async function handleReviewSubmit(interaction) {
 }
 
 async function handleStatusDetail(interaction) {
-  const id = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
+  // Kartlı panelde başvuru menüden seçilir (customId sabit), eski metinli panelde buton ID'sinin sonundadır
+  const id = interaction.isStringSelectMenu() ? interaction.values[0] : interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const app = store.getApplication(id);
   if (!app) return respond(interaction, core.alert('Bu başvuru artık mevcut değil.'), { ephemeral: true });
   await interaction.deferReply({ flags: core.EPHEMERAL });
@@ -996,6 +1006,13 @@ async function handleStatusDetail(interaction) {
     );
   }
   await interaction.editReply({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } });
+}
+
+// Durum panelindeki sayfa butonları: aynı mesaj yeni sayfanın kartıyla yeniden çizilir
+async function handleStatusPage(interaction) {
+  const page = Number(interaction.customId.split(':')[1]) || 0;
+  const view = await statusPanelView(interaction.client, interaction.guildId, page);
+  return interaction.update({ components: view.components, files: view.files, attachments: [], allowedMentions: { parse: [] } });
 }
 
 module.exports = {
