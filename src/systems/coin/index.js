@@ -22,7 +22,8 @@ const commands = [
     .setContexts(InteractionContextType.Guild),
 ];
 
-// /gunluk: bugün henüz alınmadıysa ödül yazar, seri ve bakiye bildirilir
+// /gunluk: bugün henüz alınmadıysa ödül yazar ve kart kanala düşer. Kazanç herkese açık duyurulur (ekonomi
+// görünür olsun diye); "bugün alındı" reddi ise gürültü olmasın diye sadece kişiye gösterilir.
 async function handleDaily(interaction) {
   const level = Math.max(levelFromXp(seviyeStore.xpOf('mesaj', interaction.user.id)), levelFromXp(seviyeStore.xpOf('ses', interaction.user.id)));
   const result = store.claim(interaction.user.id, level);
@@ -34,14 +35,18 @@ async function handleDaily(interaction) {
     );
   }
 
-  const { base } = config.daily;
   return respond(
     interaction,
-    core.alert(
-      `${ui.number(result.amount)} coin topladın.`,
-      `**${result.streak}. gün** serin. Taban **${base}**, seri ve seviye bonusu **${result.bonus}**, bakiyen **${ui.number(result.balance)}** coin.`,
-      'success',
-    ),
+    ui.daily({
+      user: interaction.user,
+      amount: result.amount,
+      streak: result.streak,
+      base: config.daily.base,
+      bonus: result.bonus,
+      balance: result.balance,
+      nextAt: store.dailyReadyAt(interaction.user.id),
+    }),
+    { ephemeral: false, allowedMentions: { users: [interaction.user.id] } },
   );
 }
 

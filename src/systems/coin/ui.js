@@ -19,7 +19,25 @@ const TUR_LABEL = { cerceve: 'Çerçeve', tema: 'Tema', kapak: 'Arka Plan', roze
 const number = (value) => Number(value).toLocaleString('tr-TR');
 const coin = (value) => chip(`${number(value)} coin`);
 
+// /gunluk kartı: ödülen tutar, seri, bonusun kaynağı ve yeni bakiye ayrı satırlarda. Kazanç herkese açık
+// duyurulur; üye kazandığını gösterir, okuyan da günlük girişini kaçırmak istemez.
+function daily({ user, amount, streak, base, bonus, balance, nextAt }) {
+  return receipt({
+    title: 'Günlük Ödül Toplandı',
+    sub: `<@${user.id}> **/gunluk** ile günlük ödülünü topladı. Art arda giriş serisi ve seviye bonusu kazanca eklendi; sıradaki ödül ${rel(nextAt)} içinde hazır olacak.`,
+    user,
+    pairs: [
+      ['Kazanç', coin(amount)],
+      ['Seri', chip(`${streak}. gün`)],
+      ['Taban Ödül', coin(base)],
+      ['Seri ve Seviye Bonusu', coin(bonus)],
+      ['Yeni Bakiye', coin(balance)],
+    ],
+  });
+}
+
 // Cüzdan kartı: bakiye, biriken, harcanan ve seri. Günlük ödülün ne zaman hazır olacağı da burada yazılır.
+function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now() }) {
   const container = page({
     title: 'Coin Cüzdanım',
     sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece** ve **saygınlık vermekten** birikir; harcadığın yer profil mağazasıdır.',
@@ -73,4 +91,4 @@ function orders({ user, items, page: current = 0 }) {
   return container.addSeparatorComponents(divider()).addActionRowComponents(new ActionRowBuilder().addComponents(buttons));
 }
 
-module.exports = { IDS, ORDER_PAGE_SIZE, number, wallet, orders };
+module.exports = { IDS, ORDER_PAGE_SIZE, TUR_LABEL, number, coin, daily, wallet, orders };

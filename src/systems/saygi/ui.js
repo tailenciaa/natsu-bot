@@ -1,12 +1,21 @@
-// Saygınlık mesajları: verme onayı, tüm zamanların tablosu ve haftalık kazanan duyurusu (ödül bölümüyle birlikte)
-const { alert, rows, chip, page } = require('../../core/ui');
+// Saygınlık mesajları: verme bildirimi, tüm zamanların tablosu ve haftalık kazanan duyurusu (ödül bölümüyle birlikte)
+const { receipt, rows, chip, page } = require('../../core/ui');
 
 const PODIUM = ['# ', '## ', '### '];
 const PAGE_SIZE = 15;
 
-// Verme onayı (herkese açık): kime +1 verildiğini ve hedefin yeni toplamını gösterir
+// Verme bildirimi (herkese açık): kimin kime verdiği ve hedefin yeni toplamı satırlarda; böylece kanalda
+// okuyan da saygınlığın nasıl kazanıldığını görür
 function given(giverId, targetId, newTotal) {
-  return alert(`<@${giverId}>, <@${targetId}> üyesine +1 saygınlık verdi.`, `<@${targetId}> şu an toplam **${newTotal}** saygınlığa sahip.`, 'success');
+  return receipt({
+    title: 'Saygınlık Verildi',
+    sub: `<@${giverId}> bir üyeye saygınlık verdi. Saygınlık **/saygi-ver** ile ya da mesajın içine **+rep @üye** yazarak verilir; haftanın birincisi ödül rolünü alır.`,
+    pairs: [
+      ['Kişi', `<@${targetId}>`],
+      ['Verilen', chip('+1 saygınlık')],
+      ['Yeni Toplam', chip(`${newTotal} saygınlık`)],
+    ],
+  });
 }
 
 // ranking: [{ userId, value }] büyükten küçüğe sıralı, tüm zamanlar toplamı
