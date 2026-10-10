@@ -389,7 +389,7 @@ function orientationResult(app) {
     return card(
       'Oryantasyon İptal Edildi',
       'Bu başvurunun oryantasyonu sonlandırıldı ve görüşme kanalları başvurana kilitlendi. İptal eden kişi, sebep ve varsa başvuru cezası bu mesajda yer alıyor.',
-      [`**İptal - Başvuru #${pad(app.number)}**\n${cancelHeadline(app)}`, `**Sebep**\n${quote(o.cancelReason)}${penaltyText(app)}`, `-# <t:${unix(o.finishedAt)}:F>`],
+      [`**İptal - Başvuru ${appNo(app)}**\n${cancelHeadline(app)}`, `**Sebep**\n${quote(o.cancelReason)}${penaltyText(app)}`, `-# <t:${unix(o.finishedAt)}:F>`],
       'danger',
     );
   }
@@ -718,7 +718,7 @@ function choicePanel(app) {
     card(
       'Oryantasyonu Kim Verecek?',
       'Başvuruyu uygun buldun. Oryantasyonu **kendin** verebilir ya da **oryantasyon yetkililerine** bırakabilirsin; bırakırsan başvurular kanalına bildirim düşer ve ilk üstlenen yetkili oryantasyonu verir.',
-      [`**Başvuru #${pad(app.number)}**\n<@${app.userId}> için oryantasyon aşamasına geçiliyor.\nSeçimi sadece <@${app.orientation.staffId}> (ya da yöneticiler) yapabilir.`],
+      [`**Başvuru ${appNo(app)}**\n<@${app.userId}> için oryantasyon aşamasına geçiliyor.\nSeçimi sadece <@${app.orientation.staffId}> (ya da yöneticiler) yapabilir.`],
       'success',
     ),
     new ActionRowBuilder().addComponents(
