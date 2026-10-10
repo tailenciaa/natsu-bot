@@ -123,7 +123,7 @@ async function handleSelect(interaction) {
   return interaction.editReply({ components: [ui.jumpLink(category, thread)], flags: core.CV2 });
 }
 
-// Log girdisindeki "Detaylı Bilgi" butonu: kaydedilen ayrıntıları sadece basana gösterir
+// Log girdisindeki "Detaylı Bilgi" butonu: kaydedilen ayrıntılar log başlığında herkese açık yazılır
 async function handleDetail(interaction) {
   const meta = store.getDetail(interaction.message.id);
   if (!meta) {

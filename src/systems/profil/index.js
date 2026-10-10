@@ -375,7 +375,7 @@ async function buy(interaction, tur, key) {
   coinStore.recordPurchase(interaction.user.id, { tur, key, name: item.name, price: item.price });
 
   // Kapağında kendi görseli olan üye satın aldığı arka planı kartta göremez: nedenini hemen söyle
-  const uyarı = shop.wear === 'cover' && custom.banner ? 'Kartında kendi görselin durduğu için arka plan şimdilik görünmez; kapak düzenleyiciden görseli kaldırabilirsin.' : null;
+  const uyarı = shop.wear === 'cover' && custom.banner ? 'Kartında kendi görseli durduğu için alınan arka plan şimdilik görünmez; kapak düzenleyiciden görsel kaldırılabilir.' : null;
 
   // Mağaza sayfası yerinde yenilenir: bakiye ve düğme durumu hemen doğru görünsün
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
@@ -521,7 +521,7 @@ async function handleSettings(interaction) {
     }
     case 'magaza': {
       const page = shopMessage(interaction, arg ?? 'cerceve');
-      // Sekme değişimi yazıldığı mesajı yerinde yeniler; mağaza düğmesiyle ilk açılışta yeni geçici mesaj yazılır
+      // Sekme değişimi yazıldığı mesajı yerinde yeniler; mağaza düğmesiyle ilk açılışta kanalda herkese açık mesaj yazılır
       return arg
         ? interaction.update({ components: [page], attachments: [], allowedMentions: { parse: [] } })
         : respond(interaction, page);

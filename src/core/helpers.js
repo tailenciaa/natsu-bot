@@ -6,6 +6,8 @@ const ui = require('./ui');
 // Etkileşimin durumuna göre doğru şekilde CV2 cevap verir.
 // EV KURALI: botun verdiği her cevap HERKESE AÇIKTIR. Kişiye özel (gizli) mesaj yalnızca hata/reddetme için
 // kullanılır ve o çağrılarda `{ ephemeral: true }` açıkça yazılır. `replyError` zaten gizlidir.
+// Dikkat: görünürlük defer anında kilitlenir. `deferReply({ flags: core.CV2 })` ile açılmış bir akışın sonundaki
+// `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür.
 // Butonlarda deferUpdate kullanıldığı için orijinal mesajın üzerine yazmamak adına followUp yapılır.
 // Dikkat: deferReply edilmiş komut ya da deferUpdate edilmiş modal gönderimi (butona bağlı olmayan, deferred) ise cevap
 // editReply ile verilir; yani modalın bağlı olduğu mesajı (varsa) cevabın yeni haliyle DEĞİŞTİRİR. Hata/onay bildirimini
