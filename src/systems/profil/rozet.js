@@ -2,6 +2,7 @@
 // kayıtlardan türetilir; ayrı bir "rozet kazandı" kaydı yoktur. Böylece özellik açılmadan önceki etkinlikler de
 // sayılır ve bir kayıt bozulsa bile rozetler yeniden hesaplanabilir.
 // Her rozet sayısal bir değere ulaşınca kazanılır: goal 1 olanlar koşullu (rol, sahip olma), diğerleri hedefli.
+// `gorev: true` olanlar uzun vadeli hedeflerdir ve config.js'teki karşılığı doluysa kazanılınca rol ödülü de verir.
 const aktifStore = require('../aktif/store');
 const basvuruConfig = require('../basvuru/config');
 const coinStore = require('../coin/store');
@@ -32,12 +33,23 @@ const BADGES = [
   { key: 'koleksiyoncu', label: 'Koleksiyoncu', note: 'Üç kozmetik sahibi', color: '#a3e635', goal: 3, value: (c) => c.owned },
   { key: 'birikim', label: 'Birikim', note: 'İki bin beş yüz coin kazandı', color: '#fbbf24', goal: 2500, value: (c) => c.earned },
   { key: 'taninmis', label: 'Tanınmış', note: 'Yüz profil ziyareti', color: '#60a5fa', goal: 100, value: (c) => c.visits },
+  // ── Görev rozetleri ─────────────────────────────────────────────────────────
+  // Uzun vadeli hedefler: config.js'te karşılığına bir rol ID'si yazılanlar kazanılınca bot üyeye o rolü de verir.
+  { key: 'sohbet-efsanesi', label: 'Sohbet Efsanesi', note: 'Yirmi beş bin mesaj', color: '#38c6e8', goal: 25000, value: (c) => c.messageCount, gorev: true },
+  { key: 'ses-efsanesi', label: 'Ses Efsanesi', note: 'Beş yüz saat sesli sohbet', color: '#5be08a', goal: 500, value: (c) => c.voiceHours, gorev: true },
+  { key: 'yayin-efsanesi', label: 'Yayın Efsanesi', note: 'Yüz saat ekran paylaşımı', color: '#e879f9', goal: 100, value: (c) => c.streamHours, gorev: true },
+  { key: 'iki-yuzluk', label: 'İki Yüzlük', note: 'Hem mesaj hem ses seviyesi 50', color: '#ff9b5e', goal: 50, value: (c) => c.ciftLevel, gorev: true },
+  { key: 'sadakat', label: 'Sadakat Nişanı', note: 'Üç yıl boyunca sunucuda kalmak', color: '#f4c95d', goal: 1095, value: (c) => c.days, gorev: true },
+  { key: 'hazine', label: 'Hazine Avcısı', note: 'Yirmi bin coin kazandı', color: '#b57bff', goal: 20000, value: (c) => c.earned, gorev: true },
+  { key: 'muzayede', label: 'Koleksiyon Efsanesi', note: 'Sekiz kozmetik sahibi', color: '#3ee0a1', goal: 8, value: (c) => c.owned, gorev: true },
 ];
 
 // Kartın ve rozet sayfasının ortak ölçüleri: her şey tek bir bağlamdan hesaplanır
-function context({ guild, member, userId, messageCount = 0, streamSeconds = 0, visits = 0 }) {
+function context({ guild, member, userId, messageCount = 0, voiceSeconds = 0, streamSeconds = 0, visits = 0 }) {
   const roles = member?.roles?.cache;
   const staffIds = [basvuruConfig.roles.accept, basvuruConfig.roles.reviewer].filter(Boolean);
+  const mesajLevel = levelFromXp(seviyeStore.xpOf('mesaj', userId));
+  const sesLevel = levelFromXp(seviyeStore.xpOf('ses', userId));
   return {
     owner: guild?.ownerId === userId,
     staff: roles ? staffIds.some((id) => roles.has(id)) : false,
@@ -46,8 +58,10 @@ function context({ guild, member, userId, messageCount = 0, streamSeconds = 0, v
     weekly: ['mesaj', 'ses', 'yayin'].some((kind) => aktifStore.holder(kind) === userId),
     days: member?.joinedTimestamp ? Math.floor((Date.now() - member.joinedTimestamp) / DAY) : 0,
     messageCount,
-    mesajLevel: levelFromXp(seviyeStore.xpOf('mesaj', userId)),
-    sesLevel: levelFromXp(seviyeStore.xpOf('ses', userId)),
+    mesajLevel,
+    sesLevel,
+    ciftLevel: Math.min(mesajLevel, sesLevel),
+    voiceHours: Math.floor(voiceSeconds / 3600),
     streamHours: Math.floor(streamSeconds / 3600),
     rep: saygiStore.allTotals()[userId] ?? 0,
     streak: coinStore.streak(userId),
