@@ -242,7 +242,7 @@ function drawBadges(ctx, rows, y) {
       ctx.stroke();
 
       const iconX = b.icon ? x + 20 : x + 15;
-      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 8 : 4, b.icon ? b.color : b.color);
+      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 8 : 4, b.color);
       ctx.fillStyle = mix(b.color, '#ffffff', 0.3);
       ctx.font = font(500, 14);
       ctx.textAlign = 'left';
