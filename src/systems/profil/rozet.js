@@ -81,4 +81,25 @@ const progress = (ctx) =>
     return { ...b, value, done: value >= b.goal };
   });
 
-module.exports = { BADGES, context, earned, progress };
+// Kartın, rozet sayfasının ve görev rolü eşitlemesinin ortak ölçüm kaynağı: haritalar bir kez alınıp birçok üye
+// için yeniden kullanılır
+function measures() {
+  return {
+    messages: siralamaStore.totals('messages', null),
+    voice: siralamaStore.totals('voice', null),
+    stream: siralamaStore.totals('stream', null),
+  };
+}
+
+const contextOfMember = (guild, member, userId, m) =>
+  context({
+    guild,
+    member,
+    userId,
+    messageCount: m.messages.get(userId) ?? 0,
+    voiceSeconds: m.voice.get(userId) ?? 0,
+    streamSeconds: m.stream.get(userId) ?? 0,
+    visits: profileStore.visits(userId).count,
+  });
+
+module.exports = { BADGES, context, contextOfMember, measures, earned, progress };

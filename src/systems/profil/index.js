@@ -336,14 +336,14 @@ async function buy(interaction, tur, key) {
 
   // Kapağında kendi görseli olan üye satın aldığı arka planı kartta göremez: nedenini hemen söyle
   const uyarı = shop.wear === 'cover' && custom.banner ? '\nKartında kendi görselin durduğu için arka plan şimdilik görünmez; kapak düzenleyiciden görseli kaldırabilirsin.' : '';
-  const durum = shop.wear ? 'kartına uygulandı.' : 'rozetin kartına eklendi.';
+  const durum = shop.wear ? 'kartına uygulandı' : 'kartına eklendi';
 
   // Mağaza sayfası yerinde yenilenir: bakiye ve düğme durumu hemen doğru görünsün
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
   await respond(
     interaction,
     core.alert(
-      `${item.name} satın alındı ve ${durum}`,
+      `${item.name} satın alındı ve ${durum}.`,
       `**${number(item.price)}** coin düşüldü, bakiyen **${number(coinStore.balance(interaction.user.id))}** coin.${uyarı}`,
       'success',
     ),
@@ -352,13 +352,15 @@ async function buy(interaction, tur, key) {
   return refreshLiveCard(interaction);
 }
 
-// Sahip olunan ürünü giyme (çerçevesiz hâl de bir seçenektir, ücretsiz sayılır)
+// Sahip olunan ürünü giyme (çerçevesiz hâl ve "Temadan" kapak ücretsiz bir seçenektir; rozetlerin giyme adımı yoktur)
 async function wear(interaction, tur, key) {
+  const shop = SHOP[tur];
   const item = catalog(tur).find((i) => i.key === key);
-  if (!item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
+  if (!shop || !item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
+  if (!shop.wear) return replyError(interaction, 'Bu ürünü giymen gerekmiyor.', 'Satın aldığın rozetler kartında kendiliğinden görünür.');
   if (!ownsItem(tur, store.get(interaction.user.id), key)) return replyError(interaction, 'Önce satın alman gerekiyor.', 'Mağaza sayfasından bakiyeni görebilirsin.');
 
-  store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
+  store.set(interaction.user.id, { [shop.wear]: key });
   await interaction.update({ components: [shopMessage(interaction, tur)], allowedMentions: { parse: [] } });
   await respond(interaction, core.alert('Kartın güncellendi.', `${item.name} görünümü seçildi; profil kartın da hemen böyle çizildi.`), { followUp: true });
   return refreshLiveCard(interaction);
