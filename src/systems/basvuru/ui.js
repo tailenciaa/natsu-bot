@@ -169,24 +169,24 @@ function applicationNotice(app, applicantUser) {
         ? ` <@&${app.acceptRoleId}> rolü verildi.`
         : ' **Rol verilemedi,** elle verilmesi gerekiyor.'
       : '';
-    status = `**Durum: Onaylandı**\n<@${app.reviewedBy}> onayladı.${role}`;
+    status = `${durum('Onaylandı')}\n<@${app.reviewedBy}> onayladı.${role}`;
     color = colors.success;
   } else if (app.status === 'rejected') {
     status = app.reviewedBy
-      ? `**Durum: Reddedildi**\n<@${app.reviewedBy}> başvuruyu reddetti.`
-      : '**Durum: Otomatik olarak reddedildi**\nGörüşme sırasında yaşanan bir sorun yüzünden başvuru kendiliğinden reddedildi.';
+      ? `${durum('Reddedildi')}\n<@${app.reviewedBy}> başvuruyu reddetti.`
+      : `${durum('Otomatik Reddedildi')}\nGörüşme sırasında yaşanan bir sorun yüzünden başvuru kendiliğinden reddedildi.`;
     color = colors.danger;
   } else if (app.meetingBy) {
     const where = app.meetingChannelId ? `, <#${app.meetingChannelId}> kanalında bekliyor` : '';
     status =
-      `**Durum: Görüşme bekleniyor**\n<@${app.meetingBy}> başvuranı görüşmeye çağırdı${where}.\n` +
+      `${durum('Görüşme Bekleniyor')}\n<@${app.meetingBy}> başvuranı görüşmeye çağırdı${where}.\n` +
       'Başvuruyla **o ilgileniyor,** kararı da o verecek.';
     color = colors.primary;
   } else if (app.onHold) {
-    status = `**Durum: Görüşme beklemede**\n<@${app.onHold.by}> görüşmeyi ${app.onHold.auto ? 'kanaldan uzun süre ayrıldığı için otomatik olarak ' : ''}beklemeye aldı. **Görüşmeye Çağır** butonuna ilk basan yetkili başvuruyu üstlenir.`;
+    status = `${durum('Görüşme Beklemede')}\n<@${app.onHold.by}> görüşmeyi ${app.onHold.auto ? 'kanaldan uzun süre ayrıldığı için otomatik olarak ' : ''}beklemeye aldı. **Görüşmeye Çağır** butonuna ilk basan yetkili başvuruyu üstlenir.`;
     color = colors.warning;
   } else {
-    status = '**Durum: İnceleniyor**\nKarar verildiğinde sonuç başvurana **DM ile** iletilir.';
+    status = `${durum('İnceleniyor')}\nKarar verildiğinde sonuç başvurana **DM ile** iletilir.`;
     color = colors.warning;
   }
   if (app.note) status += `\n${quote(app.note)}`;
