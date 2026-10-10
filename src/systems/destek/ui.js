@@ -19,7 +19,7 @@ const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
 
-const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, field, fields, stamp, pageInfo, pagerRow } = core;
+const { colors, text, divider, pad, messageUrl, unix, quote, shorten, page, alert, field, fields, stamp, pageInfo, pagerRow } = core;
 
 const IDS = {
   create: 'destek:olustur',
@@ -326,39 +326,58 @@ function closeDm(ticketNumber, guildName, rating) {
   return container;
 }
 
-// Durum kanalındaki canlı panel: açık tüm talepleri tek mesajda listeler; durum değiştikçe düzenlenir
-function statusPanel(tickets) {
+// Durum kanalındaki canlı panel: açık tüm talepleri tek mesajda listeler; durum değiştikçe düzenlenir.
+// cardName: çizim kartı ekteyse başlık/açıklama ve talep satırları kartta olduğu için mesajda tekrar yazılmaz;
+// kartın altında menüden talep seçmeye ve sayfa gezmeye yarayan kontroller kalır
+function statusPanel(tickets, page = 0, cardName = null) {
   const now = Math.floor(Date.now() / 1000);
-  const claimLabel = (t) => (t.claimedBy ? `<@${t.claimedBy}> üstlendi` : 'Üstlenilmedi');
-  const container = new ContainerBuilder().addTextDisplayComponents(
-    text(
-      '## Açık Destek Talepleri\nDestek sistemindeki tüm açık talepler ve anlık durumları burada listelenir; talep durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.',
-    ),
-  );
-  if (tickets.length) {
-    for (const t of tickets) {
-      container
-        .addSeparatorComponents(divider())
-        .addSectionComponents(
-          new SectionBuilder()
-            .addTextDisplayComponents(text(`**#${pad(t.number)}** · <@${t.ownerId}> · ${claimLabel(t)}`))
-            .setButtonAccessory(
-              new ButtonBuilder()
-                .setCustomId(`${IDS.statusDetail}:${t.threadId}`)
-                .setLabel('Detay')
-                .setStyle(ButtonStyle.Secondary),
-            ),
-        );
-    }
+  const pageCount = Math.max(1, Math.ceil(tickets.length / STATUS_PAGE_SIZE));
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  const shown = tickets.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE);
+  const nav = (target, slot) => `${IDS.statusPage}:${target}:${slot}`;
+
+  const container = new ContainerBuilder();
+  if (cardName) {
+    container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${cardName}`)));
+    container.addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
   } else {
-    container.addSeparatorComponents(divider()).addTextDisplayComponents(text('Şu an açık destek talebi yok.'));
+    container.addTextDisplayComponents(text(`## ${STATUS_TITLE}\n${STATUS_SUB}`));
+    for (const t of shown) {
+      container.addSeparatorComponents(divider()).addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(text(`**#${pad(t.number)}** · <@${t.ownerId}> · ${ticketState(t).line}`))
+          .setButtonAccessory(new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${t.threadId}`).setLabel('Detay').setStyle(ButtonStyle.Secondary)),
+      );
+    }
+    if (!shown.length) container.addSeparatorComponents(divider()).addTextDisplayComponents(text('Şu an açık destek talebi yok.'));
+    container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, tickets.length)}\n-# Son güncelleme: <t:${now}:R>`));
   }
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
+
+  // Menü ve sayfa butonları her zaman görünür; tek sayfada butonlar pasif kalır
+  if (shown.length) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.statusDetail}:menu`)
+          .setPlaceholder('Ayrıntısını görmek istediğin talebi seç')
+          .addOptions(
+            shown.map((t) =>
+              new StringSelectMenuOptionBuilder().setValue(t.threadId).setLabel(`#${pad(t.number)}`).setDescription(shorten(t.reason, 100)),
+            ),
+          ),
+      ),
+    );
+  }
+  container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
 }
 
 module.exports = {
   IDS,
+  STATUS_TITLE,
+  STATUS_SUB,
+  STATUS_PAGE_SIZE,
+  ticketState,
   panel,
   statusPanel,
   ticketModal,
