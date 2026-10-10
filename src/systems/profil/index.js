@@ -144,6 +144,64 @@ async function refreshLiveCard(interaction) {
 
 const COLOR = /^#?([0-9a-fA-F]{6})$/;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+// ── Kapak düzenleyici ────────────────────────────────────────────────────────
+
+// Yalnızca kapağı çizmek için gerekenler: tema/renk seçimi ve üyenin rol rengi (pahalı ölçümler toplanmaz)
+async function headerViewOf(guild, userId) {
+  const member = await guild.members.fetch(userId).catch(() => null);
+  return { custom: store.get(userId), roleColor: member?.displayColor ?? 0 };
+}
+
+// Sınırlar card.js'teki okuma ile aynı: görsel en fazla 3 kat büyütülür, kaydırma taşan alanla ölçülür
+const ZOOM_STEP = 0.1;
+const PAN_STEP = 0.1;
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const round2 = (value) => Math.round(value * 100) / 100;
+const kapakValues = (custom) => ({
+  zoom: clamp(Number(custom.bannerZoom) || 1, 1, 3),
+  x: clamp(Number(custom.bannerX) || 0, -1, 1),
+  y: clamp(Number(custom.bannerY) || 0, -1, 1),
+});
+
+async function kapakPageMessage(interaction) {
+  const custom = store.get(interaction.user.id);
+  const { zoom } = kapakValues(custom);
+  const view = await headerViewOf(interaction.guild, interaction.user.id);
+  const buffer = await buildHeaderPreview(view, `%${Math.round(zoom * 100)}`);
+  return {
+    components: [ui.kapakPage('kapak.png', custom)],
+    files: [new AttachmentBuilder(buffer, { name: 'kapak.png' })],
+    allowedMentions: { parse: [] },
+  };
+}
+
+async function openKapak(interaction) {
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  return interaction.editReply(await kapakPageMessage(interaction));
+}
+
+// Düğmeden gelen eylem: değer güncellenir, hem düzenleyici hem herkese açık kart yeniden çizilir
+async function kapakAction(interaction, neylem) {
+  const custom = store.get(interaction.user.id);
+  if (neylem === 'gorsel') return interaction.showModal(ui.bannerModal(custom));
+
+  const { zoom, x, y } = kapakValues(custom);
+  const patch = { bannerZoom: zoom, bannerX: x, bannerY: y };
+  if (neylem === 'buyut') patch.bannerZoom = round2(clamp(zoom + ZOOM_STEP, 1, 3));
+  else if (neylem === 'kucult') patch.bannerZoom = round2(clamp(zoom - ZOOM_STEP, 1, 3));
+  else if (neylem === 'saga') patch.bannerX = round2(clamp(x + PAN_STEP, -1, 1));
+  else if (neylem === 'sola') patch.bannerX = round2(clamp(x - PAN_STEP, -1, 1));
+  else if (neylem === 'asagi') patch.bannerY = round2(clamp(y + PAN_STEP, -1, 1));
+  else if (neylem === 'yukari') patch.bannerY = round2(clamp(y - PAN_STEP, -1, 1));
+  else if (neylem === 'sifirla') Object.assign(patch, { bannerZoom: 1, bannerX: 0, bannerY: 0 });
+  else if (neylem === 'kaldir') Object.assign(patch, { banner: null, bannerZoom: 1, bannerX: 0, bannerY: 0 });
+
+  store.set(interaction.user.id, patch);
+  await interaction.update({ ...(await kapakPageMessage(interaction)), attachments: [], flags: core.EPHEMERAL_CV2 });
+  return refreshLiveCard(interaction);
+}
+
 // Kapak görseli bağlantısı: https olmalı; botun kendi ağındaki adreslere (localhost, IP) istek atmasın diye bunlar reddedilir
 function isImageUrl(value) {
   try {
