@@ -12,7 +12,7 @@ const {
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { divider, colors, page, text } = require('../../core/ui');
+const { divider, colors, page, text, rows, chip, pills, stamp } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -47,8 +47,13 @@ function controlPanel(room, channel, state = {}) {
     sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini bu panelden yönetebilir; odadaki üyeleri atabilir, yasaklayabilir ya da odanın sahipliğini başka birine devredebilirsin.',
     accent: locked ? colors.danger : colors.primary,
     blocks: [
-      `**Oda Bilgisi**\n**Sahip:** <@${room.ownerId}>\n**Kişi limiti:** ${channel.userLimit || 'Sınırsız'}\n**Durum:** ${locked ? 'Kilitli' : 'Açık'}, ${hidden ? 'gizli' : 'görünür'}`,
+      rows([
+        ['Sahip', `<@${room.ownerId}>`],
+        ['Kişi Limiti', chip(channel.userLimit || 'Sınırsız')],
+        ['Durum', pills([['Kilit', locked ? 'Kilitli' : 'Açık'], ['Görünürlük', hidden ? 'Gizli' : 'Görünür']])],
+      ]),
       'Bu paneli sadece **oda sahibi** kullanabilir.',
+      stamp(room.createdAt),
     ],
   })
     .addSeparatorComponents(divider())
