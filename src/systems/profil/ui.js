@@ -191,7 +191,7 @@ function gorunumPage(imageName, { themeLabel, glass, opacity }) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       text(
-        '## Kart Görünümü\nKartındaki kutular temasına göre düz ya da buzlu cam panel olarak çizilir. Cam bir tema seçtiğinde saydamlığı artırıp azaltarak panellerin kapağın üzerinden ne kadar okunduğunu kendin ayarlayabilirsin.',
+        '## Kart Görünümü\nKartındaki kutular temasına göre düz ya da buzlu cam panel olarak çizilir. Cam bir temada saydamlığı artırıp azaltarak kutuların kapak rengiyle ne kadar iç içe görüneceğini kendin ayarlayabilirsin.',
       ),
     )
     .addMediaGalleryComponents(
