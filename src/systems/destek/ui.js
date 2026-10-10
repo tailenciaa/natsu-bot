@@ -336,7 +336,7 @@ function statusPage(tickets, page = 0) {
 
 // Durum kanalındaki canlı panel: açık tüm talepleri tek mesajda listeler; durum değiştikçe düzenlenir.
 // cardName: çizim kartı ekteyse başlık/açıklama ve talep satırları kartta olduğu için mesajda tekrar yazılmaz;
-// kartın altında menüden talep seçmeye ve sayfa gezmeye yarayan kontroller kalır
+// kartın altında talep numarası butonları ve sayfa gezme kontrolleri kalır
 function statusPanel(tickets, page = 0, cardName = null) {
   const now = Math.floor(Date.now() / 1000);
   const { current, pageCount, shown } = statusPage(tickets, page);
@@ -345,7 +345,9 @@ function statusPanel(tickets, page = 0, cardName = null) {
   const container = new ContainerBuilder();
   if (cardName) {
     container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${cardName}`)));
-    container.addTextDisplayComponents(text(`-# Son güncelleme: <t:${now}:R>`));
+    container.addTextDisplayComponents(
+      text(`-# Son güncelleme: <t:${now}:R>${shown.length ? ' · Ayrıntı için talep numarası butonuna bas' : ''}`),
+    );
   } else {
     container.addTextDisplayComponents(text(`## ${STATUS_TITLE}\n${STATUS_SUB}`));
     for (const t of shown) {
@@ -362,15 +364,13 @@ function statusPanel(tickets, page = 0, cardName = null) {
   // Kart satırlarında buton taşınamadığı için detay butonları kartın altına ayrı satıra konur. Aynı kaydı tekrar
   // seçince hiçbir etkileşim gitmediği için menü değil buton kullanılır; sayfa butonları her zaman görünür
   if (cardName && shown.length) {
-    container
-      .addTextDisplayComponents(text('-# Ayrıntısını görmek istediğin talebin numarasına bas.'))
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(
-          shown.map((t) =>
-            new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${t.threadId}`).setLabel(`#${pad(t.number)}`).setStyle(ButtonStyle.Secondary),
-          ),
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        shown.map((t) =>
+          new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${t.threadId}`).setLabel(`#${pad(t.number)}`).setStyle(ButtonStyle.Secondary),
         ),
-      );
+      ),
+    );
   }
   container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
