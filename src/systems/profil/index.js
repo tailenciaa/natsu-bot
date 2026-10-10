@@ -1,8 +1,8 @@
 // Profil: /profil ile açılır, sunucu üzerindeki her şeyin tek görsel kartta göründüğü kişisel profil. Sahibi kendi
-// profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak düzenleyici, tema, vitrin) kartı canlı olarak
-// özelleştirir; her değişiklikte kart yeniden çizilip aynı mesaj güncellenir. Rozetler etkinlikten türetilir,
-// uzun vadeli görev rozetlerinin rol ödülü vardır (gorev.js); mağazadan alınan kozmetikler (çerçeve, tema, arka
-// plan, sergi rozeti) kartın kenarına, kapağına ve rozet şeridine çizilir.
+// profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak düzenleyici, panel görünümü, tema, vitrin) kartı
+// canlı olarak özelleştirir; her değişiklikte kart yeniden çizilip aynı mesaj güncellenir. Rozetler etkinlikten
+// türetilir, uzun vadeli görev rozetlerinin rol ödülü vardır (gorev.js); mağazadan alınan kozmetikler (çerçeve, tema,
+// arka plan, sergi rozeti) kartın kenarına, kapağına ve rozet şeridine çizilir.
 const { AttachmentBuilder, ButtonStyle, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
