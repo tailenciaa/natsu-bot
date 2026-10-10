@@ -358,21 +358,18 @@ function statusPanel(tickets, page = 0, cardName = null) {
     container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, tickets.length)}\n-# Son güncelleme: <t:${now}:R>`));
   }
 
-  // Detay menüsü yalnız kartlı sürümde var: çizim satırında buton taşınamaz, metinli yedekte her satırın kendi butonu var.
-  // Sayfa butonları her zaman görünür; tek sayfada pasif kalır
+  // Kart satırlarında buton taşınamadığı için detay butonları kartın altına ayrı satıra konur. Aynı kaydı tekrar
+  // seçince hiçbir etkileşim gitmediği için menü değil buton kullanılır; sayfa butonları her zaman görünür
   if (cardName && shown.length) {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId(`${IDS.statusDetail}:menu`)
-          .setPlaceholder('Ayrıntısını görmek istediğin talebi seç')
-          .addOptions(
-            shown.map((t) =>
-              new StringSelectMenuOptionBuilder().setValue(t.threadId).setLabel(`#${pad(t.number)}`).setDescription(shorten(t.reason, 100)),
-            ),
+    container
+      .addTextDisplayComponents(text('-# Ayrıntısını görmek istediğin talebin numarasına bas.'))
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(
+          shown.map((t) =>
+            new ButtonBuilder().setCustomId(`${IDS.statusDetail}:${t.threadId}`).setLabel(`#${pad(t.number)}`).setStyle(ButtonStyle.Secondary),
           ),
-      ),
-    );
+        ),
+      );
   }
   container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
   return container;
