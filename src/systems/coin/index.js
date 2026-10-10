@@ -31,8 +31,9 @@ async function handleDaily(interaction) {
   if (!result.ok) {
     return respond(
       interaction,
-      core.alert('Günlük ödülünü bugün zaten topladın.', `Sıradaki ödül ${core.rel(result.nextAt)} içinde hazır oluyor.`),,
-      { ephemeral: true });
+      core.alert('Günlük ödülünü bugün zaten topladın.', `Sıradaki ödül ${core.rel(result.nextAt)} içinde hazır oluyor.`),
+      { ephemeral: true },
+    );
   }
 
   return respond(
