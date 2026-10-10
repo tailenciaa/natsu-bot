@@ -86,7 +86,6 @@ async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {
       roleColor: member?.displayColor ?? 0,
       roleName: role?.name ?? null,
       roleDotColor: role?.color ?? 0,
-      nextMilestone: config.milestones.find((m) => m > level) ?? null,
     });
     await channel.send({
       content: `<@${user.id}>`,

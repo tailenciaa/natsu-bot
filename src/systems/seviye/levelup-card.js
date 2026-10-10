@@ -24,14 +24,14 @@ function panel(ctx, x, y, w, h) {
   ctx.stroke();
 }
 
-function label(ctx, text, x, y, color) {
-  ctx.textAlign = 'left';
+function label(ctx, text, x, y, color, align = 'left') {
+  ctx.textAlign = align;
   ctx.fillStyle = color;
   ctx.font = `700 14px ${FONT}`;
   ctx.fillText(text, x, y);
 }
 
-// view: { kind, from, to, custom (profil kaydı), roleColor (üyenin rol rengi), roleName, roleDotColor, nextMilestone }
+// view: { kind, from, to, custom (profil kaydı), roleColor (üyenin rol rengi), roleName, roleDotColor }
 async function buildLevelUpCard(user, view) {
   const canvas = canvasLib().createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
@@ -49,34 +49,39 @@ async function buildLevelUpCard(user, view) {
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fitText(ctx, truncate(user.username, 24), WIDTH - x - 50), x, 118);
 
-  // Eski -> yeni seviye
-  const levelW = 330;
+  // Eski -> yeni seviye. Rol kazanılmayan seviyelerde sağ kutu olmadığı için seviye kutusu satırı doldurur.
+  const hasRole = Boolean(view.roleName);
+  const levelW = hasRole ? 330 : WIDTH - x - 40;
+  const newX = hasRole ? x + 196 : x + levelW - 26;
+  const newAlign = hasRole ? 'left' : 'right';
   panel(ctx, x, 150, levelW, 108);
   label(ctx, 'ESKİ SEVİYE', x + 26, 182, muted);
-  label(ctx, 'YENİ SEVİYE', x + 196, 182, accent);
+  label(ctx, 'YENİ SEVİYE', newX, 182, accent, newAlign);
+  ctx.textAlign = newAlign;
   ctx.fillStyle = '#ffffff';
   ctx.font = `700 32px ${FONT}`;
   ctx.fillText(`LVL ${view.from}`, x + 26, 230);
   ctx.fillStyle = accent;
-  ctx.fillText(`LVL ${view.to}`, x + 196, 230);
+  ctx.fillText(`LVL ${view.to}`, newX, 230);
   // Ok işareti yazı tipinde yok; çizgiyle çizilir
+  const cx = x + levelW / 2;
   ctx.strokeStyle = muted;
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.beginPath();
-  ctx.moveTo(x + 150, 218);
-  ctx.lineTo(x + 172, 218);
-  ctx.moveTo(x + 165, 210);
-  ctx.lineTo(x + 173, 218);
-  ctx.lineTo(x + 165, 226);
+  ctx.moveTo(cx - 15, 218);
+  ctx.lineTo(cx + 7, 218);
+  ctx.moveTo(cx - 6, 210);
+  ctx.lineTo(cx + 8, 218);
+  ctx.lineTo(cx - 6, 226);
   ctx.stroke();
 
-  // Kazanılan rol (rol tanımlı değilse sıradaki hedef gösterilir)
-  const roleX = x + levelW + 20;
-  const roleW = WIDTH - roleX - 40;
-  panel(ctx, roleX, 150, roleW, 108);
-  if (view.roleName) {
+  // Yalnız kazanılan rol gösterilir; yeni rol yoksa kutu çizilmez
+  if (hasRole) {
+    const roleX = x + levelW + 20;
+    const roleW = WIDTH - roleX - 40;
+    panel(ctx, roleX, 150, roleW, 108);
     label(ctx, 'KAZANILAN ROL', roleX + 26, 182, mix(accent, '#ffffff', 0.45));
     const dot = view.roleDotColor ? hexColor(view.roleDotColor) : accent;
     ctx.fillStyle = dot;
@@ -90,12 +95,6 @@ async function buildLevelUpCard(user, view) {
     ctx.font = `700 ${size}px ${FONT}`;
     while (size > 16 && ctx.measureText(roleText).width > roleW - 84) ctx.font = `700 ${--size}px ${FONT}`;
     ctx.fillText(fitText(ctx, roleText, roleW - 84), roleX + 58, 233);
-  } else {
-    label(ctx, 'SIRADAKİ ROL', roleX + 26, 182, muted);
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'left';
-    ctx.font = `700 24px ${FONT}`;
-    ctx.fillText(view.nextMilestone ? `Seviye ${view.nextMilestone}` : 'Tamamlandı', roleX + 26, 233);
   }
 
   return canvas.toBuffer('image/png');
