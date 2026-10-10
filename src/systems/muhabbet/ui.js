@@ -126,7 +126,7 @@ function endedCard(room, reason) {
   return page({
     title: 'Muhabbetin Bitti',
     sub: 'Muhabbet odan kapatıldı ve iki kanalı silindi; yazışmalar odayla birlikte kalktı. Yeni bir muhabbet için sıra panelinden tekrar sıraya girebilirsin.',
-    accent: colors.primary,
+    accent: colors.success,
     blocks: [
       rows([
         ['Oda', roomNo(room)],
