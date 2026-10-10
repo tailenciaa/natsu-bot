@@ -986,8 +986,8 @@ async function handleReviewSubmit(interaction) {
   if (!sent) {
     await respond(
       interaction,
-      core.alert('Başvurana DM gönderilemedi.', "DM'si kapalı olabilir, sonucu kendisine ayrıca iletmen gerekiyor.", 'warning'),
-    );
+      core.alert('Başvurana DM gönderilemedi.', "DM'si kapalı olabilir, sonucu kendisine ayrıca iletmen gerekiyor.", 'warning'),,
+      { ephemeral: true });
   }
 }
 

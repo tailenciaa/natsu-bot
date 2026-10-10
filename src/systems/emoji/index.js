@@ -203,7 +203,7 @@ async function handleStickerCommand(interaction) {
       console.error('[emoji] Çıkartma eklenemedi:', err.message);
       return { error: stickerFailureReason(err) };
     });
-  if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'));
+  if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'), { ephemeral: true });
 
   if (!perm.unlimited) boostStore.use(interaction.user.id, 'sticker');
   return respond(interaction, core.alert('Çıkartma eklendi.', `\`${sticker.name}\` adıyla sunucuya eklendi.`, 'success'));

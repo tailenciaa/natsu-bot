@@ -90,7 +90,7 @@ async function route(interaction) {
 
   // Hiçbir işleyici bulunamadı (kaldırılmış bir özelliğin eski mesajındaki buton gibi): kullanıcı boş yere beklemesin
   if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
-    return respond(interaction, ui.alert('Bu işlem artık kullanılamıyor.', 'Mesaj eski olabilir; ilgili paneli ya da komutu yeniden kullanabilirsin.', 'warning'));
+    return respond(interaction, ui.alert('Bu işlem artık kullanılamıyor.', 'Mesaj eski olabilir; ilgili paneli ya da komutu yeniden kullanabilirsin.', 'warning'), { ephemeral: true });
   }
 }
 

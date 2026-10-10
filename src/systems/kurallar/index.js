@@ -25,7 +25,7 @@ function sendPanel(client) {
 
 async function handleAccept(interaction) {
   if (store.has(interaction.user.id)) {
-    return respond(interaction, core.alert('Kuralları zaten kabul ettin.', 'Tekrar basmana gerek yok.', 'success'));
+    return respond(interaction, core.alert('Kuralları zaten kabul ettin.', 'Tekrar basmana gerek yok.', 'success'), { ephemeral: true });
   }
   store.add(interaction.user.id);
 
