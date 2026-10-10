@@ -297,7 +297,7 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
   );
 }
 
-// DM'deki "Şartları Kabul Ediyorum" butonu: ilk oto partner talebini incelemeye gönderir
+// DM'deki "Şartları Kabul Et" butonu: ilk oto partner talebini incelemeye gönderir
 async function handleInitialTermsAccept(interaction) {
   const requestId = interaction.customId.slice(ui.IDS.termsAccept.length + 1);
   const request = store.getRequest(requestId);

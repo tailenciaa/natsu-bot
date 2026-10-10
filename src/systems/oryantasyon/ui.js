@@ -75,7 +75,7 @@ const withFooter = (container, footer) => container.addSeparatorComponents(divid
 function manageButtons(app) {
   return [
     new ButtonBuilder().setCustomId(actionId(app, 'bekle')).setStyle(ButtonStyle.Secondary).setLabel('Beklemeye Al'),
-    new ButtonBuilder().setCustomId(actionId(app, 'aktar')).setStyle(ButtonStyle.Secondary).setLabel('Başka Yetkiliye Aktar'),
+    new ButtonBuilder().setCustomId(actionId(app, 'aktar')).setStyle(ButtonStyle.Secondary).setLabel('Yetkiliye Aktar'),
     new ButtonBuilder().setCustomId(actionId(app, 'iptal')).setStyle(ButtonStyle.Danger).setLabel('Başvuruyu Reddet'),
   ];
 }
@@ -647,7 +647,7 @@ ${channelId ? `Seni <#${channelId}> kanalında bekleyecek, kanala girdiğinde or
   return withFooter(container, `-# ${guildName} - Başvuru #${pad(app.number)}`);
 }
 
-// "Başka Yetkiliye Aktar" ile açılan, sadece butona basanın gördüğü seçim menüsü
+// "Yetkiliye Aktar" ile açılan, sadece butona basanın gördüğü seçim menüsü
 function transferPicker(app) {
   return withRow(
     card(

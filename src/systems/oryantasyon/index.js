@@ -715,7 +715,7 @@ function moveStep(app, action) {
   return saveOrientation(app, { step: Math.min(last, o.step + 1), skipped: o.skipped.filter((id) => id !== step.id) });
 }
 
-// "Başka Yetkiliye Aktar" menüsünden seçilen yetkiliye oryantasyonu aktarır
+// "Yetkiliye Aktar" menüsünden seçilen yetkiliye oryantasyonu aktarır
 async function handleTransfer(interaction, app) {
   const targetId = interaction.values[0];
   const o = app.orientation;

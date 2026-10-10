@@ -120,7 +120,7 @@ function startPromptSuccess(alreadyAccepted = false) {
       text(
         alreadyAccepted
           ? '**Sıradaki Adım**\nYetkililerin **kararını bekle**.'
-          : '**Sıradaki Adım**\nDM kutundaki mesajda **Şartları Kabul Ediyorum** butonuna bas.',
+          : '**Sıradaki Adım**\nSana gelen DM\'deki **Şartları Kabul Et** butonuna bas.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -184,7 +184,7 @@ function termsDm(acceptCustomId) {
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(acceptCustomId).setLabel('Şartları Kabul Ediyorum').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(acceptCustomId).setLabel('Şartları Kabul Et').setStyle(ButtonStyle.Success),
       ),
     );
 }

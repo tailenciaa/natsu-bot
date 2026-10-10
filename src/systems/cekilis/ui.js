@@ -61,7 +61,7 @@ function panel(g) {
   const joinRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(IDS.join)
-      .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : `${closedLabel} (${g.participants.length} katılımcı)`)
+      .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : closedLabel)
       .setStyle(g.status === 'active' ? ButtonStyle.Success : ButtonStyle.Secondary)
       .setDisabled(g.status !== 'active'),
   );
