@@ -115,12 +115,11 @@ module.exports = {
       title: 'Oryantasyona Hoş Geldin',
       nextLabel: 'Başla',
       body:
-        '**{aday}, başvurun onaylandı ve ekibe katılmana tek adım kaldı!**\n' +
+        '**{aday}, ekibe katılmana tek adım kaldı!**\n' +
         'Bu oryantasyonda {yetkili} sana yetkililiği adım adım anlatacak:\n' +
         '- Sunucu kuralları ve nasıl uygulandığı\n' +
         '- Bir yetkilinin nasıl davranması gerektiği\n' +
         '- Ceza sistemi ve komutlar\n' +
-        '- Botun yetkili sistemleri\n' +
         '- Görev alanını seçmen ve alanının detayları\n\n' +
         '**Bildiğin bir konu olursa söyle, o adım atlanabilir.** Aklına takılan her şeyi sormaktan çekinme.',
     },
