@@ -4,24 +4,27 @@ const { staffCommandChannel } = require('./config');
 const ui = require('./ui');
 
 // Etkileşimin durumuna göre doğru şekilde CV2 cevap verir.
+// EV KURALI: botun verdiği her cevap HERKESE AÇIKTIR. Kişiye özel (gizli) mesaj yalnızca hata/reddetme için
+// kullanılır ve o çağrılarda `{ ephemeral: true }` açıkça yazılır. `replyError` zaten gizlidir.
 // Butonlarda deferUpdate kullanıldığı için orijinal mesajın üzerine yazmamak adına followUp yapılır.
 // Dikkat: deferReply edilmiş komut ya da deferUpdate edilmiş modal gönderimi (butona bağlı olmayan, deferred) ise cevap
 // editReply ile verilir; yani modalın bağlı olduğu mesajı (varsa) cevabın yeni haliyle DEĞİŞTİRİR. Hata/onay bildirimini
 // ayrı ve sadece kullanana görünen mesaj olarak göstermek istiyorsan önce deferUpdate yapma, ya da interaction.followUp kullan.
 // followUp: true verilirse (ör. deferUpdate yapılmış modal gönderimi) cevap her zaman ayrı bir mesaj olarak gider, mevcut mesajı değiştirmez
-async function respond(interaction, container, { ephemeral = true, allowedMentions = { parse: [] }, followUp = false } = {}) {
+async function respond(interaction, container, { ephemeral = false, allowedMentions = { parse: [] }, followUp = false } = {}) {
   // deferUpdate ile ertelenmiş modal gönderiminde (interaction.ephemeral hâlâ null; deferReply bunu true/false yapar) cevap,
   // modalın bağlı olduğu mesajın üstüne yazılmasın diye ayrı mesaj olarak gider
   const updatedByModal = interaction.isModalSubmit?.() && interaction.deferred && interaction.ephemeral === null;
   if (!followUp && !updatedByModal && interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
-    return interaction.editReply({ components: [container], flags: ui.CV2, allowedMentions });
+    return interaction.editReply({ components: [container], flags: ephemeral ? ui.EPHEMERAL_CV2 : ui.CV2, allowedMentions });
   }
   const payload = { components: [container], flags: ephemeral ? ui.EPHEMERAL_CV2 : ui.CV2, allowedMentions };
   if (interaction.deferred || interaction.replied) return interaction.followUp(payload);
   return interaction.reply(payload);
 }
 
-const replyError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'));
+// HATA/REDDETME: gizli mesajın kullanılabildiği tek ortak kapı
+const replyError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'), { ephemeral: true });
 
 // Yöneticiler ya da verilen rollerden (tek rol ya da liste) birine sahip olanlar
 function isStaff(interaction, roleIds) {
