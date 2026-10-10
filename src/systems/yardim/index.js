@@ -34,6 +34,7 @@ const CATEGORIES = [
   ['emoji', 'Emoji ve çıkartma ekleme'],
   ['yetki', 'Ceza, yetki ve başvuru işlemleri'],
   ['destek', 'Talep üstlenme ve kapatma'],
+  ['oda', 'Kalıcı oda başvuruları ve oda yönetimi'],
   ['cekilis', 'Çekiliş başlatma ve sonuçlandırma'],
   ['log', 'Log kanallarının kurulumu'],
 ];

@@ -107,7 +107,7 @@ function decisionRow(app) {
 function applicationCard(app, room) {
   const container = page({
     title: 'Kalıcı Oda Başvurusu',
-    sub: 'Bir üye kendine kalıcı bir ses ve yazı odası istiyor; **Onayla** odaları açar ve odayı sahibine teslim eder, **Reddet** ise sebebiyle birlikte başvurana iletilir.',
+    sub: 'Bir üye kendine kalıcı bir ses ve yazı odası istiyor; **Onayla** odaları açar ve odayı sahibine teslim eder, **Reddet** kararı ise yazacağın gerekçeyle birlikte başvurana DM olarak gider.',
     accent: ACCENT[app.status],
     blocks: [
       `**Başvuru Bilgileri**\n${rows([
@@ -170,7 +170,7 @@ function readyCard(room) {
 function rejectedCard(app) {
   return page({
     title: 'Başvurun Reddedildi',
-    sub: 'Kalıcı oda başvurun incelendi ve reddedildi; sebebi aşağıda yazıyor. Gereksinimleri sağladığında panelden tekrar başvurabilirsin.',
+    sub: 'Kalıcı oda başvurun incelendi ve reddedildi; kararın gerekçesi kartta yazıyor. Gereksinimleri sağladığında panelden tekrar başvurabilirsin.',
     accent: colors.danger,
     blocks: [
       `**Başvuru Bilgileri**\n${rows([

@@ -44,16 +44,14 @@ module.exports = {
     { id: 'ad', label: 'Oda adı', description: 'Kategori ve kanal adında görünür.', placeholder: 'Örn: Müzik Odası', max: 30 },
     {
       id: 'kisiler',
-      title: 'Odayı Kimler Kullanacak',
       label: 'Odada kimler olacak?',
-      description: 'Üyeleri etiketleyerek yaz, başvuran sayılmaz.',
-      placeholder: 'Örn: @mehmet @ayşe @fatma',
+      description: 'Üyeleri etiketleyerek ya da ID yazarak belirt, başvuran sayılmaz.',
+      placeholder: 'Örn: <@123456789012345678> <@234567890123456789>',
       paragraph: true,
       max: 600,
     },
     {
       id: 'amac',
-      title: 'Amaç',
       label: 'Oda ne için kullanılacak?',
       description: 'Kısaca odanın amacını yaz.',
       placeholder: 'Örn: Her akşam birlikte müzik dinlemek ve kaydetmek için.',
