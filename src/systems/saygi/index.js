@@ -191,7 +191,8 @@ async function handleTable(interaction) {
 // /saygi-onizleme: bu haftanın şu ana kadarki durumuna göre duyurunun örneğini sadece komutu kullanana gösterir
 async function handlePreview(interaction) {
   const results = topUsers(interaction.guild, store.weekTotals(weekKey()));
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId));
+  // GİZLİ İSTİSNA: önizleme; asıl duyuru kanala düşer, örnek sadece komutu kullanana görünür
+  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId), { ephemeral: true });
 }
 
 function handleReady(client) {
