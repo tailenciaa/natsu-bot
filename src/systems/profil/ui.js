@@ -128,7 +128,7 @@ const bannerModal = (current) =>
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Görsel bağlantısı')
-        .setDescription('https ile başlayan bir görsel bağlantısı gir; boş bırakırsan temanın ya da satın aldığın arka planın efekti çizilir.')
+        .setDescription('https ile başlayan bir görsel adresi gir. Boş bırakırsan seçtiğin arka plan efekti çizilir.')
         .setTextInputComponent(input('kapak', TextInputStyle.Short, 400, current.banner, 'Örn: https://i.imgur.com/ornek.png')),
     ]);
 
