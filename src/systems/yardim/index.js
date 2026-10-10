@@ -1,6 +1,8 @@
 // Yardım menüsü: /yardim ile açılır, komutlar kategorilere ayrılmış şekilde butonlarla gezilir.
-// Komut açıklamaları ve seçenekleri sistemlerin komut tanımlarından otomatik alınır; kategori ve kimlerin
-// kullanabileceği her sistemin index.js'indeki "help" alanında yazılır. "help"te olmayan komut menüde görünmez.
+// Menü sunucudaki üyelere bottaki komutları göstermek için var; o yüzden yalnızca herkesin kullanabildiği komutlar
+// listelenir. Her sistem menüye girecek komutları index.js'indeki "help.member" listesiyle söyler; listesi olmayan
+// sistemin komutları (yetkili ve kurulum işlemleri) menüde hiç görünmez. Komut açıklamaları ve seçenekleri komut
+// tanımlarından otomatik alınır. "access" alanı erişim denetimi ve komut denetimi için durmaya devam eder.
 const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const { botName } = require('../../core/config');
 const { respond, replyError, isMenuOwner } = require('../../core/helpers');
