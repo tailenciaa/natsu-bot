@@ -6,11 +6,11 @@ const IDS = { navigate: 'yardim' }; // yardim:<kategori>
 const MAX_COMPONENTS = 40;
 const countComponents = (json) => 1 + (json.components ?? []).reduce((n, c) => n + countComponents(c), 0) + (json.accessory ? 1 : 0);
 
-// view: { botName, avatarUrl, categories: { anahtar: ad }, tab, entries: [{ description, usage, access }], note: sekmenin ortak notu }
-function helpMenu({ botName, avatarUrl, categories, tab, entries, note }) {
+// view: { botName, avatarUrl, categories: { anahtar: ad }, tab, entries: [{ description, usage }] }
+function helpMenu({ botName, avatarUrl, categories, tab, entries }) {
   const container = page({
     title: 'Yardım Menüsü',
-    sub: `${botName} komutlarını kategorilere göre buradan görebilirsin; kategori butonlarıyla sekme değiştirir, komutun adına tıklayarak komutu hemen çalıştırırsın.`,
+    sub: `${botName} komutlarını kategoriler halinde burada görebilir, komutun adına tıklayarak hemen kullanabilirsin.`,
     thumbnail: avatarUrl,
     accent: colors.primary,
   });
@@ -24,13 +24,7 @@ function helpMenu({ botName, avatarUrl, categories, tab, entries, note }) {
     container.addActionRowComponents(tabRow(row, tab, (key) => `${IDS.navigate}:${key}`));
   }
 
-  // Sekmedeki bütün komutların erişimi aynıysa bir kez yazılır; farklıysa her girdi kendisininkini taşır.
-  // Girdinin son satırı küçük yazı olmaz (olursa otomatik düzenleme onu ayrı bölüp çizgi koyar)
-  const accesses = [...new Set(entries.map((entry) => entry.access))];
-  const shared = entries.length > 1 && accesses.length === 1 ? accesses[0] : null;
-  const common = [shared ? `**Kimler kullanabilir:** ${shared}` : null, note].filter(Boolean).join('\n');
-  if (common) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(common));
-  const lines = entries.map((entry) => `**${entry.description}**\n${entry.usage}${shared ? '' : `\nKimler kullanabilir: ${entry.access}`}`);
+  const lines = entries.map((entry) => `**${entry.description}**\n${entry.usage}`);
   // Discord bir mesajda en fazla 40 bileşene izin verir: komut sayısı çoksa komutlar ikişer ikişer (gerekirse daha fazla)
   // aynı bloğa konur, böylece liste uzasa da mesaj gönderilebilir kalır
   const used = countComponents(container.toJSON());

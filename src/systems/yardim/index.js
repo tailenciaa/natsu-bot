@@ -20,26 +20,19 @@ const commands = [
 // Sistem listesi yardım sisteminin kendisini de içerdiği için ihtiyaç anında yüklenir
 const systems = () => require('..');
 
-// Sekme sırası: herkesin kullandıkları önce, yetkili işlemleri sonda; listede olmayan kategoriler sistem sırasıyla sona eklenir
-const TAB_ORDER = ['genel', 'siralama', 'emoji', 'partner', 'cekilis', 'destek', 'yetki', 'log'];
+// Sekme sırası; listede olmayan kategoriler sistem sırasıyla sona eklenir. Bir sekmede listelenecek komut
+// kalmıyorsa sekme hiç gösterilmez, bu yüzden yetkili işlemleri için sekme tanımlamaya gerek yok.
+const TAB_ORDER = ['hesap', 'siralama', 'partner', 'emoji'];
 
-// Aynı kategoriyi kullanan sistemler tek sekmede birleşir; ilk sekme /yardim'in açıldığı sekmedir
-function categories() {
-  const found = Object.fromEntries(systems().filter((s) => s.help).map((s) => s.help.category));
-  const ordered = TAB_ORDER.filter((key) => found[key]).map((key) => [key, found[key]]);
-  const rest = Object.entries(found).filter(([key]) => !TAB_ORDER.includes(key));
-  return Object.fromEntries([...ordered, ...rest]);
-}
-
-// Erişim metninin sonundaki "sadece <#kanal> kanalında" kısmı her komutta tekrarlanmasın diye sekme başına bir kez gösterilir
-const CHANNEL_TAIL = /,? sadece <#(d+)> kanalında$/;
-
-// Kategorideki komutları üretir; komut adı tıklanabilir olur, zorunlu seçenekler düz, isteğe bağlılar [köşeli] yazılır
-function entriesFor(guild, category) {
-  const entries = [];
+// Kategorilere göre üye komutlarını toplar; komut adı tıklanabilir olur, zorunlu seçenekler düz,
+// isteğe bağlılar [köşeli] yazılır
+function entriesByTab(guild) {
+  const byTab = new Map();
 
   for (const system of systems()) {
-    if (system.help?.category[0] !== category) continue;
+    const tab = system.help?.category?.[0];
+    const member = system.help?.member;
+    if (!tab || !member?.length) continue;
 
     for (const command of (system.commands ?? []).map((c) => c.toJSON())) {
       const id = guild.commands.cache.find((c) => c.name === command.name)?.id;
@@ -49,37 +42,46 @@ function entriesFor(guild, category) {
         : [{ path: command.name, description: command.description, options: command.options ?? [] }];
 
       for (const variant of variants) {
-        const rawAccess = system.help.access[variant.path];
-        if (!rawAccess) continue;
-        const tail = CHANNEL_TAIL.exec(rawAccess);
-        const access = tail ? rawAccess.replace(CHANNEL_TAIL, '') : rawAccess;
-
-        const name = id ? `</${variant.path}:${id}>` : `\`/${variant.path}\``;
+        if (!member.includes(variant.path)) continue;
         const options = variant.options.map((o) => `\`${o.required ? o.name : `[${o.name}]`}\``).join(' ');
-        entries.push({ description: variant.description, usage: `${name} ${options}`.trim(), access, channelId: tail?.[1] ?? null });
+        const usage = `${id ? `</${variant.path}:${id}>` : `\`/${variant.path}\``} ${options}`.trim();
+        const entries = byTab.get(tab) ?? [];
+        entries.push({ description: variant.description, usage });
+        byTab.set(tab, entries);
       }
     }
   }
 
-  return entries;
+  return byTab;
+}
+
+// Komutu olan sekmeler ve adları; ilk sekme /yardim'in açıldığı sekmedir
+function tabs(guild) {
+  const byTab = entriesByTab(guild);
+  const labels = Object.fromEntries(systems().filter((s) => s.help?.member?.length).map((s) => s.help.category));
+  const extra = [...byTab.keys()].filter((key) => !TAB_ORDER.includes(key));
+  const keys = [...TAB_ORDER, ...extra].filter((key) => byTab.get(key)?.length);
+  return {
+    categories: Object.fromEntries(keys.map((key) => [key, labels[key]])),
+    entries: Object.fromEntries(keys.map((key) => [key, byTab.get(key)])),
+  };
 }
 
 function menu(interaction, tab) {
-  const entries = entriesFor(interaction.guild, tab);
-  const channelId = entries.find((entry) => entry.channelId)?.channelId;
+  const all = tabs(interaction.guild);
+  const key = all.categories[tab] ? tab : Object.keys(all.categories)[0];
   return ui.helpMenu({
     botName,
     avatarUrl: interaction.client.user.displayAvatarURL({ size: 256 }),
-    categories: categories(),
-    tab,
-    entries,
-    note: channelId ? `Bu sekmedeki yetkili komutları sadece <#${channelId}> kanalında kullanılabilir.` : null,
+    categories: all.categories,
+    tab: key,
+    entries: all.entries[key] ?? [],
   });
 }
 
 // /yardim: menü herkese açık gönderilir
 async function handleCommand(interaction) {
-  return respond(interaction, menu(interaction, Object.keys(categories())[0]), { ephemeral: false });
+  return respond(interaction, menu(interaction), { ephemeral: false });
 }
 
 // Kategori butonları: yardim:<kategori>
@@ -87,10 +89,8 @@ async function handleNavigate(interaction) {
   if (!isMenuOwner(interaction)) {
     return replyError(interaction, 'Bu menüyü sadece komutu kullanan kişi gezebilir.', 'Kendi menün için /yardim yazabilirsin.');
   }
-  const tab = interaction.customId.split(':')[1];
-  const all = categories();
   return interaction.update({
-    components: [menu(interaction, all[tab] ? tab : Object.keys(all)[0])],
+    components: [menu(interaction, interaction.customId.split(':')[1])],
     allowedMentions: { parse: [] },
   });
 }
