@@ -133,7 +133,7 @@ async function drawBanner(ctx, custom) {
 
 // Kapağın tamamı: görsel varsa o, yoksa satın alınan kapak efekti (custom.cover), o da yoksa temanın efekti.
 // Üst soldaki etiketlerin okunması için hafif bir karartma, altta zemine geçiş için yumuşak kararmanın eklenir.
-async function paintHeader(ctx, view, theme, p, base) {
+async function paintHeader(ctx, view, theme, p, c) {
   const custom = view.custom;
   ctx.save();
   ctx.beginPath();
@@ -148,22 +148,27 @@ async function paintHeader(ctx, view, theme, p, base) {
   shade.addColorStop(1, 'rgba(8,5,10,0)');
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, WIDTH, 130);
-  const fade = ctx.createLinearGradient(0, HEADER - 70, 0, HEADER);
-  fade.addColorStop(0, 'rgba(12,8,16,0)');
-  fade.addColorStop(1, base);
+  // Kapağın altındaki kararma gövdenin ilk tonuna bağlanır: hedef gövde rengi olmazsa koyu bir kapak ile zemin
+  // arasında sert, kirli bir bant oluşur.
+  const fade = ctx.createLinearGradient(0, HEADER - 100, 0, HEADER);
+  fade.addColorStop(0, hexAlpha(c.bgTop, 0));
+  fade.addColorStop(1, c.bgTop);
   ctx.fillStyle = fade;
-  ctx.fillRect(0, HEADER - 70, WIDTH, 70);
+  ctx.fillRect(0, HEADER - 100, WIDTH, 100);
   ctx.restore();
 }
 
 // Kapağın rengi gövdeye hafif bir ışımayla sızar. Cam paneller yarı saydam olduğu için arkalarında bu ışımayı
 // görür; saydamlık ayarının fark edilebilir olmasını sağlayan şey budur. Düz panelleri ise kapatır, görünmez.
+// Sızıntı kapağın ALTINDA başlar ve kartın altı boyunca sıfıra iner: kapağın kendi altına taşıp orayı bulandırmaz,
+// gövdede keskin bir banttansa uzun, yumuşak bir geçiş bırakır.
 function paintAmbient(ctx, height, p) {
-  const bleed = ctx.createLinearGradient(0, HEADER - 30, 0, HEADER + 250);
-  bleed.addColorStop(0, hexAlpha(p.to, 0.45));
+  const body = height - HEADER;
+  const bleed = ctx.createLinearGradient(0, HEADER, 0, HEADER + Math.max(180, Math.round(body * 0.62)));
+  bleed.addColorStop(0, hexAlpha(p.to, 0.18));
   bleed.addColorStop(1, hexAlpha(p.to, 0));
   ctx.fillStyle = bleed;
-  ctx.fillRect(0, HEADER - 30, WIDTH, 280);
+  ctx.fillRect(0, HEADER, WIDTH, body);
 
   const glow = (x, y, r, color, a) => {
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
@@ -172,8 +177,9 @@ function paintAmbient(ctx, height, p) {
     ctx.fillStyle = g;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   };
-  glow(WIDTH * 0.08, HEADER + 210, 460, p.accent, 0.1);
-  glow(WIDTH * 0.92, height - 170, 430, p.accent, 0.12);
+  // İki parlama aynı güçte ve gövdeye yayılmış durur; bir köşeye toplanan güçlü parlama kartı dengesiz gösterir
+  glow(WIDTH * 0.1, HEADER + Math.round(body * 0.28), 430, p.accent, 0.06);
+  glow(WIDTH * 0.9, height - Math.round(body * 0.22), 400, p.accent, 0.07);
 }
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
@@ -412,6 +418,10 @@ function paletteOf(theme, custom) {
     muted: scheme.muted,
     track: scheme.track,
     base: mix(theme.from, '#000000', 0.86),
+    // Gövde zemini tek düz tondan değil, kapağın altından başlayıp aşağı koyulaşan hafif bir gradyanından türer.
+    // Düz ton karışınca alta doğru çamurlaşır; gradyan ise temanın rengini koruyarak kartı temiz kapatır.
+    bgTop: mix(theme.from, '#000000', 0.78),
+    bgBottom: mix(theme.from, '#000000', 0.93),
   };
   c.panel = panelStyle(theme, custom ?? {}, c.base);
   return {
@@ -450,7 +460,12 @@ async function buildProfileCard(user, view) {
   ctx.clip();
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, height);
-  await paintHeader(ctx, view, theme, p, c.base);
+  const body = ctx.createLinearGradient(0, HEADER, 0, height);
+  body.addColorStop(0, c.bgTop);
+  body.addColorStop(1, c.bgBottom);
+  ctx.fillStyle = body;
+  ctx.fillRect(0, HEADER, WIDTH, height - HEADER);
+  await paintHeader(ctx, view, theme, p, c);
   paintAmbient(ctx, height, p);
 
   // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
@@ -460,13 +475,13 @@ async function buildProfileCard(user, view) {
   pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 26, rankColor);
   pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 76, accent, '#120a10', null);
 
-  // Avatar kapağın altına taşar; zemin renginde kalın halka kapakla arasını ayırır
+  // Avatar kapağın altına taşar; gövde rengindeki kalın halka kapakla arasını ayırır
   const avatarSize = 184;
   const avatarX = PAD;
   const avatarY = HEADER - 92;
   ctx.beginPath();
   ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 10, 0, Math.PI * 2);
-  ctx.fillStyle = c.base;
+  ctx.fillStyle = c.bgTop;
   ctx.fill();
   await drawAvatar(ctx, user, avatarX, avatarY, avatarSize, accent);
 
