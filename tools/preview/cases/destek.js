@@ -30,6 +30,8 @@ module.exports = ({ mock, ui, src }) => {
     },
   });
   const manyTickets = (n) => Array.from({ length: n }, (_, i) => mock.ticket({ number: i + 1, claimedBy: i % 2 ? staff.id : null }));
+  // Numaralar eşsiz olmalı: aynı numara hem kartta hem menüde tekrar gibi görünüyor
+  const durumTickets = () => [waiting({ number: 8 }), claimed({ number: 9 })];
 
   return [
     {
@@ -40,7 +42,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({ components: [d.panel()] }),
     },
-    durum('durum-kart', 'Durum paneli: açık talepler (kart)', [waiting(), claimed()]),
+    durum('durum-kart', 'Durum paneli: açık talepler (kart)', durumTickets()),
     durum('durum-bos', 'Durum paneli: açık talep yok (kart)', []),
     durum('durum-sayfa', 'Durum paneli: 9 talep, 2. sayfa', manyTickets(9), 1),
     {
@@ -49,7 +51,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Durum kanalı, çizim hatasında',
       visibility: 'panel',
       kind: 'message',
-      build: () => ({ components: [d.statusPanel([waiting(), claimed()])], ...noMentions }),
+      build: () => ({ components: [d.statusPanel(durumTickets())], ...noMentions }),
     },
     {
       id: 'talep-modal',
