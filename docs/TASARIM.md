@@ -116,14 +116,15 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 | --- | --- |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana |
 | Kişisel işlem sonucu, yetkili işlem panelleri | Sadece kullanana |
-| Bilgi komutları (yardım, seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`); yardım menüsünün yetkili katmanı sadece kullanana görünür |
+| Bilgi komutları (seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`) |
+| Yardım menüsü (`/yardim`) | Herkese açık, kategoriyi herkes değiştirir; liste her basışta o kişiyi gözeten katmanla çizilir |
 | Paneller, duyurular, loglar, talep mesajları | Kanalda herkese görünür |
 | Test ve önizleme | Sadece kullanana, etiket yok |
 
 ## 7. Komut politikası
 
 - Her komutun ve seçeneğin açıklaması tek cümle, fiille başlayan, noktayla biten ve en çok 100 karakterdir.
-- Yardım menüsü iki katmanlıdır ve kategoriler tek bir menüden seçilir (`/yardim`): üye yalnızca sistemin `help.member` listesindeki komutları görür (mesaj herkese açıktır); yetkili komutlarının görünmesi gereken izne (`core/config.js staffPermission`) ya da yöneticiliğe sahip olan tüm kategorileri de görür ve bu mesaj sadece kendisine görünür gönderilir. `help.category` kategoriyi, `help.need` komutun yanında görünen "Gerekli: ..." yazısını belirler; listelenen her yetkili komutunun `need` karşılığı olmak zorundadır. `help.access` erişimi belgeleyen kayıttır, arayüzde gösterilmez; komut denetimi her komutun `access` karşılığı olmasını ister. Sağ tık (bağlam menüsü) komutları menüde listelenmez.
+- Yardım menüsü iki katmanlıdır ve kategoriler tek bir menüden seçilir (`/yardim`): üye yalnızca sistemin `help.member` listesindeki komutları görür. Yetkili komutlarının görünmesi gereken izne (`core/config.js staffPermission`) ya da yöneticiliğe sahip olan tüm kategorileri de görür. Mesaj her iki katmanda da **herkese açık** gönderilir ve kategoriyi herkes değiştirebilir; liste her değişimde o kişiyi gözeten katmanla yeniden çizilir. `help.category` kategoriyi, `help.need` komutun yanında görünen "Gerekli: ..." yazısını belirler; listelenen her yetkili komutunun `need` karşılığı olmak zorundadır. `help.access` erişimi belgeleyen kayıttır, arayüzde gösterilmez; komut denetimi her komutun `access` karşılığı olmasını ister. Sağ tık (bağlam menüsü) komutları menüde listelenmez.
 
 ## 8. Doğrulama (Discord'a bağlanmadan)
 
