@@ -168,7 +168,10 @@ for (const sys of cmdSystems) {
     }
     for (const key of Object.keys(access)) {
       if (!paths.includes(key)) add('komut', sys.name, 'HATA', `help.access`, 'yardim-fazla', '', `help.access'te "${key}" var ama böyle bir komut/alt komut yok`);
-      else if (!ACCESS_TEXTS.has(access[key])) add('komut', sys.name, 'UYARI', `/${key}`, 'yardim-erisim-metni', '', `Erişim metni standart değil: "${access[key]}"`);
+    }
+    for (const key of sys.help.member ?? []) {
+      if (!paths.includes(key)) add('komut', sys.name, 'HATA', `help.member`, 'yardim-fazla', '', `help.member listesindeki "${key}" komutu yok`);
+      else if (!access[key]) add('komut', sys.name, 'HATA', `/${key}`, 'yardim-fazla', '', `"${key}" yardım menüsünde listeleniyor ama help.access'i yok`);
     }
     const [key, label] = sys.help.category ?? [];
     if (!key || !label) add('komut', sys.name, 'HATA', sys.name, 'yardim-kategori', '', 'help.category [anahtar, ad] biçiminde olmalı');
