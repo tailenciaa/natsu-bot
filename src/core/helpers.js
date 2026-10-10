@@ -38,6 +38,15 @@ async function fetchTextChannel(guild, channelId) {
   return channel?.isTextBased() ? channel : null;
 }
 
+// Görsel kartlarda kullanıcı etiketi (<@id>) işlenmez, kullanıcı adı yazılır. Önce önbelleğe bakılır
+// (açılışta üye önbelleği doldurulur), yoksa tek istekle alınır; ulaşılamazsa null
+function userName(guild, userId) {
+  const cached = guild?.members?.cache?.get(userId);
+  if (cached) return Promise.resolve(cached.user.username);
+  if (!guild) return Promise.resolve(null);
+  return guild.members.fetch(userId).then((member) => member?.user?.username ?? null).catch(() => null);
+}
+
 // Herkese açık gönderilen menülerin (yardım, sicil) butonlarını sadece komutu kullanan kişi kullanabilir,
 // başkası basınca menü herkesin önünde değişmesin diye
 function isMenuOwner(interaction) {
@@ -60,4 +69,4 @@ function stillMember(guild, userId) {
   return guild.members.cache.size < guild.memberCount * 0.9 || guild.members.cache.has(userId);
 }
 
-module.exports = { respond, replyError, isStaff, fetchTextChannel, stillMember, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
+module.exports = { respond, replyError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };

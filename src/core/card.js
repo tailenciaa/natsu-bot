@@ -21,6 +21,15 @@ const FOOTER_H = 46;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 
+// Görsel kartlarda <t:...:R> etiketi işlenmediği için göreli zaman kendimiz yazılır: "3 saat önce", "az önce"
+const REL_UNITS = [['yıl', 31536000], ['ay', 2592000], ['gün', 86400], ['saat', 3600], ['dakika', 60]];
+function relTime(ms) {
+  const seconds = Math.max(0, Math.round((Date.now() - Number(ms)) / 1000));
+  if (seconds < 60) return 'az önce';
+  const [name, size] = REL_UNITS.find(([, s]) => seconds >= s) ?? REL_UNITS.at(-1);
+  return `${Math.floor(seconds / size)} ${name} önce`;
+}
+
 // Kart: köşeleri kırpılmış zemin + parıltı hazır gelir; çizim bitince canvas.toBuffer('image/png') ile alınır.
 // Boyut baştan belliyse createCard çağrılmadan önce measureLines/lineCount ile satır sayıları ölçülüp yükseklik
 // hesaplanır (oluşturma tek geçişte yapılır).
@@ -92,6 +101,18 @@ function drawRow(ctx, row, y, width, c) {
   if (row.status) drawPill(ctx, row.status, row.statusColor, width - PAD - 14, y + 14);
 }
 
+// Boş liste: kayıt satırlarının yerini alan, ortalanmış soluk yazılı tek kutu. drawRow gibi y'yi ilerletmez.
+function drawEmpty(ctx, message, y, width, c) {
+  ctx.fillStyle = c.panel;
+  roundRect(ctx, PAD, y, width - PAD * 2, ROW_H, 14);
+  ctx.fill();
+  ctx.fillStyle = c.muted;
+  ctx.font = font(500, 15);
+  ctx.textAlign = 'center';
+  ctx.fillText(fitText(ctx, message, width - PAD * 2 - 40), width / 2, y + ROW_H / 2 + 5);
+  ctx.textAlign = 'left';
+}
+
 // Metin bloğu: panel içinde küçük başlık + en fazla maxLines satıra yayılan gövde (yorum gibi uzun metinler için);
 // bloğun bittiği y'yi döner. Yükseklik hesabı blockHeight ile aynı ölçümle yapılmalıdır.
 function drawBlock(ctx, title, body, y, width, c, maxLines = 3) {
@@ -130,6 +151,17 @@ function drawFooter(ctx, value, y, width, c) {
   return y + FOOTER_H;
 }
 
+// Kart yüksekliği: başlık bloğu (açıklama en fazla iki satır) + rowCount kayıt kutusu + alt şerit.
+// drawHeading'in bittiği y ile aynı ölçümü kullanır; çizimden önce tek geçiş için yüksekliği önceden verir.
+function listHeight(sub, rowCount) {
+  const measure = measureCtx();
+  measure.font = font(400, 16);
+  const subLines = wrapLines(measure, sub, WIDTH - PAD * 2, 2).length;
+  const headingBottom = 48 + 34 + (subLines - 1) * 24 + 20;
+  const rows = Math.max(0, rowCount);
+  return headingBottom + (rows ? rows * ROW_H + (rows - 1) * ROW_GAP : 0) + 24 + FOOTER_H;
+}
+
 // Beş köşeli yıldız (puanlama kartı): merkez (cx, cy), dış yarıçap r
 function drawStar(ctx, cx, cy, r, color) {
   ctx.fillStyle = color;
@@ -153,10 +185,12 @@ module.exports = {
   ROW_GAP,
   FOOTER_H,
   font,
+  relTime,
   createCard,
   measureCtx,
   drawHeading,
   drawRow,
+  drawEmpty,
   drawPill,
   drawBlock,
   blockHeight,
