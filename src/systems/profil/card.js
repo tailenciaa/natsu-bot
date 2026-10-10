@@ -1,7 +1,8 @@
 // Profil kartı: kapak (kullanıcının görseli, satın alınan kapak efekti ya da temanın kendi efekti), avatar, ad,
 // unvan, rozetler, biyografi, mesaj/ses seviye kutuları, alt bilgi kutuları ve vitrin şeridi içeren görsel
-// (PNG, Buffer döner). Kutular yarı saydam "buzlu cam" paneli olarak çizilir; kapak görseli yakınlaştırılıp
-// kaydırılabilir (custom.bannerZoom / bannerX / bannerY). Yükseklik çizilecek içeriğe göre hesaplanır.
+// (PNG, Buffer döner). Kutular temaya göre düz opak ya da yarı saydam "buzlu cam" panel olarak çizilir; cam
+// temalarda saydamlığı üye kendisi ayarlar (custom.glassOpacity). Kapak görseli yakınlaştırılıp kaydırılabilir
+// (custom.bannerZoom / bannerX / bannerY). Yükseklik çizilecek içeriğe göre hesaplanır.
 // Çerçeveler kartın kenarına çizilir, yazılar assets/fonts altındaki Poppins ile çizilir.
 const {
   FONT,
@@ -22,19 +23,25 @@ const { levelFromXp } = require('../seviye/level');
 const { coverOf, drawCover } = require('./kapak');
 const { resolveTheme } = require('./themes');
 
+// Discord kartı sohbet içinde ~440 px genişliğe küçülttüğü için tüm ölçek bol tutulur: 1000 px'lik tuvalde
+// çizilen yazılar önizlemede okunabilsin.
 const WIDTH = 1000;
-const PAD = 44;
+const PAD = 48;
 const HEADER = 300; // kapağın yüksekliği: banner'ın belirgin görünmesi için geniş tutulur
-const BADGE_ROW_H = 32;
-const BADGE_GAP = 8;
-const BADGE_ROW_GAP = 12;
+const BADGE_ROW_H = 38;
+const BADGE_GAP = 10;
+const BADGE_ROW_GAP = 14;
 const BADGE_ROWS_MAX = 2;
-const BIO_H = 92;
-const LEVEL_H = 112;
-const INFO_H = 64;
-const FOOTER_H = 74;
-const GAP = 16;
-const BOTTOM = 36;
+const BIO_H = 106;
+const LEVEL_H = 132;
+const INFO_H = 80;
+const FOOTER_H = 92;
+const GAP = 18;
+const BOTTOM = 40;
+
+// Saydamlık ayarının aralığı: 0 koyu (belirgin) panel, 100 neredeyse görünmez panel. Varsayılan bugünkü görünüm.
+const OPACITY_DEFAULT = 50;
+const OPACITY_STEP = 10;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 const number = (n) => n.toLocaleString('tr-TR');
