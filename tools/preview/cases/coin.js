@@ -13,16 +13,16 @@ module.exports = ({ mock, ui, src }) => {
   // İlk dört gün seri bonusuyla, beşinci gün ayrıca seviye bonusu birikir
   const bakiye = [0, 1, 2, 3].reduce((toplam, i) => toplam + base + i * config.daily.streakBonus, besinci);
 
-  // Mağazadan alınmış ürünler (coin/store'daki sipariş kayıtlarının biçimi); ad ve fiyatlar gerçek katalogdan
-  const urun = (name, price, daysAgo) => ({ id: `${name}-${daysAgo}`, userId: user.id, name, price, at: mock.ago(daysAgo * mock.DAY) });
-  const purchases = [urun('Elmas', 6000, 3), urun('Buzlu Cam', 3400, 11), urun('Neon', 7200, 26)];
+  // Mağazadan alınmış ürünler (coin/store'daki sipariş kayıtlarının biçimi); ad, tür ve fiyat gerçek katalogdan
+  const urun = (tur, name, price, daysAgo) => ({ id: `${tur}-${name}-${daysAgo}`, userId: user.id, tur, name, price, at: mock.ago(daysAgo * mock.DAY) });
+  const purchases = [urun('tema', 'Elmas', 6000, 3), urun('kapak', 'Buzlu Cam', 3400, 11), urun('cerceve', 'Neon', 7200, 26)];
   const manyPurchases = [
     ...purchases,
-    urun('Kor', 2500, 40),
-    urun('Taç', 3400, 52),
-    urun('Altın', 4800, 61),
-    urun('Zümrüt', 4500, 70),
-    urun('Yıldız', 2600, 84),
+    urun('tema', 'Kor', 2500, 40),
+    urun('rozet', 'Taç', 3400, 52),
+    urun('cerceve', 'Altın', 4800, 61),
+    urun('tema', 'Zümrüt', 4500, 70),
+    urun('kapak', 'Yıldız', 2600, 84),
   ];
 
   return [

@@ -2,7 +2,7 @@
 // Cüzdandan mağaza aynı dokunuşla açılır (profil-ayar:magaza), siparişler ise cüzdanın yerini alır; böylece
 // üye parasının nereye gittiğini ayrı bir mesaj aramadan görür.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { page, text, divider, chip, rows, rel, stamp, pageInfo, pagerRow } = require('../../core/ui');
+const { page, divider, chip, rows, rel, pageInfo, pagerRow } = require('../../core/ui');
 
 const IDS = {
   shop: 'profil-ayar:magaza', // profil mağazası; aynı buton profil ayarlarında da duruyor
@@ -12,6 +12,9 @@ const IDS = {
 
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz
 const ORDER_PAGE_SIZE = 6;
+
+// Satın alınan ürün hangi raftan geldiğiyle birlikte anılır; mağazadaki sekme adlarıyla aynı sözcükler kullanılır
+const TUR_LABEL = { cerceve: 'Çerçeve', tema: 'Tema', kapak: 'Arka Plan', rozet: 'Rozet' };
 
 const number = (value) => Number(value).toLocaleString('tr-TR');
 const coin = (value) => chip(`${number(value)} coin`);
@@ -29,9 +32,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
         ['Harcanan', coin(spent)],
         streak > 0 && ['Günlük Seri', chip(`${streak} gün`)],
       ])}`,
-      readyAt > now
-        ? `Günlük ödülün ${rel(readyAt)} içinde hazır olacak. Hazır olduğunda \`/gunluk\` ile toplayabilirsin.`
-        : 'Günlük ödülün hazır: `/gunluk` ile toplayabilirsin.',
+      readyAt > now ? `Günlük ödülün ${rel(readyAt)} içinde hazır olacak.` : 'Günlük ödülün hazır: `/gunluk` ile toplayabilirsin.',
     ],
   });
   return container.addSeparatorComponents(divider()).addActionRowComponents(
@@ -42,8 +43,14 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
   );
 }
 
-// Siparişler: satın alınan her ürün bir satırda, fiyatı ve alındığı tarihle. Ürünler kalıcı olduğu için
-// beklemedeki sipariş yoktur; liste yalnızca geçmişi gösterir.
+// Sipariş satırı: ürün adı, hangi raftan geldiği, fiyatı ve ne zaman alındığı
+const orderLine = (p) => {
+  const tur = TUR_LABEL[p.tur];
+  return `**${p.name}**${tur ? ` (${tur})` : ''} · ${coin(p.price)}\n${rel(p.at)} satın alındı`;
+};
+
+// Siparişler: satın alınan her ürün bir satırda. Ürünler kalıcı olduğu için beklemedeki sipariş yoktur;
+// liste yalnızca geçmişi gösterir.
 function orders({ user, items, page: current = 0 }) {
   const pageCount = Math.max(1, Math.ceil(items.length / ORDER_PAGE_SIZE));
   const pageNo = Math.min(Math.max(current, 0), pageCount - 1);
@@ -54,22 +61,17 @@ function orders({ user, items, page: current = 0 }) {
     sub: 'Mağazadan aldığın ürünler burada durur. Kozmetikler kalıcıdır: istediğin zaman kartında değiştirip tekrar giyebilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
-      items.length
-        ? list.map((p) => `**${p.name}** · ${coin(p.price)}\n${stamp(p.at, 'R')}`).join('\n\n')
-        : '-# Henüz siparişin bulunmuyor.',
+      items.length ? list.map(orderLine).join('\n\n') : '-# Henüz siparişin bulunmuyor.',
       items.length ? `-# ${pageInfo(pageNo, pageCount, items.length)}` : null,
     ],
   });
 
-  container.addSeparatorComponents(divider()).addActionRowComponents(
-    new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.wallet).setLabel('Cüzdana Dön').setStyle(ButtonStyle.Secondary)),
-  );
-  if (!items.length) return container;
-
   const nav = (target) => `${IDS.orders}:${target}`;
-  return container
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(pagerRow({ prevId: nav(pageNo - 1), nextId: nav(pageNo + 1), page: pageNo, pageCount }));
+  const buttons = items.length
+    ? pagerRow({ prevId: nav(pageNo - 1), nextId: nav(pageNo + 1), page: pageNo, pageCount }).components
+    : [];
+  buttons.push(new ButtonBuilder().setCustomId(IDS.wallet).setLabel('Cüzdana Dön').setStyle(ButtonStyle.Secondary));
+  return container.addSeparatorComponents(divider()).addActionRowComponents(new ActionRowBuilder().addComponents(buttons));
 }
 
 module.exports = { IDS, ORDER_PAGE_SIZE, number, wallet, orders };
