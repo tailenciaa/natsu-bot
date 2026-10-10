@@ -32,11 +32,10 @@ const CATEGORIES = [
   ['siralama', 'Sıralamalar ve saygınlık'],
   ['partner', 'Partner sunucular'],
   ['emoji', 'Emoji ve çıkartma ekleme'],
-  ['yetki', 'Yetkili işlemleri'],
-  ['destek', 'Destek taleplerinin yönetimi'],
-  ['cekilis', 'Çekiliş yönetimi'],
-  ['log', 'Log kurulumu'],
-  ['genel', 'Genel komutlar'],
+  ['yetki', 'Ceza, yetki ve başvuru işlemleri'],
+  ['destek', 'Talep üstlenme ve kapatma'],
+  ['cekilis', 'Çekiliş başlatma ve sonuçlandırma'],
+  ['log', 'Log kanallarının kurulumu'],
 ];
 
 // Yetkili katmanı: yetkili komutlarının Discord'da görünmesi için gereken izne ya da yöneticiliğe sahip olanlar
