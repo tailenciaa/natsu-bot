@@ -558,8 +558,7 @@ async function handleMemberCommand(interaction) {
 }
 
 async function handleStatusDetail(interaction) {
-  // Kartlı panelde talep menüden seçilir (customId sabit), eski metinli panelde buton ID'sinin sonundadır
-  const threadId = interaction.isStringSelectMenu() ? interaction.values[0] : interaction.customId.slice(ui.IDS.statusDetail.length + 1);
+  const threadId = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const ticket = store.getTicket(threadId);
   if (!ticket) return replyError(interaction, 'Bu talep artık mevcut değil.');
   await interaction.deferReply({ flags: core.EPHEMERAL });

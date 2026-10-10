@@ -33,7 +33,8 @@ const IDS = {
 const STATUS_TITLE = 'Bekleyen Başvurular';
 const STATUS_SUB =
   'Yetkili alım sistemindeki tüm bekleyen başvurular ve anlık durumları burada listelenir; başvuru durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.';
-const STATUS_PAGE_SIZE = 6;
+// Bir sayfadaki başvuru sayısı: kartın altındaki detay butonları bir satıra en fazla 5 sığabildiği için 5
+const STATUS_PAGE_SIZE = 5;
 
 // Başvurunun durum panelindeki hali: karttaki kısa etiket (pill), metinli yedekteki uzun satır ve renk tonu
 function statusState(app) {

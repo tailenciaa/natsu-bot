@@ -992,8 +992,7 @@ async function handleReviewSubmit(interaction) {
 }
 
 async function handleStatusDetail(interaction) {
-  // Kartlı panelde başvuru menüden seçilir (customId sabit), eski metinli panelde buton ID'sinin sonundadır
-  const id = interaction.isStringSelectMenu() ? interaction.values[0] : interaction.customId.slice(ui.IDS.statusDetail.length + 1);
+  const id = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const app = store.getApplication(id);
   if (!app) return respond(interaction, core.alert('Bu başvuru artık mevcut değil.'), { ephemeral: true });
   await interaction.deferReply({ flags: core.EPHEMERAL });
