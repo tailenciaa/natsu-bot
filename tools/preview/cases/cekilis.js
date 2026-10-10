@@ -64,6 +64,45 @@ module.exports = ({ mock, src }) => {
     { id: 'onay-bitir', title: 'Onay: çekilişi bitir', where: 'Bitir butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [c.confirm('bitir', base)], ...noMentions }) },
     { id: 'onay-iptal', title: 'Onay: çekilişi iptal et', where: 'İptal Et butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [c.confirm('iptal', base)], ...noMentions }) },
     { id: 'form-olustur', title: 'Form: çekiliş oluştur', where: '/cekilis baslat', visibility: 'ephemeral', kind: 'modal', build: () => c.createModal(mock.snowflake(), role.id) },
-    { id: 'form-cekbasarit', title: 'Form: çekilişi düzenle', where: 'Düzenle butonu', visibility: 'ephemeral', kind: 'modal', build: () => c.editModal(base) },
+    { id: 'form-duzenle', title: 'Form: çekilişi düzenle', where: 'Düzenle butonu', visibility: 'ephemeral', kind: 'modal', build: () => c.editModal(base) },
+
+    // /cekilis liste: açık çekilişler ve son sonuçlananlar tek yönetim kartında
+    {
+      id: 'yonetim-paneli',
+      title: 'Çekiliş yönetimi: açık ve sonuçlanmış çekilişler',
+      where: '/cekilis liste, sadece yöneticiye görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          c.managementPanel({
+            active: [
+              { ...base, url: 'https://discord.com/channels/1/2/3' },
+              {
+                ...base,
+                no: 8,
+                prize: 'Rolıblop Aboneliği',
+                winnerCount: 1,
+                endsAt: Date.now() + 2 * mock.DAY,
+                roleId: role.id,
+                participants: users.slice(2).map((u) => u.id),
+                url: 'https://discord.com/channels/1/2/4',
+              },
+            ],
+            ended: [{ ...base, no: 6, status: 'ended', winners: [users[4].id], endsAt: Date.now() - mock.DAY }],
+            channelId: base.channelId,
+          }),
+        ],
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'yonetim-paneli-bos',
+      title: 'Çekiliş yönetimi: açık çekiliş yok',
+      where: '/cekilis liste, yeni sunucuda',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [c.managementPanel({ active: [], ended: [], channelId: base.channelId })], ...noMentions }),
+    },
   ];
 };
