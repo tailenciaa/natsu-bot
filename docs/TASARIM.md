@@ -86,10 +86,18 @@ Renk durumu söyler: yeşil tamamlandı/onaylandı, sarı bekliyor, kırmızı h
 - Kullanılmış butonun etiketi geçmiş zamana döner ve pasifleşir ("Üstlenildi").
 - Bir satırda en çok 5 buton, işlem satırlarında tercihen 3; menü tek başına bir satırdır.
 
+### Çizili kartlar (profil ve kapak önizlemesi)
+
+- Kart node-canvas ile çizilir (embed/CV2 değil): 1000 px genişlik, kapak 300 px, gövde tema renginin karanlığında, tüm bölümler `glass` ile cam面板 görünümünde (yumuşak dolgu + üst parlama + ince kenar).
+- Kapağın üstüne yalnızca kendi hapları (sıra ve coin) biner; kapak karartması en üst 130 px'te %30'dur, böylece üye görseli seçtiği tema/arka plan efektini gerçekten görür. Kapak çizimi `HEADER` yüksekliğine kırpılır, gövdeye taşmaz.
+- Rozet şeridi en çok iki satır; sığmayanlar tek bir "**+N**" hapsine dönüşür. Coin ile alınan sergi rozetleri başa yazılır (ücretli olan, kazanılanların arasında kaybolmaz).
+- Kapak düzenleyicide görsel %100-300 yakınlaştırılır ve kaydırma yalnızca taşan alan kadar yapılır (-1..1); görselin arkasında boşluk oluşamaz. Hareket düğmeleri her zaman durur, görsel yokken pasifleşir.
+- Arka plan efektleri (`kapak.js`) temaların kendi efektiyle aynı boyacıları kullanır; tema ve arka plan tek yerde çizilir.
+
 ## 4. Teknik sınırlar
 
 - Bir mesajda en çok 40 bileşen (iç içe olanlar dahil) ve toplam 4000 karakter metin. Aşılırsa `tidy` düzenlemeyi bırakır; liste uzunlukları buna göre sınırlanır (ör. sicilde sayfa başına 6 kayıt).
-- Etiket/seçenek sınırları: buton etiketi 80, `customId` 100, menüde 25 seçenek, modal başlığı 45, modal alan etiketi 45.
+- Etiket/seçenek sınırları: buton etiketi 80, `customId` 100, menüde 25 seçenek, modal başlığı 45, modal alan etiketi 45, modal alan açıklaması 100.
 - Etkileşime 3 saniye içinde cevap verilir (ağır işten önce `deferReply` / `deferUpdate`); modal açan butonlarda modaldan önce yavaş iş yapılmaz. Cevap yolları `respond` ile açılır.
 - Her `allowedMentions` bilinçlidir: yalnızca gerçekten bildirim gitmesi gerekenler etiketlenir (yeni talepte yetkili rolü, ana seviyede üye, çekiliş kazananı).
 

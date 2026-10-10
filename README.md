@@ -41,7 +41,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır (hepsi `/ya
 | `/yardim` | Komutları kategorilere göre gösterir | Herkes |
 | `/sicil [kullanici]` | Üyenin sicilini gösterir | Herkes kendisininkini, yetkililer herkesinkini |
 | `/seviye [kullanici]` | Mesaj ve ses seviyesini kartla gösterir | Herkes |
-| `/profil [kullanici]` | Rozet, istatistik ve kozmetiklerle profil kartı (altındaki butonlarla özelleştirilir) | Herkes |
+| `/profil [kullanici]` | Profil kartı: rozetler, seviye, vitrin ve kozmetikler (altındaki butonlarla biyografi, renk, kapak, tema ve mağaza düzenlenir) | Herkes |
 | `/gunluk` | Günlük coin ödülünü toplar, art arda günlerle seri bonusu büyür | Herkes |
 | `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
 | `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
@@ -73,7 +73,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Destek ve yetkili | `destek` (talep alt başlıkları), `degerlendirme` (memnuniyet puanı ve itiraz), `basvuru` (yetkili alımı), `oryantasyon` (onaylanan başvuranın son aşaması), `yetki` (elle yetki verme) |
 | Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
-| Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri ve kozmetik harcaması), `profil` (rozet, vitrin ve mağaza), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
+| Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri ve kozmetik harcaması), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
 | Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
@@ -115,4 +115,6 @@ node -e "process.env.GUILD_ID='1'; require('./src/systems')"   # bot yükleniyor
 - Kanal, rol ID'leri ve panel metinleri: ilgili sistemin `config.js` dosyası.
 - Panel görselleri: ilgili `config.js` içindeki bağlantı ya da `assets/` ve `assets/banners/` altındaki dosyalar.
 - Destek kapatma sebepleri: `src/systems/destek/config.js` içindeki `closeReasons`; yetkili alım soruları: `src/systems/basvuru/config.js`.
+- Görev rozetlerinin rol ödülleri: `src/systems/profil/config.js` içindeki `gorevRolleri`. Rol ID'leri boşsa özellik çalışmaz; doldurulunca bot açılırken tüm sunucu taranır, üye katılırken ve rozet sayfasını açtığında kendi rolleri rozet durumuna göre eşitlenir (hedef gerilerse rol geri alınır).
+- Kozmetik fiyatları: çerçeve ve sergi rozetleri `src/systems/profil/kozmetik.js`, temalar `themes.js`, arka plan efektleri `kapak.js` içinde.
 - Botun rolü, verdiği rollerin (otorol, seviye, takviye, VIP vb.) üstünde olmalıdır.
