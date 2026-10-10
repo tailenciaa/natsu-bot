@@ -74,7 +74,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Destek ve yetkili | `destek` (talep alt başlıkları), `degerlendirme` (memnuniyet puanı ve itiraz), `basvuru` (yetkili alımı), `oryantasyon` (onaylanan başvuranın son aşaması), `yetki` (elle yetki verme) |
 | Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
-| Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri ve kozmetik harcaması), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
+| Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
 | Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
