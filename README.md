@@ -34,7 +34,7 @@ Sık değişen kayıtlar (XP, sıralama, haftalık aktifler, saygınlık) birka�
 
 ## Komutlar
 
-Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır (hepsi `/yardim` menüsünde de görünür):
+Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; **Herkes** satırları `/yardim` menüsünde görünür, yetkili ve kurulum komutları menüde listelenmez:
 
 | Komut | Açıklama | Kimler |
 | --- | --- | --- |

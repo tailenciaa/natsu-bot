@@ -123,7 +123,7 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 ## 7. Komut politikası
 
 - Her komutun ve seçeneğin açıklaması tek cümle, fiille başlayan, noktayla biten ve en çok 100 karakterdir.
-- Yardım menüsü (`help.access`) komut listesiyle birebir eşleşir; erişim metni sade yazılır ("Herkes", "Yetkililer", "Yöneticiler").
+- Yardım menüsü üyelere yöneliktir: bir sistem menüye yalnızca `help.member` listesindeki komutlarıyla girer (`help.category` sekmesini belirler). Yetkili ve kurulum komutları listelenmez, `help.access`te belge olarak durur; komut denetimi her komutun `help.access` karşılığı olmasını ister.
 
 ## 8. Doğrulama (Discord'a bağlanmadan)
 
