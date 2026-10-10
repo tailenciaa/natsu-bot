@@ -85,8 +85,7 @@ module.exports = {
     access: { gunluk: 'Herkes', bakiye: 'Herkes' },
   },
   slash: { gunluk: handleDaily, bakiye: handleWallet },
-  prefixed: [
-    [ui.IDS.orders, handleOrders],
-    [ui.IDS.wallet, handleBack],
-  ],
+  // coin-bakiye butonu sabit bir kimlik taşır (sayfa taşımaz), bu yüzden önek değil doğrudan buton tablosunda
+  buttons: { [ui.IDS.wallet]: handleBack },
+  prefixed: [[ui.IDS.orders, handleOrders]],
 };
