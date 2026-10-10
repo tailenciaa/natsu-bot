@@ -54,28 +54,56 @@ function duration(seconds) {
   return h > 0 ? `${h} sa ${minutes % 60} dk` : `${minutes} dk`;
 }
 
-// Yuvarlak köşeli kutunun üstüne ince parlak şerit ve iç dolgu: kartın bütün paneleri bu "cam" düzeniyle çizilir
-function glass(ctx, x, y, w, h, r, tint = '255,255,255') {
-  const fill = ctx.createLinearGradient(x, y, x, y + h);
-  fill.addColorStop(0, `rgba(${tint},0.12)`);
-  fill.addColorStop(0.5, `rgba(${tint},0.06)`);
-  fill.addColorStop(1, `rgba(${tint},0.025)`);
+// Panel tarzı: cam temalarda gradyan + parlama + ince kenar, saydamlık üyenin ayarıyla ölçeklenir;
+// düz temalarda panel zeminden açılmış tek renkle doldurulur ( opak, parlama yok ).
+function panelStyle(theme, custom, base) {
+  const raw = Number(custom.glassOpacity);
+  const opacity = clamp(Number.isFinite(raw) ? raw : OPACITY_DEFAULT, 0, 100) / 100;
+  return {
+    glass: Boolean(theme.glass),
+    // 0 -> 1,4 kat belirgin; 1 -> 0,5 kat saydam (k panelin tüm alfa değerlerini çarpar)
+    k: 1.4 - opacity * 0.9,
+    fill: mix(base, '#ffffff', 0.07),
+    edge: mix(base, '#ffffff', 0.16),
+  };
+}
+
+const alpha = (tint, value, p) => `rgba(${tint},${Math.min(0.55, value * (p.glass ? p.k : 1)).toFixed(3)})`;
+
+// Yuvarlak köşeli kutu: cam temada üstte parlak şerit ve saydam dolgu, düz temada opak dolgu ve ince kenar
+function glass(ctx, x, y, w, h, r, c, tint = '255,255,255') {
+  const p = c.panel;
   roundRect(ctx, x, y, w, h, r);
+
+  if (!p.glass) {
+    ctx.fillStyle = p.fill;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = p.edge;
+    roundRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, Math.max(1, r - 0.75));
+    ctx.stroke();
+    return;
+  }
+
+  const fill = ctx.createLinearGradient(x, y, x, y + h);
+  fill.addColorStop(0, alpha(tint, 0.12, p));
+  fill.addColorStop(0.5, alpha(tint, 0.06, p));
+  fill.addColorStop(1, alpha(tint, 0.025, p));
   ctx.fillStyle = fill;
   ctx.fill();
 
   ctx.save();
   roundRect(ctx, x, y, w, h, r);
   ctx.clip();
-  const sheen = ctx.createLinearGradient(x, y, x, y + 20);
-  sheen.addColorStop(0, `rgba(${tint},0.24)`);
+  const sheen = ctx.createLinearGradient(x, y, x, y + 22);
+  sheen.addColorStop(0, alpha(tint, 0.24, p));
   sheen.addColorStop(1, `rgba(${tint},0)`);
   ctx.fillStyle = sheen;
-  ctx.fillRect(x, y, w, 20);
+  ctx.fillRect(x, y, w, 22);
   ctx.restore();
 
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = `rgba(${tint},0.16)`;
+  ctx.strokeStyle = alpha(tint, 0.16, p);
   roundRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, Math.max(1, r - 0.75));
   ctx.stroke();
 }
@@ -130,21 +158,21 @@ async function paintHeader(ctx, view, theme, p, base) {
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
 function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(255,255,255,0.16)') {
-  ctx.font = font(500, 16);
-  const width = ctx.measureText(text).width + 28;
+  ctx.font = font(500, 19);
+  const width = ctx.measureText(text).width + 34;
   const x = right - width;
   ctx.fillStyle = color;
-  roundRect(ctx, x, y, width, 34, 17);
+  roundRect(ctx, x, y, width, 42, 21);
   ctx.fill();
   if (border) {
     ctx.lineWidth = 1;
     ctx.strokeStyle = border;
-    roundRect(ctx, x + 0.5, y + 0.5, width - 1, 33, 16.5);
+    roundRect(ctx, x + 0.5, y + 0.5, width - 1, 41, 20.5);
     ctx.stroke();
   }
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
-  ctx.fillText(text, x + width / 2, y + 23);
+  ctx.fillText(text, x + width / 2, y + 28);
   return width;
 }
 
@@ -265,75 +293,75 @@ function drawBadges(ctx, rows, y) {
   });
 }
 
-// Seviye kutusu: başlık, büyük seviye numarası, XP ve ilerleme çubuğu (cam panel üstünde)
+// Seviye kutusu: başlık, büyük seviye numarası, XP ve ilerleme çubuğu (panel üstünde)
 function levelCard(ctx, x, y, w, h, title, xp, c) {
   const accent = c.accent;
   const level = levelFromXp(xp);
   const current = level > 0 ? levelConfig.xpForLevel(level) : 0;
   const next = levelConfig.xpForLevel(level + 1);
 
-  glass(ctx, x, y, w, h, 20);
+  glass(ctx, x, y, w, h, 22, c);
 
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 15);
-  ctx.fillText(title, x + 22, y + 32);
+  ctx.font = font(500, 18);
+  ctx.fillText(title, x + 26, y + 38);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 17);
-  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 22, y + 62);
+  ctx.font = font(700, 21);
+  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 26, y + 70);
 
   ctx.textAlign = 'right';
   ctx.fillStyle = accent;
-  ctx.font = font(700, 46);
-  ctx.fillText(String(level), x + w - 22, y + 68);
+  ctx.font = font(700, 56);
+  ctx.fillText(String(level), x + w - 26, y + 76);
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 12);
-  ctx.fillText('SEVİYE', x + w - 22, y + 22);
+  ctx.font = font(500, 14);
+  ctx.fillText('SEVİYE', x + w - 26, y + 26);
 
-  drawBar(ctx, x + 22, y + h - 28, w - 44, 14, (xp - current) / (next - current), accent, c.track);
+  drawBar(ctx, x + 26, y + h - 32, w - 52, 16, (xp - current) / (next - current), accent, c.track);
 }
 
 // Alt bilgi kutusu: sol üstte küçük başlık, altında değer
 function infoBox(ctx, x, y, w, label, value, c) {
-  glass(ctx, x, y, w, INFO_H, 16);
+  glass(ctx, x, y, w, INFO_H, 18, c);
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 11);
-  ctx.fillText(label.toLocaleUpperCase('tr-TR'), x + 16, y + 22);
+  ctx.font = font(500, 14);
+  ctx.fillText(label.toLocaleUpperCase('tr-TR'), x + 20, y + 27);
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 18);
-  ctx.fillText(fitText(ctx, value, w - 32), x + 16, y + 45);
+  ctx.font = font(700, 24);
+  ctx.fillText(fitText(ctx, value, w - 40), x + 20, y + 57);
 }
 
 // Vitrin şeridi: solda üyenin öne çıkardığı istatistik, sağda bağlantılar ve ziyaret sayısı
 function drawFooter(ctx, y, view, c) {
-  glass(ctx, PAD, y, WIDTH - PAD * 2, FOOTER_H, 18, '255,255,255');
+  glass(ctx, PAD, y, WIDTH - PAD * 2, FOOTER_H, 20, c);
   ctx.fillStyle = hexAlpha(c.accent, 0.75);
-  roundRect(ctx, PAD, y + 16, 5, FOOTER_H - 32, 3);
+  roundRect(ctx, PAD, y + 20, 6, FOOTER_H - 40, 3);
   ctx.fill();
 
   if (view.featured) {
     ctx.textAlign = 'left';
     ctx.fillStyle = c.muted;
-    ctx.font = font(500, 12);
-    ctx.fillText(view.featured.label.toLocaleUpperCase('tr-TR'), PAD + 24, y + 26);
+    ctx.font = font(500, 15);
+    ctx.fillText(view.featured.label.toLocaleUpperCase('tr-TR'), PAD + 28, y + 32);
     ctx.fillStyle = c.accent;
-    ctx.font = font(700, 24);
-    ctx.fillText(fitText(ctx, view.featured.value, 340), PAD + 24, y + 54);
+    ctx.font = font(700, 30);
+    ctx.fillText(fitText(ctx, view.featured.value, 340), PAD + 28, y + 68);
   }
 
-  const right = WIDTH - PAD - 24;
+  const right = WIDTH - PAD - 26;
   ctx.textAlign = 'right';
   if (view.links?.length) {
     ctx.fillStyle = '#efe6ea';
-    ctx.font = font(500, 15);
-    ctx.fillText(fitText(ctx, view.links.join('   ·   '), 520), right, y + (view.featured ? 32 : 44));
+    ctx.font = font(500, 19);
+    ctx.fillText(fitText(ctx, view.links.join('   ·   '), 500), right, y + (view.featured ? 40 : 52));
   }
   if (view.visits > 0) {
     ctx.fillStyle = c.muted;
-    ctx.font = font(400, 13);
-    ctx.fillText(`${number(view.visits)} profil ziyareti`, right, y + (view.featured || view.links?.length ? 55 : 44));
+    ctx.font = font(400, 16);
+    ctx.fillText(`${number(view.visits)} profil ziyareti`, right, y + (view.featured || view.links?.length ? 68 : 52));
   }
 }
 
@@ -356,18 +384,20 @@ function drawFrame(ctx, height, frame, scheme) {
   ctx.stroke();
 }
 
-// Kartın renkleri: tema -> şema (vurgu, soluk yazı, çubuk zemini) ve koyu zemin tonu
-function paletteOf(theme) {
+// Kartın renkleri: tema -> şema (vurgu, soluk yazı, çubuk zemini), koyu zemin tonu ve panel tarzı
+function paletteOf(theme, custom) {
   const scheme = makeScheme(theme);
+  const c = {
+    accent: scheme.accent,
+    muted: scheme.muted,
+    track: scheme.track,
+    base: mix(theme.from, '#000000', 0.86),
+  };
+  c.panel = panelStyle(theme, custom ?? {}, c.base);
   return {
     scheme,
     accent: scheme.accent,
-    c: {
-      accent: scheme.accent,
-      muted: scheme.muted,
-      track: scheme.track,
-      base: mix(theme.from, '#000000', 0.86),
-    },
+    c,
     p: { from: theme.from, to: theme.to, accent: scheme.accent },
   };
 }
