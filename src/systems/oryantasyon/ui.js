@@ -141,8 +141,8 @@ function summaryLines(app, endedAt) {
   const told = topics.filter((s) => !o.skipped.includes(s.id)).length;
   return [
     `**${areas.length > 1 ? 'Görev Alanları' : 'Görev Alanı'}:** ${areaLabels(app) || 'Seçilmedi'}`,
-    `**Anlatılan Konular:** ${told}/${topics.length}${o.skipped.length ? ` - Bildiği için geçilen: ${skippedTitles(app)}` : ''}`,
-    `**Oryantasyon Süresi:** ${minutes(o.startedAt, endedAt)} dakika`,
+    `**Anlatılan Konular:** ${chip(`${told}/${topics.length}`)}${o.skipped.length ? ` - Bildiği için geçilen: ${skippedTitles(app)}` : ''}`,
+    `**Oryantasyon Süresi:** ${chip(`${minutes(o.startedAt, endedAt)} dakika`)}`,
   ];
 }
 
@@ -201,7 +201,12 @@ function panel(app, applicantUser) {
   const step = steps[o.step];
   const presence = presenceText(app);
   const blocks = [
-    `**Yetkili:** <@${o.staffId}>\n**Başvuran:** <@${app.userId}>\n**Adım:** ${o.step + 1}/${steps.length}\n${progress(o.step, steps.length)}${steps[o.step + 1] ? `\n**Sıradaki:** ${steps[o.step + 1].title}` : ''}`,
+    rows([
+      ['Yetkili', `<@${o.staffId}>`],
+      ['Başvuran', `<@${app.userId}>`],
+      ['Adım', `${chip(`${o.step + 1}/${steps.length}`)}\n${progress(o.step, steps.length)}`],
+      steps[o.step + 1] && ['Sıradaki', steps[o.step + 1].title],
+    ]),
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
   blocks.push(`### ${step.title}\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);
@@ -288,7 +293,11 @@ function rolesGrantedNotice(app) {
     'Yetki Verildi — Ekibe Katıldı',
     `Oryantasyon tamamlandı ve roller verildi. ${areaLabels(app) ? `Görev alanı: ${areaLabels(app)}. ` : ''}Bu mesaj kanalın son kaydıdır.`,
     [
-      `**<@${app.userId}> yetkili ekibine katıldı.**\nBaşlangıç yetkisi: **${o.levelLabel ?? '—'}** · Oryantasyonu veren: <@${o.staffId}>`,
+      `**<@${app.userId}> yetkili ekibine katıldı.**`,
+      rows([
+        ['Başlangıç Yetkisi', o.levelLabel ? chip(o.levelLabel) : '—'],
+        ['Oryantasyonu Veren', `<@${o.staffId}>`],
+      ]),
       `**Verilen Roller**\n${roles}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
@@ -322,7 +331,7 @@ function presenceText(app) {
   if (o.applicantAwaySince) {
     lines.push(
       `**<@${app.userId}> kanaldan ayrıldı.** <t:${unix(o.applicantAwaySince + p.applicantGraceMinutes * MINUTE)}:R> dönmezse oryantasyon iptal edilecek.\n` +
-        `**Ayrılma:** ${o.applicantLeaves}/${p.maxApplicantLeaves} - ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
+        `**Ayrılma:** ${chip(`${o.applicantLeaves}/${p.maxApplicantLeaves}`)} - ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
     );
   }
   if (o.staffNeeded) {
@@ -414,7 +423,11 @@ function rolesGrantedResult(app) {
     'Yetki Verildi',
     `Oryantasyonu tamamlayan başvurana başlangıç yetki rolü ve seçilen görev alanlarının rolleri verildi. Bu mesaj kayıt kanalındaki ekip katılım bildirimidir.`,
     [
-      `**<@${app.userId}> yetkili ekibine katıldı.**\nBaşlangıç yetkisi: **${o.levelLabel ?? '—'}** · Oryantasyonu veren: <@${o.staffId}>`,
+      `**<@${app.userId}> yetkili ekibine katıldı.**`,
+      rows([
+        ['Başlangıç Yetkisi', o.levelLabel ? chip(o.levelLabel) : '—'],
+        ['Oryantasyonu Veren', `<@${o.staffId}>`],
+      ]),
       `**Verilen Roller**\n${roles}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
