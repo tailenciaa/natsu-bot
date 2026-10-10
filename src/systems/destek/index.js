@@ -24,18 +24,35 @@ const creating = new Set();
 const closing = new Set();
 const UNKNOWN_MESSAGE = 10008;
 
+// Durum panelinin güncel hali (bileşenler + kart eki). Kart çizilemezse metinli liste gösterilir.
+// Mesaj her güncellemede yeniden düzenlendiği için kart dosya adı eşsiz üretilir; eski ekler temizlenir
+async function statusPanelView(client, gid, page = 0) {
+  const tickets = store.openTicketsAll(gid);
+  const guild = client.guilds.cache.get(gid);
+  let card = null;
+  try {
+    card = await require('./card').buildStatusCard(tickets, page, `destek-durum-${Date.now().toString(36)}.png`, (id) => userName(guild, id));
+  } catch (err) {
+    console.error('[destek] Durum paneli kartı çizilemedi, metinli panel gösterilecek:', err.message);
+  }
+  return {
+    components: [ui.statusPanel(tickets, page, card?.name ?? null)],
+    files: card ? [new AttachmentBuilder(card.buffer, { name: card.name })] : [],
+  };
+}
+
 // Durum kanalındaki panel mesajını açık taleplere göre günceller; mesaj silinmişse yeniden gönderilir
 async function refreshStatusPanel(client, gid) {
   if (!config.channels.statusPanel) return;
   const guild = client.guilds.cache.get(gid);
   const channel = guild && (await fetchTextChannel(guild, config.channels.statusPanel));
   if (!channel) return;
-  const container = ui.statusPanel(store.openTicketsAll(gid));
+  const view = await statusPanelView(client, gid);
   const messageId = store.statusPanelMessageId(gid);
   let missing = !messageId;
   if (messageId) {
     const edited = await channel.messages
-      .edit(messageId, { components: [container], allowedMentions: { parse: [] } })
+      .edit(messageId, { components: view.components, files: view.files, attachments: [], allowedMentions: { parse: [] } })
       .catch((err) => {
         if (err.code === UNKNOWN_MESSAGE) missing = true;
         else console.error('[destek] Durum paneli düzenlenemedi:', err.message);
@@ -45,7 +62,7 @@ async function refreshStatusPanel(client, gid) {
   }
   if (!missing) return;
   const message = await channel
-    .send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } })
+    .send({ components: view.components, files: view.files, flags: core.CV2, allowedMentions: { parse: [] } })
     .catch((err) => console.error('[destek] Durum paneli gönderilemedi:', err.message));
   if (message) store.setStatusPanelMessageId(gid, message.id);
 }
@@ -142,16 +159,10 @@ async function removeRegularMembers(thread, ticket) {
 
 // ── Panel ────────────────────────────────────────────────────────────────────
 
-// Bot açılınca paneli destek kanalına gönderir (değişmediyse dokunmaz); kart çizilemezse metinli hali gönderilir
-async function sendPanel(client) {
+// Bot açılınca paneli destek kanalına gönderir (değişmediyse dokunmaz)
+function sendPanel(client) {
   const { guildId } = require('../../core/config');
   refreshStatusPanel(client, guildId).catch((err) => console.error('[destek] Durum paneli güncellenemedi:', err.message));
-  let card = null;
-  try {
-    card = await require('./card').buildPanelCard();
-  } catch (err) {
-    console.error('[destek] Panel kartı çizilemedi, metinli panel gönderilecek:', err.message);
-  }
   return syncPanel(client, {
     key: 'destek',
     label: 'Destek',
@@ -159,7 +170,6 @@ async function sendPanel(client) {
     buttonId: ui.IDS.create,
     build: ui.panel,
     image: '',
-    card,
   });
 }
 
@@ -541,11 +551,19 @@ async function handleMemberCommand(interaction) {
 }
 
 async function handleStatusDetail(interaction) {
-  const threadId = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
+  // Kartlı panelde talep menüden seçilir (customId sabit), eski metinli panelde buton ID'sinin sonundadır
+  const threadId = interaction.isStringSelectMenu() ? interaction.values[0] : interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const ticket = store.getTicket(threadId);
   if (!ticket) return replyError(interaction, 'Bu talep artık mevcut değil.');
   await interaction.deferReply({ flags: core.EPHEMERAL });
   await interaction.editReply({ components: [ui.claimRequest(ticket)], flags: core.CV2, allowedMentions: { parse: [] } });
+}
+
+// Durum panelindeki sayfa butonları: aynı mesaj yeni sayfanın kartıyla yeniden çizilir
+async function handleStatusPage(interaction) {
+  const page = Number(interaction.customId.split(':')[1]) || 0;
+  const view = await statusPanelView(interaction.client, interaction.guildId, page);
+  return interaction.update({ components: view.components, files: view.files, attachments: [], allowedMentions: { parse: [] } });
 }
 
 module.exports = {
@@ -564,7 +582,7 @@ module.exports = {
     [ui.IDS.close]: handleCloseRequest,
   },
   modals: { [ui.IDS.modal]: handleModalSubmit, [ui.IDS.closeModal]: handleCloseSubmit },
-  prefixed: [[ui.IDS.claim, handleClaim], [ui.IDS.statusDetail, handleStatusDetail]],
+  prefixed: [[ui.IDS.claim, handleClaim], [ui.IDS.statusDetail, handleStatusDetail], [ui.IDS.statusPage, handleStatusPage]],
   events: {
     [Events.ClientReady]: sendPanel,
     // Kapanmış taleplere yazılmasını engelle

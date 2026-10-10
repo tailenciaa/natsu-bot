@@ -5,12 +5,16 @@ const {
   ButtonStyle,
   ContainerBuilder,
   LabelBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ModalBuilder,
   SectionBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, fields, field, panel: standardPanel } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, shorten, page, messageUrl, fields, field, pageInfo, pagerRow, panel: standardPanel } = require('../../core/ui');
 const orientationUi = require('../oryantasyon/ui');
 const config = require('./config');
 
@@ -24,7 +28,24 @@ const IDS = {
   remind: 'basvuru-hatirlat', // basvuru-hatirlat:<başvuru>
   transfer: 'basvuru-devir', // basvuru-devir:<başvuru>:<iste|evet:<isteyen>|hayir:<isteyen>>
   statusDetail: 'basvuru-durum-detay', // basvuru-durum-detay:<başvuru id>
+  statusPage: 'basvuru-durum-sayfa', // basvuru-durum-sayfa:<sayfa>:<buton yeri>
 };
+
+// Durum kartının başlığı, açıklaması ve sayfa boyutu; kartı çizen (card.js) ile metinli yedeği aynı bilgileri kullanır
+const STATUS_TITLE = 'Bekleyen Başvurular';
+const STATUS_SUB =
+  'Yetkili alım sistemindeki tüm bekleyen başvurular ve anlık durumları burada listelenir; başvuru durumu her değiştiğinde bu mesaj otomatik olarak güncellenir.';
+const STATUS_PAGE_SIZE = 6;
+
+// Başvurunun durum panelindeki hali: karttaki kısa etiket (pill), metinli yedekteki uzun satır ve renk tonu
+function statusState(app) {
+  if (app.onHold) return { pill: 'Beklemede', line: `Görüşme beklemede — <@${app.onHold.by}>`, tone: 'wait', staffId: app.onHold.by };
+  if (app.directConnect && app.meetingBy && app.meeting?.startedAt)
+    return { pill: 'Bağlandı', line: `Bağlandı — <@${app.meetingBy}>`, tone: 'busy', staffId: app.meetingBy };
+  if (app.directConnect && app.meetingBy) return { pill: 'Üstlenildi', line: `Üstlenildi — <@${app.meetingBy}>`, tone: 'busy', staffId: app.meetingBy };
+  if (app.meetingBy) return { pill: 'Görüşmede', line: `Görüşmede — <@${app.meetingBy}>`, tone: 'busy', staffId: app.meetingBy };
+  return { pill: 'İnceleniyor', line: 'İnceleniyor', tone: 'wait' };
+}
 
 const STATUS = { pending: 'İnceleniyor', approved: 'Onaylandı', rejected: 'Reddedildi' };
 // Boş satır yığınları tek satıra indirilir; mesajdaki toplam metin 4000 karakteri aşmasın diye cevaplar kırpılır
