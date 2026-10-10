@@ -28,6 +28,8 @@ const fill = (content, app) =>
   content.replaceAll('{aday}', `<@${app.userId}>`).replaceAll('{yetkili}', `<@${app.orientation.staffId}>`);
 const channelUrl = (guildId, channelId) => `https://discord.com/channels/${guildId}/${channelId}`;
 const progress = (index, total) => '▰'.repeat(index + 1) + '▱'.repeat(total - index - 1);
+// Başvuru numarası her kartta aynı biçimde: kod rozeti kutucuğu içinde
+const appNo = (app) => chip(`#${pad(app.number)}`);
 const MINUTE = 60 * 1000;
 const minutes = (from, to) => Math.max(1, Math.round((to - from) / MINUTE));
 
@@ -395,7 +397,7 @@ function orientationResult(app) {
     'Oryantasyon Tamamlandı',
     'Bu başvurunun oryantasyonu tamamlandı ve görüşme kanalları başvurana kilitlendi. Oryantasyon özeti bu mesajda kalıcı olarak durur; rol ve ekip bilgileri ayrı mesajda.',
     [
-      `**Başvuru #${pad(app.number)}**\n<@${app.userId}> oryantasyonu tamamladı.\nOryantasyonu <@${o.staffId}> verdi.`,
+      `**Başvuru ${appNo(app)}**\n<@${app.userId}> oryantasyonu tamamladı.\nOryantasyonu <@${o.staffId}> verdi.`,
       `**Oryantasyon Özeti**\n${summaryLines(app, o.finishedAt).join('\n')}`,
       `-# <t:${unix(o.finishedAt)}:F>`,
     ],
@@ -533,7 +535,7 @@ function cancelledDm(app, guildName) {
 // state: open (devral butonu açık) | returned (yetkili döndü) | taken (biri devraldı) | closed (oryantasyon bitti)
 function takeoverNotice(app, state) {
   const o = app.orientation;
-  const heading = `**Başvuru #${pad(app.number)}**`;
+  const heading = `**Başvuru ${appNo(app)}**`;
   const record = 'Bu mesaj başvurular kanalında kayıt olarak kalır.';
   if (state === 'open') {
     const step = config.steps[o.step];
@@ -749,7 +751,7 @@ function choiceResult(app, which, lines = []) {
 // state: open (başvuran henüz kanalda değil) | waiting (başvuran kanalda bekliyor) | taken | closed
 function pendingNotice(app, state, channelId, reminder) {
   const o = app.orientation;
-  const heading = `**Başvuru #${pad(app.number)}**`;
+  const heading = `**Başvuru ${appNo(app)}**`;
   const record = 'Bu mesaj başvurular kanalında kayıt olarak kalır.';
   if (state === 'taken') {
     return card(
@@ -782,12 +784,12 @@ function pendingNotice(app, state, channelId, reminder) {
   const waiting = state === 'waiting';
   const guarded = state === 'protected';
   const roles = basvuruConfig.roles.orientationPing.map((id) => `<@&${id}>`).join(', ');
-  const info = fields([
-    field('Başvuru', `#${pad(app.number)}`),
-    field('Başvuran', `<@${app.userId}>`),
-    field('Aşama', 'Oryantasyon'),
-    o.holdBy ? field('Beklemeye alan', `<@${o.holdBy}>`) : field('Yetkili', 'Henüz üstlenen yok'),
-    channelId ? field('Kanal', `<#${channelId}>`) : null,
+  const info = rows([
+    ['Başvuru', appNo(app)],
+    ['Başvuran', `<@${app.userId}>`],
+    ['Aşama', chip('Oryantasyon')],
+    o.holdBy ? ['Beklemeye Alan', `<@${o.holdBy}>`] : ['Yetkili', chip('Henüz üstlenen yok')],
+    channelId && ['Kanal', `<#${channelId}>`],
   ]);
 
   let sub;
@@ -832,7 +834,12 @@ function claimedChat(app) {
       ? 'Bekleyen oryantasyonu bir yetkili üstlendi ve oryantasyon başladı. Adımlar kanalın sohbetindeki panelden ilerliyor; bu mesaj kayıt olarak kalır.'
       : 'Bekleyen oryantasyonu bir yetkili üstlendi. Yetkili kanala geldiğinde oryantasyon kendiliğinden başlar ve panel bu kanalın sohbetine gelir; o zamana kadar kanaldan ayrılmadan beklemen yeterli.',
     [
-      [`**Başvuru:** #${pad(app.number)}`, `**Başvuran:** <@${app.userId}>`, '**Aşama:** Oryantasyon', `**Yetkili:** <@${app.orientation.staffId}>`].join('\n'),
+      rows([
+        ['Başvuru', appNo(app)],
+        ['Başvuran', `<@${app.userId}>`],
+        ['Aşama', chip('Oryantasyon')],
+        ['Yetkili', `<@${app.orientation.staffId}>`],
+      ]),
       here ? '**Oryantasyon başladı.**' : '**Yetkilinin kanala gelmesi bekleniyor.**',
     ],
     'primary',
