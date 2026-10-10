@@ -22,6 +22,8 @@
 //   privateRooms                   : açık özel odalar, sahibiyle birlikte (ses kanalı ID'si ile)
 //   permanentRoomApplications       : kalıcı oda başvuruları, karar ve inceleme notuyla (sunucu-numara ID'si ile)
 //   permanentRooms                  : açılan kalıcı odalar, sahibi, üyeleri ve üç kanal ID'siyle (sunucu-numara ID'si ile)
+//   muhabbetQueue / muhabbetRooms   : muhabbet sırası (sunucu:üye ile) ve eşleşince açılan geçici odalar (sunucu-numara ile)
+//   muhabbetCooldown                : muhabbet odası kapandıktan sonra tekrar sıraya girilebilecek zaman (sunucu:üye ile)
 //   partnerRequests                : oto ya da elle yapılan tüm partner talepleri (talep ID'si ile)
 //   trustedPartners                : güvenilir partnerler listesi (kayıt ID'si ile)
 //   partnerTermsAccepted           : partner şartlarını kabul etmiş kullanıcılar (kullanıcı ID'si ile)

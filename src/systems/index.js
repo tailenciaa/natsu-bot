@@ -38,6 +38,7 @@ module.exports = [
   require('./ses'),
   require('./ozel-oda'),
   require('./kalici-oda'), // başvuruyla açılan, sahibinin yönettiği kalıcı ses ve yazı odaları
+  require('./muhabbet'), // sıraya giren iki üyeyi baş başa getiren geçici muhabbet odaları
   require('./sesbilgi'), // #sesli-bilgi paneli
   require('./durum'),
   require('./cekilis'), // /cekilis: ödüllü çekilişler, katıl butonu, otomatik kazanan seçimi
