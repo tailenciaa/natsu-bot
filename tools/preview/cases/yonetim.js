@@ -341,6 +341,22 @@ module.exports = ({ mock, ui, src }) => {
       build: () => ({ components: [yayin.panel()] }),
     },
     {
+      id: 'yayin-alindi',
+      title: 'Yayın yetkisi alındı',
+      where: 'Paneldeki Yayın Yetkisi Al düğmesi, sadece basana görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [yayin.granted({ user: staff })], ...noMentions }),
+    },
+    {
+      id: 'yayin-birakildi',
+      title: 'Yayın yetkisi bırakıldı',
+      where: 'Paneldeki Yetkiyi Bırak düğmesi, sadece basana görünür',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({ components: [yayin.released({ user: staff })], ...noMentions }),
+    },
+    {
       id: 'pg-panel',
       title: 'Partner görme paneli',
       where: 'Partner görme kanalı, bot açılırken gönderilen kalıcı panel',
