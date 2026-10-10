@@ -1,10 +1,12 @@
 // Coin cüzdanları: kullanıcı ID'si -> { coins: harcanabilir bakiye, earned: hiç harcanmadan biriken toplam,
 // streak: art arda günlük ödül alınan gün sayısı, lastClaimDay/lastClaimAt: en son ödülün gün anahtarı ve anı }.
 // Kazançlar az sayıda ve kullanıcı etkinliğine bağlı olduğu için her değişiklikte doğrudan kaydedilir (debounce'a gerek yok).
+// Satın almalar (purchases) aynı dosyada durur: harcanan coin'in neye gittiği üyenin kendisine gösterilir.
 const { data, save } = require('../../core/db');
 const config = require('./config');
 
 data.coins ??= {};
+data.purchases ??= {};
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -43,6 +45,25 @@ module.exports = {
     w.coins -= amount;
     save();
     return true;
+  },
+
+  // Satın alma kaydı: coin düştürülüp ürün sahipliğe geçtikten sonra yazılır
+  recordPurchase(userId, { tur, key, name, price }) {
+    const list = data.purchases[userId] ??= [];
+    const purchase = { id: `${userId}-${Date.now()}`, userId, tur, key, name, price, at: Date.now() };
+    list.push(purchase);
+    save();
+    return purchase;
+  },
+
+  // Üyenin siparişleri: en yeni başta
+  purchasesOf(userId) {
+    return [...(data.purchases[userId] ?? [])].reverse();
+  },
+
+  // Bugüne kadar harcanan toplam
+  spent(userId) {
+    return (data.purchases[userId] ?? []).reduce((sum, p) => sum + p.price, 0);
   },
 
   // Günlük ödül. Bugün alındıysa { ok: false, nextAt } döner. level: üyenin ulaştığı en yüksek mesaj/ses seviyesi.
