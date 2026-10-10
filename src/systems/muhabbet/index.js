@@ -31,6 +31,9 @@ async function dm(client, userId, container) {
   return user?.send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => null) ?? null;
 }
 
+// Log kanalı tanımsızsa ya da yazılamasa bile muhabbet akışı kesilmez
+const yazLog = (client, payload) => logSystem.write(client, 'bot', payload).catch(hata('Muhabbet logu yazılamadı'));
+
 const commands = [
   new SlashCommandBuilder()
     .setName('muhabbet')
@@ -111,12 +114,12 @@ async function matchPair(guild, skipUserId) {
     const room = await openRoom(guild, [first.userId, second.userId]);
     if (!room) {
       for (const userId of [first.userId, second.userId]) {
-        await dm(guild.client, userId, core.alert('Muhabbet odası açılamadı.', 'Bot bu sunucuda kanal创建edemedi; yetkililer ayarları kontrol etmeli.', 'danger'));
+        await dm(guild.client, userId, core.alert('Muhabbet odası açılamadı.', 'Bot bu sunucuda kanal oluşturamadı; yetkililerin kanal izinlerini kontrol etmesi gerekir.', 'danger'));
       }
       return null;
     }
     for (const userId of room.users) if (userId !== skipUserId) await dm(guild.client, userId, ui.matchedCard(room));
-    logSystem.write(guild.client, 'bot', {
+    yazLog(guild.client, {
       color: 'success',
       title: 'Muhabbet Odası Açıldı',
       lines: [
@@ -197,7 +200,7 @@ async function closeRoom(guild, room, reason) {
     for (const userId of room.users) store.setCooldown(guild.id, userId, config.requeueCooldownSeconds * 1000);
     for (const userId of room.users) await dm(guild.client, userId, ui.endedCard(room, reason));
 
-    logSystem.write(guild.client, 'bot', {
+    yazLog(guild.client, {
       color: 'warning',
       title: 'Muhabbet Odası Kapatıldı',
       lines: [
