@@ -437,12 +437,12 @@ async function buildProfileCard(user, view) {
   let right = WIDTH - PAD;
   right -= pill(ctx, `Ses  ${view.sesRank ? `#${view.sesRank}` : '-'}`, right, 26, rankColor) + 10;
   pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 26, rankColor);
-  pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 70, accent, '#120a10', null);
+  pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 76, accent, '#120a10', null);
 
   // Avatar kapağın altına taşar; zemin renginde kalın halka kapakla arasını ayırır
-  const avatarSize = 168;
+  const avatarSize = 184;
   const avatarX = PAD;
-  const avatarY = HEADER - 84;
+  const avatarY = HEADER - 92;
   ctx.beginPath();
   ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 10, 0, Math.PI * 2);
   ctx.fillStyle = c.base;
@@ -454,42 +454,42 @@ async function buildProfileCard(user, view) {
   const textMax = WIDTH - PAD - textX;
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 36);
-  ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER + 36);
+  ctx.font = font(700, 44);
+  ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER + 40);
   ctx.fillStyle = c.muted;
-  ctx.font = font(400, 17);
-  ctx.fillText(fitText(ctx, `@${user.username}${custom.pronoun ? ` · ${custom.pronoun}` : ''}`, textMax), textX, HEADER + 62);
+  ctx.font = font(400, 21);
+  ctx.fillText(fitText(ctx, `@${user.username}${custom.pronoun ? ` · ${custom.pronoun}` : ''}`, textMax), textX, HEADER + 70);
   if (custom.title) {
-    ctx.font = font(500, 16);
-    const width = ctx.measureText(custom.title).width + 28;
+    ctx.font = font(500, 19);
+    const width = ctx.measureText(custom.title).width + 34;
     ctx.fillStyle = hexAlpha(accent, 0.22);
-    roundRect(ctx, textX, HEADER + 74, width, 30, 15);
+    roundRect(ctx, textX, HEADER + 84, width, 36, 18);
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.strokeStyle = hexAlpha(accent, 0.5);
-    roundRect(ctx, textX + 0.5, HEADER + 74.5, width - 1, 29, 14.5);
+    roundRect(ctx, textX + 0.5, HEADER + 84.5, width - 1, 35, 17.5);
     ctx.stroke();
     ctx.fillStyle = accent;
-    ctx.fillText(custom.title, textX + 14, HEADER + 94);
+    ctx.fillText(custom.title, textX + 17, HEADER + 108);
   }
 
   // Rozetler: kazanılanlar ve satın alınan sergi rozetleri unvanın altında sırayla dizilir
   if (rows.length) drawBadges(ctx, rows, badgesTop);
 
   // Biyografi kutusu
-  glass(ctx, PAD, bioY, WIDTH - PAD * 2, BIO_H, 20);
+  glass(ctx, PAD, bioY, WIDTH - PAD * 2, BIO_H, 22, c);
   ctx.fillStyle = accent;
-  roundRect(ctx, PAD, bioY + 16, 5, BIO_H - 32, 3);
+  roundRect(ctx, PAD, bioY + 20, 6, BIO_H - 40, 3);
   ctx.fill();
   ctx.textAlign = 'left';
   if (custom.bio) {
     ctx.fillStyle = '#ece3e8';
-    ctx.font = font(400, 19);
-    wrapLines(ctx, custom.bio, WIDTH - PAD * 2 - 60, 2).forEach((line, i) => ctx.fillText(line, PAD + 26, bioY + 40 + i * 28));
+    ctx.font = font(400, 23);
+    wrapLines(ctx, custom.bio, WIDTH - PAD * 2 - 64, 2).forEach((line, i) => ctx.fillText(line, PAD + 28, bioY + 44 + i * 34));
   } else {
     ctx.fillStyle = c.muted;
-    ctx.font = font(400, 18);
-    ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 26, bioY + 52);
+    ctx.font = font(400, 22);
+    ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 28, bioY + 58);
   }
 
   // Mesaj ve ses seviye kutuları
@@ -514,7 +514,7 @@ async function buildProfileCard(user, view) {
 // Kapak düzenleyicisinin önizlemesi: kartın üst alanı tek başına çizilir, böylece büyütme ve kaydırma anında görülür
 async function buildHeaderPreview(view, note = null) {
   const theme = resolveTheme(view.custom, view.roleColor);
-  const { c, p } = paletteOf(theme);
+  const { c, p } = paletteOf(theme, view.custom);
   const canvas = canvasLib().createCanvas(WIDTH, HEADER);
   const ctx = canvas.getContext('2d');
 
@@ -527,16 +527,16 @@ async function buildHeaderPreview(view, note = null) {
   ctx.restore();
 
   if (note) {
-    ctx.font = font(500, 16);
-    const width = ctx.measureText(note).width + 30;
+    ctx.font = font(500, 19);
+    const width = ctx.measureText(note).width + 34;
     ctx.fillStyle = 'rgba(10,6,12,0.6)';
-    roundRect(ctx, WIDTH - PAD - width, HEADER - 50, width, 34, 17);
+    roundRect(ctx, WIDTH - PAD - width, HEADER - 62, width, 42, 21);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText(note, WIDTH - PAD - width / 2, HEADER - 27);
+    ctx.fillText(note, WIDTH - PAD - width / 2, HEADER - 33);
   }
   return canvas.toBuffer('image/png');
 }
 
-module.exports = { buildProfileCard, buildHeaderPreview, WIDTH, HEADER, PAD };
+module.exports = { buildProfileCard, buildHeaderPreview, WIDTH, HEADER, PAD, OPACITY_DEFAULT, OPACITY_STEP, clamp };
