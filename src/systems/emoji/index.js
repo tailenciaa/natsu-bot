@@ -3,7 +3,7 @@
 //     ya da herhangi bir resim bağlantısı verilebilir; boşlukla ayırarak birden fazla eklenebilir.
 //   /cikartma-ekle dosya isim etiket: yüklenen bir görsel dosyasını çıkartma olarak ekler.
 //   Mesaja sağ tık > Uygulamalar > "Emojileri Sunucuya Ekle": mesajdaki ve tepkilerdeki emojiler önizlemeyle listelenir,
-//     menüden seçilenler eklenir. Sonuç herkese açıktır, eklenemeyenler için uyarı sadece kullanana gider.
+//     menüden seçilenler eklenir. Sonuç da eklenemeyenlerin uyarısı da kanalda herkese açık yazılır.
 // "Emoji ve Çıkartmaları Yönet" izni olanlar sınırsız kullanabilir; botun da bu izne sahip olması gerekir.
 // Sunucuyu takviye eden (boost) üyeler, izinleri olmasa da /emoji-ekle ve /cikartma-ekle ile belirli sayıda
 // emoji/çıkartma ekleyebilir (boost/config.js'teki perks; hak üye başına sayılır). Bulk seçim menüsü (sağ tık) sadece yetkililer içindir.
@@ -203,7 +203,7 @@ async function handleStickerCommand(interaction) {
       console.error('[emoji] Çıkartma eklenemedi:', err.message);
       return { error: stickerFailureReason(err) };
     });
-  if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'), { ephemeral: true });
+  if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'));
 
   if (!perm.unlimited) boostStore.use(interaction.user.id, 'sticker');
   return respond(interaction, core.alert('Çıkartma eklendi.', `\`${sticker.name}\` adıyla sunucuya eklendi.`, 'success'));

@@ -102,7 +102,7 @@ async function handleItirazKarar(interaction) {
     const result = await moderation.remove(interaction.guild, punishment, interaction.user.id, core.shorten(`İtiraz kabul edildi: ${ticket.itirazSebep}`, 500));
     if (result.error) {
       destekStore.updateTicket(interaction.channelId, { itirazKarar: null });
-      return respond(interaction, core.alert(result.error, result.hint, 'danger'), { ephemeral: true });
+      return respond(interaction, core.alert(result.error, result.hint, 'danger'));
     }
   }
 
