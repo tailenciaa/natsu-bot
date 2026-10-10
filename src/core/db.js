@@ -20,6 +20,8 @@
 //   profileVisits                  : profil kartını başkalarının kaç kez gördüğü ve son görenler (kullanıcı ID'si ile)
 //   newAccountRole                 : yeni/şüpheli hesap kısıtlama rolünün ID'si (sunucu ID'si ile)
 //   privateRooms                   : açık özel odalar, sahibiyle birlikte (ses kanalı ID'si ile)
+//   permanentRoomApplications       : kalıcı oda başvuruları, karar ve inceleme notuyla (sunucu-numara ID'si ile)
+//   permanentRooms                  : açılan kalıcı odalar, sahibi, üyeleri ve üç kanal ID'siyle (sunucu-numara ID'si ile)
 //   partnerRequests                : oto ya da elle yapılan tüm partner talepleri (talep ID'si ile)
 //   trustedPartners                : güvenilir partnerler listesi (kayıt ID'si ile)
 //   partnerTermsAccepted           : partner şartlarını kabul etmiş kullanıcılar (kullanıcı ID'si ile)
