@@ -1,4 +1,4 @@
-// Çekiliş sisteminin mesajları: çekiliş paneli (katıl butonlu), bitiş duyurusu ve katılımdan ayrılma onayı.
+// Çekiliş sisteminin mesajları: çekiliş paneli (katıl butonlu), yönetim paneli, bitiş duyurusu ve katılımdan ayrılma onayı.
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -8,9 +8,9 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, alert, page, quote, stamp, text, unix } = require('../../core/ui');
+const { colors, alert, page, quote, stamp, text, unix, rows, chip, rel } = require('../../core/ui');
 
-// cekilis-ayril:<no>, cekilis-onay:<eylem>:<no>, cekilis-form:<no>
+// cekilis-ayril:<no>, cekilis-onay:<eylem>:<no>, cekilis-form:<no>, cekilis-yeni:<kanalID>:<rolID>
 const IDS = {
   join: 'cekilis-katil',
   leave: 'cekilis-ayril',
@@ -20,7 +20,8 @@ const IDS = {
   reroll: 'cekilis-yeniden',
   confirm: 'cekilis-onay',
   form: 'cekilis-form',
-  create: 'cekilis-yeni', // cekilis-yeni:<kanalID>:<rolID|0>
+  create: 'cekilis-yeni', // cekilis-yeni:<kanalID>:<rolID|0> (formu açan modalın kimliği)
+  start: 'cekilis-baslat', // yönetim panelindeki buton: bu kanal için formu açar
 };
 
 const mentions = (ids) => ids.map((id) => `<@${id}>`).join(', ');
@@ -39,20 +40,20 @@ const SUB = {
 function panel(g) {
   const title = { active: `Çekiliş #${g.no}`, ended: `Çekiliş #${g.no} Sona Erdi`, cancelled: `Çekiliş #${g.no} İptal Edildi` }[g.status];
   const closedLabel = { ended: 'Çekiliş Bitti', cancelled: 'Çekiliş İptal Edildi' }[g.status];
-  const info = [];
-  if (g.status === 'ended') info.push(`**Kazananlar:** ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`);
-  if (g.status === 'ended' || g.status === 'cancelled') info.push(`**Katılımcı:** ${g.participants.length}`);
-  if (g.status === 'active') {
-    info.push(`**Bitiş:** <t:${unix(g.endsAt)}:R>`, `**Kazanan sayısı:** ${g.winnerCount}`);
-    if (g.roleId) info.push(`**Gerekli rol:** <@&${g.roleId}>`);
-  }
-  info.push(`**Düzenleyen:** <@${g.hostId}>`);
+  const info = rows([
+    g.status === 'ended' && ['Kazananlar', g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'],
+    (g.status === 'ended' || g.status === 'cancelled') && ['Katılımcı', chip(g.participants.length)],
+    g.status === 'active' && ['Bitiş', rel(g.endsAt)],
+    g.status === 'active' && ['Kazanan Sayısı', chip(g.winnerCount)],
+    g.status === 'active' && g.roleId && ['Gerekli Rol', `<@&${g.roleId}>`],
+    ['Düzenleyen', `<@${g.hostId}>`],
+  ]);
 
   const container = page({
     title,
     sub: SUB[g.status],
     accent: g.status === 'cancelled' ? colors.danger : undefined,
-    blocks: [`${g.prize}${g.description ? `\n${quote(g.description)}` : ''}`, quote(info.join('\n'))],
+    blocks: [`**${g.prize}**${g.description ? `\n${quote(g.description)}` : ''}`, info],
   });
   if (g.status === 'ended') container.addTextDisplayComponents(text(stamp(g.endsAt, 'f')));
 
@@ -137,11 +138,41 @@ function confirm(action, g) {
 
 // Süre dolunca (ya da yeniden çekilince) çekiliş mesajına yanıt olarak giden kazanan duyurusu; panelin tekrarı değil, sadece kutlama
 function winners(g, ids, reroll = false) {
-  return alert(`Tebrikler ${mentions(ids)}!`, `Kazanılan ödül: ${g.prize}${reroll ? ' (yeniden çekiliş)' : ''}`, 'success');
+  return page({
+    title: 'Çekiliş Sona Erdi!',
+    sub: 'Kazananlar çekilişe katılanlar arasından rastgele seçildi. Katılan herkese teşekkürler, yeni çekilişleri bu kanaldan takip edebilirsin.',
+    accent: colors.success,
+    blocks: [
+      `**Tebrikler ${mentions(ids)}!**`,
+      `**Ödül**\n${quote(g.prize)}`,
+      rows([
+        ['Çekilişi Başlatan', `<@${g.hostId}>`],
+        ['Katılımcı', chip(g.participants.length)],
+        ['Toplam Kazanan', chip(g.winners.length)],
+        reroll && ['Seçim', chip('yeniden çekiliş')],
+      ]),
+      stamp(g.endsAt, 'R'),
+    ],
+  });
 }
 
-// Kazanan çıkmadıysa kanala giden kısa bildirim
-const noWinner = (g) => alert('Çekilişte kazanan çıkmadı.', `${g.prize}: ${noWinnerReason(g)}`, 'warning');
+// Kazanan çıkmadıysa kanala giden bildirim: sebebiyle birlikte, aynı kutlama kartının düzeninde
+function noWinner(g) {
+  return page({
+    title: 'Çekiliş Sona Erdi!',
+    sub: 'Çekiliş tamamlandı ama kazanan seçilemedi.',
+    accent: colors.warning,
+    blocks: [
+      `**Ödül**\n${quote(g.prize)}`,
+      rows([
+        ['Sebep', noWinnerReason(g)],
+        ['Çekilişi Başlatan', `<@${g.hostId}>`],
+        ['Katılımcı', chip(g.participants.length)],
+      ]),
+      stamp(g.endsAt, 'R'),
+    ],
+  });
+}
 
 // Katılınca (ya da butona tekrar basınca) sadece basana görünen, ayrılma butonlu cevap
 function joined(g) {
