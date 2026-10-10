@@ -73,7 +73,8 @@ for (const sys of results) {
 
 // ── (c) komut denetimi ───────────────────────────────────────────────────────
 const NAME_RE = /^[-_\p{L}\p{N}\p{sc=Devanagari}\p{sc=Thai}]{1,32}$/u;
-const ACCESS_TEXTS = new Set(['Herkes', 'Yetkililer', 'Yöneticiler', 'Mesajları Yönet yetkisi olanlar']);
+// help.access artık arayüzde gösterilmez (yardım menüsü yalnızca üye komutlarını listeler), bu yüzden metin tek
+// kalıba uymak zorunda değil: alan komutların kimin için olduğunu belgeleyen kayıt olarak durur.
 const SUBCOMMAND = 1;
 const SUBCOMMAND_GROUP = 2;
 
