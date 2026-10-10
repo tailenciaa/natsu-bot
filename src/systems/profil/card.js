@@ -100,6 +100,10 @@ async function drawBanner(ctx, custom) {
 // Üst soldaki etiketlerin okunması için hafif bir karartma, altta zemine geçiş için yumuşak kararmanın eklenir.
 async function paintHeader(ctx, view, theme, p, base) {
   const custom = view.custom;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, WIDTH, HEADER);
+  ctx.clip(); // yakınlaştırılan görsel ve ışık lekeleri kapağın dışına taşmasın
   if (!custom.banner || !(await drawBanner(ctx, custom))) {
     drawCover(ctx, coverOf(custom.cover).effect ?? theme.effect, { x: 0, y: 0, w: WIDTH, h: HEADER }, p);
   }
@@ -113,6 +117,7 @@ async function paintHeader(ctx, view, theme, p, base) {
   fade.addColorStop(1, base);
   ctx.fillStyle = fade;
   ctx.fillRect(0, HEADER - 70, WIDTH, 70);
+  ctx.restore();
 }
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
@@ -387,9 +392,7 @@ async function buildProfileCard(user, view) {
   ctx.clip();
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, height);
-  ctx.save();
   await paintHeader(ctx, view, theme, p, c.base);
-  ctx.restore();
 
   // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
   const rankColor = 'rgba(10,6,12,0.5)';

@@ -13,11 +13,12 @@ function hash(x, y) {
 // Basit gradyan + yumuşak ışık lekeleri (temaların varsayılanı)
 function gradyan(ctx, w, h, p) {
   const g = ctx.createLinearGradient(0, 0, w, h);
-  g.addColorStop(0, p.from);
-  g.addColorStop(1, p.to);
+  g.addColorStop(0, mix(p.from, '#ffffff', 0.1));
+  g.addColorStop(0.55, p.to);
+  g.addColorStop(1, mix(p.from, '#000000', 0.15));
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
-  for (const [fx, fy, r, a] of [[0.82, 0.15, 0.55, 0.14], [0.62, 0.7, 0.4, 0.09], [0.94, 0.85, 0.32, 0.1]]) {
+  for (const [fx, fy, r, a] of [[0.2, 0.18, 0.6, 0.2], [0.58, 0.82, 0.45, 0.12], [0.9, 0.24, 0.34, 0.14]]) {
     const x = w * fx;
     const y = h * fy;
     const glow = ctx.createRadialGradient(x, y, 4, x, y, h * r);
