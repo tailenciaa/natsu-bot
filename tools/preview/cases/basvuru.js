@@ -73,10 +73,17 @@ module.exports = ({ mock, ui, src }) => {
 
   // Durum paneli kartı: index.js'teki gibi çizilir ve mesajın ekine konur
   const nameOf = async (id) => (id === staff.id ? 'ayse' : 'bilinmiyor');
-  const durum = (apps, page = 0) => async () => {
-    const card = await src('systems/basvuru/card').buildStatusCard(apps, page, `basvuru-durum-${page}.png`, nameOf);
-    return { components: [b.statusPanel(apps, page, card.name)], files: [card], ...noMentions };
-  };
+  const durum = (id, title, apps, page = 0) => ({
+    id,
+    title,
+    where: 'Durum kanalı, başvuru durumu değiştikçe aynı mesaj güncellenir',
+    visibility: 'panel',
+    kind: 'message',
+    build: async () => {
+      const card = await src('systems/basvuru/card').buildStatusCard(apps, page, `${id}-${page}.png`, nameOf);
+      return { components: [b.statusPanel(apps, page, card.name)], files: [card], ...noMentions };
+    },
+  });
   const held = (o = {}) => ({ ...base(), ...o, onHold: { by: staff.id, until: Date.now() + 10 * mock.MIN, auto: false } });
   const manyApps = (n) => Array.from({ length: n }, (_, i) => ({ ...base(), id: `${guild.id}-${i + 1}`, number: i + 1, username: `uye${i + 1}` }));
 
@@ -89,9 +96,9 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({ components: [b.panel()] }),
     },
-    durum([base(), meeting(), held()], 0),
-    { id: 'durum-bos', title: 'Durum paneli: başvuru yok (kart)', where: 'Durum kanalı', visibility: 'panel', kind: 'message', build: durum([], 0) },
-    durum(manyApps(9), 1),
+    durum('durum-kart', 'Durum paneli: bekleyen başvurular (kart)', [base(), meeting(), held()]),
+    durum('durum-bos', 'Durum paneli: başvuru yok (kart)', []),
+    durum('durum-sayfa', 'Durum paneli: 9 başvuru, 2. sayfa', manyApps(9), 1),
     {
       id: 'durum-metin',
       title: 'Durum paneli: kart çizilemedi (metinli yedek)',

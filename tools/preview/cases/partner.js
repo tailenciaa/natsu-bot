@@ -36,6 +36,19 @@ module.exports = ({ mock, src }) => {
   const many = (n) => Array.from({ length: n }, (_, i) => entry({ id: `${guild.id}-${i + 10}`, serverId: String(100000000000000000n + BigInt(i)), contactIds: i % 3 ? [member.id, staff.id] : [] }));
   const long = 'Çok uzun bir partner metni. '.repeat(120);
 
+  // Güvenilir partnerler paneli kartı: index.js'teki (trustedPanelView) gibi çizilir ve mesajın ekine konur
+  const panelKart = (id, title, entries, page = 0) => ({
+    id,
+    title,
+    where: 'Güvenilir partnerler kanalı, liste değiştikçe aynı mesaj güncellenir',
+    visibility: 'panel',
+    kind: 'message',
+    build: async () => {
+      const card = await src('systems/partner/card').buildTrustedCard(entries, page, `${id}-${page}.png`);
+      return { components: [ui.trustedListPanel(entries, page, card.name)], files: [card], ...noMentions };
+    },
+  });
+
   return [
     { id: 'baslat', title: 'Oto partner teklifi', where: 'Talep kanalında "partner" yazan üyeye yanıt', visibility: 'public', kind: 'message', build: () => ({ components: [ui.startPrompt(member.id)], ...noMentions }) },
     { id: 'baslat-gonderildi', title: 'Talep mesajı: şartlar bekleniyor', where: 'Form gönderilince talep mesajı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.startPromptSuccess(false)], ...noMentions }) },
@@ -64,10 +77,18 @@ module.exports = ({ mock, src }) => {
     { id: 'liste-bos', title: '/guvenilir-partnerler (boş)', where: 'Komut', visibility: 'public', kind: 'message', build: () => ({ components: [ui.trustedList([])], ...noMentions }) },
     { id: 'liste', title: '/guvenilir-partnerler', where: 'Komut', visibility: 'public', kind: 'message', build: () => ({ components: [ui.trustedList(many(8))], ...noMentions }) },
     { id: 'liste-30', title: '/guvenilir-partnerler (30 kayıt)', where: 'Komut', visibility: 'public', kind: 'message', build: () => ({ components: [ui.trustedList(many(30))], ...noMentions }) },
-    { id: 'panel-bos', title: 'Güvenilir partnerler paneli (boş)', where: 'Güvenilir partnerler kanalı', visibility: 'panel', kind: 'message', build: () => ({ components: [ui.trustedListPanel([])], ...noMentions }) },
-    { id: 'panel-3', title: 'Güvenilir partnerler paneli (3 kayıt)', where: 'Güvenilir partnerler kanalı', visibility: 'panel', kind: 'message', build: () => ({ components: [ui.trustedListPanel(many(3))], ...noMentions }) },
-    { id: 'panel-6', title: 'Güvenilir partnerler paneli (6 kayıt)', where: 'Güvenilir partnerler kanalı', visibility: 'panel', kind: 'message', build: () => ({ components: [ui.trustedListPanel(many(6))], ...noMentions }) },
-    { id: 'panel-40', title: 'Güvenilir partnerler paneli (40 kayıt)', where: 'Güvenilir partnerler kanalı', visibility: 'panel', kind: 'message', build: () => ({ components: [ui.trustedListPanel(many(40))], ...noMentions }) },
+    panelKart('panel-bos', 'Güvenilir partnerler paneli (boş)', []),
+    panelKart('panel-3', 'Güvenilir partnerler paneli (3 kayıt)', many(3)),
+    panelKart('panel-6', 'Güvenilir partnerler paneli (6 kayıt)', many(6)),
+    panelKart('panel-40', 'Güvenilir partnerler paneli (40 kayıt, 2. sayfa)', many(40), 1),
+    {
+      id: 'panel-metin',
+      title: 'Güvenilir partnerler paneli (kart çizilemedi, metinli yedek)',
+      where: 'Güvenilir partnerler kanalı, çizim hatasında',
+      visibility: 'panel',
+      kind: 'message',
+      build: () => ({ components: [ui.trustedListPanel(many(3))], ...noMentions }),
+    },
     { id: 'detay', title: 'Güvenilir partner detayı', where: 'Listeden seçilince, sadece seçene', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [ui.trustedDetail(entry())], ...ep }) },
     { id: 'form-yetkili', title: 'Form: partner yetkilisi', where: 'Yetkili Ekle butonu', visibility: 'ephemeral', kind: 'modal', build: () => ui.contactModal('1-3', [member.id, staff.id]) },
     { id: 'yetkili-sec', title: 'Teklifte bulunma: yetkili seçimi', where: 'Teklifte Bulun butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [ui.staffSelect('1-3', [staff, member], (id) => (id === member.id ? 'mesgul' : 'aktif'))], ...ep }) },

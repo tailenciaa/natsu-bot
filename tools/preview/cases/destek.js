@@ -16,6 +16,21 @@ module.exports = ({ mock, ui, src }) => {
   const noMentions = { allowedMentions: { parse: [] } };
   const staffRole = waiting().staffRoleId;
 
+  // Durum paneli kartı: index.js'teki gibi çizilir ve mesajın ekine konur
+  const nameOf = async (id) => (id === staff.id ? 'ayse' : 'mehmet');
+  const durum = (id, title, tickets, page = 0) => ({
+    id,
+    title,
+    where: 'Durum kanalı, talep durumu değiştikçe aynı mesaj güncellenir',
+    visibility: 'panel',
+    kind: 'message',
+    build: async () => {
+      const card = await src('systems/destek/card').buildStatusCard(tickets, page, `${id}-${page}.png`, nameOf);
+      return { components: [d.statusPanel(tickets, page, card.name)], files: [card], ...noMentions };
+    },
+  });
+  const manyTickets = (n) => Array.from({ length: n }, (_, i) => mock.ticket({ number: i + 1, claimedBy: i % 2 ? staff.id : null }));
+
   return [
     {
       id: 'panel',
@@ -24,6 +39,17 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'panel',
       kind: 'message',
       build: () => ({ components: [d.panel()] }),
+    },
+    durum('durum-kart', 'Durum paneli: açık talepler (kart)', [waiting(), claimed()]),
+    durum('durum-bos', 'Durum paneli: açık talep yok (kart)', []),
+    durum('durum-sayfa', 'Durum paneli: 9 talep, 2. sayfa', manyTickets(9), 1),
+    {
+      id: 'durum-metin',
+      title: 'Durum paneli: kart çizilemedi (metinli yedek)',
+      where: 'Durum kanalı, çizim hatasında',
+      visibility: 'panel',
+      kind: 'message',
+      build: () => ({ components: [d.statusPanel([waiting(), claimed()])], ...noMentions }),
     },
     {
       id: 'talep-modal',
