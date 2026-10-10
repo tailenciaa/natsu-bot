@@ -163,7 +163,7 @@ async function handleCommand(interaction) {
 }
 
 // Bot açılınca paneli yetkili alım kanalına gönderir (değişmediyse dokunmaz) ve süresi dolan ses erişimlerini kapatmaya başlar
-function handleReady(client) {
+async function handleReady(client) {
   voice.startSweeper(client);
   // Bot kapalıyken ikisi de aynı kanala girdiyse görüşme (ve karar paneli) açılışta başlatılır
   const guild = client.guilds.cache.get(guildId);
@@ -183,6 +183,13 @@ function handleReady(client) {
     for (const app of store.heldMeetings()) scheduleMeetingHold(guild, app);
   }
   refreshStatusPanel(client, guildId).catch((err) => console.error('[basvuru] Durum paneli güncellenemedi:', err.message));
+  // Kart çizilemezse metinli panel gönderilir
+  let card = null;
+  try {
+    card = await require('./card').buildPanelCard();
+  } catch (err) {
+    console.error('[basvuru] Panel kartı çizilemedi, metinli panel gönderilecek:', err.message);
+  }
   return syncPanel(client, {
     key: 'basvuru',
     label: 'Yetkili alım',
@@ -190,6 +197,7 @@ function handleReady(client) {
     buttonId: ui.IDS.apply,
     build: ui.panel,
     image: '',
+    card,
   });
 }
 
