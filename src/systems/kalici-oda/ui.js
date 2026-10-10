@@ -170,7 +170,7 @@ function readyCard(room) {
 function rejectedCard(app) {
   return page({
     title: 'Başvurun Reddedildi',
-    sub: 'Kalıcı oda başvurun incelendi ve reddedildi; sebebi aşağıda yazıyor. Gerekliği karşıladığında panelden tekrar başvurabilirsin.',
+    sub: 'Kalıcı oda başvurun incelendi ve reddedildi; sebebi aşağıda yazıyor. Gereksinimleri sağladığında panelden tekrar başvurabilirsin.',
     accent: colors.danger,
     blocks: [
       `**Başvuru Bilgileri**\n${rows([
