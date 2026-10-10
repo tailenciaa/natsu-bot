@@ -43,13 +43,14 @@ const reasonText = (closeReason) =>
 // Log satırlarındaki kişi: etiket ve (biliniyorsa) kullanıcı adı
 const personText = (id, user) => `<@${id}>${user ? ` (\`${user.username}\`)` : ''}`;
 
-function panel() {
+// cardName: çizim kartı ekteyse açıklama ve not kartta olduğu için mesajda tekrar yazılmaz
+function panel(cardName) {
   return core.panel({
     title: config.panel.title,
-    sub: '**Talep Oluştur** butonuyla destek talebi açabilirsin. Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda talebini yaz; destek ekibimiz inceleyip en kısa sürede seninle ilgilenir.',
+    sub: cardName ? undefined : '**Talep Oluştur** butonuyla destek talebi açabilirsin. Bir sorunla karşılaştığında ya da yardıma ihtiyaç duyduğunda talebini yaz; destek ekibimiz inceleyip en kısa sürede seninle ilgilenir.',
     button: { id: IDS.create, label: config.panel.buttonLabel },
-    image: config.banner,
-    note: config.panel.footer,
+    image: cardName ?? config.banner,
+    note: cardName ? undefined : config.panel.footer,
   });
 }
 

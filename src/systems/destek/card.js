@@ -44,7 +44,7 @@ async function buildPanelCard() {
     drawRow(ctx, { color: scheme.accent, ...step }, y, WIDTH, c);
     y += ROW_H + ROW_GAP;
   });
-  drawFooter(ctx, plain(config.panel.footer), y + 14, WIDTH, c);
+  drawFooter(ctx, plain(config.panel.footer), y, WIDTH, c);
 
   return { name: CARD_NAME, buffer: canvas.toBuffer('image/png') };
 }

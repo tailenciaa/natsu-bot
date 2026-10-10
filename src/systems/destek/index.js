@@ -142,10 +142,16 @@ async function removeRegularMembers(thread, ticket) {
 
 // ── Panel ────────────────────────────────────────────────────────────────────
 
-// Bot açılınca paneli destek kanalına gönderir (değişmediyse dokunmaz)
-function sendPanel(client) {
+// Bot açılınca paneli destek kanalına gönderir (değişmediyse dokunmaz); kart çizilemezse metinli hali gönderilir
+async function sendPanel(client) {
   const { guildId } = require('../../core/config');
   refreshStatusPanel(client, guildId).catch((err) => console.error('[destek] Durum paneli güncellenemedi:', err.message));
+  let card = null;
+  try {
+    card = await require('./card').buildPanelCard();
+  } catch (err) {
+    console.error('[destek] Panel kartı çizilemedi, metinli panel gönderilecek:', err.message);
+  }
   return syncPanel(client, {
     key: 'destek',
     label: 'Destek',
@@ -153,6 +159,7 @@ function sendPanel(client) {
     buttonId: ui.IDS.create,
     build: ui.panel,
     image: '',
+    card,
   });
 }
 
