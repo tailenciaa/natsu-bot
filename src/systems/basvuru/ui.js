@@ -387,7 +387,7 @@ function decisionPanel(app, state = 'open', remindDisabled) {
           ['Başvuru', appNo(app)],
           ['Başvuran', `<@${app.userId}>`],
           ['Beklemeye Alan', `<@${h.by}>`],
-          ['Durum', chip('Yetkili bekleniyor')],
+          ['Durum', chip('Yetkili Bekleniyor')],
         ]),
         protectedNow
           ? `**<@${h.by}> <t:${unix(h.until)}:R> kadar işlemi geri alabilir.**\nBu süre dolunca başvurular kanalında yetkililere haber verilir ve herhangi bir yetkili üstlenebilir.`

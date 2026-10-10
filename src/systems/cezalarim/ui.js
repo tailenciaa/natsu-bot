@@ -171,6 +171,22 @@ function durumText(p) {
 // Karar verilmişse butonlar yerine sonucu gösterir.
 function itirazCard(p, sebep, karar) {
   const approved = karar?.sonuc === 'onayla';
+  const info = rows([
+    ['Tür', chip(TYPES[p.type].label)],
+    ['Ceza No', chip(`#${p.number}`)],
+    ['Yetkili', `<@${p.by}>`],
+    ['Tarih', `<t:${unix(p.createdAt)}:F>`],
+    p.duration && ['Süre', chip(formatDuration(p.duration))],
+    durumText(p) && ['Durum', durumText(p)],
+  ]);
+  const kararSatiri = karar
+    ? rows([
+        ['Karar', chip(approved ? 'Onaylandı' : 'Reddedildi')],
+        ['Karar Veren', `<@${karar.by}>`],
+        karar.status !== 'active' && ['Ceza Durumu', durumText(p)],
+      ])
+    : null;
+
   const container = page({
     title: 'İtiraz Edilen Ceza',
     sub: karar
@@ -178,22 +194,10 @@ function itirazCard(p, sebep, karar) {
       : 'Üye bir cezaya itiraz etti. Ceza bilgilerini ve iki sebebi inceleyip **İtirazı Onayla** ya da **İtirazı Reddet** butonuyla karar verebilirsin; onaylarsan ceza kaldırılır.',
     accent: karar ? (approved ? colors.success : colors.danger) : colors.warning,
     blocks: [
-      fields([
-        '**Ceza Bilgileri**',
-        field('Ceza', label(p)),
-        field('Yetkili', `<@${p.by}>`),
-        field('Tarih', `<t:${unix(p.createdAt)}:F>`),
-        p.duration ? field('Süre', formatDuration(p.duration)) : null,
-        durumText(p) ? field('Durum', durumText(p)) : null,
-      ]),
+      `**Ceza Bilgileri**\n${info}`,
       `**Ceza Sebebi**\n${quote(p.reason)}`,
       `**İtiraz Sebebi**\n${quote(sebep)}`,
-      karar
-        ? fields([
-            `**İtiraz <@${karar.by}> tarafından ${approved ? 'onaylandı' : 'reddedildi'}.**`,
-            approved ? hint('Ceza **kaldırıldı** ve sicilden silindi, ceza puanı düşürüldü.') : p.status === 'active' ? hint('Ceza **sürmeye devam ediyor.**') : null,
-          ])
-        : null,
+      karar ? `${kararSatiri}\n${approved ? hint('Ceza **kaldırıldı** ve sicilden silindi, ceza puanı düşürüldü.') : p.status === 'active' ? hint('Ceza **sürmeye devam ediyor.**') : ''}` : null,
     ],
   });
   if (karar) return container;
