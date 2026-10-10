@@ -56,7 +56,7 @@ module.exports = {
         },
         {
           "heading": "Botumuz Kazuki",
-          "text": "Destek, ceza, seviye ve özel oda gibi sistemlerin hepsini o yönetir. Komutları görmek için <#1538536351119446127> kanalında **`/yardim`** yaz."
+          "text": "Komutları görmek ve kullanmak için <#1538536351119446127> kanalında **`/yardim`** yaz."
         }
       ]
     },
@@ -110,17 +110,7 @@ module.exports = {
       "blocks": [
         {
           "heading": "Nasıl Çalışır?",
-          "text": "Sohbet ederek ve sesli kanallarda vakit geçirerek seviye atlarsın. Mesaj ve ses seviyen **ayrı ayrı** birikir, her **5 seviyede bir** yeni rol kazanırsın (5'ten 100'e).\n**Mesaj:** Her mesaj **15-25 XP** verir, spam olmasın diye **60 saniyede bir** sayılır.\n**Ses:** Sesli kanalda geçen her **dakika 6 XP** verir.\nSeviye atladığında <#1538534603902554182> kanalında duyurulur.\nHer pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
-        },
-        {
-          "heading": "Komutlar",
-          "items": [
-            "`/seviye`: Mesaj ve ses seviyeni gösterir.",
-            "`/profil`: Seviyen, sıralaman ve profil kartın.",
-            "`/siralama`: Sunucunun mesaj ve ses sıralaması.",
-            "`/saygi-ver`: Bir üyeye **+1 saygınlık** verirsin (**24 saatte bir**).",
-            "`/saygi-siralama`: Tüm zamanların saygınlık tablosu."
-          ]
+          "text": "Sohbet ederek ve sesli kanallarda vakit geçirerek seviye atlarsın. Mesaj ve ses seviyen **ayrı ayrı** birikir, her **5 seviyede bir** yeni rol kazanırsın (5'ten 100'e). Seviye atladığında <#1538534603902554182> kanalında duyurulur.\nHer pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
         },
         {
           "heading": "Metin Seviye Rolleri",
@@ -157,10 +147,10 @@ module.exports = {
             "<@&1556403486499938325>: **Ses yetkilisi** adaylığı için değerlendirilirsin.",
             "<@&1556403486713974805>: Ses seviyesinin **zirvesi**, sunucunun en aktif seslilerinden birisin."
           ],
-          "note": "**Aradaki seviyelerde** (35, 45, 55, 65, 75, 85, 95) sadece rolünü kazanırsın. Seviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
+          "note": "Seviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
         }
       ],
-      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını, hangi komutların olduğunu ve **her seviyede kazanacağın metin ile ses rollerinin tam listesini** anlatıyoruz."
+      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını ve **her seviyede kazanacağın metin ile ses rollerinin tam listesini** anlatıyoruz."
     },
     {
       "title": "Sesli Kanallar ve Özel Oda",
@@ -201,25 +191,15 @@ module.exports = {
           "text": "<#1538535372588326973> kanalından **Talep Oluştur** butonuna bas. Senin için özel bir alt başlık açılır ve <@&1544337671340433569> ekibinden biri talebi **üstlenir**. Talep kapanınca yetkiliyi **1-5 yıldız** ile değerlendirirsin."
         },
         {
-          "heading": "Ceza düzeni",
-          "text": "Cezalar botun komutlarıyla verilir ve **siciline işlenir**. Sıra şöyledir: **Uyarı**, ardından **Susturma** ya da **Jail**, en son **Yasaklama**."
-        },
-        {
-          "heading": "Ceza puanları",
-          "items": [
-            "**Uyarı:** 5 puan",
-            "**Susturma:** 10 puan",
-            "**Jail:** 20 puan",
-            "**Yasaklama:** 30 puan"
-          ],
-          "note": "Puanlar sicilinde birikir, **tekrarlanan ihlallerde ceza ağırlaşır**."
+          "heading": "Cezalar",
+          "text": "Kurallara uymayan üyeye önce **uyarı**, ardından **susturma** ya da **jail**, en son **yasaklama** uygulanır. Her ceza siciline işlenir, tekrarlanan ihlallerde ağırlaşır."
         },
         {
           "heading": "Jail nedir?",
-          "text": "Rollerin **geçici olarak alınır**, sadece jail kanalını görürsün. Süre bitince geri verilir. Cezanın ne zaman biteceğini <#1538535566172229672> kanalındaki panelden görebilirsin."
+          "text": "Rollerin **geçici olarak alınır**, bu sürede sadece jail kanalını görürsün; süre bitince rollerin geri verilir. Cezanın ne zaman biteceğini <#1538535566172229672> kanalındaki panelden görebilirsin."
         }
       ],
-      "sub": "Bir sorunla karşılaştığında destek talebini nasıl açacağını, cezaların nasıl işlediğini, ceza puanlarının nasıl hesaplandığını ve Jail'in ne anlama geldiğini anlatıyoruz."
+      "sub": "Bir sorunla karşılaştığında destek talebini nasıl açacağını ve cezaların nasıl işlediğini anlatıyoruz."
     },
     {
       "title": "Partnerlik",
@@ -322,7 +302,7 @@ module.exports = {
         },
         {
           "heading": "Sunucuda yapılanlar kayıt altında mı?",
-          "text": "**Evet.** Silinen ve düzenlenen mesajlar, ses kanalı hareketleri, giriş-çıkışlar ve yetkili işlemleri yönetim ekibi tarafından **log olarak** tutulur. Bu, kural ihlallerinde adil karar verilebilmesi içindir."
+          "text": "**Evet.** Silinen ve düzenlenen mesajlar, ses kanalı hareketleri ile giriş-çıkışlar kaydedilir; böylece kural ihlallerinde adil karar verilebilir."
         },
         {
           "heading": "Yönetim Ekibinden",
