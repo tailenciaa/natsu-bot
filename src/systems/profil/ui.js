@@ -88,8 +88,10 @@ const colorModal = (current) =>
     .addLabelComponents([
       new LabelBuilder()
         .setLabel('Vurgu rengi (hex kod)')
-        .setDescription('Çubuklar, halka ve unvan bu renkte çizilir; boş bırakırsan temanın rengi kullanılır.')
-        .setTextInputComponent(input('renk', TextInputStyle.Short, 7, current.color ? `#${current.color.toString(16).padStart(6, '0')}` : null, 'Örn: #ff5599')),
+        .setDescription('Çubuklar, halka ve unvan bu renkte çizilir. Boşsa tema rengi kullanılır. Koyu renkler açılır.')
+        .setTextInputComponent(
+          input('renk', TextInputStyle.Short, 7, current.color === null || current.color === undefined ? null : `#${current.color.toString(16).padStart(6, '0')}`, 'Örn: #ff5599'),
+        ),
     ]);
 
 const bannerModal = (current) =>

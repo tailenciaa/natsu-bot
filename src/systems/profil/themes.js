@@ -30,13 +30,15 @@ function themeFromColor(color) {
 }
 
 // Kartların rengi: profilde seçilen tema/renk; yoksa üyenin rol rengi; o da yoksa varsayılan tema.
-// custom: profil kaydı ({ theme, color, ... }), roleColor: üyenin görünen rol rengi (0 = renksiz)
+// custom: profil kaydı ({ theme, color, ... }), roleColor: üyenin görünen rol rengi (0 = renksiz).
+// Profilde seçilen renk 0 olabilir (siyah), bu yüzden "seçim yok" null/undefined ile ayrılır.
 function resolveTheme(custom = {}, roleColor = 0) {
+  const color = Number.isInteger(custom.color) ? custom.color : null;
   if (custom.theme && THEMES[custom.theme]) {
     const theme = THEMES[custom.theme];
-    return custom.color ? { ...theme, accent: readableAccent(hex(custom.color)) } : theme;
+    return color !== null ? { ...theme, accent: readableAccent(hex(color)) } : theme;
   }
-  if (custom.color) return themeFromColor(custom.color);
+  if (color !== null) return themeFromColor(color);
   if (roleColor) return themeFromColor(roleColor);
   return THEMES[DEFAULT_THEME];
 }
