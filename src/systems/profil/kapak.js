@@ -154,7 +154,37 @@ function dalga(ctx, w, h, p) {
   }
 }
 
-const PAINTERS = { gradyan, aurora, yildiz, izgara, dalga };
+// Buzlu cam: üst üste binen yarı saydam lekeler ve parlak kenar halkaları (liquid glass görünümü)
+function cam(ctx, w, h, p) {
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, mix(p.from, '#ffffff', 0.08));
+  g.addColorStop(0.5, p.to);
+  g.addColorStop(1, mix(p.from, '#ffffff', 0.16));
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  const blobs = [[0.12, 0.82, 0.3], [0.38, 0.16, 0.26], [0.62, 0.9, 0.22], [0.8, 0.28, 0.34], [0.98, 0.78, 0.24]];
+  blobs.forEach(([fx, fy, r], i) => {
+    const cx = w * fx;
+    const cy = h * fy;
+    const rad = w * r;
+    const glass = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.4, rad * 0.05, cx, cy, rad);
+    glass.addColorStop(0, hexAlpha('#ffffff', 0.24));
+    glass.addColorStop(0.55, hexAlpha(i % 2 ? p.accent : '#ffffff', 0.1));
+    glass.addColorStop(1, hexAlpha(p.accent, 0));
+    ctx.fillStyle = glass;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.fill();
+    // lekelerin kenarı ışığı kırar: ince parlak yay
+    ctx.strokeStyle = hexAlpha('#ffffff', 0.3);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad * 0.96, Math.PI * 1.05, Math.PI * 1.85);
+    ctx.stroke();
+  });
+}
+
+const PAINTERS = { gradyan, aurora, yildiz, izgara, dalga, cam };
 
 // Mağazadaki kapaklar: `effect` çizicinin adını kullanır, fiyatı olmayan kartın kendi temasını bırakır
 const COVERS = [
