@@ -344,15 +344,21 @@ function orientationLog(app) {
   const o = app.orientation;
   const { steps } = config;
 
-  const lines = [`**Adım:** ${o.step + 1}/${steps.length} - ${steps[o.step].title}\n${progress(o.step, steps.length)}`];
+  const lines = [`**Adım:** ${chip(`${o.step + 1}/${steps.length}`)} ${steps[o.step].title}\n${progress(o.step, steps.length)}`];
   if (o.areas.length) lines.push(`**${o.areas.length > 1 ? 'Görev Alanları' : 'Görev Alanı'}:** ${areaLabels(app)}`);
   if (o.skipped.length) lines.push(`**Bildiği için geçilen:** ${skippedTitles(app)}`);
   if (o.transfers.length) lines.push(`**Aktarımlar:** ${o.transfers.map((t) => `<@${t.from}> → <@${t.to}>`).join(', ')}`);
-  if (o.applicantLeaves) lines.push(`**Ayrılma:** ${o.applicantLeaves}/${config.presence.maxApplicantLeaves}`);
+  if (o.applicantLeaves) lines.push(`**Ayrılma:** ${chip(`${o.applicantLeaves}/${config.presence.maxApplicantLeaves}`)}`);
 
   const presence = presenceText(app);
   const blocks = [
-    fields(['**Oryantasyon**', field('Başvuru', `#${pad(app.number)}`), field('Yetkili', `<@${o.staffId}>`), field('Başvuran', `<@${app.userId}>`), field('Kanal', `<#${o.channelId}>`), field('Başlangıç', `<t:${unix(o.startedAt)}:t>`)]),
+    rows([
+      ['Başvuru', chip(`#${pad(app.number)}`)],
+      ['Yetkili', `<@${o.staffId}>`],
+      ['Başvuran', `<@${app.userId}>`],
+      ['Kanal', `<#${o.channelId}>`],
+      ['Başlangıç', `<t:${unix(o.startedAt)}:t>`],
+    ]),
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
   blocks.push(lines.join('\n'));

@@ -15,7 +15,7 @@ const {
 } = require('discord.js');
 const { text, divider, hint, colors, unix, quote, shorten, alert, bannerGallery, block, rows, chip, page } = require('../../core/ui');
 const { botName } = require('../../core/config');
-const { TYPES, formatDuration } = require('../sicil/ui');
+const { TYPES, formatDuration, stateWord } = require('../sicil/ui');
 const config = require('./config');
 
 const IDS = {
