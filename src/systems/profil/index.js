@@ -1,38 +1,99 @@
 // Profil: /profil ile açılır, sunucu üzerindeki her şeyin tek görsel kartta göründüğü kişisel profil. Sahibi kendi
-// profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak görseli, tema) kartı canlı olarak özelleştirir;
-// her değişiklikte kart yeniden çizilip aynı mesaj güncellenir. İleride coin/para sistemi de buraya eklenecek.
+// profilinin altındaki kontrollerle (biyografi, unvan, renk, kapak görseli, tema, vitrin) kartı canlı olarak
+// özelleştirir; her değişiklikte kart yeniden çizilip aynı mesaj güncellenir. Rozetler etkinlikten türetilir,
+// mağazadan alınan kozmetikler kartın kenarına ve vitrin şeridine çizilir.
 const { AttachmentBuilder, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
-const { replyError, isMenuOwner } = require('../../core/helpers');
+const { replyError, respond, isMenuOwner } = require('../../core/helpers');
+const coinConfig = require('../coin/config');
+const coinStore = require('../coin/store');
+const saygiStore = require('../saygi/store');
 const seviyeStore = require('../seviye/store');
 const siralamaStore = require('../siralama/store');
 const { buildProfileCard } = require('./card');
-const { THEMES } = require('./themes');
+const kozmetik = require('./kozmetik');
+const rozet = require('./rozet');
 const store = require('./store');
+const { THEMES } = require('./themes');
 const ui = require('./ui');
 
 const commands = [
   new SlashCommandBuilder()
     .setName('profil')
-    .setDescription('Seviye, sıralama ve istatistiklerinle sunucu profilini gösterir.')
+    .setDescription('Seviye, sıralama, rozet ve istatistiklerinle sunucu profilini gösterir.')
     .setContexts(InteractionContextType.Guild)
     .addUserOption((o) => o.setName('kullanici').setDescription('Profiline bakılacak üyeyi seçer, boş bırakırsan kendi profilin gösterilir.')),
 ];
 
+const number = (n) => Number(n).toLocaleString('tr-TR');
+
+function duration(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const h = Math.floor(minutes / 60);
+  return h > 0 ? `${h} sa ${minutes % 60} dk` : `${minutes} dk`;
+}
+
+// Vitrinde öne çıkarılabilen istatistikler; değeri üretmeyen (henüz kaydı olmayan) seçenek kartta boş kalır
+const FEATURED = [
+  { key: 'mesaj', label: 'Mesaj sıralaması', note: 'Tüm zamanların mesaj sıran', value: (v) => (v.mesajRank ? `# ${v.mesajRank}` : null) },
+  { key: 'ses', label: 'Ses sıralaması', note: 'Tüm zamanların ses sıran', value: (v) => (v.sesRank ? `# ${v.sesRank}` : null) },
+  { key: 'yayin', label: 'Yayın süresi', note: 'Toplam ekran paylaşımı', value: (v) => (v.streamSeconds >= 3600 ? duration(v.streamSeconds) : null) },
+  { key: 'saygi', label: 'Saygınlık', note: 'Toplam aldığın saygınlık', value: (v) => (v.rep ? `${v.rep} saygınlık` : null) },
+  { key: 'seri', label: 'Giriş serisi', note: 'Art arda günlük ödül', value: (v) => (v.streak ? `${v.streak} günlük seri` : null) },
+  { key: 'coin', label: 'Coin bakiyesi', note: 'Harcayabileceğin coin', value: (v) => `${number(v.balance)} coin` },
+];
+
+const featuredOptions = FEATURED.map(({ key, label, note }) => ({ key, label, note }));
+
+// Bağlantı kartında kısa yazılır: protokol ve www atılır, yol küçük tutulur
+function linkLabel(url) {
+  const host = String(url).replace(/^https?:\/\//, '').replace(/^www\./, '');
+  return kozmetikLink(core.shorten(host.replace(/\/$/, ''), 34));
+}
+
+const kozmetikLink = (value) => value;
+
+// Kartın çizim verisi: ölçümler, rozet bağlamı ve vitrin alanları tek yerde toplanır
 async function viewDataOf(guild, userId) {
   const messages = siralamaStore.totals('messages', null);
   const voice = siralamaStore.totals('voice', null);
+  const stream = siralamaStore.totals('stream', null);
   const member = await guild.members.fetch(userId).catch(() => null);
+  const custom = store.get(userId);
+  const visits = store.visits(userId);
+  const messageCount = messages.get(userId) ?? 0;
+  const voiceSeconds = voice.get(userId) ?? 0;
+  const streamSeconds = stream.get(userId) ?? 0;
+  const rep = saygiStore.allTotals()[userId] ?? 0;
+
+  const stats = {
+    mesajRank: siralamaStore.rankIn(messages, userId),
+    sesRank: siralamaStore.rankIn(voice, userId),
+    streamSeconds,
+    rep,
+    streak: coinStore.streak(userId),
+    balance: coinStore.balance(userId),
+  };
+  const badges = rozet.earned(
+    rozet.context({ guild, member, userId, messageCount, streamSeconds, visits: visits.count }),
+  );
+  const featured = FEATURED.find((o) => o.key === custom.featured);
+
   return {
-    custom: store.get(userId),
+    custom,
     roleColor: member?.displayColor ?? 0,
     mesajXp: seviyeStore.xpOf('mesaj', userId),
     sesXp: seviyeStore.xpOf('ses', userId),
-    mesajRank: siralamaStore.rankIn(messages, userId),
-    sesRank: siralamaStore.rankIn(voice, userId),
     joinedAt: member?.joinedTimestamp ?? null,
-    messageCount: messages.get(userId) ?? 0,
-    voiceSeconds: voice.get(userId) ?? 0,
+    messageCount,
+    voiceSeconds,
+    badges,
+    featured: featured ? { label: featured.label, value: featured.value(stats) ?? 'kayıt yok' } : null,
+    links: ['twitch', 'youtube', 'github', 'site'].map((key) => custom.links?.[key]).filter(Boolean).slice(0, 3).map(linkLabel),
+    visits: visits.count,
+    coins: stats.balance,
+    frame: kozmetik.frameOf(custom.frame),
+    ...stats,
   };
 }
 
@@ -47,18 +108,38 @@ async function buildMessage(guild, user, isSelf) {
   };
 }
 
-// /profil [kullanici]
+// /profil [kullanici]: başkasının kartı açıldığında ziyaret sayacı işler (kendi kartı sayılmaz)
 async function handleCommand(interaction) {
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
   if (user.bot) return replyError(interaction, 'Botların profili bulunmaz.', 'Bir üye seçerek tekrar dene.');
   await interaction.deferReply();
-  return interaction.editReply(await buildMessage(interaction.guild, user, user.id === interaction.user.id));
+  const isSelf = user.id === interaction.user.id;
+  if (!isSelf) store.addVisit(user.id, interaction.user.id);
+
+  const message = await buildMessage(interaction.guild, user, isSelf);
+  const sent = await interaction.editReply(message);
+  // Kozmetik değişince herkese açık kart yerinde yenilensin diye kartın mesajı hatırlanır
+  if (isSelf && sent?.id) store.set(user.id, { card: { channelId: sent.channelId, messageId: sent.id } });
 }
 
 // Düzenleme sonrası: kartı yeniden çizip aynı mesajı günceller
 async function refresh(interaction) {
   const message = await buildMessage(interaction.guild, interaction.user, true);
-  return interaction.editReply({ ...message, attachments: [] });
+  const sent = await interaction.editReply({ ...message, attachments: [] });
+  if (sent?.id) store.set(interaction.user.id, { card: { channelId: sent.channelId, messageId: sent.id } });
+}
+
+// Satın alma ve giyme herkese açık kartı da ilgilendirir: kayıtlı kart mesajı varsa o da yenilenir
+async function refreshLiveCard(interaction) {
+  const ref = store.get(interaction.user.id).card;
+  if (!ref) return;
+  try {
+    const channel = await interaction.guild.channels.fetch(ref.channelId).catch(() => null);
+    const message = await channel?.messages.fetch(ref.messageId).catch(() => null);
+    if (message) await message.edit(await buildMessage(interaction.guild, interaction.user, true));
+  } catch (err) {
+    console.error('[profil] Kart mesajı yenilenemedi:', err.message);
+  }
 }
 
 const COLOR = /^#?([0-9a-fA-F]{6})$/;
@@ -75,6 +156,9 @@ function isImageUrl(value) {
   }
 }
 
+// Vitrin bağlantıları: bot bu adreslere hiçbir istek atmaz, kartta yalnızca metin olarak görünür
+const isLink = isImageUrl;
+
 // Kapak görseli gerçekten açılıyor mu: 5 saniyelik zaman aşımıyla içerik türü ve boyut denetlenir (yönlendirmeler izlenmez).
 // Sorun varsa kullanıcıya gösterilecek ipucunu, sorun yoksa null döndürür.
 async function checkImage(url) {
@@ -90,12 +174,126 @@ async function checkImage(url) {
   }
 }
 
-// Bütün düzenleme düğmeleri, tema menüsü ve formlar profil-ayar:<eylem> ile gelir; sadece profil sahibi kullanabilir
+// ── Mağaza ────────────────────────────────────────────────────────────────────
+
+const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar' };
+
+// Ürün kataloğu: { tur, key, name, note, price } — ücretsiz olanlar sahibiyse "Giy" ile seçilir
+function catalog(tur) {
+  if (tur === 'tema') {
+    return Object.entries(THEMES)
+      .filter(([, theme]) => theme.price > 0)
+      .map(([key, theme]) => ({ tur, key, name: theme.label, note: theme.description, price: theme.price }));
+  }
+  return kozmetik.FRAMES.filter((f) => f.price > 0).map((f) => ({ tur: 'cerceve', key: f.key, name: f.label, note: f.note, price: f.price }));
+}
+
+const ownsItem = (tur, custom, key) => (tur === 'tema' ? (custom.ownedThemes ?? []).includes(key) : (custom.ownedFrames ?? []).includes(key));
+
+const wornItem = (tur, custom, key) => (tur === 'tema' ? custom.theme === key : (custom.frame ?? 'yok') === key);
+
+// Mağaza sayfasının satırları: sahiplik ve bakiye durumuna göre düğme etiketi belirlenir
+function shopRows(tur, custom, balance) {
+  return catalog(tur).map((item) => {
+    const owned = ownsItem(tur, custom, item.key);
+    const worn = wornItem(tur, custom, item.key);
+    const base = { name: item.name, note: item.note };
+    if (worn) return { ...base, state: 'Kartında bu var', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giyili', disabled: true };
+    if (owned) return { ...base, state: 'Sahipsin', id: `${ui.IDS.wear}${tur}:${item.key}`, label: 'Giy', wearStyle: 1 };
+    return { ...base, state: `${number(item.price)} coin`, id: `${ui.IDS.buy}${tur}:${item.key}`, label: `Al · ${number(item.price)}`, wearStyle: 2 };
+  });
+}
+
+function shopMessage(interaction, tab) {
+  const custom = store.get(interaction.user.id);
+  return ui.shopPage(tab, SHOP_TABS, coinStore.balance(interaction.user.id), shopRows(tab, custom, coinStore.balance(interaction.user.id)));
+}
+
+// Ürün satın alma: para ancak ürün gerçekten sahipliğe geçiyorsa düşürülür
+async function buy(interaction, tur, key) {
+  const item = catalog(tur).find((i) => i.key === key);
+  if (!item) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
+
+  const custom = store.get(interaction.user.id);
+  if (ownsItem(tur, custom, key)) return replyError(interaction, 'Bu ürün zaten sende.', 'Kartında kullanmak için giyebilirsin.');
+
+  const balance = coinStore.balance(interaction.user.id);
+  if (balance < item.price) {
+    return replyError(
+      interaction,
+      'Bakiyen bu ürün için yetmiyor.',
+      `Fiyatı **${number(item.price)}** coin, senin bakiyen **${number(balance)}** coin. Günlük ödüller ve haftalık derecelerle artırabilirsin.`,
+    );
+  }
+
+  if (!coinStore.spend(interaction.user.id, item.price)) return replyError(interaction, 'Satın alma tamamlanamadı.', 'Birkaç saniye sonra tekrar dene.');
+  if (tur === 'tema') store.addTheme(interaction.user.id, key);
+  else store.addFrame(interaction.user.id, key);
+  // Satın alınan hemen giyilir; kart hem mağaza mesajında hem profil mesajında güncellenir
+  store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
+
+  await respond(
+    interaction,
+    core.alert(`${item.name} satın alındı ve kartına uygulandı.`, `**${number(item.price)}** coin düşüldü, bakiyen **${number(coinStore.balance(interaction.user.id))}** coin.`, 'success'),
+    { followUp: true },
+  );
+  return refreshLiveCard(interaction);
+}
+
+// Sahip olunan ürünü giyme
+async function wear(interaction, tur, key) {
+  const item = catalog(tur).find((i) => i.key === key);
+  const free = tur === 'cerceve' && key === 'yok';
+  if (!item && !free) return replyError(interaction, 'Bu ürün artık mağazada yok.', 'Mağazayı yeniden açmayı dene.');
+  if (!free && !ownsItem(tur, store.get(interaction.user.id), key)) return replyError(interaction, 'Önce satın alman gerekiyor.', 'Mağaza sayfasından bakiyeni görebilirsin.');
+
+  store.set(interaction.user.id, tur === 'tema' ? { theme: key } : { frame: key });
+  await respond(interaction, core.alert('Kartın güncellendi.', `${free ? 'Çerçevesiz' : item.name} görünüründe; profil kartın bir sonraki açılışta böyle çizilir.`), {
+    followUp: true,
+  });
+  return refreshLiveCard(interaction);
+}
+
+// ── Vitrin ────────────────────────────────────────────────────────────────────
+
+async function vitrinMessage(interaction) {
+  const userId = interaction.user.id;
+  const custom = store.get(userId);
+  const visits = store.visits(userId);
+  const recent = visits.recent.slice(0, 3).map((r) => r.by);
+  const names = await Promise.all(recent.map(async (id) => (await interaction.guild.members.fetch(id).catch(() => null))?.displayName ?? null));
+  const who = names.filter(Boolean).join(', ');
+  return ui.vitrinPage(custom, custom.featured, featuredOptions, `**Profil ziyaretleri:** ${number(visits.count)}${who ? ` · son görenler: ${who}` : ''}`);
+}
+
+// Vitrin formundaki bağlantılar: geçersiz olan kaydedilmez, boş alan temizleme sayılır
+function cleanLinks(fields) {
+  const links = {};
+  const bad = [];
+  for (const key of ['twitch', 'youtube', 'github', 'site']) {
+    const value = (fields[key] ?? '').trim();
+    if (!value) {
+      links[key] = null;
+      continue;
+    }
+    if (!isLink(value)) {
+      bad.push(key);
+      links[key] = null;
+      continue;
+    }
+    links[key] = value;
+  }
+  return { links, bad };
+}
+
+// ── İşleyici ──────────────────────────────────────────────────────────────────
+
+// Bütün düzenleme düğmeleri, menüler ve formlar profil-ayar:<eylem> ile gelir; sadece profil sahibi kullanabilir
 async function handleSettings(interaction) {
   if (!isMenuOwner(interaction)) {
     return replyError(interaction, 'Sadece kendi profilini düzenleyebilirsin.', '**/profil** yazarak kendi profilini açıp düzenleyebilirsin.');
   }
-  const action = interaction.customId.split(':')[1];
+  const [action, arg, arg2] = interaction.customId.split(':').slice(1);
   const current = store.get(interaction.user.id);
 
   switch (action) {
@@ -112,10 +310,46 @@ async function handleSettings(interaction) {
     case 'tema': {
       const theme = interaction.values[0];
       if (!THEMES[theme]) return interaction.deferUpdate();
+      if (THEMES[theme].price > 0 && !ownsItem('tema', current, theme)) {
+        return replyError(
+          interaction,
+          'Bu tema ücretli.',
+          `**${THEMES[theme].label}** teması mağazada **${number(THEMES[theme].price)}** coin. Mağaza sekmesinden satın alıp kullanabilirsin.`,
+        );
+      }
       await interaction.deferUpdate();
       store.set(interaction.user.id, { theme });
       return refresh(interaction);
     }
+    case 'vitrin':
+      return respond(interaction, await vitrinMessage(interaction));
+    case 'vitrin-baglanti':
+      return interaction.showModal(ui.vitrinModal({ pronoun: current.pronoun, links: current.links }));
+    case 'one-cikan': {
+      const key = interaction.values[0];
+      if (!FEATURED.some((o) => o.key === key)) return interaction.deferUpdate();
+      store.set(interaction.user.id, { featured: key });
+      await interaction.update({ components: [await vitrinMessage(interaction)], allowedMentions: { parse: [] } });
+      return refreshLiveCard(interaction);
+    }
+    case 'rozetler': {
+      const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+      const ctx = rozet.context({
+        guild: interaction.guild,
+        member,
+        userId: interaction.user.id,
+        messageCount: siralamaStore.totals('messages', null).get(interaction.user.id) ?? 0,
+        streamSeconds: siralamaStore.totals('stream', null).get(interaction.user.id) ?? 0,
+        visits: store.visits(interaction.user.id).count,
+      });
+      return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length));
+    }
+    case 'magaza':
+      return respond(interaction, shopMessage(interaction, arg ?? 'cerceve'));
+    case 'al':
+      return buy(interaction, arg, arg2);
+    case 'giy':
+      return wear(interaction, arg, arg2);
     case 'bio-form':
       await interaction.deferUpdate();
       store.set(interaction.user.id, {
@@ -123,6 +357,25 @@ async function handleSettings(interaction) {
         title: interaction.fields.getTextInputValue('unvan').trim() || null,
       });
       return refresh(interaction);
+    case 'vitrin-form': {
+      const pronoun = interaction.fields.getTextInputValue('zamir').trim() || null;
+      const { links, bad } = cleanLinks({
+        twitch: interaction.fields.getTextInputValue('twitch'),
+        youtube: interaction.fields.getTextInputValue('youtube'),
+        github: interaction.fields.getTextInputValue('github'),
+        site: interaction.fields.getTextInputValue('site'),
+      });
+      store.set(interaction.user.id, { pronoun, links });
+      await interaction.deferUpdate();
+      await respond(
+        interaction,
+        bad.length
+          ? core.alert('Bağlantıların kaydedildi.', `${bad.join(', ')} için verdiğin adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.`, 'warning')
+          : core.alert('Vitrinin güncellendi.', 'Profil kartının alt şeridinde görünecek.', 'success'),
+        { followUp: true },
+      );
+      return refreshLiveCard(interaction);
+    }
     case 'renk-form': {
       const value = interaction.fields.getTextInputValue('renk').trim();
       const match = COLOR.exec(value);
@@ -152,4 +405,6 @@ module.exports = {
   help: { category: ['siralama', 'Sıralama'], access: { profil: 'Herkes' } },
   slash: { profil: handleCommand },
   prefixed: [[ui.IDS.prefix, handleSettings]],
+  // Coin ödül tutarları mağaza metinlerinde de kullanılıyor; gereksiz çift listeyi önlemek için tek yerden bildirilir
+  awards: coinConfig.awards,
 };
