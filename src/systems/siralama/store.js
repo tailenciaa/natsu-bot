@@ -1,10 +1,12 @@
-// Sıralama verileri: stats.messages ve stats.voice, kullanıcı ID'si -> gün (YYYY-AA-GG, İstanbul saati) -> değer.
-// Mesajlar adet, ses saniye olarak tutulur. Her mesajda diske yazmamak için değişiklikler biriktirilip toplu kaydedilir.
+// Sıralama verileri: stats.messages, stats.voice ve stats.stream, kullanıcı ID'si -> gün (YYYY-AA-GG, İstanbul
+// saati) -> değer. Mesajlar adet, ses ve yayın (ekran paylaşımı) süresi saniye olarak tutulur. Her mesajda diske
+// yazmamak için değişiklikler biriktirilip toplu kaydedilir.
 const { data, save } = require('../../core/db');
 
 data.stats ??= {};
 data.stats.messages ??= {};
 data.stats.voice ??= {};
+data.stats.stream ??= {};
 
 const SAVE_DELAY = 10 * 1000;
 let saveTimer = null;

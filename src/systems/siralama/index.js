@@ -1,6 +1,6 @@
-// Sıralama: üyelerin mesaj sayısı ve ses süresi sayılır, /siralama ile sıralaması gösterilir.
-// Sıralama rol ile filtrelenebilir, türü (mesaj / ses) ve dönemi (genel, haftalık, son X gün) seçilebilir.
-// Botlar ve AFK kanalı sayılmaz. Sayım bu sistem kurulduğundan itibaren başlar.
+// Sıralama: üyelerin mesaj sayısı, ses süresi ve yayın (ekran paylaşımı) süresi sayılır, /siralama ile
+// sıralaması gösterilir. Sıralama rol ile filtrelenebilir, türü (mesaj / ses / yayın) ve dönemi (genel, haftalık,
+// son X gün) seçilebilir. Botlar ve AFK kanalı sayılmaz. Sayım bu sistem kurulduğundan itibaren başlar.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isMenuOwner, stillMember } = require('../../core/helpers');
@@ -10,30 +10,48 @@ const ui = require('./ui');
 const commands = [
   new SlashCommandBuilder()
     .setName('siralama')
-    .setDescription('Sunucunun mesaj ve ses sıralamasını gösterir.')
+    .setDescription('Sunucunun mesaj, ses ve yayın sıralamasını gösterir.')
     .setContexts(InteractionContextType.Guild),
 ];
 
-// Ses süresi: kanaldaki üyelere her dakika geçen süre eklenir; çıkınca kalan süre eklenir
+// Ses ve yayın süresi: kanaldaki üyelere her dakika geçen süre eklenir; çıkınca (ya da paylaşım bitince) kalan süre eklenir
 const TICK = 60 * 1000;
 const voiceSince = new Map();
+const streamSince = new Map();
 
 const countsVoice = (state) =>
   Boolean(state?.channelId) && !state.member?.user.bot && state.channelId !== state.guild.afkChannelId;
+// Yayın sayılması için ses kanalında olmak şart; ekran paylaşımı olmayan birinin süresi yalnızca ses sayılır
+const countsStream = (state) => countsVoice(state) && Boolean(state.streaming);
 
-function creditVoice(userId, now = Date.now()) {
-  const since = voiceSince.get(userId);
+function credit(map, kind, userId, now = Date.now()) {
+  const since = map.get(userId);
   if (since === undefined) return;
   // Bilgisayar uyku vb. yüzünden araya giren uzun boşluklar sayılmaz; saniye tam sayı olarak tutulur
-  store.add('voice', userId, Math.round(Math.min(now - since, 2 * TICK) / 1000), now);
+  store.add(kind, userId, Math.round(Math.min(now - since, 2 * TICK) / 1000), now);
+}
+
+// Sayım çizelgesi: süre kesilirse kalan yazılır, yeni başlamışsa zaman damgası konur
+function track(map, kind, was, is, userId) {
+  if (was && !is) {
+    credit(map, kind, userId);
+    map.delete(userId);
+  } else if (!was && is) {
+    map.set(userId, Date.now());
+  }
 }
 
 function tickVoice(guild) {
   const now = Date.now();
   for (const state of guild.voiceStates.cache.values()) {
-    if (!countsVoice(state)) continue;
-    creditVoice(state.id, now);
-    voiceSince.set(state.id, now);
+    if (countsVoice(state)) {
+      credit(voiceSince, 'voice', state.id, now);
+      voiceSince.set(state.id, now);
+    }
+    if (countsStream(state)) {
+      credit(streamSince, 'stream', state.id, now);
+      streamSince.set(state.id, now);
+    }
   }
 }
 
@@ -41,20 +59,20 @@ function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
   // Rol filtresi ve ayrılan üyelerin ayıklanması üye önbelleğine dayanır; önbelleği açılışta diğer sistemler doldurur (ikinci bir toplu istek Discord sınırına takılır)
-  for (const state of guild.voiceStates.cache.values()) if (countsVoice(state)) voiceSince.set(state.id, Date.now());
+  const now = Date.now();
+  for (const state of guild.voiceStates.cache.values()) {
+    if (countsVoice(state)) voiceSince.set(state.id, now);
+    if (countsStream(state)) streamSince.set(state.id, now);
+  }
   setInterval(() => tickVoice(guild), TICK).unref();
 }
 
 function handleVoiceUpdate(oldState, newState) {
   if (newState.guild.id !== guildId) return;
-  const was = countsVoice(oldState);
-  const is = countsVoice(newState);
-  if (was && !is) {
-    creditVoice(newState.id);
-    voiceSince.delete(newState.id);
-  } else if (!was && is) {
-    voiceSince.set(newState.id, Date.now());
-  }
+  const userId = newState.id;
+  // Ekran paylaşımı kanala girdikten sonra da açılıp kapanabildiği için iki sayım ayrı ayrı izlenir
+  track(voiceSince, 'voice', countsVoice(oldState), countsVoice(newState), userId);
+  track(streamSince, 'stream', countsStream(oldState), countsStream(newState), userId);
 }
 
 function handleMessage(message) {
