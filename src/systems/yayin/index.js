@@ -28,7 +28,7 @@ async function handleTake(interaction) {
   });
   if (!added) return replyError(interaction, 'Rol verilemedi.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, core.alert('Yayın yetkin verildi.', 'Artık sesli kanallarda **yayın açabilirsin.**', 'success'));
+  return respond(interaction, ui.granted({ user: interaction.user }));
 }
 
 async function handleLeave(interaction) {
@@ -40,7 +40,7 @@ async function handleLeave(interaction) {
   });
   if (!removed) return replyError(interaction, 'Rol alınamadı.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, core.alert('Yayın yetkin bırakıldı.', 'İstediğin zaman yeniden alabilirsin.', 'success'));
+  return respond(interaction, ui.released({ user: interaction.user }));
 }
 
 module.exports = {

@@ -1,6 +1,6 @@
 // Yayın yetkisi sisteminin paneli: yetkinin ne olduğu, nasıl alınıp bırakılacağı, yayın kuralları ve butonlar
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { divider, page, text, bannerGallery } = require('../../core/ui');
+const { divider, page, text, receipt, bannerGallery } = require('../../core/ui');
 const { botName } = require('../../core/config');
 const config = require('./config');
 
@@ -33,4 +33,23 @@ function panel() {
     );
 }
 
-module.exports = { IDS, panel };
+// Butona basınca çıkan onay kartı: panel kanalda herkese açık durduğu için sonucu sadece basan üye görür
+function granted({ user }) {
+  return receipt({
+    title: 'Yayın Yetkin Verildi',
+    sub: `<@${user.id}> yayın yetkisini aldı; artık sesli kanallarda **ekran paylaşımı** ve **canlı yayın** açabilirsin.`,
+    user,
+    pairs: [['Rol', `<@&${config.role}>`]],
+  });
+}
+
+function released({ user }) {
+  return receipt({
+    title: 'Yayın Yetkin Bırakıldı',
+    sub: `<@${user.id}> yayın yetkisini bıraktı. İstediğin zaman panelden yeniden alabilirsin.`,
+    user,
+    pairs: [['Rol', `<@&${config.role}>`]],
+  });
+}
+
+module.exports = { IDS, panel, granted, released };

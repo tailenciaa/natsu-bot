@@ -360,7 +360,6 @@ function equip({ user, tur, name }) {
     title: 'Kartın Güncellendi',
     sub: 'Profil kartının görünümü değişti; kart yeniden çizildi, mesajında hemen böyle görünecek.',
     user,
-    accent: 'primary',
     pairs: [
       ['Ürün', core.chip(name)],
       ['Tür', core.chip(TUR_LABEL[tur])],
@@ -374,7 +373,7 @@ function vitrinSaved({ user, bad = [] }) {
     title: 'Vitrinin Güncellendi',
     sub: 'Profil kartının alt şeridi yeniden çizildi; zamirin ve verdiğin bağlantılar kartında görünecek.',
     user,
-    accent: bad.length ? 'warning' : 'primary',
+    accent: bad.length ? 'warning' : 'success',
     note: bad.length
       ? `${bad.join(', ')} için verdiğin adres **https** ile başlayan bir web adresi olmadığından kartına yazılmadı.`
       : null,
