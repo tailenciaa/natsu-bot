@@ -86,6 +86,8 @@ module.exports = ({ mock, ui, src }) => {
   });
   const held = (o = {}) => ({ ...base(), ...o, onHold: { by: staff.id, until: Date.now() + 10 * mock.MIN, auto: false } });
   const manyApps = (n) => Array.from({ length: n }, (_, i) => ({ ...base(), id: `${guild.id}-${i + 1}`, number: i + 1, username: `uye${i + 1}` }));
+  // Durum panelindeki başvuruların numarası ve kimliği eşsiz olmalı (aynı id, menü seçeneği ve buton custom_id'sini tekrarlatır)
+  const durumApps = () => [base(), meeting({ id: `${guild.id}-13`, number: 13 }), held({ id: `${guild.id}-14`, number: 14 })];
 
   return [
     {
@@ -96,7 +98,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({ components: [b.panel()] }),
     },
-    durum('durum-kart', 'Durum paneli: bekleyen başvurular (kart)', [base(), meeting(), held()]),
+    durum('durum-kart', 'Durum paneli: bekleyen başvurular (kart)', durumApps()),
     durum('durum-bos', 'Durum paneli: başvuru yok (kart)', []),
     durum('durum-sayfa', 'Durum paneli: 9 başvuru, 2. sayfa', manyApps(9), 1),
     {
@@ -105,7 +107,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Durum kanalı, çizim hatasında',
       visibility: 'panel',
       kind: 'message',
-      build: () => ({ components: [b.statusPanel([base(), meeting(), held()])], ...noMentions }),
+      build: () => ({ components: [b.statusPanel(durumApps())], ...noMentions }),
     },
     {
       id: 'basvuru-modal',
