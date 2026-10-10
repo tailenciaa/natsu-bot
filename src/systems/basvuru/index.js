@@ -1028,6 +1028,7 @@ module.exports = {
     [ui.IDS.remind, handleRemind],
     [ui.IDS.transfer, handleTransfer],
     [ui.IDS.statusDetail, handleStatusDetail],
+    [ui.IDS.statusPage, handleStatusPage],
   ],
   events: {
     [Events.ClientReady]: handleReady,

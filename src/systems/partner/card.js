@@ -5,15 +5,13 @@ const {
   WIDTH,
   ROW_H,
   ROW_GAP,
-  FOOTER_H,
-  font,
   createCard,
-  measureCtx,
+  listHeight,
   drawHeading,
   drawRow,
+  drawEmpty,
   drawFooter,
 } = require('../../core/card');
-const { wrapLines } = require('../../core/canvas');
 const { isBusy, PANEL_PAGE_SIZE } = require('./ui');
 
 const THEME = { from: '#0c1f17', to: '#14532d', accent: '#4ade80' };
@@ -27,18 +25,11 @@ const fmtDate = (ts) => dateFmt.format(new Date(Number(ts) || Date.now()));
 
 // entries: tüm güvenilir kayıtlar (sayfalama kartın içinde yapılır), name: bu çizime özel dosya adı
 async function buildTrustedCard(entries, page, name) {
-  const pageCount = Math.ceil(entries.length / PANEL_PAGE_SIZE);
+  const pageCount = Math.max(1, Math.ceil(entries.length / PANEL_PAGE_SIZE));
   const current = Math.min(Math.max(page, 0), pageCount - 1);
   const shown = entries.slice(current * PANEL_PAGE_SIZE, (current + 1) * PANEL_PAGE_SIZE);
 
-  const measure = measureCtx();
-  measure.font = font(400, 16);
-  const subLines = wrapLines(measure, SUB, WIDTH - 80, 2).length;
-  const headingBottom = 48 + 34 + (subLines - 1) * 24 + 20;
-  const rowsH = shown.length * ROW_H + (shown.length - 1) * ROW_GAP;
-  const height = headingBottom + rowsH + 24 + FOOTER_H;
-
-  const { canvas, ctx, scheme, c } = createCard(WIDTH, height, THEME);
+  const { canvas, ctx, scheme, c } = createCard(WIDTH, listHeight(SUB, Math.max(1, shown.length)), THEME);
   let y = drawHeading(ctx, 'Güvenilir Partnerler', SUB, WIDTH, c);
   for (const entry of shown) {
     const busy = isBusy(entry);
@@ -56,6 +47,10 @@ async function buildTrustedCard(entries, page, name) {
       WIDTH,
       c,
     );
+    y += ROW_H + ROW_GAP;
+  }
+  if (!shown.length) {
+    drawEmpty(ctx, 'Henüz güvenilir listeye eklenmiş bir partner yok.', y, WIDTH, c);
     y += ROW_H + ROW_GAP;
   }
   drawFooter(ctx, `Sayfa ${current + 1} / ${pageCount} · ${entries.length} sunucu`, y, WIDTH, c);

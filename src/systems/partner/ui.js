@@ -462,6 +462,8 @@ function trustedListPanel(entries, page = 0, cardName = null) {
   }
 
   if (!entries.length) {
+    // Boş durum kartın içinde yazıldığı için mesajda tekrarlanmaz
+    if (cardName) return container;
     return container.addSeparatorComponents(divider()).addTextDisplayComponents(text('**Henüz güvenilir listeye eklenmiş bir partner yok.**'));
   }
 

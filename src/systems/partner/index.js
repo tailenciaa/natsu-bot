@@ -396,14 +396,12 @@ async function handleReviewDecision(interaction) {
 // Liste mesajı sürekli düzenlendiği için kart adı her seferinde eşsiz üretilir; eski ekler düzenlemede temizlenir
 async function trustedPanelView(guildId_, page = 0) {
   const entries = store.trustedOf(guildId_);
+  const name = `guvenilir-${Date.now().toString(36)}.png`;
   let card = null;
-  if (entries.length) {
-    const name = `guvenilir-${Date.now().toString(36)}.png`;
-    try {
-      card = await require('./card').buildTrustedCard(entries, page, name);
-    } catch (err) {
-      console.error('[partner] Güvenilir panel kartı çizilemedi, metinli panel gösterilecek:', err.message);
-    }
+  try {
+    card = await require('./card').buildTrustedCard(entries, page, name);
+  } catch (err) {
+    console.error('[partner] Güvenilir panel kartı çizilemedi, metinli panel gösterilecek:', err.message);
   }
   return {
     components: [ui.trustedListPanel(entries, page, card?.name ?? null)],
