@@ -639,14 +639,19 @@ function connectingDm(app, guildName) {
   });
 }
 
+// Durum panelinin görünecek sayfası: kartı çizenle mesajı kuranın aynı dilimi kullanması için tek yerde
+function statusPage(apps, page = 0) {
+  const pageCount = Math.max(1, Math.ceil(apps.length / STATUS_PAGE_SIZE));
+  const current = Math.min(Math.max(page, 0), pageCount - 1);
+  return { current, pageCount, shown: apps.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE) };
+}
+
 // Durum kanalındaki canlı panel: bekleyen tüm başvuruları tek mesajda listeler; durum değiştikçe düzenlenir.
 // cardName: çizim kartı ekteyse başlık/açıklama ve başvuru satırları kartta olduğu için mesajda tekrar yazılmaz;
 // kartın altında menüden başvuru seçmeye ve sayfa gezmeye yarayan kontroller kalır
 function statusPanel(apps, page = 0, cardName = null) {
   const now = Math.floor(Date.now() / 1000);
-  const pageCount = Math.max(1, Math.ceil(apps.length / STATUS_PAGE_SIZE));
-  const current = Math.min(Math.max(page, 0), pageCount - 1);
-  const shown = apps.slice(current * STATUS_PAGE_SIZE, (current + 1) * STATUS_PAGE_SIZE);
+  const { current, pageCount, shown } = statusPage(apps, page);
   const nav = (target, slot) => `${IDS.statusPage}:${target}:${slot}`;
 
   const container = new ContainerBuilder();
@@ -688,4 +693,4 @@ function statusPanel(apps, page = 0, cardName = null) {
   return container;
 }
 
-module.exports = { IDS, STATUS, STATUS_TITLE, STATUS_SUB, STATUS_PAGE_SIZE, statusState, statusLabel, cancelReasonOf, statusPanel, connectingDm, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };
+module.exports = { IDS, STATUS, STATUS_TITLE, STATUS_SUB, STATUS_PAGE_SIZE, statusPage, statusState, statusLabel, cancelReasonOf, statusPanel, connectingDm, transferRequestDm, transferResultDm, meetingHoldNotice, waitingResolved, applicantWaitingDm, meetingStaffWaitingDm, decisionPanel, waitingChat, waitingLog, meetingLog, panel, applicationModal, applicationNotice, reviewModal, resultDm, meetingDm };

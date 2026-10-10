@@ -382,6 +382,7 @@ module.exports = {
   STATUS_TITLE,
   STATUS_SUB,
   STATUS_PAGE_SIZE,
+  statusPage,
   ticketState,
   panel,
   statusPanel,
