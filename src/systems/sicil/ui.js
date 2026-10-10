@@ -18,7 +18,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, unix, quote, shorten, page: pageBlocks, colors, pagerRow } = require('../../core/ui');
+const { text, divider, unix, quote, shorten, chip, rows, rel, stamp, page: pageBlocks, colors, pagerRow } = require('../../core/ui');
 const { statusLabel: applicationStatus, cancelReasonOf } = require('../basvuru/ui');
 const { categoryOf, refText } = require('../degerlendirme/ui');
 const config = require('./config');
@@ -222,16 +222,17 @@ function readOnly(container, actions = []) {
 
 // Ceza detayı (cezaların başka yerde mesajı yok); canEdit ise süre ekle / kaldır / sil butonları
 function punishmentDetail(p, messageId, canEdit, banner) {
-  const lines = [
-    stat('Kullanıcı', `<@${p.userId}>`),
-    punishmentState(p) && stat('Durum', punishmentState(p)),
-    stat('Veren', `<@${p.by}> - <t:${unix(p.createdAt)}:F>`),
-    p.type !== 'uyari' && stat('Süre', code(durationLabel(p))),
-    p.status === 'active' && p.expiresAt && stat('Bitiş', `<t:${unix(p.expiresAt)}:F>`),
-    p.extensions.length && stat('Uzatmalar', p.extensions.map((e) => `${code(`+${formatDuration(e.added)}`)} <@${e.by}>`).join(', ')),
-    p.status === 'lifted' && stat('Kaldıran', `<@${p.liftedBy}> - <t:${unix(p.endedAt)}:F>`),
-    p.status === 'expired' && stat('Sona Erdi', `<t:${unix(p.endedAt)}:F>`),
-  ].filter(Boolean);
+  const lines = rows([
+    ['Hedef', `<@${p.userId}>`],
+    ['Tür', chip(TYPES[p.type].label)],
+    punishmentState(p) && ['Durum', punishmentState(p)],
+    ['Veren', `<@${p.by}> · <t:${unix(p.createdAt)}:F>`],
+    p.type !== 'uyari' && ['Süre', chip(durationLabel(p))],
+    p.status === 'active' && p.expiresAt && ['Bitiş', `<t:${unix(p.expiresAt)}:F>`],
+    p.extensions.length && ['Uzatmalar', p.extensions.map((e) => `${chip(`+${formatDuration(e.added)}`)} <@${e.by}>`).join(', ')],
+    p.status === 'lifted' && ['Kaldıran', `<@${p.liftedBy}> · <t:${unix(p.endedAt)}:F>`],
+    p.status === 'expired' && ['Sona Erdi', `<t:${unix(p.endedAt)}:F>`],
+  ]);
 
   const container = new ContainerBuilder();
   if (banner) container.addTextDisplayComponents(text(banner)).addSeparatorComponents(divider());
@@ -416,22 +417,24 @@ function extendDm(p, extra, guildName) {
 }
 
 // Hızlı ceza komutlarının (/ban, /jail, /mute, /uyari...) herkese açık sonuç mesajları ve hata mesajı (Components V2)
-const userLine = (p) => `**Kullanıcı:** <@${p.userId}>`;
+// Bilgi satırları her kartta aynı sırada ve aynı düzendedir: Hedef, Yetkili, Tür, Ceza No, sürüyorsa Süre ve Bitiş.
+const infoRows = (p, byId) =>
+  rows([
+    ['Hedef', `<@${p.userId}>`],
+    ['Yetkili', `<@${byId ?? p.by}>`],
+    ['Tür', chip(TYPES[p.type].label)],
+    ['Ceza No', chip(`#${p.number}`)],
+    p.type !== 'uyari' && ['Süre', chip(durationLabel(p))],
+    p.status === 'active' && p.expiresAt && ['Bitiş', rel(p.expiresAt)],
+  ]);
 
 function commandResult(p) {
   const t = TYPES[p.type];
-  const duration = durationLabel(p);
   return pageBlocks({
     title: `${t.label} Uygulandı`,
     sub: 'Ceza uygulandı ve kullanıcının siciline işlendi. Kaydı /sicil komutuyla görebilir, ceza sürüyorsa numarasıyla /ceza-kaldir komutunu kullanarak kaldırabilirsin.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
-    blocks: [
-      [userLine(p), `**Yetkili:** <@${p.by}>`, `**Ceza:** ${t.label}`, duration ? `**Süre:** ${duration}` : null, p.expiresAt ? `**Bitiş:** <t:${unix(p.expiresAt)}:R>` : null]
-        .filter(Boolean)
-        .join('\n'),
-      `**Sebep**\n${quote(p.reason)}`,
-      `-# Ceza #${p.number} - <t:${unix(p.createdAt)}:F>`,
-    ],
+    blocks: [`**Ceza Bilgileri**\n${infoRows(p)}`, `**Sebep**\n${quote(p.reason)}`, stamp(p.createdAt)],
   });
 }
 
@@ -440,11 +443,7 @@ function commandLift(p, byId, reason) {
     title: `${TYPES[p.type].label} Kaldırıldı`,
     sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi.',
     accent: colors.success,
-    blocks: [
-      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${p.number}`].join('\n'),
-      `**Sebep**\n${quote(reason)}`,
-      `-# <t:${unix(Date.now())}:F>`,
-    ],
+    blocks: [`**Ceza Bilgileri**\n${infoRows(p, byId)}`, `**Sebep**\n${quote(reason)}`, stamp()],
   });
 }
 
@@ -452,11 +451,7 @@ function commandDelete(p, byId, reason) {
   return pageBlocks({
     title: 'Ceza Kaydı Silindi',
     sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek.',
-    blocks: [
-      [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${p.number}`].join('\n'),
-      `**Sebep**\n${quote(reason)}`,
-      `-# <t:${unix(Date.now())}:F>`,
-    ],
+    blocks: [`**Ceza Bilgileri**\n${infoRows(p, byId)}`, `**Sebep**\n${quote(reason)}`, stamp()],
   });
 }
 
