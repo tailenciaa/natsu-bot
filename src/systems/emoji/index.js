@@ -3,7 +3,7 @@
 //     ya da herhangi bir resim bağlantısı verilebilir; boşlukla ayırarak birden fazla eklenebilir.
 //   /cikartma-ekle dosya isim etiket: yüklenen bir görsel dosyasını çıkartma olarak ekler.
 //   Mesaja sağ tık > Uygulamalar > "Emojileri Sunucuya Ekle": mesajdaki ve tepkilerdeki emojiler önizlemeyle listelenir,
-//     menüden seçilenler eklenir. Sonuç sadece kullanana görünür.
+//     menüden seçilenler eklenir. Sonuç herkese açıktır, eklenemeyenler için uyarı sadece kullanana gider.
 // "Emoji ve Çıkartmaları Yönet" izni olanlar sınırsız kullanabilir; botun da bu izne sahip olması gerekir.
 // Sunucuyu takviye eden (boost) üyeler, izinleri olmasa da /emoji-ekle ve /cikartma-ekle ile belirli sayıda
 // emoji/çıkartma ekleyebilir (boost/config.js'teki perks; hak üye başına sayılır). Bulk seçim menüsü (sağ tık) sadece yetkililer içindir.

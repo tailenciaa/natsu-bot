@@ -64,7 +64,7 @@ const walletView = (interaction) =>
 
 const ordersView = (interaction, page = 0) => ui.orders({ user: interaction.user, items: store.purchasesOf(interaction.user.id), page });
 
-// /bakiye: cüzdan sadece kullanana görünür; butonlar ya yeni bir mesaj açar (mağaza) ya da kartın yerini alır
+// /bakiye: cüzdan kartı herkese açık yazılır; butonlar ya yeni bir mesaj açar (mağaza) ya da kartın yerini alır
 async function handleWallet(interaction) {
   return respond(interaction, walletView(interaction));
 }
