@@ -62,32 +62,32 @@ function queuePanel() {
   return container;
 }
 
-// Sıraya giren üyeye giden, sadece kullanana görünür kart: yerini ve sıra bilgisini gösterir.
+// Sıraya girme kartı: kart kanala düşer, üye 3. tekil şahısla ve @etiketle anılır.
 // again: üye zaten sıradayken tekrar bastığında başlık ve açıklama buna göre değişir
-function queuedCard(position, waiting, again) {
-  return page({
-    title: again ? 'Hâlâ Sıradasın' : 'Sıraya Girdin',
-    sub: 'Sırada iki kişi olunca eşleşme kendiliğinden yapılır, odanın kanalları açılır ve sana DM üzerinden iletilir. Sıradan çıkmak için paneldeki butonu kullanabilirsin.',
-    accent: colors.primary,
-    blocks: [
-      rows([
-        ['Sıran', chip(`${position}.`)],
-        ['Sırada Bekleyen', chip(`${waiting} kişi`)],
-        ['Sıra İşleyişi', chip('en eski iki üye eşleşir')],
-      ]),
-      again
-        ? 'Butona tekrar bastığında sıradaki yerini yeniden öğrenirsin, beklediğin süre baştan başlamaz.'
-        : 'Eşleşme sıra bekleme süresi dolmadan olursa odan açılır; süren dolarsa sıran düşer ve sana DM yazılır.',
-      stamp(),
+function queuedCard({ user, position, waiting, again }) {
+  return receipt({
+    title: again ? 'Sırada Bekliyor' : 'Muhabbet Sırasına Girdi',
+    sub: again
+      ? `<@${user.id}> zaten sırada; butona tekrar bastığı için sırasını yeniden gördü, beklediği süre baştan başlamadı.`
+      : `<@${user.id}> muhabbet sırasına girdi. Sırada iki kişi olunca eşleşme kendiliğinden yapılır, odanın kanalları açılır ve DM üzerinden iletilir.`,
+    user,
+    accent: 'primary',
+    pairs: [
+      ['Sırası', chip(`${position}.`)],
+      ['Sırada Bekleyen', chip(`${waiting} kişi`)],
+      ['Sıra İşleyişi', chip('en eski iki üye eşleşir')],
     ],
+    note: again
+      ? 'Sıradan çıkmak için paneldeki **Sıradan Ayrıl** düğmesini kullanabilir.'
+      : 'Eşleşme sıra bekleme süresi dolmadan olursa oda açılır; süresi dolarsa sıra düşer ve üyeye DM yazılır.',
   });
 }
 
-// Sıradan çıkma onayı: sıra yalnızca üyenin kendisini ilgilendirdiği için sadece ona görünür
+// Sıradan çıkma kartı: sıra üyenin kendi işlemi ama sonuç kanalda herkese açık görünür
 function leftQueue({ user }) {
   return receipt({
-    title: 'Sıradan Çıktın',
-    sub: 'Muhabbet sırasından çıkarıldın; istediğin zaman paneldeki **Muhabbet Başlat** düğmesiyle yeniden sıraya girebilirsin.',
+    title: 'Sıradan Çıktı',
+    sub: `<@${user.id}> muhabbet sırasından çıkarıldı; istediği zaman paneldeki **Muhabbet Başlat** düğmesiyle yeniden sıraya girebilir.`,
     user,
     accent: 'primary',
   });
