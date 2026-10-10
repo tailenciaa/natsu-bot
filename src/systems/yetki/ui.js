@@ -57,7 +57,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
-      ? 'Rütbe, yetkiler ve görev rolleri üyeye tanımlandı; verilen rollerin özeti aşağıda. Bu mesaj, yetkilendirme işleminin kaydı olarak kanalda kalır.'
+      ? 'Rütbe, yetkiler ve görev rolleri üyeye tanımlandı. Bu mesaj, yetkilendirme işleminin kaydı olarak kanalda kalır.'
       : 'Rütbe seçince o rütbenin yetkileri ve görev rolleri otomatik işaretlenir; istersen bunları tek tek düzenleyebilir, sonunda **Yetkiyi Ver** butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,
@@ -130,7 +130,7 @@ const guideText = () =>
 function grantDm(guildName, { level, permIds, dutyIds, by }) {
   return page({
     title: 'Ekibe Hoş Geldin',
-    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın. Sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın aşağıda; yeni görevinde başarılar.`,
+    sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın. Sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın bu mesajda; yeni görevinde başarılar.`,
     accent: colors.success,
     blocks: [
       fields([
@@ -173,7 +173,7 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
   const container = page({
     title: done ? 'Yetki Kaldırıldı' : 'Yetki Kaldır',
     sub: done
-      ? 'Seçilen rütbe, yetki ve görev rolleri üyeden kaldırıldı; kaldırılan rollerin özeti aşağıda. Bu mesaj, işlemin kaydı olarak kanalda kalır.'
+      ? 'Seçilen rütbe, yetki ve görev rolleri üyeden kaldırıldı. Bu mesaj, işlemin kaydı olarak kanalda kalır.'
       : 'Menülerden **üyeden kaldırılacak** rütbe, yetki ve görev rollerini seç, ardından **Seçilenleri Kaldır** butonuyla onayla; üyenin bütün yetkilerini birden kaldırmak için **Hepsini Kaldır** butonunu kullan.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.danger : colors.primary,
@@ -221,7 +221,7 @@ function revokeDm(guildName, { taken, by, all }) {
     title: all ? 'Yetkili Ekibinden Çıkarıldın' : 'Bazı Yetkilerin Kaldırıldı',
     sub: all
       ? `${guildName} sunucusundaki yetkili ekibi üyeliğin sona erdi ve bütün yetkilerin kaldırıldı; bugüne kadarki emeğin için teşekkür ederiz.`
-      : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; kaldırılan yetkileri ve işlemi yapan yetkiliyi aşağıda görebilirsin.`,
+      : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; kaldırılan yetkileri ve işlemi yapan yetkiliyi bu mesajda görebilirsin.`,
     accent: colors.danger,
     blocks: [
       fields([

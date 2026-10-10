@@ -438,7 +438,7 @@ function commandResult(p) {
 function commandLift(p, byId, reason) {
   return pageBlocks({
     title: `${TYPES[p.type].label} Kaldırıldı`,
-    sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi. Kaldıran yetkili ve kaldırma sebebi aşağıda.',
+    sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi.',
     accent: colors.success,
     blocks: [
       [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${p.number}`].join('\n'),
@@ -451,7 +451,7 @@ function commandLift(p, byId, reason) {
 function commandDelete(p, byId, reason) {
   return pageBlocks({
     title: 'Ceza Kaydı Silindi',
-    sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek. Silinen kaydın bilgisi, silen yetkili ve sebep aşağıda.',
+    sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek.',
     blocks: [
       [userLine(p), `**Yetkili:** <@${byId}>`, `**Ceza:** ${TYPES[p.type].label} #${p.number}`].join('\n'),
       `**Sebep**\n${quote(reason)}`,

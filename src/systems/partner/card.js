@@ -17,8 +17,7 @@ const { isBusy, PANEL_PAGE_SIZE } = require('./ui');
 const THEME = { from: '#0c1f17', to: '#14532d', accent: '#4ade80' };
 const BUSY_COLOR = '#fbbf24';
 
-const SUB =
-  'Sürekli partner olduğumuz güvenilir sunucular ve yetkilileri aşağıda listelenir. Liste her ekleme ya da çıkarmada bu mesaj düzenlenerek güncel tutulur.';
+const SUB = 'Sürekli partner olduğumuz güvenilir sunucular ve yetkilileri bu kartta listelenir.';
 
 const dateFmt = new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Istanbul' });
 const fmtDate = (ts) => dateFmt.format(new Date(Number(ts) || Date.now()));

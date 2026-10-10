@@ -199,7 +199,7 @@ module.exports = {
       title: 'Görev Alanı Seçimi',
       type: 'areas',
       body:
-        '**{aday}, ekipte hangi alanlarda görev almak istediğini aşağıdaki menüden seç.**\n' +
+        '**{aday}, ekipte hangi alanlarda görev almak istediğini menüden seç.**\n' +
         'Birden fazla alan seçebilirsin. Seçtiğin alanlar bir sonraki adımda {yetkili} tarafından anlatılacak ' +
         've yetki verilirken bu alanların rolleri de verilecek.',
     },
@@ -216,7 +216,7 @@ module.exports = {
       type: 'final',
       body:
         '**Tüm konular tamamlandı, {aday} ekibe katılmaya hazır!**\n' +
-        'Başlayacağı yetkiyi ve verilecek rolleri aşağıdan kontrol edebilirsin.',
+        'Başlayacağı yetkiyi ve verilecek rolleri bu mesajdan kontrol edebilirsin.',
     },
   ],
 };
