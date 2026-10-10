@@ -41,7 +41,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, herkese açık; kontrolleri sadece sahibi kullanır',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 676, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 928, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-sahibi-temasiz',
@@ -49,7 +49,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, ilk açılış ya da Sıfırla sonrası',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 676, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 928, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-baskasi',
@@ -57,7 +57,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu başka üyeyle; kontrol yok',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 744, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 838, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'bio-modal-bos',
@@ -263,6 +263,58 @@ module.exports = ({ mock, ui, src }) => {
                     ? { name: theme.label, note: theme.description, state: 'Sahipsin', id: `${p.IDS.wear}tema:${key}`, label: 'Giy', style: 1 }
                     : { name: theme.label, note: theme.description, state: `${theme.price} coin`, id: `${p.IDS.buy}tema:${key}`, label: `Al · ${theme.price}`, style: 2 },
                 ),
+            ),
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'magaza-kapak',
+      title: 'Mağaza: arka planlar sekmesi, biri satın alınmış',
+      where: 'Mağazadaki "Arka Planlar" sekmesi ya da kapak düzenleyicinin aynı adlı düğmesi',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.shopPage(
+            'kapak',
+            SHOP_TABS,
+            5400,
+            shopRows(
+              kapak.COVERS.map((c) =>
+                c.key === 'yok'
+                  ? { name: c.label, note: c.note, state: 'Kartında bu var', id: `${p.IDS.wear}kapak:yok`, label: 'Giyili', style: 2, disabled: true }
+                  : c.key === 'aurora'
+                    ? { name: c.label, note: c.note, state: 'Sahipsin', id: `${p.IDS.wear}kapak:aurora`, label: 'Giy', style: 1 }
+                    : { name: c.label, note: c.note, state: `${c.price} coin`, id: `${p.IDS.buy}kapak:${c.key}`, label: `Al · ${c.price}`, style: 2 },
+              ),
+            ),
+          ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'magaza-rozet',
+      title: 'Mağaza: rozetler sekmesi, satın alınan kartta görünüyor',
+      where: 'Mağazadaki Rozetler sekmesi',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.shopPage(
+            'rozet',
+            SHOP_TABS,
+            5400,
+            shopRows(
+              kozmetik.SHOP_BADGES.map((b) =>
+                b.key === 'kalp'
+                  ? { name: b.label, note: b.note, state: 'Kartında görünüyor', id: `${p.IDS.wear}rozet:kalp`, label: 'Sahipsin', style: 2, disabled: true }
+                  : { name: b.label, note: b.note, state: `${b.price} coin`, id: `${p.IDS.buy}rozet:${b.key}`, label: `Al · ${b.price}`, style: 2 },
+              ),
             ),
           ),
         ],
