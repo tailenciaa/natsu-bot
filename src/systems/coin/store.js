@@ -27,6 +27,13 @@ module.exports = {
 
   lastClaimAt: (userId) => data.coins[userId]?.lastClaimAt ?? 0,
 
+  // Günlük ödülün bir sonraki hazır olacağı an: bugün alındıysa günün sonu, değilse şu an
+  dailyReadyAt(userId, at = Date.now()) {
+    const w = data.coins[userId];
+    if (!w || w.lastClaimDay !== dayKey(at)) return at;
+    return dayStart(w.lastClaimAt) + DAY;
+  },
+
   // Ödül ekler; kazandıran olayın adı sadece log için kullanılır
   add(userId, amount, reason = 'ödül') {
     if (!(amount > 0)) return this.balance(userId);
