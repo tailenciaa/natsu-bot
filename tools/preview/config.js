@@ -7,7 +7,8 @@ module.exports = {
   // Elle gözden geçirilmesi gereken yön sözcükleri
   DIRECTION_WORDS: ['aşağıdaki', 'yukarıdaki', 'sağdaki', 'soldaki', 'üstteki', 'alttaki', 'aşağıdan', 'yukarıdan'],
   // "tekrar" uyarısından muaf tutulan satırlar (listelerde her kayıtta yinelenen kalıplar)
-  REPEAT_IGNORE: [/^-# Kimler kullanabilir:/],
+  // Yardım menüsünde ardışık komutların gereksinimi aynı olabilir ("Gerekli: Yöneticiler"), tekrar sayılmaz
+  REPEAT_IGNORE: [/^Gerekli: /],
   // Zaman damgalarının gösterileceği saat dilimi
   TIMEZONE: 'Europe/Istanbul',
   // Önizleme genişlikleri (px)
