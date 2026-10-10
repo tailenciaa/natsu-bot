@@ -183,8 +183,8 @@ function rejectedCard(app) {
   });
 }
 
-// Odanın kendi yazı kanalına düşen, sadece sahibinin kullabildiği kontrol paneli
-function roomPanel(room, limit) {
+// Odanın kendi yazı kanalına düşen, sadece sahibinin kullanabildiği kontrol paneli
+function roomPanel(room) {
   const container = page({
     title: 'Kalıcı Oda Paneli',
     sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin; bu paneli sadece **oda sahibi** kullanabilir.',
@@ -193,7 +193,7 @@ function roomPanel(room, limit) {
         ['Oda', chip(room.name)],
         ['Sahip', `<@${room.ownerId}>`],
         ['Üye Sayısı', chip(memberTotal(room.members.length))],
-        ['Kişi Limiti', limitLabel(limit ?? room.limit)],
+        ['Kişi Limiti', limitLabel(room.limit)],
       ])}`,
       'Oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz, yalnızca yetkililer kapatabilir.',
       stamp(room.createdAt),

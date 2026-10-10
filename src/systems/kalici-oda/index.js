@@ -91,10 +91,11 @@ function applyError(interaction) {
   return null;
 }
 
-// Form cevabındaki üye etiketleri (<@id> ve <@!id>); başvuranın kendisi ve sınır aşımı sayılmaz
+// Form cevabındaki üyeler: <@id> / <@!id> etiketleri ya da çıplak üye ID'leri; başvuranın kendisi sayılmaz
 function parseMembers(raw, ownerId) {
   const ids = new Set();
-  for (const match of raw.matchAll(/<@!?(\d+)>/g)) if (match[1] !== ownerId) ids.add(match[1]);
+  for (const match of raw.matchAll(/<@!?(\d+)>|\b(\d{17,20})\b/g)) if (match[1] ?? match[2]) ids.add(match[1] ?? match[2]);
+  ids.delete(ownerId);
   return [...ids];
 }
 
@@ -366,7 +367,7 @@ async function setAccess(guild, room, targetId, allow) {
 }
 
 // Üye menülerinin ortak ön kontrolü: oda, sahip, hız sınırı. Hata varsa { error } ya da { wait }, değilse { room } döner
-async function memberAction(interaction, action, guard) {
+function memberAction(interaction, action, guard) {
   const room = roomOf(interaction);
   const error = ownerError(interaction, room);
   if (error) return { error };
@@ -379,7 +380,7 @@ async function memberAction(interaction, action, guard) {
 
 async function handleAddMember(interaction) {
   const targetId = interaction.values[0];
-  const step = await memberAction(
+  const step = memberAction(
     interaction,
     ui.IDS.add,
     (room) =>
@@ -405,7 +406,7 @@ async function handleAddMember(interaction) {
 
 async function handleRemoveMember(interaction) {
   const targetId = interaction.values[0];
-  const step = await memberAction(
+  const step = memberAction(
     interaction,
     ui.IDS.remove,
     (room) => (room.ownerId === targetId ? 'Sahipliği devretmeden kendin odadan çıkaramazsın.' : room.members.includes(targetId) ? null : 'Bu üye odanın üyelerinden değil.'),
@@ -423,7 +424,7 @@ async function handleRemoveMember(interaction) {
 
 async function handleTransfer(interaction) {
   const targetId = interaction.values[0];
-  const step = await memberAction(
+  const step = memberAction(
     interaction,
     ui.IDS.transfer,
     (room) => (targetId === room.ownerId ? 'Oda zaten senin.' : room.members.includes(targetId) ? null : 'Sahipliği sadece odanda bulunan bir üyeye devredebilirsin.'),
@@ -560,13 +561,16 @@ async function handleAssign(interaction) {
   const target = interaction.options.getMember('kullanici');
   if (!target) return replyError(interaction, 'Üye sunucuda değil.', 'Sunucudaki bir üyeyi seç.');
   if (target.user.id === room.ownerId) return replyError(interaction, 'Oda zaten bu üyenin.');
-  if (target.user.bot) return replyError(interaction, 'Oda sahipliği bir büota verilemez.', 'Bir üye seç.');
+  if (target.user.bot) return replyError(interaction, 'Oda sahipliği bir bota verilemez.', 'Bir üye seç.');
 
   await interaction.deferReply({ flags: core.EPHEMERAL });
+  const previousId = room.ownerId;
+  const previous = await interaction.guild.members.fetch(previousId).catch(() => null);
   await setAccess(interaction.guild, room, target.id, true);
+  // Eski sahip hâlâ sunucudaysa odada sıradan üye olarak kalmaya devam eder
   const updated = store.updateRoom(room.id, {
     ownerId: target.id,
-    members: [...room.members.filter((id) => id !== target.id && id !== room.ownerId), room.ownerId].slice(0, config.maxExtraMembers),
+    members: [...room.members.filter((id) => id !== target.id && id !== previousId), ...(previous ? [previousId] : [])].slice(0, config.maxExtraMembers),
   });
 
   const channel = await fetchTextChannel(interaction.guild, room.textChannelId);
@@ -575,8 +579,8 @@ async function handleAssign(interaction) {
       .edit(updated.panelMessageId, { components: [ui.roomPanel(updated)], allowedMentions: { parse: [] } })
       .catch(hata('Oda paneli güncellenemedi'));
   }
-  const previous = await interaction.client.users.fetch(room.ownerId).catch(() => null);
-  await previous
+  const exOwner = await interaction.client.users.fetch(previousId).catch(() => null);
+  await exOwner
     ?.send({ components: [core.alert('Kalıcı odanın sahipliği devredildi.', `<@${target.id}> artık <#${updated.voiceChannelId}> odasının sahibi.`, 'warning')], flags: core.CV2, allowedMentions: { parse: [] } })
     .catch(() => {});
   return respond(interaction, core.alert(`Oda #${core.pad(updated.no)} <@${target.id}> üyesine devredildi.`, undefined, 'success'));
