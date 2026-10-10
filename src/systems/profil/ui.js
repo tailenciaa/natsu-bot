@@ -1,6 +1,6 @@
 // Profil mesajı: kart görseli (card.js) ve sahibiyse kartın altında düzenleme kontrolleri (biyografi/unvan, renk,
-// kapak görseli, tema, sıfırlama) ile vitrin, rozet ve mağaza sayfaları. Kontroller aynı mesajı günceller; sahibi
-// olmayanlar sadece görseli görür.
+// kapak görseli, tema, panel görünümü, sıfırlama) ile vitrin, rozet ve mağaza sayfaları. Kontroller aynı mesajı
+// günceller; sahibi olmayanlar sadece görseli görür.
 const {
   ActionRowBuilder,
   ButtonBuilder,
