@@ -77,7 +77,11 @@ module.exports = ({ mock, ui, src }) => {
     showRatings: true,
     allowedTypes: ['uyari', 'mute', 'jail', 'ban'],
   };
-  const view = (o) => ({ components: [sicil.sicil({ ...base, ...o })], ...noMentions });
+  const view = (o) => ({
+    components: [sicil.sicil({ ...base, ...o }, 'sicil.png')],
+    files: [mock.pngFile('sicil.png', { width: 1000, height: 420, label: 'Sicil kartı' })],
+    ...noMentions,
+  });
   const detail = (p, canEdit = true) => ({ components: [sicil.punishmentDetail(p, '123456789', canEdit)], flags: ui.EPHEMERAL_CV2, ...noMentions });
 
   return [
