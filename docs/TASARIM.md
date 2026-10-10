@@ -116,14 +116,14 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 | --- | --- |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana |
 | Kişisel işlem sonucu, yetkili işlem panelleri | Sadece kullanana |
-| Bilgi komutları (yardım, seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`) |
+| Bilgi komutları (yardım, seviye, profil, sıralama, sicil) | Herkese açık, gezinme sadece komutu kullanana (`isMenuOwner`); yardım menüsünün yetkili katmanı sadece kullanana görünür |
 | Paneller, duyurular, loglar, talep mesajları | Kanalda herkese görünür |
 | Test ve önizleme | Sadece kullanana, etiket yok |
 
 ## 7. Komut politikası
 
 - Her komutun ve seçeneğin açıklaması tek cümle, fiille başlayan, noktayla biten ve en çok 100 karakterdir.
-- Yardım menüsü üyelere yöneliktir: bir sistem menüye yalnızca `help.member` listesindeki komutlarıyla girer (`help.category` sekmesini belirler). Yetkili ve kurulum komutları listelenmez, `help.access`te belge olarak durur; komut denetimi her komutun `help.access` karşılığı olmasını ister.
+- Yardım menüsü iki katmanlıdır ve kategoriler tek bir menüden seçilir (`/yardim`): üye yalnızca sistemin `help.member` listesindeki komutları görür (mesaj herkese açıktır); yetkili komutlarının görünmesi gereken izne (`core/config.js staffPermission`) ya da yöneticiliğe sahip olan tüm kategorileri de görür ve bu mesaj sadece kendisine görünür gönderilir. `help.category` kategoriyi, `help.need` komutun yanında görünen "Gerekli: ..." yazısını belirler; listelenen her yetkili komutunun `need` karşılığı olmak zorundadır. `help.access` erişimi belgeleyen kayıttır, arayüzde gösterilmez; komut denetimi her komutun `access` karşılığı olmasını ister. Sağ tık (bağlam menüsü) komutları menüde listelenmez.
 
 ## 8. Doğrulama (Discord'a bağlanmadan)
 

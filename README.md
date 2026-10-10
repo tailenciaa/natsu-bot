@@ -34,7 +34,7 @@ Sık değişen kayıtlar (XP, sıralama, haftalık aktifler, saygınlık) birka�
 
 ## Komutlar
 
-Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; **Herkes** satırları `/yardim` menüsünde görünür, yetkili ve kurulum komutları menüde listelenmez:
+Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` menüsü iki katmanlıdır: üyeler yalnızca **Herkes** ve takviye/izin gerektiren üye komutlarını görür, yetkili izni olanlar ayrıca yetkili ve kurulum komutlarını da görür (o katman sadece komutu kullanana görünür). Her komutun ne gerektirdiği `help.need`'de, ayrıntılı erişimi `help.access`'te durur:
 
 | Komut | Açıklama | Kimler |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; **Herkes**
 | `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
 | `/log kur` | Log kurulum menüsünü açar | Yöneticiler |
 
-Yetkili komutları sadece yetkili komut kanalında çalışır.
+Ceza komutları (`/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban`, `/ceza-kaldir`, `/ceza-sil`) ve `/yetki-ver` ile `/yetki-al` sadece yetkili komut kanalında çalışır.
 
 ## Sistemler
 
