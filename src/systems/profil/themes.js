@@ -15,10 +15,17 @@ const DEFAULT_THEME = 'sakura';
 
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
 
-// Tek renkten tema üretir; çok koyu renkler okunabilsin diye vurguda biraz açılır
+// Vurgu rengi kartın koyu zemininde okunabilmeli: eşik altındaki renkler tam hedef parlaklığa gelecek kadar
+// beyazla açılır. Beyazla karışımda parlaklık doğru orantılı arttığı için (l -> l + t(1-l)) tek adımda bulunur.
+const MIN_ACCENT = 0.42;
+function readableAccent(color) {
+  const value = luminance(color);
+  return value >= MIN_ACCENT ? color : mix(color, '#ffffff', (MIN_ACCENT - value) / (1 - value));
+}
+
+// Tek renkten tema üretir; kartın tonu seçilen renkten, vurgusu okunabilirliğe çekilmiş halinden türer
 function themeFromColor(color) {
-  let accent = hex(color);
-  if (luminance(accent) < 0.28) accent = mix(accent, '#ffffff', 0.45);
+  const accent = readableAccent(hex(color));
   return { from: mix(accent, '#000000', 0.78), to: mix(accent, '#000000', 0.35), accent };
 }
 
@@ -27,7 +34,7 @@ function themeFromColor(color) {
 function resolveTheme(custom = {}, roleColor = 0) {
   if (custom.theme && THEMES[custom.theme]) {
     const theme = THEMES[custom.theme];
-    return custom.color ? { ...theme, accent: hex(custom.color) } : theme;
+    return custom.color ? { ...theme, accent: readableAccent(hex(custom.color)) } : theme;
   }
   if (custom.color) return themeFromColor(custom.color);
   if (roleColor) return themeFromColor(roleColor);

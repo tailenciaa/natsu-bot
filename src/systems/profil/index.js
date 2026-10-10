@@ -128,7 +128,6 @@ async function handleSettings(interaction) {
       const match = COLOR.exec(value);
       if (value && !match) return replyError(interaction, 'Renk kodu geçersiz.', '**Altı haneli** bir hex kod yaz, örneğin **#ff5599**.');
       const color = match ? parseInt(match[1], 16) : null;
-      if (color === 0) return replyError(interaction, 'Siyah renk kartta okunmaz.', 'Biraz daha açık bir renk dene, örneğin **#ff5599**.');
       await interaction.deferUpdate();
       store.set(interaction.user.id, { color });
       return refresh(interaction);
