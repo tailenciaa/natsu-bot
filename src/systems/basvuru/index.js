@@ -27,9 +27,15 @@ const UNKNOWN_MESSAGE = 10008;
 async function statusPanelView(client, gid, page = 0) {
   const apps = store.pendingApplications(gid);
   const guild = client.guilds.cache.get(gid);
+  // Kart çizimi eşzamanlı olduğundan görünecek sayfadaki yetkili adları önceden çözülür
+  const names = new Map();
+  for (const app of ui.statusPage(apps, page).shown) {
+    const id = ui.statusState(app).staffId;
+    if (id && !names.has(id)) names.set(id, await userName(guild, id));
+  }
   let card = null;
   try {
-    card = await require('./card').buildStatusCard(apps, page, `basvuru-durum-${Date.now().toString(36)}.png`, (id) => userName(guild, id));
+    card = require('./card').buildStatusCard(apps, page, `basvuru-durum-${Date.now().toString(36)}.png`, (id) => names.get(id) ?? null);
   } catch (err) {
     console.error('[basvuru] Durum paneli kartı çizilemedi, metinli panel gösterilecek:', err.message);
   }

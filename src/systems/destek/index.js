@@ -29,9 +29,16 @@ const UNKNOWN_MESSAGE = 10008;
 async function statusPanelView(client, gid, page = 0) {
   const tickets = store.openTicketsAll(gid);
   const guild = client.guilds.cache.get(gid);
+  // Kart çizimi eşzamanlı olduğundan görünecek sayfadaki adlar önceden çözülür
+  const names = new Map();
+  for (const ticket of ui.statusPage(tickets, page).shown) {
+    for (const id of [ticket.ownerId, ticket.claimedBy]) {
+      if (id && !names.has(id)) names.set(id, await userName(guild, id));
+    }
+  }
   let card = null;
   try {
-    card = await require('./card').buildStatusCard(tickets, page, `destek-durum-${Date.now().toString(36)}.png`, (id) => userName(guild, id));
+    card = require('./card').buildStatusCard(tickets, page, `destek-durum-${Date.now().toString(36)}.png`, (id) => names.get(id) ?? null);
   } catch (err) {
     console.error('[destek] Durum paneli kartı çizilemedi, metinli panel gösterilecek:', err.message);
   }

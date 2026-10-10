@@ -399,7 +399,7 @@ async function trustedPanelView(guildId_, page = 0) {
   const name = `guvenilir-${Date.now().toString(36)}.png`;
   let card = null;
   try {
-    card = await require('./card').buildTrustedCard(entries, page, name);
+    card = require('./card').buildTrustedCard(entries, page, name);
   } catch (err) {
     console.error('[partner] Güvenilir panel kartı çizilemedi, metinli panel gösterilecek:', err.message);
   }

@@ -24,7 +24,7 @@ const dateFmt = new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-dig
 const fmtDate = (ts) => dateFmt.format(new Date(Number(ts) || Date.now()));
 
 // entries: tüm güvenilir kayıtlar (sayfalama kartın içinde yapılır), name: bu çizime özel dosya adı
-async function buildTrustedCard(entries, page, name) {
+function buildTrustedCard(entries, page, name) {
   const pageCount = Math.max(1, Math.ceil(entries.length / PANEL_PAGE_SIZE));
   const current = Math.min(Math.max(page, 0), pageCount - 1);
   const shown = entries.slice(current * PANEL_PAGE_SIZE, (current + 1) * PANEL_PAGE_SIZE);
