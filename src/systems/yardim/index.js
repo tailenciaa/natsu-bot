@@ -31,7 +31,7 @@ const SELF = 'yardim';
 // Kategori sırası ve kategori menüsündeki kısa açıklamaları; listede olmayan kategoriler sistem sırasıyla sona
 // eklenir. Bir kategoride listelenecek komut kalmıyorsa kategori hiç gösterilmez.
 const CATEGORIES = [
-  ['hesap', 'Profil, seviye, coin ve sicil komutları'],
+  ['hesap', 'Profil, seviye, coin ve cüzdan komutları'],
   ['siralama', 'Sıralamalar ve saygınlık'],
   ['partner', 'Partner sunucular'],
   ['emoji', 'Emoji ve çıkartma ekleme'],
