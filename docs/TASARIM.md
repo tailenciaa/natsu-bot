@@ -73,6 +73,8 @@ Renk durumu söyler: yeşil tamamlandı/onaylandı, sarı bekliyor, kırmızı h
 
 `başlık → sekme butonları → içerik → sayfa bilgisi → « »`. Aktif sekme yeşil (Success), diğerleri gri; sayfa bilgisi tek satır (`Sayfa 2 / 5 · 48 kayıt`); tek sayfalık listede sayfa butonu gösterilmez.
 
+Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı günceller** (`interaction.update`), yeni mesaj atmaz; mesajda bir görsel varsa `attachments: []` ile temizlenir. Yeni mesaj yalnızca ilk açılışta ve modal gönderiminde (modal, eski mesajı güncelleyemez) atılır.
+
 ### Form, DM ve log
 
 - **Form:** başlık en çok 45 karakter ve eylem odaklı ("Talebi Kapat"), alan açıklaması tek cümle, yer tutucu "Örn: ..." biçiminde. Boş değer ve boş yer tutucu Discord'a gönderilmez.
@@ -88,10 +90,11 @@ Renk durumu söyler: yeşil tamamlandı/onaylandı, sarı bekliyor, kırmızı h
 
 ### Çizili kartlar (profil ve kapak önizlemesi)
 
-- Kart node-canvas ile çizilir (embed/CV2 değil): 1000 px genişlik, kapak 300 px, gövde tema renginin karanlığında, tüm bölümler `glass` ile buzlu cam paneli görünümünde (yumuşak dolgu + üst parlama + ince kenar).
+- Kart node-canvas ile çizilir (embed/CV2 değil): 1000 px genişlik, kapak 300 px, gövde tema renginin karanlığında. Discord kartı sohbette ~440 px'e küçülttüğü için tüm yazı ölçeği bol tutulur (ad 44 px, biyografi 23 px, kutu başlığı 18 px).
+- Panel tarzı **temaya bağlıdır**, her kart cam değildir: `themes.js`'te `glass: true` olan temalar buzlu cam panel (yumuşak dolgu + üst parlama + ince kenar), olmayanlar düz opak panel çizer. Saydamlık cam temalarda üyenin kendisinindir (`custom.glassOpacity`, 0-100, 10'luk adımlar; 0 belirgin panel, 100 neredeyse görünmez panel). Saydamlığın fark edilebilmesi için kapağın rengi gövdeye ışımayla sızar (`paintAmbient`); düz paneller bu ışımayı kapattığı için cam/düz ayrımı belli olur.
 - Kapağın üstüne yalnızca kendi hapları (sıra ve coin) biner; kapak karartması en üst 130 px'te %30'dur, böylece üye görseli seçtiği tema/arka plan efektini gerçekten görür. Kapak çizimi `HEADER` yüksekliğine kırpılır, gövdeye taşmaz.
 - Rozet şeridi en çok iki satır; sığmayanlar tek bir "**+N**" hapsine dönüşür. Coin ile alınan sergi rozetleri başa yazılır (ücretli olan, kazanılanların arasında kaybolmaz).
-- Kapak düzenleyicide görsel %100-300 yakınlaştırılır ve kaydırma yalnızca taşan alan kadar yapılır (-1..1); görselin arkasında boşluk oluşamaz. Hareket düğmeleri her zaman durur, görsel yokken pasifleşir.
+- Kapak düzenleyicide görsel %100-300 yakınlaştırılır ve kaydırma yalnızca taşan alan kadar yapılır (-1..1); görselin arkasında boşluk oluşamaz. Hareket düğmeleri her zaman durur, görsel yokken pasifleşir. Görünüm sayfasındaki saydamlık düğmeleri de aynı kuralı izler: cam olmayan temada kaybolmaz, pasifleşir.
 - Arka plan efektleri (`kapak.js`) temaların kendi efektiyle aynı boyacıları kullanır; tema ve arka plan tek yerde çizilir.
 
 ## 4. Teknik sınırlar
