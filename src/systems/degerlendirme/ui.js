@@ -246,7 +246,7 @@ function replyModal(rating) {
 function replyDm(rating, guildName) {
   return page({
     title: 'Değerlendirmene Yorum Geldi',
-    sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye **bir yorum ekledi**; yetkilinin yazdığı yorumu ve hangi hizmet için verdiğin puanı aşağıda görebilirsin.',
+    sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye **bir yorum ekledi**; yorumu ve hangi hizmet için kaç puan verdiğini bu mesajda görebilirsin.',
     accent: colors.success,
     blocks: [
       `**Yorum Bilgileri**\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
@@ -333,7 +333,7 @@ function meetingDm(rating, guildName) {
 
   return page({
     title: 'Görüşmeye Çağrıldın',
-    sub: 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve seninle sesli bir görüşme yapılmasına karar verildi; nereye geçmen gerektiği aşağıda belirtiliyor.',
+    sub: 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve seninle sesli bir görüşme yapılmasına karar verildi.',
     accent: colors.primary,
     blocks: [
       '**Görüşme Bilgileri**\n' +
@@ -342,7 +342,7 @@ function meetingDm(rating, guildName) {
       '**Nereye Geçmelisin?**\n' +
         (waitingIn
           ? `<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor!`
-          : 'Görüşme için aşağıdaki ses kanallarından birine geç.'),
+          : 'Görüşme için ses kanallarından birine katıl; katılma butonları bu mesajda.'),
     ],
   })
     .addActionRowComponents(new ActionRowBuilder().addComponents(buttons))

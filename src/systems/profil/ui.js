@@ -162,8 +162,8 @@ function kapakPage(imageName, custom) {
           `**Konum:** yatay ${signed(x)}, dikey ${signed(y)}`,
           `**Arka plan:** ${coverOf(custom.cover).label}`,
           hasImage
-            ? 'Kaydırma yalnızca görselin taşan kısmı kadar yapılır; kenarlarda boşluk oluşmaz.'
-            : 'Hareket düğmeleri bir görsel bağlantısı verdiğinde açılır; arka plan efektlerini mağazadan alabilirsin.',
+            ? null
+            : 'Kaydırma ve yakınlaştırma ancak bir kapak görselin olduğunda işler; görselleri mağazadan alabilirsin.',
         ]),
       ),
     )
@@ -258,7 +258,7 @@ function rozetPage(list, earnedCount) {
   const normal = rest.filter((b) => !b.gorev);
   return core.page({
     title: 'Rozetler',
-    sub: 'Rozetler sunucudaki etkinliğinden türetilir; ayrı bir başvuru ya da istek gerekmez. Aşağıda kazandıkların ve kaldığı yerden ilerlemesi gösterilir.',
+    sub: 'Rozetler sunucudaki etkinliğinden türetilir; ayrı bir başvuru ya da istek gerekmez. Kazandıkların ve kalanların ilerlemesi burada listelenir.',
     blocks: [
       fields([
         `**${earnedCount} rozet kazanıldı**`,
