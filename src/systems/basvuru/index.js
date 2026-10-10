@@ -1023,7 +1023,11 @@ async function handleStatusPage(interaction) {
 module.exports = {
   name: 'basvuru',
   commands,
-  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'basvuru liste': 'Yöneticiler', 'basvuru reddet': 'Yöneticiler' } },
+  help: {
+    category: ['yetki', 'Yetkili İşlemleri'],
+    access: { 'basvuru liste': `<@&${config.roles.reviewer}> ekibi`, 'basvuru reddet': `<@&${config.roles.reviewer}> ekibi` },
+    need: { 'basvuru liste': `<@&${config.roles.reviewer}> ekibi`, 'basvuru reddet': `<@&${config.roles.reviewer}> ekibi` },
+  },
   slash: { basvuru: handleCommand },
   buttons: { [ui.IDS.apply]: handleApplyButton },
   modals: { [ui.IDS.applyModal]: handleApplySubmit },

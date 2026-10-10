@@ -578,7 +578,8 @@ module.exports = {
   commands,
   help: {
     category: ['destek', 'Destek Talepleri'],
-    access: { 'destek ekle': 'Yetkililer', 'destek cikar': 'Yetkililer' },
+    access: { 'destek ekle': `<@&${config.roles.staff}> rolü`, 'destek cikar': `<@&${config.roles.staff}> rolü` },
+    need: { 'destek ekle': `<@&${config.roles.staff}> rolü`, 'destek cikar': `<@&${config.roles.staff}> rolü` },
   },
   slash: { destek: handleMemberCommand },
   buttons: {

@@ -78,6 +78,7 @@ module.exports = {
     category: ['siralama', 'Sıralama'],
     member: ['vip-siralama'],
     access: { 'vip-ver': 'Yöneticiler', 'vip-siralama': 'Herkes' },
+    need: { 'vip-ver': 'Yöneticiler' },
   },
   slash: { 'vip-ver': handleGive, 'vip-siralama': handleTable },
   prefixed: [[ui.IDS.page, handlePage]],

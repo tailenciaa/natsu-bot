@@ -1019,6 +1019,7 @@ module.exports = {
       'guvenilir-partnerler': 'Herkes görebilir; işlemler partner yetkilileri için',
       'partner-musaitlik': 'Partner yetkilileri',
     },
+    need: { 'partner-musaitlik': `<@&${config.roles.staff}> rolü` },
   },
   slash: { 'guvenilir-partnerler': handleTrustedCommand, 'partner-musaitlik': handleStaffStatusCommand },
   prefixed: [
