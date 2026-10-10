@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, alert, page, quote, stamp, text, unix, rows, chip, rel } = require('../../core/ui');
+const { colors, alert, page, quote, stamp, text, divider, rows, chip, rel, pills } = require('../../core/ui');
 
 // cekilis-ayril:<no>, cekilis-onay:<eylem>:<no>, cekilis-form:<no>, cekilis-yeni:<kanalID>:<rolID>
 const IDS = {
@@ -181,4 +181,30 @@ function joined(g) {
   );
 }
 
-module.exports = { IDS, panel, createModal, editModal, confirm, winners, noWinner, noWinnerReason, joined };
+// Yönetim paneli (/cekilis liste): açık çekilişler tek kartta, her satırda çekiliş mesajına giden bağlantı var.
+// Yeni çekiliş butonu bu kanal için formu açar; bitirmek, iptal etmek ve yeniden çekmek numarayla komutla yapılır.
+function managementPanel({ active, ended, channelId }) {
+  const line = (g) =>
+    [
+      `**#${g.no} · ${g.prize}**`,
+      `${pills([['Katılımcı', g.participants.length], ['Kazanan', g.winnerCount]])} · Bitiş ${rel(g.endsAt)}${g.roleId ? ` · Rol: <@&${g.roleId}>` : ''}`,
+      `[Çekiliş mesajı](${g.url})`,
+    ].join('\n');
+  const container = page({
+    title: 'Çekiliş Yönetimi',
+    sub: 'Açık çekilişleri ve son sonuçlananları burada takip edebilirsin. Bir çekilişi süresini beklemeden bitirmek, iptal etmek ya da yeniden çekmek için **/cekilis** komutlarından birini, çekilişin numarasıyla kullan.',
+    blocks: [
+      active.length ? active.map(line).join('\n\n') : '-# Şu an açık çekiliş yok.',
+      ended.length
+        ? `**Son Sonuçlananlar**\n${ended.map((g) => `**#${g.no} · ${g.prize}** - ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`).join('\n')}`
+        : null,
+    ],
+  });
+  return container.addSeparatorComponents(divider()).addActionRowComponents(
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`${IDS.start}:${channelId}`).setLabel('Çekiliş Başlat').setStyle(ButtonStyle.Primary),
+    ),
+  );
+}
+
+module.exports = { IDS, panel, managementPanel, createModal, editModal, confirm, winners, noWinner, noWinnerReason, joined };
