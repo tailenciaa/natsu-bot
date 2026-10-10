@@ -162,13 +162,13 @@ function roomList(rooms, queue) {
   const queueLines = queue.slice(0, 20).map((entry, i) => `${i + 1}. <@${entry.userId}> · ${chip(waited(entry.joinedAt))} bekliyor`);
   const queueBlock = queue.length
     ? [
-        `**Sırada Bekleyen** ${chip(`${queue.length} kişi`)} ${pills([['Sıra Limiti', `${config.maxQueue} kişi`]])}`,
+        `**Sırada Bekleyen** ${chip(`${queue.length} / ${config.maxQueue} kişi`)}`,
         ...queueLines,
         queue.length > 20 ? `Ve ${queue.length - 20} kişi daha sırada bekliyor.` : null,
       ]
         .filter(Boolean)
         .join('\n')
-    : `**Sırada Bekleyen** ${chip('0 kişi')}\n-# Sırada bekleyen üye yok.`;
+    : `**Sırada Bekleyen** ${chip(`0 / ${config.maxQueue} kişi`)}\n-# Sırada bekleyen üye yok.`;
 
   return page({
     title: 'Muhabbet Odaları',

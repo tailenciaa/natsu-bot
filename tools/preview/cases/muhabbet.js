@@ -49,7 +49,7 @@ module.exports = ({ mock, src }) => {
     { id: 'sira-tekrar', title: 'Sıraya girme kartı: sırada beklerken tekrar basıldı', where: 'Muhabbet Başlat butonu', visibility: 'ephemeral', kind: 'message', build: () => message(k.queuedCard(2, 6, true)) },
 
     { id: 'eslesme', title: 'Eşleşen üyeye giden kart: oda açıldı', where: 'DM', visibility: 'ephemeral', kind: 'message', build: () => message(k.matchedCard(room())) },
-    { id: 'oda-paneli', title: 'Odanın kendi paneli: bitir butonu', where: 'Odanın yazi kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomPanel(room())) },
+    { id: 'oda-paneli', title: 'Odanın kendi paneli: bitir butonu', where: "Odanın yazı kanalı", visibility: 'public', kind: 'message', build: () => message(k.roomPanel(room())) },
 
     {
       id: 'bitti',
