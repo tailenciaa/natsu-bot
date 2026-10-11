@@ -112,6 +112,22 @@ module.exports = ({ mock, src }) => {
 
     { id: 'teslim', title: 'Sahibine giden teslim kartı', where: 'Doğrudan mesaj', visibility: 'dm', kind: 'message', build: () => message(k.readyCard(room())) },
     {
+      id: 'duyuru-acildi',
+      title: 'Duyuru kartı: kalıcı oda açıldı',
+      where: 'Kalıcı oda duyuru kanalı',
+      visibility: 'public',
+      kind: 'message',
+      build: () => message(k.openedNotice(room())),
+    },
+    {
+      id: 'duyuru-kapatildi',
+      title: 'Duyuru kartı: kalıcı oda kapatıldı',
+      where: 'Kalıcı oda duyuru kanalı',
+      visibility: 'public',
+      kind: 'message',
+      build: () => message(k.closedNotice(second, 'Sahibi sunucudan ayrıldı.')),
+    },
+    {
       id: 'dm-ret',
       title: 'Başvurana giden ret kartı',
       where: 'Doğrudan mesaj',
