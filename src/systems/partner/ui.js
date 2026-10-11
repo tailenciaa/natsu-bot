@@ -205,7 +205,7 @@ function reviewCard(request, decided) {
     .addTextDisplayComponents(
       text(
         fields([
-          '**Talep Bilgileri**',
+          '## Talep Bilgileri',
           rows([
             ['Gönderen', `<@${request.requesterId}>`],
             ['Sunucu ID', chip(request.serverId)],
@@ -215,7 +215,7 @@ function reviewCard(request, decided) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(inert(request.text), 1500))}`));
+    .addTextDisplayComponents(text(`## Partner Metni\n${quote(shorten(inert(request.text), 1500))}`));
 
   if (decided) {
     const verdict =
@@ -224,7 +224,7 @@ function reviewCard(request, decided) {
         : decided.banned
           ? `<@${decided.by}> talebi **reddetti** ve sunucuyu **yasaklı listesine** aldı.`
           : `<@${decided.by}> talebi **reddetti**.`;
-    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Karar**\n${verdict}`));
+    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Karar\n${verdict}`));
   }
 
   return container
@@ -255,7 +255,7 @@ function postCard(request, trusted, banned) {
     )
     .addSeparatorComponents(divider())
     // Bir mesajdaki toplam metin 4000 karakteri geçemez; kayıtlı metin tam kalır, kartta çok uzunsa kırpılır
-    .addTextDisplayComponents(text(`**Tanıtım Metni**\n${shorten(sanitize(request.text), 2800)}`));
+    .addTextDisplayComponents(text(`## Tanıtım Metni\n${shorten(sanitize(request.text), 2800)}`));
 
   const files = request.files ?? [];
   const images = files.filter((f) => f.image);
