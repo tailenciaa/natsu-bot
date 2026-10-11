@@ -9,6 +9,7 @@ const sicilStore = require('../sicil/store');
 const siralamaStore = require('../siralama/store');
 const kozmetik = require('./kozmetik');
 const rozet = require('./rozet');
+const skor = require('./skor');
 const store = require('./store');
 
 const number = (n) => Number(n).toLocaleString('tr-TR');
@@ -59,9 +60,13 @@ async function profileView(guild, userId) {
     earnedCoins: coinStore.earned(userId),
   };
   const ctx = rozet.context({ guild, member, userId, messageCount, voiceSeconds, streamSeconds, visits: visits.count });
+  const kazanilan = rozet.earned(ctx);
   // Satın alınan sergi rozetleri başa yazılır: kartta iki satır yer olduğu için kazanılan rozetlerin arasında kaybolmasınlar
-  const badges = [...kozmetik.badgesOf(custom.ownedBadges), ...rozet.earned(ctx)];
+  const badges = [...kozmetik.badgesOf(custom.ownedBadges), ...kazanilan];
   const featured = FEATURED.find((o) => o.key === custom.featured);
+  // Puan ve sırası: kart, puan sayfası ve ilk 10 listesi aynı hesaptan gelir (skor.js)
+  const score = skor.scoreOf(ctx, kazanilan.length);
+  const { rank: scoreRank, size: scoreSize } = await skor.rankOf(guild, userId);
 
   return {
     custom,
@@ -82,6 +87,9 @@ async function profileView(guild, userId) {
     punishments: { total: cezalar.length, active: cezalar.filter((p) => p.status === 'active').length },
     ownedCount: store.ownedCount(userId),
     frame: kozmetik.frameOf(custom.frame),
+    score,
+    scoreRank,
+    scoreSize,
     ...stats,
   };
 }
