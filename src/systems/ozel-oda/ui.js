@@ -75,30 +75,29 @@ function controlPanel(room, channel, state = {}, access = { invited: [], banned:
       ),
     );
 
-  const label = (caption) => container.addTextDisplayComponents(text(caption));
-  const menu = (caption, id) => {
-    container.addSeparatorComponents(divider());
-    label(caption);
-    return container.addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${id}:0`, menuHint(id))));
+  // Üye menüleri: her grubun üstünde ne yaptığı yazar, menünün kendisi kimi istediğini placeholderda söyler.
+  // Ekle/Çıkar yeni olduğu için tek tek anlatılır; at/yasakla/devret tek başlık altında yan yana durur
+  // (ard arda menü satırları arasına çizgi girmez) ve panel 40 bileşen sınırında nefes alanı kalsın diye böyle gruplanır.
+  const group = (caption, ids) => {
+    container.addSeparatorComponents(divider()).addTextDisplayComponents(text(caption));
+    for (const id of ids) container.addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${id}:0`, menuHint(id))));
   };
 
-  menu('### Üye Ekle\nSeçtiğin üye odana katılabilir; oda kilitli ya da gizliyken de girebilir.', IDS.add);
-  menu('### Üye Çıkar\nSeçtiğin üyenin odadaki ayrı izni silinir, odadaysa dışarı alınır. Yasaklı bir üyeyi seçersen yasağı kalkar.', IDS.drop);
-  menu('### Odadan At\nSeçtiğin üye odadan çıkarılır, izni kalır; istediği an geri girebilir.', IDS.kick);
-  menu('### Yasakla\nSeçtiğin üye bu oda silinene kadar odana giremez.', IDS.ban);
-  menu('### Sahipliği Devret\nOda seçtiğin üyeye geçer, sen odada kalırsın.', IDS.transfer);
+  group('### Üye Ekle\nSeçtiğin üye odana katılabilir; oda kilitli ya da gizliyken de girebilir.', [IDS.add]);
+  group('### Üye Çıkar\nSeçtiğin üyenin odadaki ayrı izni silinir, odadaysa dışarı alınır. Yasaklı bir üyeyi seçersen yasağı kalkar.', [IDS.drop]);
+  group('### Üye İşlemleri\nOdandaki bir üye seç: **At** odadan çıkarır ama izni kalır, **Yasakla** bu oda silinene kadar içeri almaz, **Devret** sahipliği o üyeye verir.', [IDS.kick, IDS.ban, IDS.transfer]);
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(room.createdAt)));
 }
 
-// Menünün ne istediği placeholderda yazar; başlık ve açıklama üstündeki metindedir
+// Menünün kimi istediği placeholderda yazar; ne olduğu üstündeki başlıkta anlatılır
 const menuHint = (id) =>
   ({
     [IDS.add]: 'Odaya eklenecek üyeyi seç',
     [IDS.drop]: 'İzni kaldırılacak üyeyi seç',
-    [IDS.kick]: 'Atılacak üyeyi seç',
+    [IDS.kick]: 'Odadan atılacak üyeyi seç',
     [IDS.ban]: 'Yasaklanacak üyeyi seç',
-    [IDS.transfer]: 'Yeni sahibi seç',
+    [IDS.transfer]: 'Sahipliği devredilecek üyeyi seç',
   })[id];
 
 // Odada ayrı izni olan üyeler: davetliler girer, yasaklılar giremez. Liste yoksa menünün ne işe yaradığı yazılır.
