@@ -220,7 +220,8 @@ async function sendTestAnnounce(interaction) {
   const role = roleId ? (interaction.guild.roles.cache.get(roleId) ?? null) : null;
   const sent = await sendLevelUp(channel, interaction.user, 'mesaj', 15, role, { ping: false });
   if (!sent) return replyError(interaction, 'Örnek duyuru gönderilemedi.', 'Botun duyuru kanalında **mesaj** ve **dosya gönderme** izni olmalı.');
-  return respond(interaction, core.alert('Örnek duyuru gönderildi.', `<#${channel.id}> kanalına bakabilirsin. **Kimseye bildirim gitmedi.**`, 'success'));
+  // Yanıt gizli ertelendiği için burada da ephemeral belirtilir; bayraklar uyuşmazsa Discord düzenlemeyi reddeder
+  return respond(interaction, core.alert('Örnek duyuru gönderildi.', `<#${channel.id}> kanalına bakabilirsin. **Kimseye bildirim gitmedi.**`, 'success'), { ephemeral: true });
 }
 
 // /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta
