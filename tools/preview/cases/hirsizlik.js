@@ -76,6 +76,12 @@ module.exports = ({ mock, ui, src }) => {
   store.kasaEkle(bedel);
   store.hapisBitir(serbest.uid);
 
+  // Onur da içeride ama kefaleti karşılayacak parası yok: bedel, bakiye ve tahliye saati gerçek okumadan gelir
+  const gariban = uye({ ad: 'Onur', seviye: 18, coin: 120 });
+  store.hapisVer(gariban.uid, config.hapis.kasa, 'kasa', mock.ago(4 * mock.MIN));
+  const garibanDurum = suc.durumOf(gariban.uid);
+  const iceride = suc.durumOf(tutuklu.uid);
+
   // ── Arka Sokaklar sayfası ─────────────────────────────────────────────────
   const cases = [
     kartCase(
@@ -227,14 +233,14 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: içerideki üye yeni suç işleyemez',
       '/çal uye ya da /çal kasa denemesinde',
       'İçeridesin, yeni suç işleyemezsin.',
-      `Tahliyen ${ui.rel(Date.now() + config.hapis.uye)} içinde. Erken çıkmak için /sokak sayfasından kefalet ödeyebilirsin.`,
+      `Tahliyen ${ui.rel(iceride.hapis)} içinde. Erken çıkmak için /sokak sayfasından kefalet ödeyebilirsin.`,
     ),
     hataCase(
       'hata-salon',
       'Reddetme: içerideki üye salonun oyununu oynayamaz',
       'Eski sayfadan basılan Kumsalda Gezi düğmesinde',
       'İçeridesin, salon kapalı.',
-      `Tahliyen ${ui.rel(Date.now() + config.hapis.uye)} içinde. Erken çıkmak için /sokak sayfasından kefalet ödeyebilirsin.`,
+      `Tahliyen ${ui.rel(iceride.hapis)} içinde. Erken çıkmak için /sokak sayfasından kefalet ödeyebilirsin.`,
     ),
     hataCase(
       'hata-kota',
@@ -269,7 +275,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: kefaleti karşılayacak coin yok',
       'İçerideki perişan üyenin Kefalet Ver düğmesinde',
       'Kefaleti karşılayacak coinin yok.',
-      `Bedel ${number(config.kefalet.kasa)}; cüzdanında ${number(120)} coin var. Tahliye ${ui.rel(Date.now() + config.hapis.kasa)} içinde kendiliğinden gelir.`,
+      `Bedel ${number(garibanDurum.kefalet)}; cüzdanında ${number(coinStore.balance(gariban.uid))} coin var. Tahliye ${ui.rel(garibanDurum.hapis)} içinde kendiliğinden gelir.`,
     ),
   ];
 
