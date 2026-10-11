@@ -52,8 +52,9 @@ module.exports = ({ mock, ui, src }) => {
 
   const cüzdan = { balance: coinStore.balance(uid), anahtar: 7 };
   const ortak = { at: m.at, ...cüzdan };
-  // Keşif Yolu'nun rozet/puan/ses/destek adımları için ek ölçüler: senaryoda düşük tutulur ki sonraki adımlar kilitli kalsın
-  const ek = { rozetSayisi: 0, puan: 120, sesToplam: 300, destekSayisi: 0 };
+  // Keşif Yolu'nun rozet/puan/ses/destek adımları gerçek ölçüm kapısından (olcum.ekler) geçer: önizleme senaryosu
+  // boş sunucu verisiyle ölçüldüğü için değerler düşük kalır ve sıradaki adımlar kilitli görünür
+  const ek = olcum.ekler(mock.guild({ id: '1' }), mock.member(user, { joinedTimestamp: mock.ago(400 * mock.DAY) }), uid);
 
   const kutuSayilari = (anahtar) => ({
     anahtar,
