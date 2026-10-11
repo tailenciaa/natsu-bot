@@ -57,7 +57,7 @@ module.exports = ({ mock, ui, src }) => {
   const kesifBasari = oyun.durumOf(kaan.uid, 'kesif', `**Fısıltı Ormanı:** ${kozmetik}`);
 
   // Kota dolmuş: sekiz gezinin hepsi bugün yapılmış (gün anahtarı kaymasın diye hepsi aynı anın içinde)
-  const derya = uye({ ad: 'Derya', seviye: 40, coin: 3400 });
+  const derya = uye({ ad: 'Derya', seviye: 40, coin: 3400, kazanilan: 940 });
   for (let i = 0; i < config.kesif.gunlukAdet; i++) {
     store.kesifKaydet(derya.uid, config.kesif.bolgeler[i % config.kesif.bolgeler.length].key);
   }

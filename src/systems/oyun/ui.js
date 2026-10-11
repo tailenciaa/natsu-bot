@@ -59,7 +59,7 @@ function bahisSatiri(aktif, tab) {
 
 // Kumarhane sicili: iki kumarhane sekmesi de aynı dört sayıyı aynı düzende gösterir
 function sicil(kumar) {
-  const net = `${kumar.net >= 0 ? 'kazanç' : 'kayıp'} ${number(Math.abs(kumar.net))} coin`;
+  const net = kumar.net === 0 ? 'başa baş' : `${kumar.net > 0 ? 'kazanç' : 'kayıp'} ${number(Math.abs(kumar.net))} coin`;
   return `### Kumarhane Sicilin\n${core.rows([
     ['El', `${number(kumar.el)} el`],
     ['Net', net],
@@ -226,7 +226,7 @@ function panel(state) {
 function ganimetSatiri(sonuc) {
   if (sonuc.tur === 'bos') return 'Bu gezide hiçbir şey bulamadın.';
   if (sonuc.tur === 'anahtar') return `${NITELIK[sonuc.nitelik]} ganimet: ${sonuc.adet} kutu anahtarı.`;
-  if (sonuc.tur === 'kozmetik') return `${NITELIK[sonuc.nitelik]} ganimet: mağazandan **${sonuc.name}** ürünün sahipliğine geçti.`;
+  if (sonuc.tur === 'kozmetik') return `${NITELIK[sonuc.nitelik]} ganimet: **${sonuc.name}** koleksiyonuna katıldı, mağazandan kuşanabilirsin.`;
   // Tavan dolmuşsa coin ödenmez: boş "0 coin" yazmak yerine üyenin tavanı aşmış olduğu söylenir
   if (!sonuc.miktar) return `Günlük oyun kazancı tavanın dolu: bu gezide coin yatabilirdi ama cebine girmedi.`;
   const kesinti = sonuc.kesilen ? ` Günlük oyun tavanın dolduğu için ${number(sonuc.kesilen)} coin kesildi.` : '';
