@@ -317,11 +317,11 @@ module.exports = ({ mock, ui, src }) => {
             SHOP_TABS,
             5400,
             shopRows([
-              { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok`, label: 'Giy', style: 2 },
-              { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz`, label: 'Al · 1.200', style: 2 },
+              { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok`, label: 'Giy', style: 1 },
+              { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz`, label: 'Al · 1.200', style: 3 },
               { name: 'Gümüş', note: kozmetik.FRAMES[2].note, state: 'Sahipsin', id: `${p.IDS.wear}cerceve:gumus`, label: 'Giy', style: 1 },
               { name: 'Altın', note: kozmetik.FRAMES[3].note, state: 'Kartında bu var', id: `${p.IDS.wear}cerceve:altin`, label: 'Giyili', disabled: true },
-              { name: 'Neon', note: kozmetik.FRAMES[4].note, state: '7.200 coin', id: `${p.IDS.buy}cerceve:neon`, label: 'Al · 7.200', style: 2 },
+              { name: 'Neon', note: kozmetik.FRAMES[4].note, state: '7.200 coin', id: `${p.IDS.buy}cerceve:neon`, label: 'Al · 7.200', style: 3 },
             ]),
           ),
         ],
@@ -342,8 +342,8 @@ module.exports = ({ mock, ui, src }) => {
             SHOP_TABS,
             5400,
             shopRows([
-              { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok:cuzdan`, label: 'Giy', style: 2 },
-              { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz:cuzdan`, label: 'Al · 1.200', style: 2 },
+              { name: 'Çerçevesiz', note: kozmetik.FRAMES[0].note, state: 'Ücretsiz', id: `${p.IDS.wear}cerceve:yok:cuzdan`, label: 'Giy', style: 1 },
+              { name: 'Bronz', note: kozmetik.FRAMES[1].note, state: '1.200 coin', id: `${p.IDS.buy}cerceve:bronz:cuzdan`, label: 'Al · 1.200', style: 3 },
               { name: 'Altın', note: kozmetik.FRAMES[3].note, state: 'Kartında bu var', id: `${p.IDS.wear}cerceve:altin:cuzdan`, label: 'Giyili', disabled: true },
             ]),
             'cuzdan',
@@ -371,7 +371,7 @@ module.exports = ({ mock, ui, src }) => {
                 .map(([key, theme], i) =>
                   i === 0
                     ? { name: theme.label, note: theme.description, state: 'Sahipsin', id: `${p.IDS.wear}tema:${key}`, label: 'Giy', style: 1 }
-                    : { name: theme.label, note: theme.description, state: `${theme.price} coin`, id: `${p.IDS.buy}tema:${key}`, label: `Al · ${theme.price}`, style: 2 },
+                    : { name: theme.label, note: theme.description, state: `${theme.price} coin`, id: `${p.IDS.buy}tema:${key}`, label: `Al · ${theme.price}`, style: 3 },
                 ),
             ),
           ),
@@ -398,7 +398,7 @@ module.exports = ({ mock, ui, src }) => {
                   ? { name: c.label, note: c.note, state: 'Kartında bu var', id: `${p.IDS.wear}kapak:yok`, label: 'Giyili', style: 2, disabled: true }
                   : c.key === 'aurora'
                     ? { name: c.label, note: c.note, state: 'Sahipsin', id: `${p.IDS.wear}kapak:aurora`, label: 'Giy', style: 1 }
-                    : { name: c.label, note: c.note, state: `${c.price} coin`, id: `${p.IDS.buy}kapak:${c.key}`, label: `Al · ${c.price}`, style: 2 },
+                    : { name: c.label, note: c.note, state: `${c.price} coin`, id: `${p.IDS.buy}kapak:${c.key}`, label: `Al · ${c.price}`, style: 3 },
               ),
             ),
           ),
@@ -423,7 +423,7 @@ module.exports = ({ mock, ui, src }) => {
               kozmetik.SHOP_BADGES.map((b) =>
                 b.key === 'kalp'
                   ? { name: b.label, note: b.note, state: 'Kartında görünüyor', id: `${p.IDS.wear}rozet:kalp`, label: 'Sahipsin', style: 2, disabled: true }
-                  : { name: b.label, note: b.note, state: `${b.price} coin`, id: `${p.IDS.buy}rozet:${b.key}`, label: `Al · ${b.price}`, style: 2 },
+                  : { name: b.label, note: b.note, state: `${b.price} coin`, id: `${p.IDS.buy}rozet:${b.key}`, label: `Al · ${b.price}`, style: 3 },
               ),
             ),
           ),
