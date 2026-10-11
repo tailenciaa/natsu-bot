@@ -59,7 +59,7 @@ function controlPanel(room, channel, state = {}, access = { invited: [], banned:
     ],
   });
 
-  // Ayar düğmeleri üstte, üye menüleri altta; her menünün üstünde ne yaptığı yazar
+  // Ayar düğmeleri üstte, üye menüleri altta
   container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
