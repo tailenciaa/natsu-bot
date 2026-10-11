@@ -30,7 +30,8 @@ async function handleButton(interaction) {
   });
   if (!added) return replyError(interaction, 'Rol verilemedi.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, core.alert('Partner rolün verildi.', 'Partner kanallarını artık görebilirsin.', 'success'));
+  // KİŞİYE ÖZEL: kendi rolünün verildiği bilgisi butona basanı ilgilendirir
+  return respond(interaction, core.alert('Partner rolün verildi.', 'Partner kanallarını artık görebilirsin.', 'success'), { ephemeral: true });
 }
 
 module.exports = {
