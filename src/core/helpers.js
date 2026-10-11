@@ -4,16 +4,13 @@ const { staffCommandChannel } = require('./config');
 const ui = require('./ui');
 
 // Etkileşimin durumuna göre doğru şekilde CV2 cevap verir.
-// EV KURALI — görünürlük iki soruyla belirlenir: "bu cevabı başkaları da görmeli mi?" ve "bu bir hata mı?"
-//   HERKES AÇIK: cevabı topluluğu ilgilendirir ya da birinin yaptığının kaydıdır. Ör. satın alma/giyme ve
-//   saygı/VIP/seviye/çekiliş makbuz ve duyuruları, liste ve sıralama tabloları, yetkili panelleri, açılan
-//   talep/ortaklık kartları, panel mesajları.
-//   GIZLI (`{ ephemeral: true }`): cevap yalnızca o üyeyi ilgilendiren kendi bilgisi veya kendi tercihidir.
-//   Ör. kendi cezaları/sicili/kısıtı, cüzdanı, rozet/vitrin/mağaza ve kapak sayfaları, kendi rol ve takma ad
-//   ayarı, kendi başvuru/talep durumu, "şu an aktif bir cezan yok" tipi durum cevapları. Hata ve reddetmeler
-//   her zaman gizlidir; `replyError` zaten gizlidir.
-// Kuralın ölçütü içeriğin kime hitap ettiğidir: kanalda gereksiz kalabalık yapan "senin durumun" kartları
-// gizli, başkalarının da gördüğünde anlam kazandığı kartlar açıktır.
+// EV KURALI — botun mesajı KALICIDIR. Açılan her panel, kart, detay, sayfa ve makbuz kanalda herkese açık durur;
+//   "üyenin kendi durumu" bunu değiştirmez (rozet/vitrin/mağaza/kapak sayfaları, görev ve cüzdan panelleri, talep ve
+//   başvuru kartları, ceza/itiraz kartları hep açıktır). Yenilemede kaybolan geçici mesaj kabul edilmez.
+//   GIZLI (`{ ephemeral: true }`) tek istisna: tek satırlık geri bildirim — hata, reddetme, uyarı ve form/onay
+//   bildirimi (`replyError`, `core.alert(...)`); bunların kaydı zaten başka bir kartta durur, kanalda iz bırakmaz.
+//   İkinci istisna: `sicil` — yetkili komut kanalı dışında kişiye özel kalır, çünkü ceza kaydı herkesin önüne
+//   yazılacak bir şey değildir.
 // Dikkat: görünürlük defer anında kilitlenir. `deferReply({ flags: core.CV2 })` ile açılmış bir akışın sonundaki
 // `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Buton/menü cevapları
 // `followUp` ile gittiği için onların görünürlüğü defer'den bağımsızdır; slash komutlarında bayrağı defer'de ver.
