@@ -68,11 +68,11 @@ module.exports = ({ mock, ui, src }) => {
     id,
     title,
     where,
-    visibility: 'ephemeral',
+    visibility: 'public',
     kind: 'message',
     build: () => ({
       components: [p.panel({ ...ortak, ...state, tab })],
-      flags: ui.EPHEMERAL_CV2,
+      flags: ui.CV2,
       ...noMentions,
     }),
   });

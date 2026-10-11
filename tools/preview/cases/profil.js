@@ -118,7 +118,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'kapak-duzenleyici-bos',
       title: 'Kapak düzenleyici: görsel yok, hareket düğmeleri pasif',
       where: 'Profilde "Kapağı Düzenle" butonu',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'banner', cover: 'yok' })],
@@ -131,7 +131,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'kapak-duzenleyici-gorsel',
       title: 'Kapak düzenleyici: banner yerleşimi, görsel %180 yakın ve sağa/aşağı kaydırılmış',
       where: 'Düzenleyicide büyüt/kaydır düğmelerine basınca',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, bannerFit: 'banner', cover: 'cam' })],
@@ -144,7 +144,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'kapak-duzenleyici-sigdir',
       title: 'Kapak düzenleyici: sığdırma, görselin tamamı görünüyor ve hareket düğmeleri pasif',
       where: 'Yerleşim düğmesine basıp "Sığdır" seçilince',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/dik-foto.png', bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'sigdir', cover: 'aurora' })],
@@ -157,7 +157,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'gorunum-cam',
       title: 'Kart görünümü: cam tema, saydamlık ayarlanabiliyor',
       where: 'Profilde "Görünüm" butonu',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.gorunumPage('profil.png', { themeLabel: THEMES.nebula.label, glass: true, opacity: 30 })],
@@ -170,7 +170,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'gorunum-duz',
       title: 'Kart görünümü: düz tema, saydamlık düğmeleri pasif',
       where: 'Düz panelli bir temada Görünüm butonu; düğmeler kaybolmaz, sadece işlemez',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.gorunumPage('profil.png', { themeLabel: THEMES.sakura.label, glass: false, opacity: 50 })],
@@ -191,7 +191,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'vitrin-bos',
       title: 'Vitrin sayfası: hiçbiri doldurulmamış',
       where: 'Profilde Vitrin butonuna basınca',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({ components: [p.vitrinPage({}, null, featuredOptions, '**Profil ziyaretleri:** 0')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
@@ -199,7 +199,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'vitrin-dolu',
       title: 'Vitrin sayfası: zamir, bağlantılar ve öne çıkan dolu',
       where: 'Profilde Vitrin butonuna basınca',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -218,7 +218,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'rozet-bos',
       title: 'Rozet sayfası: henüz rozet yok',
       where: 'Profilde Rozetler butonuna basınca',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -235,7 +235,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'rozet-kismen',
       title: 'Rozet sayfası: kazanılanlar ve ilerlemeler',
       where: 'Profilde Rozetler butonuna basınca',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -259,7 +259,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'rozet-gorev',
       title: 'Rozet sayfası: görev rozetleri ve ilerlemeleri',
       where: 'Profilde Rozetler butonu; uzun vadeli hedefler ayrı blokta, hedef dolunca rol de verilir',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -284,7 +284,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'puan-sayfasi',
       title: 'Profil puanı sayfası: rütbe, hedef ve ilk 10',
       where: 'Profilde "Puanım" butonu',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.puanPage({ score: skorDolu, rank: 6, size: 214, top: puanListesi({ rank: 6, total: skorDolu.total, tier: skorDolu.tier.label }) })],
@@ -296,7 +296,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'puan-sayfasi-baslangic',
       title: 'Profil puanı sayfası: yeni üye, henüz hiçbir şey yok',
       where: 'Sunucuya yeni giren üyede "Puanım" butonu; ilk 10un dışındaki üye kendi satırını listenin altında görür',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [p.puanPage({ score: skorYeni, rank: 180, size: 214, top: puanListesi({ rank: 180, total: skorYeni.total, tier: skorYeni.tier.label }) })],
@@ -308,7 +308,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-cerceve',
       title: 'Mağaza: çerçeveler, bazıları satın alınmış',
       where: 'Profilde Mağaza butonuna basınca',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -333,7 +333,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-cuzdan',
       title: 'Mağaza: cüzdan kartından açılmış, geri düğmesi cüzdana döner',
       where: '/bakiye cüzdanındaki Mağaza düğmesi; kartın yerini alır, ayrı mesaj atmaz',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -357,7 +357,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-tema',
       title: 'Mağaza: temalar sekmesi',
       where: 'Mağaza sayfasındaki Temalar sekmesi',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -384,7 +384,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-kapak',
       title: 'Mağaza: arka planlar sekmesi, biri satın alınmış',
       where: 'Mağazadaki "Arka Planlar" sekmesi ya da kapak düzenleyicinin aynı adlı düğmesi',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -411,7 +411,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-rozet',
       title: 'Mağaza: rozetler sekmesi, satın alınan kartta görünüyor',
       where: 'Mağazadaki Rozetler sekmesi',
-      visibility: 'ephemeral',
+      visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [
@@ -466,7 +466,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'vitrin-kayit',
       title: 'Vitrin: zamir ve bağlantılar kaydedildi',
       where: 'Vitrin formu gönderilince',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [p.vitrinSaved({ user })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
@@ -474,7 +474,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'hata-vitrin-baglanti',
       title: 'Vitrin formu: bağlantılardan biri geçersiz',
       where: 'Vitrin formu gönderilince',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [p.vitrinSaved({ user, bad: ['github'] })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
