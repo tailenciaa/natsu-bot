@@ -1,5 +1,5 @@
-// Kalıcı oda kayıtları: başvurular (sunucu-numara ID'si ile) ve açılan odalar (oda numarası ile). Odalar kanal
-// ID'lerinden de bulunur, çünkü panel işlemleri odanın kendi yazı kanalından, kanal silme olayı ise kanaldan gelir.
+// Kalıcı oda kayıtları: başvurular (sunucu-numara ID'si ile) ve açılan odalar (oda numarası ile). Panel işlemleri
+// kendi odasını yöneten kişiden yola çıkar, kanal silme olayı ise oda kaydı kanal ID'sinden bulur.
 const { data, save, guildData } = require('../../core/db');
 
 data.permanentRoomApplications ??= {};
