@@ -12,7 +12,7 @@ module.exports = ({ mock, ui, src }) => {
   const coinStore = src('systems/coin/store');
   const seviyeStore = src('systems/seviye/store');
   const seviyeConfig = src('systems/seviye/config');
-  const { number } = src('systems/coin/ui');
+  const { number, coin } = src('systems/coin/ui');
 
   const noMentions = { allowedMentions: { parse: [] } };
 

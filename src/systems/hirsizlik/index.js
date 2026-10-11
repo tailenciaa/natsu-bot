@@ -112,7 +112,7 @@ async function uyeSoy(interaction) {
   }
   const balance = coinStore.balance(hedef.id);
   if (balance < config.uye.taban) {
-    return replyError(interaction, 'Bu üyenin cüzdanında soymalık coin yok.', `Hedefin kasasında en az ${coin(config.uye.taban)} coin durması gerekir.`);
+    return replyError(interaction, 'Bu üyenin cüzdanında soymalık coin yok.', `Hedefin cüzdanında en az ${coin(config.uye.taban)} durması gerekir.`);
   }
   const hedefBekleme = kap.durum.hedefBekleme(hedef.id);
   if (hedefBekleme > Date.now()) {
@@ -279,7 +279,7 @@ async function kefalet(interaction) {
   const bedel = durum.kefalet;
   const balance = coinStore.balance(interaction.user.id);
   if (balance < bedel) {
-    return replyError(interaction, 'Kefaleti karşılayacak coinin yok.', `Bedel ${coin(bedel)}; cüzdanında ${coin(balance)} coin var. Tahliye ${core.rel(durum.hapis)} içinde kendiliğinden gelir.`);
+    return replyError(interaction, 'Kefaleti karşılayacak coinin yok.', `Bedel ${coin(bedel)}; cüzdanında ${coin(balance)} var. Tahliye ${core.rel(durum.hapis)} içinde kendiliğinden gelir.`);
   }
 
   const odenen = kasayaYatir(interaction.user.id, bedel);
