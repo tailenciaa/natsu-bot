@@ -1,5 +1,5 @@
 // Görevler: üyenin botla her gün temas hâlinde kalmasını sağlayan ilerleme katmanı. Tek panel (/gorev) beş sekme
-// taşır: bugünün üç görevi, haftanın üç ağır görevi, Keşif Yolu (botun sistemlerini sırayla gezdiren on bir adım),
+// taşır: bugünün üç görevi, haftanın üç ağır görevi, Keşif Yolu (botun sistemlerini sırayla gezdiren on iki adım),
 // Kutu (anahtar yakma) ve Sezon (aylık puan eşikleri). Katmanlar birbirine bağlıdır: görevden gelen anahtar kutuyu
 // açar, kutudan çıkan kozmetik profil puanını büyütür, yolun son adımı profil puanını hedef gösterir.
 // İlerleme hiçbir yerde ayrıca sayılmaz: mesaj ve ses sayıları sıralama kaydından, saygınlık saygi kaydından,

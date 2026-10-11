@@ -49,7 +49,8 @@ function ekler(guild, member, userId, m) {
 
 // ── Ölçüm adları ──────────────────────────────────────────────────────────────
 // config.js'teki görevlerin `olcum` alanı buradaki anahtarla eşleşir. Hepsi üyenin o anki değerini döndürür;
-// "yapıldı" türündekiler 0 ya da 1 döner. `ek` yalnızca rozet/puan ölçümlerini okur.
+// Hepsi üyenin o anki değerini döndürür; "yapıldı" türündekiler 0 ya da 1 döner. `ek` yalnızca rozet, puan,
+// toplam ses süresi ve destek talebi ölçümlerini okur.
 const OLCUMLER = {
   mesajGun: (m, uid) => m.mesajGun.get(uid) ?? 0,
   mesajHafta: (m, uid) => m.mesajHafta.get(uid) ?? 0,
@@ -73,6 +74,7 @@ const OLCUMLER = {
   sesToplam: (m, uid, ek) => ek?.sesToplam ?? 0,
   rozetSayisi: (m, uid, ek) => ek?.rozetSayisi ?? 0,
   puan: (m, uid, ek) => ek?.puan ?? 0,
+  destekSayisi: (m, uid, ek) => ek?.destekSayisi ?? 0,
   // İzlenen adımlar: hiçbir depoda izi olmayan iki eylem, etkileşim gözlemiyle görülür (index.js yazar)
   'goruldu:kartini-gor': (m, uid) => (store.goruldu(uid, 'kartini-gor') ? 1 : 0),
   'goruldu:cekilis-katil': (m, uid) => (store.goruldu(uid, 'cekilis-katil') ? 1 : 0),

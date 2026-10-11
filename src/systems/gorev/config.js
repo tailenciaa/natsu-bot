@@ -7,8 +7,9 @@
 //
 // GÖREV KAYDI TUTULMAZ: ilerlemenin tamamı zaten başka sistemlerde duran veriden okunur (mesaj ve ses sayıları
 // sıralamada, verilen saygınlık saygi cooldown'unda, alınan saygınlık haftalık tablosunda, günlük ödül ve
-// siparişler coin kaydında, kozmetik sahipliği profil kaydında). Böylece görevler açılmadan önceki etkinlikler de
-// sayılır, bir sayaç bozulsa bile ilerleme yeniden hesaplanır ve bu sistem başka bir sistemin verisine yazmaz.
+// siparişler coin kaydında, kozmetik sahipliği profil kaydında, açılan talep destek kaydında). Böylece görevler
+// açılmadan önceki etkinlikler de sayılır, bir sayaç bozulsa bile ilerleme yeniden hesaplanır ve bu sistem başka
+// bir sistemin verisine yazmaz.
 // Yalnızca *ödüllerin alınması* ve Keşif Yolu'nun butonla görülen iki adımı kendi kaydında tutulur (store.js).
 const { weekKey } = require('../aktif/week');
 
