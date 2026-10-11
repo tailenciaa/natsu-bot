@@ -52,8 +52,8 @@ module.exports = ({ mock, ui, src }) => {
 
   const cüzdan = { balance: coinStore.balance(uid), anahtar: 7 };
   const ortak = { at: m.at, ...cüzdan };
-  // Keşif Yolu'nun rozet/puan/ses adımları için ek ölçüler: senaryoda düşük tutulur ki sonraki adımlar kilitli kalsın
-  const ek = { rozetSayisi: 0, puan: 120, sesToplam: 300 };
+  // Keşif Yolu'nun rozet/puan/ses/destek adımları için ek ölçüler: senaryoda düşük tutulur ki sonraki adımlar kilitli kalsın
+  const ek = { rozetSayisi: 0, puan: 120, sesToplam: 300, destekSayisi: 0 };
 
   const kutuSayilari = (anahtar) => ({
     anahtar,
