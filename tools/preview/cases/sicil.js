@@ -1,6 +1,10 @@
 // Sicil sistemi: sekmeli sicil görünümü, ceza detayı, formlar, DM'ler ve hızlı ceza komutlarının mesajları
 module.exports = ({ mock, ui, src }) => {
   const sicil = src('systems/sicil/ui');
+  const destekUi = src('systems/destek/ui');
+  const basvuruUi = src('systems/basvuru/ui');
+  const basvuruConfig = src('systems/basvuru/config');
+  const degerlendirme = src('systems/degerlendirme/ui');
   const guild = mock.guild({ name: 'Kazuki Sunucusu' });
   const member = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
   const staff = mock.user({ username: 'ayse', displayName: 'Ayşe' });
@@ -121,8 +125,8 @@ module.exports = ({ mock, ui, src }) => {
     // Sicil menüsünden açılan detaylar: başka sistemin mesajı salt okunur kopyalanır, işlem butonları düşer
     { id: 'detay-degerlendirme', title: 'Sicil detayı: değerlendirme (kaldırma butonuyla)', where: 'Değerlendirmeler sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(degerlendirme.ratingNotice(ratings[0], staff), [sicil.ratingRemoveButton(member.id, ratings[0], '123456789')])], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
     { id: 'detay-degerlendirme-salt', title: 'Sicil detayı: değerlendirme (kaldırma yetkisi yok)', where: 'Değerlendirmeler sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(degerlendirme.ratingNotice(ratings[0], staff))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
-    { id: 'detay-talep', title: 'Sicil detayı: destek talebi', where: 'Destek Talepleri sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(destekUi.claimRequest({ ...ticketBase, number: 3, threadId: '1003', claimedBy: staff.id }))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
-    { id: 'detay-basvuru', title: 'Sicil detayı: başvuru', where: 'Başvurular sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(basvuruUi.applicationNotice(applications[1], member))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
+    { id: 'detay-talep', title: 'Sicil detayı: destek talebi', where: 'Destek Talepleri sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(destekUi.claimRequest(mock.ticket({ guildId: guild.id, ownerId: member.id, claimedBy: staff.id, number: 3 })))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
+    { id: 'detay-basvuru', title: 'Sicil detayı: başvuru', where: 'Başvurular sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(basvuruUi.applicationNotice({ ...applications[1], guildId: guild.id, userId: member.id, previous: { total: 1, rejected: 0 }, reviewerRoleId: basvuruConfig.roles.reviewer, acceptRoleId: basvuruConfig.roles.accept, status: 'approved' }, member))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
     { id: 'form-puan-sil', title: 'Form: değerlendirmeyi sicilden kaldır', where: 'Değerlendirme detayında Değerlendirmeyi Kaldır butonu', visibility: 'ephemeral', kind: 'modal', build: () => sicil.ratingRemoveModal(member.id, ratings[0], '123456789') },
   ];
 };

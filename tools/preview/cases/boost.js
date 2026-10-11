@@ -20,6 +20,7 @@ module.exports = ({ mock, ui, src }) => {
     { id: 'form-takma-ad', title: 'Form: takma ad değiştir', where: 'Takma Ad > Değiştir', visibility: 'ephemeral', kind: 'modal', build: () => b.nickModal('Mehmet') },
     { id: 'form-rol-yeni', title: 'Form: özel rol oluştur', where: 'Özel Rol > Ayarla', visibility: 'ephemeral', kind: 'modal', build: () => b.roleModal(null, { icons: true }) },
     { id: 'form-rol-simgesiz', title: 'Form: özel rol (sunucuda rol simgesi yok)', where: 'Özel Rol > Ayarla', visibility: 'ephemeral', kind: 'modal', build: () => b.roleModal(null, { icons: false }) },
+    { id: 'form-emoji', title: 'Form: boost emojisini seç', where: 'Emoji > Değiştir', visibility: 'ephemeral', kind: 'modal', build: () => b.emojiModal() },
     { id: 'emoji-sec', title: 'Emoji: sağ tık seçim paneli', where: 'Mesaja sağ tık > Emojileri Sunucuya Ekle', visibility: 'public', kind: 'message', build: () => ({ components: [e.pickPanel(found)], ...noMentions }) },
     { id: 'emoji-sonuc-tamam', title: 'Emoji: hepsi eklendi', where: '/emoji-ekle ya da seçim menüsü', visibility: 'public', kind: 'message', build: () => ({ components: [e.result(found.slice(0, 2), [])], ...noMentions }) },
     {
