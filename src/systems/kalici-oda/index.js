@@ -764,7 +764,8 @@ async function handleCommand(interaction) {
 
 // ── Açılış ve kanal olayları ───────────────────────────────────────────────────
 
-// Bot kapalıyken silinmiş kanalların kayıtlarını temizler, paneli kanala gönderir
+// Bot kapalıyken silinmiş kanalların kayıtlarını temizler, sahip rollerini günceller, şart denetimlerini başlatır
+// ve başvuru panelini bilgi kanalına yerleştirir
 async function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (guild) {
@@ -773,8 +774,12 @@ async function handleReady(client) {
       if (!still) {
         store.deleteRoom(room.id);
         clearCooldowns(room.id);
+        continue;
       }
+      // Oda hâlâ var ama sahibi rolü bir şekilde düşmüşse (bot kapalıyken alınmış gibi) tamamlanır
+      await giveOwnerRole(guild, room.ownerId);
     }
+    startActivityChecks(client);
   }
   if (!config.channels.panel) return;
   return syncPanel(client, {
@@ -787,12 +792,13 @@ async function handleReady(client) {
   });
 }
 
-// Bir kanal elle silinirse oda kapanmış sayılır: kalan kanallar temizlenir, kayıt silinir
+// Bir kanal elle silinirse oda kapanmış sayılır: kalan kanallar temizlenir, kayıt ve sahip rolü düşürülür
 async function handleChannelDelete(channel) {
   const room = store.roomOfChannel(channel.id);
   if (!room) return;
   clearCooldowns(room.id);
   store.deleteRoom(room.id);
+  await takeOwnerRole(channel.guild, room.ownerId);
   for (const key of ['categoryId', 'voiceChannelId', 'textChannelId']) {
     if (room[key] === channel.id) continue;
     const leftover = await channel.guild.channels.fetch(room[key]).catch(() => null);
