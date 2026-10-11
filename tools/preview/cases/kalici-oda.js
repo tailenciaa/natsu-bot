@@ -165,7 +165,7 @@ module.exports = ({ mock, src }) => {
       where: 'Komutla açıldığı kanal',
       visibility: 'public',
       kind: 'message',
-      build: () => message(k.roomPanel(room(), denetim.statusOf(room()))),
+      build: () => message(k.roomPanel(room(), denetim.statusOf(room()), rosterOf(room()))),
     },
     {
       id: 'oda-paneli-yeni',
@@ -173,7 +173,18 @@ module.exports = ({ mock, src }) => {
       where: 'Komutla açıldığı kanal',
       visibility: 'public',
       kind: 'message',
-      build: () => message(k.roomPanel(second, denetim.statusOf(second))),
+      build: () => message(k.roomPanel(second, denetim.statusOf(second), rosterOf(second))),
+    },
+    {
+      id: 'oda-paneli-yalniz',
+      title: '/kalici-oda odam: odada başka üye yokken üye menüleri',
+      where: 'Komutla açıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => {
+        const solo = room({ id: '1-0003', no: 3, members: [], limit: 0 });
+        return message(k.roomPanel(solo, denetim.statusOf(solo), rosterOf(solo)));
+      },
     },
     {
       id: 'uyari-hafta',
