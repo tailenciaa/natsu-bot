@@ -13,7 +13,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 - Veri şemaları (`data` alan adları), `store.js` mantığı, zamanlayıcılar, süreler, eşikler, XP değerleri, izin ve rol kontrolleri.
 - Kanal ve rol ID'leri (her sistemin `config.js` dosyasında sabit), `syncPanel` anahtarları ve panel `buttonId`'leri.
 - Slash komut, alt komut ve seçenek adları (açıklamaları serbestçe düzeltilebilir).
-- `core/ui.js` içindeki `tidy` otomatik düzenleyicisi: ayırıcı çizgileri kendisi ekler, bu yüzden kodda ayrıca çizgi eklenmez.
+- `core/ui.js` içindeki `tidy` otomatik düzenleyicisi: ayırıcı çizgileri kendisi ekler, bu yüzden kodda ayrıca çizgi eklenmez. `tidy` yalnızca buton/menü satırlarının **üstüne** çizgi koyar; bir menü satırının hemen altına gelen başlık ya da metin bloğu varsa o çizgi arayüz kodunda elle eklenir (bkz. `kalici-oda/ui.js` `memberMenus`).
 
 ## 2. Kalıcı tercihler
 
@@ -60,7 +60,7 @@ açıklama satırı (normal yazı)
 -# <t:unix:F>          (sadece vaka mesajlarında: talep, başvuru, ceza, çekiliş)
 ```
 
-- **Başlık hiyerarşisi üç kademedir:** `##` mesajın kendi başlığı, `###` mesajın içindeki bölümler, `**kalın**` satır içi etiketler. Kart içindeki her bağımsız bölüm `### Bölüm Başlığı` ile başlar (en çok 28 karakter, Başlık Düzeni, noktasız; soru işareti olur). Böylece bölüm başlıkları satır içi kalın `**Etiket:**` etiketlerinden ve mesaj başlığından görsel olarak ayrılır, kartın hiyerarşisi tek bakışta okunur. Menülerin hemen üstündeki açıklama da aynı biçimdedir: `### Üye Ekle` başlığı, altında normal yazıyla tek cümlelik açıklama. Yalnızca kartın ana başlığını taşıyan bloklar (tek cümlelik özetler, teşekkür ve uyarı cümleleri) kalın ana cümleyle başlayabilir. Bir **listeleme öğesinin kendi adı** (ceza satırı, mağaza ürünü, sıra özeti) ve yanında buton taşıyan satırın başlığı kalın kalır; bunlar bölüm başlığı değildir.
+- **Başlık hiyerarşisi üç kademedir:** `##` mesajın kendi başlığı, `###` mesajın içindeki bölümler, `**kalın**` satır içi etiketler. Kart içindeki her bağımsız bölüm `### Bölüm Başlığı` ile başlar (en çok 28 karakter, Başlık Düzeni, noktasız; soru işareti olur). Böylece bölüm başlıkları satır içi kalın `**Etiket:**` etiketlerinden ve mesaj başlığından görsel olarak ayrılır, kartın hiyerarşisi tek bakışta okunur. Menülerin hemen üstündeki açıklama da aynı biçimdedir: `### Üye Ekle` başlığı, altında normal yazıyla tek cümlelik açıklama; o cümle büyük harfle başlar ve nokta ile biter. Bir menü satırının altına yeni bir başlık geliyorsa çizgi elle eklenir (`tidy` yalnızca menülerin üstüne çizgi koyar, altındakini koymaz). Yalnızca kartın ana başlığını taşıyan bloklar (tek cümlelik özetler, teşekkür ve uyarı cümleleri) kalın ana cümleyle başlayabilir. Bir **listeleme öğesinin kendi adı** (ceza satırı, mağaza ürünü, sıra özeti) ve yanında buton taşıyan satırın başlığı kalın kalır; bunlar bölüm başlığı değildir.
 
 - `sub` bilerek iki satırı dolduracak uzunluktadır: bütün mesajlar aynı genişlikte görünsün diye. Kısa tutulmaz, doldurma da yapılmaz; bloklardaki bilgiyi tekrar etmeyen gerçek bir açıklama yazılır.
 - Her blok `### Bölüm Başlığı` ya da kalın ana cümleyle başlar, ardından düz değer satırları, en sonda normal yazıyla açıklama gelir; önemli sözcükler kalın yazılır. Bir blok en fazla yaklaşık 8 satırdır.
@@ -136,7 +136,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 
 - Etiket en çok 20 karakter, Başlık Düzeni, emoji ve ok yok; eylem fiili ("Onayla", "Talebi Üstlen").
 - Stil: Primary ana eylem, Success onayla/devam/aktif sekme, Danger kapat/reddet/sil, Secondary nötr, Link bağlantı.
-- **Aynı iş, aynı renk:** bir butonun rengi etiketinden değil işlevinden gelir ve o etiket botta nerede geçiyorsa orada da aynı renktedir. Al/Onayla/Kabul Et → Success. Kapat/Sil/Çıkar/Reddet/İptal/Sıfırla/Bırak → Danger. Akışın ana çağrısı (Başvuru Yap, Formu Aç, Talep Aç, Çekiliş Başlat, Selam Ver, İtiraz Et) → Primary. Gezinme, geri, detay, öğrenme ve düzenleme düğmeleri (Geri, Cüzdana Dön, Mağaza, Rozetler, Detay, İsmi Değiştir, Limiti Ayarla, « ») → Secondary. Sonucu anlatan pasif etiketler kendi durum renginde kalır (Onaylandı Success, Reddedildi Danger).
+- **Aynı iş, aynı renk:** bir butonun rengi etiketinden değil işlevinden gelir ve o etiket botta nerede geçiyorsa orada da aynı renkotur. Al/Onayla/Kabul Et/Üstlen/Bir cezayı ya da yasağı kaldır → Success. Kapat/Sil/Çıkar/Reddet/İptal/Sıfırla/Bırak/Kilitle → Danger. Akışın ana çağrısı (Başvuru Yap, Formu Aç, Talep Oluştur, Çekiliş Başlat, Selam Ver, İtiraz Et, Görüşmeye Çağır) → Primary. Gezinme, geri, detay, öğrenme ve satır içi düzenleme düğmeleri (Geri, Cüzdana Dön, Mağaza, Rozetler, Detay, İsmi Değiştir, Limiti Ayarla, Süreyi Öğren, Hatırlat, « ») → Secondary. Sekme satırında seçili olan Success, ötekiler gri. Sonucu anlatan pasif etiketler kendi durum renginde kalır (Onaylandı Success, Reddedildi Danger); zaten pasifleşen butonun rengi görünmediği için tartışma konusu değildir.
 - Kullanılmış butonun etiketi geçmiş zamana döner ve pasifleşir ("Üstlenildi").
 - Bir satırda en çok 5 buton, işlem satırlarında tercihen 3; menü tek başına bir satırdır.
 
