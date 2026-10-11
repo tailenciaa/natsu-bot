@@ -139,21 +139,22 @@ async function handleRateSubmit(interaction) {
   // Kategorinin kendi kanalı ayarlıysa oraya, değilse ortak değerlendirme kanalına gider
   const guild = interaction.client.guilds.cache.get(rating.guildId);
   const channel = await fetchTextChannel(guild, config.categoryChannels[rating.category] ?? config.channels.rating);
-  if (!channel) return console.error('[degerlendirme] Değerlendirme kanalı bulunamadı.');
-
   // Değerlendirilen yetkili etiketlenir, bildirim alır
   const staff = await interaction.client.users.fetch(rating.staffId).catch(() => null);
-  const message = await channel
-    .send({
-      components: [ui.ratingNotice(rating, staff)],
-      flags: core.CV2,
-      allowedMentions: { users: [rating.staffId] },
-    })
-    .catch((err) => {
-      console.error('[degerlendirme] Değerlendirme kanalına gönderilemedi:', err.message);
-      return null;
-    });
-  if (message) store.updateRating(id, { channelId: channel.id, messageId: message.id });
+  const message = channel
+    ? await channel
+        .send({ components: [ui.ratingNotice(rating, staff)], flags: core.CV2, allowedMentions: { users: [rating.staffId] } })
+        .catch((err) => {
+          console.error('[degerlendirme] Değerlendirme kanalına gönderilemedi:', err.message);
+          return null;
+        })
+    : null;
+  if (message) return store.updateRating(id, { channelId: channel.id, messageId: message.id });
+
+  // Kanal tanımlı değil ya da gönderilemedi: puan zaten kaydedildi, ama yetkili onu hiç görmeyecekti. Kartı DM'e
+  // düşürüyoruz; yorum ve itiraz butonları DM'de de çalıştığı için yetkili hakkını yine kullanabilir.
+  console.error('[degerlendirme] Değerlendirme kanalı kullanılamadı, kart yetkiliye DM ile gönderildi.');
+  await staff?.send({ components: [ui.ratingNotice(rating, staff)], flags: core.CV2 }).catch(() => {});
 }
 
 // Değerlendirme kanalındaki "Yorum Ekle" butonu: sadece değerlendirilen yetkili, bir kez kullanabilir
@@ -340,9 +341,17 @@ async function handleReview(interaction) {
   await interaction.update({ components: [ui.ratingComplaint(rating)], allowedMentions: { parse: [] } });
   await refreshRatingNotice(interaction.client, rating);
 
-  // Bildiren yetkiliye sonuç DM ile iletilir (DM'si kapalıysa sessizce geçilir)
+  // Bildiren yetkiliye sonuç DM ile iletilir. DM kapalıysa lider bunu duymazdan gelmez: kart zaten kararı
+  // kaydetti, eksik bilgilendirmeyi yalnızca karar verene gizli bir satırla söylüyoruz.
   const staff = await fetchStaff();
-  await staff?.send({ components: [ui.reviewDm(rating, interaction.guild.name)], flags: core.CV2 }).catch(() => {});
+  const sent = staff ? await staff.send({ components: [ui.reviewDm(rating, interaction.guild.name)], flags: core.CV2 }).then(() => true, () => false) : false;
+  if (staff && !sent) {
+    return respond(
+      interaction,
+      core.alert('Sonuç yetkiliye bildirilemedi.', "Yetkilinin DM'si kapalı; itirazın kararını kendisine senin iletmen gerekiyor.", 'warning'),
+      { ephemeral: true },
+    );
+  }
 }
 
 module.exports = {

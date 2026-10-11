@@ -148,12 +148,11 @@ function ratingNotice(rating, staffUser) {
 
   const blocks = [
     status,
-    [
-      '**Değerlendirme Detayları**',
-      `**Puan:** ${removed ? `~~${score}~~` : score}`,
-      `**Değerlendiren:** <@${rating.userId}>`,
-      `**Kaynak:** ${refText(rating)}`,
-    ].join('\n'),
+    `**Değerlendirme Detayları**\n${rows([
+      ['Puan', removed ? `~~${score}~~` : score],
+      ['Değerlendiren', `<@${rating.userId}>`],
+      ['Kaynak', refText(rating)],
+    ])}`,
     rating.comment ? `**Yorum**\n${quote(rating.comment)}` : '**Yorum**\nYorum bırakılmadı.',
   ];
   if (rating.staffReply) blocks.push(`**Yetkili Yorumu**\n${quote(rating.staffReply)}`);
