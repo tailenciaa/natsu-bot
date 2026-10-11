@@ -396,6 +396,7 @@ function closedNotice(room, reason) {
 module.exports = {
   IDS,
   monthLabel,
+  hoursLabel,
   applyPanel,
   applicationModal,
   applicationCard,

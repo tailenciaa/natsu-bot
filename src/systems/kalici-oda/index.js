@@ -812,10 +812,13 @@ module.exports = {
   help: {
     category: ['oda', 'Odalar'],
     access: {
+      'kalici-oda odam': 'Oda sahipleri',
       'kalici-oda liste': 'Yöneticiler',
       'kalici-oda kapat': 'Yöneticiler',
       'kalici-oda devret': 'Yöneticiler',
     },
+    // `odam` herkesin kullanabildiği bir komut değil (yalnızca odası olan üye), bu yüzden üye yardım
+    // menüsünde listelenmez; üyeye komutu teslim kartı ve başvuru panelindeki kurallar söylüyor.
   },
   slash: { 'kalici-oda': handleCommand },
   buttons: {
@@ -839,4 +842,6 @@ module.exports = {
     [Events.ClientReady]: handleReady,
     [Events.ChannelDelete]: handleChannelDelete,
   },
+  // Zamanlayıcının çağırdığı iki denetim; yerel duman testi için dışarı açık (çerçeve bu alanı okumaz)
+  denetim: { checkWeeklyActivity, checkMonthlyActivity },
 };
