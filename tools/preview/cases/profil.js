@@ -23,15 +23,27 @@ module.exports = ({ mock, ui, src }) => {
   const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
   // Kart genişliği card.js'teki WIDTH ile aynı; yükseklik rozet satırına göre değişir (1044 / 990 / 928)
   const card = (name, height, label) => mock.pngFile(name, { width: 1800, height, label });
-  // Puan sayfası: gerçek hesap skoru skor.js'ten gelir, ölçümler elle verilir ki dolu/boş durum görünsün
+  // Puan sayfası: gerçek hesap skor.js'ten gelir, ölçümler elle verilir ki dolu/yeni durumun ikisi de görünsün.
+  // Liste index.js'teki puanMessage gibi kurulur: ilk 10 ve dışındaysa üyenin kendi satırı.
   const skor = src('systems/profil/skor');
-  const skorOlcum = { mesajLevel: 42, sesLevel: 28, voiceHours: 310, streamHours: 46, rep: 61, owned: 5, streak: 9, visits: 118, days: 430 };
-  const puanSirasi = [
-    { rank: 1, name: 'zeynep', total: 968, tier: 'Destan' },
-    { rank: 2, name: 'ahmet', total: 880, tier: 'Efsane' },
-    { rank: 3, name: 'Mehmet', total: 663, tier: 'Saygın', you: true },
-    { rank: 4, name: 'elif', total: 640, tier: 'Saygın' },
-  ];
+  const skorDolu = skor.scoreOf({ mesajLevel: 42, sesLevel: 28, voiceHours: 310, streamHours: 46, rep: 61, owned: 5, streak: 9, visits: 118, days: 430 }, 11);
+  const skorYeni = skor.scoreOf({ mesajLevel: 1, sesLevel: 0, voiceHours: 0, streamHours: 0, rep: 0, owned: 0, streak: 1, visits: 0, days: 3 }, 0);
+  const puanListesi = (sen) => {
+    const ilk = [
+      { rank: 1, name: 'zeynep', total: 968, tier: 'Destan' },
+      { rank: 2, name: 'ahmet', total: 880, tier: 'Efsane' },
+      { rank: 3, name: 'elif', total: 712, tier: 'Usta' },
+      { rank: 4, name: 'mert', total: 690, tier: 'Usta' },
+      { rank: 5, name: 'deniz', total: 640, tier: 'Saygın' },
+      { rank: 6, name: 'caner', total: 604, tier: 'Saygın' },
+      { rank: 7, name: 'asel', total: 588, tier: 'Saygın' },
+      { rank: 8, name: 'yiğit', total: 545, tier: 'Saygın' },
+      { rank: 9, name: 'nisa', total: 512, tier: 'Sevilen' },
+      { rank: 10, name: 'baran', total: 498, tier: 'Sevilen' },
+    ];
+    if (sen.rank <= ilk.length) return ilk.map((r) => (r.rank === sen.rank ? { ...r, name: 'Mehmet', total: sen.total, tier: sen.tier, you: true } : r));
+    return [...ilk, { rank: sen.rank, name: 'Mehmet', total: sen.total, tier: sen.tier, you: true }];
+  };
 
   // Mağaza satırları: index.js'teki shopRows aynı biçimde üretilir, burada statik veriyle denenir
   const shopRows = (items) =>
@@ -275,7 +287,7 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [p.puanPage({ score: skor.scoreOf(skorOlcum, 11), rank: 3, size: 214, top: puanSirasi, you: true })],
+        components: [p.puanPage({ score: skorDolu, rank: 4, size: 214, top: puanListesi({ rank: 4, total: skorDolu.total, tier: skorDolu.tier.label }) })],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
