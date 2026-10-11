@@ -12,7 +12,7 @@ const {
   ThreadAutoArchiveDuration,
 } = require('discord.js');
 const core = require('../../core/ui');
-const { respond, replyError, isStaff, fetchTextChannel, userName } = require('../../core/helpers');
+const { respond, replyError, replyFlowError, isStaff, fetchTextChannel, userName } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const ratings = require('../degerlendirme');
 const config = require('./config');
@@ -271,7 +271,7 @@ async function createTicket(interaction, reason, afterCreate) {
       console.error('[destek] Talep oluşturulurken hata, talep geri alındı:', err);
       store.deleteTicket(thread.id);
       await thread.delete('Talep oluşturulamadı').catch(() => {});
-      return replyError(interaction, 'Talebin oluşturulamadı.', 'Birkaç dakika sonra yeniden dene.');
+      return replyFlowError(interaction, 'Talebin oluşturulamadı.', 'Birkaç dakika sonra yeniden dene.');
     }
 
     await respond(interaction, ui.ticketCreated(thread));

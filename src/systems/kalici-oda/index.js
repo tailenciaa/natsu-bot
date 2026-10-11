@@ -6,7 +6,7 @@
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, replyFlowError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const siralama = require('../siralama/store');
 const logSystem = require('../log');
@@ -143,7 +143,7 @@ async function handleApplySubmit(interaction) {
     // sonundaki tüm cevaplar açık bayrakla yazılır. İnceleme kanalı zaten ayrı bir kart alır.
     await interaction.deferReply();
     const channel = await fetchTextChannel(interaction.guild, config.channels.applications);
-    if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
+    if (!channel) return replyFlowError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
 
     const number = store.nextApplicationNumber(interaction.guildId);
     const id = `${interaction.guildId}-${number}`;
@@ -179,7 +179,7 @@ async function handleApplySubmit(interaction) {
       .catch(hata('Başvuru kanala gönderilemedi'));
     if (!message) {
       store.removeApplication(id);
-      return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
+      return replyFlowError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
     }
     store.updateApplication(id, { messageId: message.id });
 
