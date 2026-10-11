@@ -68,7 +68,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu başka üyeyle; kontrol yok',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 956, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 990, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'bio-modal-bos',
@@ -263,6 +263,37 @@ module.exports = ({ mock, ui, src }) => {
             ],
             2,
           ),
+        ],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'puan-sayfasi',
+      title: 'Profil puanı sayfası: rütbe, hedef ve ilk 10',
+      where: 'Profilde "Puanım" butonu',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [p.puanPage({ score: skor.scoreOf(skorOlcum, 11), rank: 3, size: 214, top: puanSirasi, you: true })],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'puan-sayfasi-baslangic',
+      title: 'Profil puanı sayfası: yeni üye, henüz hiçbir şey yok',
+      where: 'Sunucuya yeni giren üyede "Puanım" butonu',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [
+          p.puanPage({
+            score: skor.scoreOf({ mesajLevel: 1, sesLevel: 0, voiceHours: 0, streamHours: 0, rep: 0, owned: 0, streak: 1, visits: 0, days: 3 }, 0),
+            rank: 180,
+            size: 214,
+            top: puanSirasi,
+          }),
         ],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
