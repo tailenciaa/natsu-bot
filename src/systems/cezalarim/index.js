@@ -1,7 +1,7 @@
 // Cezalarım paneli: #cezalarım kanalındaki sabit panelden üyeler kendi aktif cezalarının süresini ve sebebini
 // öğrenebilir, haksız bulduğu bir cezaya destek talebi açarak itiraz edebilir. Panel diğer sistemlerdeki gibi
-// bot açılınca kendiliğinden gönderilir (core/panel.js). Sonuç kartları herkese açıktır; yalnızca hata ve
-// reddetme mesajları butona basana görünür.
+// bot açılınca kendiliğinden gönderilir (core/panel.js). Üyenin kendi cezası yalnızca ona görünür: sonuç
+// kartları, itiraz seçici ve hata mesajları gizli gider.
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
