@@ -64,7 +64,7 @@ module.exports = ({ mock, ui, src }) => {
 
   // Tavan dolu: kazançlarının tamamı günlük tavana sayılmış, coin ganimeti cebine girmiyor
   const sinan = uye({ ad: 'Sinan', seviye: 22, coin: 520 });
-  const bosEl = coinStore.addWin(sinan.uid, config.winCap, 'önizleme oyunu');
+  coinStore.addWin(sinan.uid, config.winCap, 'önizleme oyunu');
   const kesik = coinStore.addWin(sinan.uid, 180, 'keşif');
   const tavanDolu = oyun.durumOf(
     sinan.uid,
@@ -84,7 +84,7 @@ module.exports = ({ mock, ui, src }) => {
   const ruletKazan = oyun.durumOf(
     ali.uid,
     'rulet',
-    `**Rulet:** ${config.rulet.renkler.siyah.ad} geldi. ${config.rulet.renkler.kirmizi.ad} tuttu: ${number(1000)} coin geri döndü.`,
+    `**Rulet:** ${config.rulet.renkler.kirmizi.ad} geldi. ${config.rulet.renkler.kirmizi.ad} tuttu: ${number(1000)} coin geri döndü.`,
   );
 
   // ── Şans Merdiveni ─────────────────────────────────────────────────────────
@@ -92,14 +92,18 @@ module.exports = ({ mock, ui, src }) => {
   store.setBahis(mert.uid, 250);
   const merdivenBos = oyun.durumOf(mert.uid, 'merdiven');
 
-  const elif = uye({ ad: 'Berk', seviye: 18, coin: 1500 });
-  store.setBahis(elif.uid, 250);
-  store.merdivenBaslat(elif.uid, 250);
-  for (let i = 0; i < 4; i++) store.merdivenYukselt(elif.uid);
+  // Pot sayfanın kendi hesabıyla aynı yoldan gelir: config basamaklarının çarpanları bahse uygulanır
+  const pot = (bahis, adim) => Math.round(bahis * p.merdivenPot(config.merdiven.adimlar, adim));
+
+  const berk = uye({ ad: 'Berk', seviye: 18, coin: 1500 });
+  store.setBahis(berk.uid, 250);
+  store.merdivenBaslat(berk.uid, 250);
+  for (let i = 0; i < 4; i++) store.merdivenYukselt(berk.uid);
+  const risk = Math.round(config.merdiven.adimlar[4].dusme * 100);
   const merdivende = oyun.durumOf(
-    elif.uid,
+    berk.uid,
     'merdiven',
-    `**4. basamaktasın:** pot ${number(770)} coin. Çekersen cebine girer. Sıradaki basamak 50% risk taşır.`,
+    `**4. basamaktasın:** pot ${number(pot(250, 4))} coin. Çekersen cebine girer. Sıradaki basamak ${risk}% risk taşır.`,
   );
 
   const can = uye({ ad: 'Can', seviye: 26, coin: 5900 });
@@ -107,11 +111,11 @@ module.exports = ({ mock, ui, src }) => {
   store.merdivenBaslat(can.uid, 500);
   for (let i = 0; i < 3; i++) store.merdivenYukselt(can.uid);
   store.merdivenDusur(can.uid);
-  store.elKaydet(can.uid, { net: 650, odul: 1150 });
+  store.elKaydet(can.uid, { net: pot(500, 3) - 500, odul: pot(500, 3) });
   const merdivenCekim = oyun.durumOf(
     can.uid,
     'merdiven',
-    `**Çekildi:** 3 basamakta pot ${number(1150)} coin cüzdanına yattı.`,
+    `**Çekildi:** 3 basamakta pot ${number(pot(500, 3))} coin cüzdanına yattı.`,
   );
 
   // ── Duyuru kartları ────────────────────────────────────────────────────────
