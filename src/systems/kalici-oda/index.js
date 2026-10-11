@@ -139,8 +139,9 @@ async function handleApplySubmit(interaction) {
   submitting.add(lockKey);
 
   try {
-    await interaction.deferReply({ flags: core.CV2 });
-    const channel = await fetchTextChannel(interaction.guild, config.channels.applications);
+    // KİŞİYE ÖZEL: başvuru özeti (amaç, odada olacak üyeler) sadece başvuranı ilgilendirir; görünürlük defer
+    // anında kilitlendiği için gizli bayrak burada verilir. İnceleme kanalı zaten ayrı bir kart alır.
+    await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
     if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
 
     const number = store.nextApplicationNumber(interaction.guildId);
