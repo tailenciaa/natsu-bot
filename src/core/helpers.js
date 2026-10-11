@@ -4,10 +4,19 @@ const { staffCommandChannel } = require('./config');
 const ui = require('./ui');
 
 // Etkileşimin durumuna göre doğru şekilde CV2 cevap verir.
-// EV KURALI: botun verdiği her cevap HERKESE AÇIKTIR. Kişiye özel (gizli) mesaj yalnızca hata/reddetme için
-// kullanılır ve o çağrılarda `{ ephemeral: true }` açıkça yazılır. `replyError` zaten gizlidir.
+// EV KURALI — görünürlük iki soruyla belirlenir: "bu cevabı başkaları da görmeli mi?" ve "bu bir hata mı?"
+//   HERKES AÇIK: cevabı topluluğu ilgilendirir ya da birinin yaptığının kaydıdır. Ör. satın alma/giyme ve
+//   saygı/VIP/seviye/çekiliş makbuz ve duyuruları, liste ve sıralama tabloları, yetkili panelleri, açılan
+//   talep/ortaklık kartları, panel mesajları.
+//   GIZLI (`{ ephemeral: true }`): cevap yalnızca o üyeyi ilgilendiren kendi bilgisi veya kendi tercihidir.
+//   Ör. kendi cezaları/sicili/kısıtı, cüzdanı, rozet/vitrin/mağaza ve kapak sayfaları, kendi rol ve takma ad
+//   ayarı, kendi başvuru/talep durumu, "şu an aktif bir cezan yok" tipi durum cevapları. Hata ve reddetmeler
+//   her zaman gizlidir; `replyError` zaten gizlidir.
+// Kuralın ölçütü içeriğin kime hitap ettiğidir: kanalda gereksiz kalabalık yapan "senin durumun" kartları
+// gizli, başkalarının da gördüğünde anlam kazandığı kartlar açıktır.
 // Dikkat: görünürlük defer anında kilitlenir. `deferReply({ flags: core.CV2 })` ile açılmış bir akışın sonundaki
-// `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür.
+// `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Buton/menü cevapları
+// `followUp` ile gittiği için onların görünürlüğü defer'den bağımsızdır; slash komutlarında bayrağı defer'de ver.
 // Butonlarda deferUpdate kullanıldığı için orijinal mesajın üzerine yazmamak adına followUp yapılır.
 // Dikkat: deferReply edilmiş komut ya da deferUpdate edilmiş modal gönderimi (butona bağlı olmayan, deferred) ise cevap
 // editReply ile verilir; yani modalın bağlı olduğu mesajı (varsa) cevabın yeni haliyle DEĞİŞTİRİR. Hata/onay bildirimini

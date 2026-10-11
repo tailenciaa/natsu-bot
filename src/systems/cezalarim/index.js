@@ -39,13 +39,16 @@ async function sendPanel(client) {
 const activePunishmentsOf = (interaction) =>
   sicilStore.of(interaction.guildId, interaction.user.id).filter((p) => p.status === 'active');
 
-const handleSure = (interaction) => respond(interaction, ui.sureView(activePunishmentsOf(interaction)));
-const handleSebep = (interaction) => respond(interaction, ui.sebepView(activePunishmentsOf(interaction)));
+// Üyenin kendi cezası kimseyi ilgilendirmez: üç kart da yalnızca butona basana görünür
+const GIZLI = { ephemeral: true };
+
+const handleSure = (interaction) => respond(interaction, ui.sureView(activePunishmentsOf(interaction)), GIZLI);
+const handleSebep = (interaction) => respond(interaction, ui.sebepView(activePunishmentsOf(interaction)), GIZLI);
 
 // "Cezaya İtiraz Et": aktif ceza yoksa uyarır, varsa seçme menüsünü gösterir
 function handleItiraz(interaction) {
   const active = activePunishmentsOf(interaction);
-  return respond(interaction, active.length ? ui.itirazPicker(active) : ui.itirazNoneView());
+  return respond(interaction, active.length ? ui.itirazPicker(active) : ui.itirazNoneView(), GIZLI);
 }
 
 // Seçme menüsü: seçilen ceza için itiraz sebebi formu açılır
