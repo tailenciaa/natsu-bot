@@ -74,7 +74,9 @@ async function handleStart(interaction) {
   const error = queueError(interaction);
   if (error) return replyError(interaction, ...error);
 
-  await interaction.deferReply({ flags: core.CV2 });
+  // SABİT PANEL KURALI: sıra paneli kanalda kalıcı ve butona her üye basıyor. Kalıcı cevap paneli yukarı
+  // iterdi ve "sıraya girdin" kartı yalnızca gireni ilgilendirir — cevap sadece basana görünür.
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const { guild } = interaction;
   const already = store.inQueue(guild.id, interaction.user.id);
   if (!already) store.enqueue(guild.id, interaction.user.id);
@@ -83,7 +85,7 @@ async function handleStart(interaction) {
 
   // Eşleşen üye olabilir (rakip bekliyordu ya da eşleşmeyi başka birinin dokunuşu tamamladı)
   const room = store.roomOfUser(guild.id, interaction.user.id);
-  if (room) return respond(interaction, ui.matchedCard(room));
+  if (room) return respond(interaction, ui.matchedCard(room), GIZLI);
 
   return respond(
     interaction,
@@ -93,6 +95,7 @@ async function handleStart(interaction) {
       waiting: store.queueOf(guild.id).length,
       already,
     }),
+    GIZLI,
   );
 }
 
@@ -101,9 +104,9 @@ async function handleLeave(interaction) {
   if (!store.inQueue(interaction.guildId, interaction.user.id)) {
     return replyError(interaction, 'Şu an sırada değilsin.', 'Sıraya girmek için **Muhabbet Başlat** butonunu kullan.');
   }
-  await interaction.deferReply({ flags: core.CV2 });
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   store.dequeue(interaction.guildId, interaction.user.id);
-  return respond(interaction, ui.leftQueue({ user: interaction.user }));
+  return respond(interaction, ui.leftQueue({ user: interaction.user }), GIZLI);
 }
 
 // ── Oda açma / kapama ──────────────────────────────────────────────────────────

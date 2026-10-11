@@ -6,7 +6,7 @@
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, replyFlowError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const siralama = require('../siralama/store');
 const logSystem = require('../log');

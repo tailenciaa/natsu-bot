@@ -88,4 +88,4 @@ function stillMember(guild, userId) {
   return guild.members.cache.size < guild.memberCount * 0.9 || guild.members.cache.has(userId);
 }
 
-module.exports = { respond, replyError, replyFlowError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
+module.exports = { respond, replyError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
