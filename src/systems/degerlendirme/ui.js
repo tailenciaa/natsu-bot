@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, stars, messageUrl, page } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, stars, rows, messageUrl, page } = require('../../core/ui');
 const config = require('./config');
 
 // Hepsinin sonuna veri eklenir (değerlendirme ID'si, puan, karar)
