@@ -100,7 +100,7 @@ function yolSatiri(satir, index) {
 
 // Cüzdan şeridi: her sekmenin altında aynı satır durur, üye ödülün nereye gittiğini görür
 const cüzdan = ({ balance, anahtar }) =>
-  `**Cüzdanın**\n${core.pills([['Bakiye', `${number(balance)} coin`], ['Anahtar', `${anahtar} adet · 3 adedi 1 kutu`]])}`;
+  `**Cüzdanın**\n${core.pills([['Bakiye', `${number(balance)} coin`], ['Anahtar', `${anahtar} adet · ${config.KUTU.anahtar} adedi 1 kutu`]])}`;
 
 // Panelin iskeleti: başlık ve açıklama, istenirse geri bildirim satırı, bloklar, satırlar, cüzdan ve sekmeler
 function kabuk({ tab, title, sub, blocks = [], sections = [], rows, feedback, balance, anahtar, at }) {
@@ -129,7 +129,7 @@ const BASLIK = {
   },
   yol: {
     title: 'Keşif Yolu',
-    sub: 'Botun sistemlerini sırayla gezdiren on bir adım. Bir adım bittiğinde ödülünü toplarsın, sıradaki adım kalın yazılır; son adımda büyük bir ödül ve kartına rozet düşer.',
+    sub: 'Botun sistemlerini sırayla gezdiren on bir adım. Bir adım bittiğinde ödülünü toplarsın, sıradaki adım kalın yazılır; son adımda büyük ödül ve kartına takılacak bir sergi rozeti var.',
   },
   kutu: {
     title: 'Kutu',
@@ -162,7 +162,6 @@ function panel(state) {
       ...ortak,
       ...BASLIK.haftalik,
       sections: state.haftalik.map((satir) => gorevSection(satir, `${IDS.haftalikAl}${satir.gorev.key}`)),
-      blocks: [state.haftalikNotu],
     });
   }
 

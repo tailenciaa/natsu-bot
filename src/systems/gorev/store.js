@@ -135,6 +135,10 @@ function kutuGaranti(userId, kozmetikCikti) {
   });
 }
 
+// Sıradaki kutu kozmetik mi olmak zorunda: üst üste KUTU.garanti kutu kozmetiksiz geçiyorsa evet.
+// Sayı index.js'te "bu sefer kozmetik vermek şart" demesi için okunur; kendisi vermez.
+const kozmetikGaranti = (userId) => rec(userId).kutu.garanti >= config.KUTU.garanti - 1;
+
 // ── Sezon ─────────────────────────────────────────────────────────────────────
 const sezonKaydi = (userId, sezon) => {
   const r = rec(userId);
@@ -187,6 +191,7 @@ module.exports = {
   kutuSayilari,
   kutuKaydet,
   kutuGaranti,
+  kozmetikGaranti,
   sezonPuan,
   puanEkle,
   sezonKademeleri,
