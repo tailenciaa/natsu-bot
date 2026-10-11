@@ -1,7 +1,8 @@
-// Kalıcı oda sistemi: üye başvuru panelinden form doldurur, yetkililer karar verir. Onaylanan başvuruda odanın
-// kategorisi, ses ve yazı kanalları açılır; erişim yalnızca odayı kullanacak kişilere verilir, @everyone kanalı göremez.
-// Oda sahibine teslim kartı DM olarak gider, odanın kendi yazı kanalına sadece sahibinin kullanabildiği kontrol paneli
-// düşer (isim, kişi limiti, üye ekle/çıkar, sahiplik devri). Odalar kalıcıdır: içinde kimse olmasa bile kapanmaz,
+// Kalıcı oda sistemi: üye başvuru panelinden form doldurur, başvurular inceleme kanalına düşer, yetkililer karar verir.
+// Onaylanan başvuruda odanın kategorisi, ses ve yazı kanalları açılır; erişim yalnızca odayı kullanacak kişilere verilir,
+// @everyone kanalı göremez. Oda sahibine teslim kartı DM olarak gider, odanın kendi yazı kanalına sadece sahibinin
+// kullanabildiği kontrol paneli düşer (isim, kişi limiti, üye ekle/çıkar, sahiplik devri), açılış ve kapanış ise
+// duyuru kanalında herkese açık kart olarak görünür. Odalar kalıcıdır: içinde kimse olmasa bile kapanmaz,
 // yalnızca yetkililer /kalici-oda kapat ile kapatır. Kanallar elle silinirse oda kaydı kendiliğinden temizlenir.
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
@@ -541,6 +542,8 @@ async function closeRoom(guild, room, reason) {
       allowedMentions: { parse: [] },
     })
     .catch(() => {});
+
+  await announce(guild, ui.closedNotice(room, reason));
 
   return logSystem
     .write(guild.client, 'bot', {
