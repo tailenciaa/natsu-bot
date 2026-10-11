@@ -12,9 +12,12 @@ module.exports = ({ mock, src }) => {
 
   const guild = mock.guild({ id: '1' });
   const voice = mock.channel({ name: 'muzik-odasi', type: 'voice', guild });
-  const text = mock.channel({ name: 'muzik-odasi', type: 'text', guild });
-  const category = mock.channel({ name: 'Müzik Odası', type: 'category', guild });
+  const category = mock.channel({ name: 'Kalıcı Odalar', type: 'category', guild });
   const applications = mock.channel({ name: 'kalici-oda-basvuruları', guild });
+
+  // Odadaki üyelerin görünen adları: panelin çıkar/devret menüleri bu isimlerle dolar (index rosterOf'un karşılığı)
+  const names = { [a.id]: 'Ayşe Yılmaz', [b.id]: 'Fatma Demir', [c.id]: 'Can Kaya' };
+  const rosterOf = (room) => room.members.map((id) => ({ id, name: names[id] ?? 'Üye' }));
 
   // Biten haftaların ölçümleri denetimin kendi pazartesi anahtarlarıyla yazılır: ay toplamı ve kaçan hafta
   // böylece gerçek takvime oturur, kartta uydurma tarih görünmez. Ölçüler SANİYE (mock.HOUR milisaniyedir).
@@ -34,7 +37,7 @@ module.exports = ({ mock, src }) => {
     limit: 20,
     categoryId: category.id,
     voiceChannelId: voice.id,
-    textChannelId: text.id,
+    textChannelId: null, // yeni odalarda ayrı yazı kanalı yok; sohbet ses kanalının kendi yazısı
     weeks,
     createdAt: mock.ago(6 * mock.DAY),
     ...o,
