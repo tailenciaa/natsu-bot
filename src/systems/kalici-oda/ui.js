@@ -327,18 +327,18 @@ function renameModal(current) {
     .addLabelComponents(new LabelBuilder().setLabel('Yeni isim').setDescription('Kategori ve iki kanalın adı birlikte değişir.').setTextInputComponent(input));
 }
 
-// /kalici-oda liste: yetkililerin gördüğü oda dökümü
+// /kalici-oda liste: yöneticilerin gördüğü oda dökümü
 function roomList(rooms, pendingCount) {
   const line = (room) =>
     [
-      `**#${room.no} · ${room.name}**`,
+      `**#${pad(room.no)} · ${room.name}**`,
       `${pills([['Üye', room.members.length + 1], ['Limit', room.limit || 'sınırsız']])} · Sahip <@${room.ownerId}>`,
       `<#${room.voiceChannelId}> · <#${room.textChannelId}>`,
     ].join('\n');
 
   return page({
     title: 'Kalıcı Odalar',
-    sub: 'Sunucudaki tüm kalıcı odalar, sahipleri ve kanalları burada listelenir; bir odayı kapatmak ya da sahipsiz bir odayı devretmek için aynı komuttaki diğer adımları kullanabilirsin.',
+    sub: 'Sunucudaki tüm kalıcı odalar, sahipleri ve kanalları. Oda kapatmak için **/kalici-oda kapat**, sahibi ayrılmış bir odayı teslim etmek için **/kalici-oda devret**.',
     blocks: [
       rooms.length ? rooms.map(line).join('\n\n') : '-# Henüz kalıcı oda yok.',
       pendingCount ? `**Bekleyen Başvuru** ${chip(`${pendingCount} adet`)}` : null,
@@ -395,6 +395,7 @@ function closedNotice(room, reason) {
 
 module.exports = {
   IDS,
+  monthLabel,
   applyPanel,
   applicationModal,
   applicationCard,
@@ -403,6 +404,8 @@ module.exports = {
   readyCard,
   rejectedCard,
   roomPanel,
+  weekMissedCard,
+  inactivityCard,
   limitModal,
   renameModal,
   roomList,
