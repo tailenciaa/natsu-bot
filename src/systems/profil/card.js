@@ -460,39 +460,39 @@ function levelCard(ctx, x, y, w, h, title, xp, c) {
 
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 20);
-  ctx.fillText(title, x + 28, y + 40);
+  ctx.font = font(500, 24);
+  ctx.fillText(title, x + 28, y + 42);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 24);
-  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 28, y + 74);
+  ctx.font = font(700, 28);
+  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 28, y + 78);
 
   ctx.textAlign = 'right';
   ctx.fillStyle = accent;
-  ctx.font = font(700, 62);
-  ctx.fillText(String(level), x + w - 28, y + 80);
+  ctx.font = font(700, 74);
+  ctx.fillText(String(level), x + w - 28, y + 88);
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 15);
-  ctx.fillText('SEVİYE', x + w - 28, y + 30);
+  ctx.font = font(700, 17);
+  ctx.fillText('SEVİYE', x + w - 28, y + 32);
 
   drawBar(ctx, x + 28, y + h - 32, w - 56, 16, (xp - current) / (next - current), accent, c.track);
 }
 
-// İstatistik kutusu: üstte küçük başlık, altında değer, varsa en altta tek satırlık yant not. Kutu her zaman
+// İstatistik kutusu: üstte küçük başlık, altında değer, varsa en altta tek satırlık not. Kutu her zaman
 // çizilir; ölçülemeyen alan "-" ile durur, böylece ızgaranın düzeni hiçbir profilde bozulmaz.
 function statTile(ctx, x, y, w, tile, c) {
   glass(ctx, x, y, w, TILE_H, 18, c);
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 14);
+  ctx.font = font(700, 17);
   ctx.fillText(fitText(ctx, tile.label.toLocaleUpperCase('tr-TR'), w - 40), x + 20, y + 27);
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 26);
-  ctx.fillText(fitText(ctx, tile.value, w - 40), x + 20, y + tile.sub ? 58 : 66);
+  ctx.font = font(700, 32);
+  ctx.fillText(fitText(ctx, tile.value, w - 40), x + 20, y + (tile.sub ? 60 : 70));
   if (tile.sub) {
     ctx.fillStyle = c.muted;
-    ctx.font = font(400, 15);
-    ctx.fillText(fitText(ctx, tile.sub, w - 40), x + 20, y + 80);
+    ctx.font = font(400, 17);
+    ctx.fillText(fitText(ctx, tile.sub, w - 40), x + 20, y + 86);
   }
 }
 
@@ -531,12 +531,12 @@ function drawFoot(ctx, y, view, c) {
   ctx.textAlign = 'left';
   if (custom.bio) {
     ctx.fillStyle = '#ece3e8';
-    ctx.font = font(400, 25);
-    wrapLines(ctx, custom.bio, bioW - 72, 2).forEach((line, i) => ctx.fillText(line, PAD + 30, y + 48 + i * 36));
+    ctx.font = font(400, 27);
+    wrapLines(ctx, custom.bio, bioW - 72, 2).forEach((line, i) => ctx.fillText(line, PAD + 30, y + 50 + i * 38));
   } else {
     ctx.fillStyle = c.muted;
-    ctx.font = font(400, 24);
-    ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 30, y + 66);
+    ctx.font = font(400, 26);
+    ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 30, y + 70);
   }
 
   if (!vitrinW) return;
@@ -548,16 +548,16 @@ function drawFoot(ctx, y, view, c) {
   ctx.textAlign = 'left';
   if (view.featured) {
     ctx.fillStyle = c.muted;
-    ctx.font = font(500, 15);
+    ctx.font = font(700, 17);
     ctx.fillText(view.featured.label.toLocaleUpperCase('tr-TR'), x + 30, y + 34);
     ctx.fillStyle = c.accent;
-    ctx.font = font(700, 32);
-    ctx.fillText(fitText(ctx, view.featured.value, vitrinW - 60), x + 30, y + 72);
+    ctx.font = font(700, 36);
+    ctx.fillText(fitText(ctx, view.featured.value, vitrinW - 60), x + 30, y + 74);
   }
   if (view.links?.length) {
     ctx.fillStyle = '#efe6ea';
-    ctx.font = font(500, 19);
-    ctx.fillText(fitText(ctx, view.links.join('   ·   '), vitrinW - 60), x + 30, y + (view.featured ? 100 : 60));
+    ctx.font = font(500, 21);
+    ctx.fillText(fitText(ctx, view.links.join('   ·   '), vitrinW - 60), x + 30, y + (view.featured ? 102 : 66));
   }
 }
 
