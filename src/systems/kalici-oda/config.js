@@ -1,5 +1,6 @@
-// Kalıcı oda sistemi ayarları: başvuru paneli ve başvuruların düşeceği kanal, gereksinimler, oda sınırları.
-// Kanal ve rol ID'leri boş (null) bırakılırsa ilgili adım çalışmaz; ID'yi girip botu yeniden başlatman yeterli.
+// Kalıcı oda sistemi ayarları: başvuru paneli ve başvuruların düşeceği kanal, roller, başvuru ve oda sınırları,
+// odaları açık tutan haftalık/aylık ses şartları. Kanal ve rol ID'leri boş (null) bırakılırsa ilgili adım çalışmaz;
+// ID'yi girip botu yeniden başlatman yeterli.
 module.exports = {
   channels: {
     // #kalıcı-oda-bilgi: kurallar ve gereksinimler panelinin gönderileceği kanal. null: panel gönderilmez.
@@ -12,10 +13,14 @@ module.exports = {
   },
 
   roles: {
-    // Başvuruları inceleyen rol; Onayla ve Reddet sadece bu roldekiler ve yöneticiler için çalışır. null: sadece yöneticiler.
+    // Başvuruları inceleyen rol. Boş bırakılırsa (null) Onayla ve Reddet yalnızca yönetici yetkisi olanlar çalışır;
+    // başvuruları sadece yöneticiler onaylasın istiyorsa null kalmalı.
     reviewer: null,
     // Ekip rolü: girilirse her kalıcı odaya bu rolün erişimi de verilir, yani ekip üyeleri tüm odaları görür. null: kapalı.
     team: null,
+    // Oda sahibi rolü: odası onaylanan üyeye verilir, odası kapatıldığında ya da sahipliği devredildiğinde geri alınır.
+    // Bu rol kuralın gözüdür; /kalici-oda odam komutu yine de sahipliğe bakar, yani rol verilemezse komut çalışmaya devam eder.
+    owner: '1558768699530281055',
   },
 
   // Kalıcı odaların açılacağı kategori. null: odalar sunucu kökünde açılır.
@@ -35,10 +40,22 @@ module.exports = {
   // Son başvurusu reddedilen üye kaç gün sonra tekrar başvurabilir (0: sınır yok)
   reapplyCooldownDays: 14,
 
+  // Odayı açık tutan şartlar: odadakilerin (sahip dahil) topladığı ses süresi. Her hafta biterken o haftanın sayısı
+  // odanın kaydına işlenir, hedefin altındaysa sahibine uyarı gider; ay başında geçen ayın haftalarına bakılır ve
+  // şartı karşılamayan oda "şart yetersizliği" ile kapatılır. enabled: false tüm denetimi durdurur.
+  activity: {
+    enabled: true,
+    // Haftalık hedef (saat): odadakilerin bir haftadaki toplam ses süresi bundan azsa hafta kaçmış sayılır.
+    weeklyHours: 40,
+    // Aylık hedef (saat): ay boyunca toplanan toplam. Haftalık hedefi tek tek tutan bir oda bunu zaten geçer;
+    // düşük ama dengeli kullanımı da yakalar. Ayın ortasında açılan odada hedef, sayılan hafta kadarına bölünür.
+    monthlyHours: 150,
+  },
+
   // Panelde "Kurallar" başlığı altında gösterilen satırlar
   rules: [
-    'Oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz, yalnızca yetkililer kapatır.',
-    'Odayı **sahibi yönetir**: isim, kişi limiti, üye ve devir işlemleri odanın yazı kanalındaki panelinden yapılır.',
+    'Oda **sana ait**: ismini, kişi limitini ve üyelerini **/kalici-oda odam** komutuyla kendin yönetirsin.',
+    'Oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz; ay sonu şartını karşılamayan oda ise silinir.',
     'Sunucu kuralları odada da geçerlidir; odada olanlardan **oda sahibi** sorumludur.',
   ],
 
