@@ -11,6 +11,7 @@ const saygiStore = require('../saygi/store');
 const seviyeStore = require('../seviye/store');
 const { levelFromXp } = require('../seviye/level');
 const vipStore = require('../vip/store');
+const gorevStore = require('../gorev/store');
 const profileStore = require('./store');
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -43,6 +44,8 @@ const BADGES = [
   { key: 'sadakat', label: 'Sadakat Nişanı', note: 'Üç yıl boyunca sunucuda kalmak', color: '#f4c95d', goal: 1095, value: (c) => c.days, gorev: true },
   { key: 'hazine', label: 'Hazine Avcısı', note: 'Yirmi bin coin kazandı', color: '#b57bff', goal: 20000, value: (c) => c.earned, gorev: true },
   { key: 'muzayede', label: 'Koleksiyon Efsanesi', note: 'Sekiz kozmetik sahibi', color: '#3ee0a1', goal: 8, value: (c) => c.owned, gorev: true },
+  { key: 'gorev-ustasi', label: 'Görev Ustası', note: 'Altmış görev ödülü topladı', color: '#57d9a3', goal: 60, value: (c) => c.questsDone, gorev: true },
+  { key: 'kutu-kirici', label: 'Kutu Kırıcı', note: 'On kutu açtı', color: '#ffd166', goal: 10, value: (c) => c.chests, gorev: true },
 ];
 
 // Kartın ve rozet sayfasının ortak ölçüleri: her şey tek bir bağlamdan hesaplanır
@@ -68,6 +71,8 @@ function context({ guild, member, userId, messageCount = 0, voiceSeconds = 0, st
     streak: coinStore.streak(userId),
     earned: coinStore.earned(userId),
     owned: profileStore.ownedCount(userId),
+    questsDone: gorevStore.bitirilenSayisi(userId),
+    chests: gorevStore.kutuSayilari(userId).toplam,
     visits,
   };
 }
