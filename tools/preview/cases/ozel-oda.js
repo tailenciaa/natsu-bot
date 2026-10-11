@@ -3,7 +3,8 @@ module.exports = ({ mock, src }) => {
   const o = src('systems/ozel-oda/ui');
   const owner = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
   const room = { ownerId: owner.id };
-  const member = () => mock.user({ username: mock.name('uye'), displayName: mock.name('uye') }).id;
+  let no = 0;
+  const member = () => mock.user({ username: `uye${++no}`, displayName: `Üye ${no}` }).id;
   const channel = (userLimit = 0) => ({ userLimit });
   const noMentions = { allowedMentions: { parse: [] } };
   const where = 'Odanın kendi yazı sohbeti';
