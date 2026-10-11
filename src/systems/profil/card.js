@@ -56,16 +56,9 @@ const OPACITY_STEP = 10;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
 const number = (n) => Number(n).toLocaleString('tr-TR');
-const date = (ms) => new Date(ms).toLocaleDateString('tr-TR', { timeZone: 'Europe/Istanbul', day: 'numeric', month: 'short', year: 'numeric' });
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-function duration(seconds) {
-  const minutes = Math.floor((seconds ?? 0) / 60);
-  const h = Math.floor(minutes / 60);
-  return h > 0 ? `${number(h)} sa ${minutes % 60} dk` : `${minutes} dk`;
-}
-
-// Bir tarihten bugüne geçen süre "3 yıl 2 ay" gibi kısa yazılır: katılım ve hesap yaşı kutularında kullanılır
+// Bir tarihten bugüne geçen süre "3 yıl 2 ay" gibi kısa yazılır: kartın "Sunucuda" sütununda kullanılır
 function age(ms) {
   const days = Math.max(0, Math.floor((Date.now() - ms) / 86400000));
   const years = Math.floor(days / 365);
@@ -759,7 +752,7 @@ async function buildProfileCard(user, view) {
 
   if (rows.length) drawBadges(ctx, rows, badgesY);
 
-  // Gövde iki alan ve rozet şeridinden oluşur: puman bandı, sayı şeridi, rozetler, alt şerit
+  // Gövde dört alandan oluşur: puan bandı, sayı şeridi, rozet şeridi ve alt şerit
   drawSkor(ctx, skorY, view, c);
   drawStrip(ctx, stripY, view, c);
 
