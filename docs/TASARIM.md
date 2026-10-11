@@ -51,8 +51,8 @@ Başlık en çok 28, buton etiketi en çok 20 karakter. Paneller `core/panel.js`
 ## Başlık                                  [küçük görsel]
 -# sub: mesajın ne olduğunu anlatan 140-220 karakterlik gerçek bir cümle
 ---
-**Blok başlığı** ya da **Ana cümle.**
-değer satırları
+## Bölüm Başlığı
+**Etiket:** değer satırları
 açıklama satırı (normal yazı)
 ---
 [Butonlar]
@@ -60,8 +60,10 @@ açıklama satırı (normal yazı)
 -# <t:unix:F>          (sadece vaka mesajlarında: talep, başvuru, ceza, çekiliş)
 ```
 
+- Kart içindeki **her bağımsız bölüm `## Bölüm Başlığı` ile başlar** (başlık Discord'da büyük puntolu başlık olarak görünür, en çok 28 karakter). Böylece bölüm başlıkları satır içi kalın `**Etiket:**` etiketlerinden görsel olarak ayrılır ve kartın hiyerarşisi okunur. Menülerin hemen üstündeki açıklama da aynı biçimdedir: `## Üye Ekle` başlığı, altında normal yazıyla tek cümlelik açıklama. Yalnızca kartın ana başlığını taşıyan bloklar (tek cümlelik özetler, teşekkür metinleri) kalın ana cümleyle başlayabilir; `##` kullanılmayan yerde başlık metni `**Kalın**` biçimindedir.
+
 - `sub` bilerek iki satırı dolduracak uzunluktadır: bütün mesajlar aynı genişlikte görünsün diye. Kısa tutulmaz, doldurma da yapılmaz; bloklardaki bilgiyi tekrar etmeyen gerçek bir açıklama yazılır.
-- Her blok kalın bir başlık ya da ana cümleyle başlar, ardından düz değer satırları, en sonda normal yazıyla açıklama gelir; önemli sözcükler kalın yazılır. Bir blok en fazla yaklaşık 8 satırdır.
+- Her blok `## Bölüm Başlığı` ya da kalın ana cümleyle başlar, ardından düz değer satırları, en sonda normal yazıyla açıklama gelir; önemli sözcükler kalın yazılır. Bir blok en fazla yaklaşık 8 satırdır.
 - Serbest metin (konu, sebep, yorum) `quote()` ile alıntı bloğunda, etiket-değer satırları `**Etiket:** değer` biçimindedir.
 
 ### Etiket-değer satırları: `rows`, `chip`, `pills`
@@ -214,7 +216,7 @@ Yeni mesaj eklerken `tools/preview/cases/<sistem>.js` içine bir case eklenir; `
 ## 9. Her mesaj için kontrol listesi
 
 1. Embed, emoji ya da ok simgesi var mı (⭐ hariç)?
-2. Ana cümle ve anahtar sözcükler kalın, açıklama normal boyutta (`-#` yalnızca izin verilen yerlerde), ilgisiz bloklar çizgiyle ayrılmış mı?
+2. Bölüm başlıkları `##` biçiminde mi, ana cümle ve anahtar sözcükler kalın, açıklama normal boyutta (`-#` yalnızca izin verilen yerlerde), ilgisiz bloklar çizgiyle ayrılmış mı?
 3. Bilgi satırları `rows` ile mi kuruluyor ve kısa değerler (numara, süre, durum, sayı) `chip` içinde mi?
 4. İşlem bildirimi `receipt` kartıyla mı çiziliyor; görünürlük §6'nın iki testinden geçti mi (kalıcı panelin buton cevabı → gizli, komutla açılan sayfa ve topluluk kaydı → kalıcı ve açık)?
 5. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
