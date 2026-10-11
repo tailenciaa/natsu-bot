@@ -367,7 +367,7 @@ async function checkTierRoles(guild) {
 }
 
 module.exports = {
-  ensureTierRoles,
+  checkTierRoles,
   parseDuration,
   canPunish,
   punish,
