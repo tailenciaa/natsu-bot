@@ -103,10 +103,6 @@ const IZLENEN = {
   buton: { 'cekilis-katil': 'cekilis-katil' },
 };
 
-// Görev duyurularının düşeceği kanal. Boş bırakılırsa hiçbir yerde duyuru yapılmaz; doldurulunca Keşif Yolu'nda
-// son adıma çıkan üyeler ve sezon eşikleri kanala yazılır.
-const kanal = { duyuru: null };
-
 module.exports = {
   gunlukAdet: 3,
   haftalikAdet: 3,
@@ -117,7 +113,6 @@ module.exports = {
   KUTU,
   SEZON,
   IZLENEN,
-  kanal,
   dayKey,
   haftaAnahtari,
   haftaBaslangici,
