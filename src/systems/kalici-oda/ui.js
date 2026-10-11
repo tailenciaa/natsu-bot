@@ -162,17 +162,18 @@ function rejectModal(app) {
 function readyCard(room) {
   return page({
     title: 'Yeni Kalıcı Oda Açıldı!',
-    sub: 'Odan başarıyla oluşturuldu ve sana teslim edildi; bundan sonra ismini, kişi limitini ve üyelerini odanın yazı kanalındaki panelden kendin yönetirsin.',
+    sub: 'Odan oluşturuldu ve sana teslim edildi. İsim, kişi limiti, üye ve devir işlemleri artık **/kalici-oda odam** komutunda.',
     accent: colors.success,
     blocks: [
-      `**Oda Bilgileri**\n${rows([
-        ['Oda', chip(room.name)],
+      `**Oda**\n${rows([
+        ['Oda', roomTag(room)],
         ['Sahibi', `<@${room.ownerId}>`],
         ['Kişi Sayısı', chip(memberTotal(room.members.length))],
         ['Kişi Limiti', limitLabel(room.limit)],
       ])}`,
       `**Kanallar**\n<#${room.voiceChannelId}> · <#${room.textChannelId}>`,
       room.members.length ? `**Üyeler**\n${mentions(room.members)}` : null,
+      activityBlock(null),
       stamp(room.createdAt),
     ],
   });
@@ -195,19 +196,52 @@ function rejectedCard(app) {
   });
 }
 
-// Odanın kendi yazı kanalına düşen, sadece sahibinin kullanabildiği kontrol paneli
-function roomPanel(room) {
+// Odanın şart bloğu: hedefler her zaman yazılır, ölçülen sayılar status verildiğinde eklenir.
+// status: { weekSeconds, lastWeekSeconds, missedWeeks, monthSeconds, reviewAt }
+function activityBlock(status) {
+  const a = config.activity;
+  if (!a.enabled) return null;
+
+  const targets = pills([
+    ['Haftalık Hedef', `${a.weeklyHours} saat`],
+    ['Aylık Hedef', `${a.monthlyHours} saat`],
+    status ? ['Bu Ay Kaçan Hafta', `${status.missedWeeks}`] : null,
+  ]);
+  const measured = status
+    ? pills([
+        ['Son 7 Gün', hoursLabel(status.weekSeconds)],
+        ['Geçen Hafta', status.lastWeekSeconds === null ? 'kayıt yok' : hoursLabel(status.lastWeekSeconds)],
+        ['Ay Toplamı', `${hoursLabel(status.monthSeconds)} / ${a.monthlyHours} saat`],
+      ])
+    : null;
+
+  return [
+    '**Odayı Açık Tutan Şart**',
+    targets,
+    measured,
+    status
+      ? `-# Ay sonunda hedefler tutmazsa oda silinir. Sıradaki kontrol: <t:${unix(status.reviewAt)}:D>.`
+      : '-# Ay sonunda bu hedefler kontrol edilir; karşılamayan oda silinir.',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+// /kalici-oda odam ile açılan, sadece sahibinin kullanabildiği kontrol paneli
+function roomPanel(room, status) {
   const container = page({
-    title: 'Kalıcı Oda Paneli',
-    sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin; bu paneli sadece **oda sahibi** kullanabilir.',
+    title: `Kalıcı Oda · ${room.name}`,
+    sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin. Bu paneli sadece oda sahibi kullanabilir.',
     blocks: [
-      `**Oda Bilgisi**\n${rows([
-        ['Oda', chip(room.name)],
+      `**Oda**\n${rows([
+        ['Oda', roomTag(room)],
         ['Sahip', `<@${room.ownerId}>`],
         ['Üye Sayısı', chip(memberTotal(room.members.length))],
         ['Kişi Limiti', limitLabel(room.limit)],
+        ['Kanallar', `<#${room.voiceChannelId}> · <#${room.textChannelId}>`],
       ])}`,
-      'Oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz, yalnızca yetkililer kapatabilir.',
+      activityBlock(status),
+      'Bu oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz.',
       stamp(room.createdAt),
     ],
   });
@@ -219,15 +253,47 @@ function roomPanel(room) {
         new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
       ),
     )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(select(`${IDS.add}:0`, 'Odaya eklenecek üyeyi seç')),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(select(`${IDS.remove}:0`, 'Odadan çıkarılacak üyeyi seç')),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(select(`${IDS.transfer}:0`, 'Sahipliği devredeceğin üyeyi seç')),
-    );
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.add}:0`, 'Odaya eklenecek üyeyi seç')))
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.remove}:0`, 'Odadan çıkarılacak üyeyi seç')))
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.transfer}:0`, 'Sahipliği devredeceğin üyeyi seç')));
+}
+
+// Haftalık şart kaçınca sahibine giden uyarı: bir başarısızlık bildirimi olduğu için kanala değil kişiye düşer
+function weekMissedCard(room, week, seconds) {
+  return page({
+    title: 'Kalıcı Oda Şartı Kaçtı',
+    sub: `${room.name} odasında geçen haftanın ses şartı tutmadı. Ay sonunda şartı karşılamayan oda silinir, o yüzden haftayı boş geçirme.`,
+    accent: colors.warning,
+    blocks: [
+      rows([
+        ['Oda', roomTag(room)],
+        ['Hafta', chip(monthLabel(week))],
+        ['Odadakilerin Sesi', chip(hoursLabel(seconds))],
+        ['Haftalık Hedef', chip(`${config.activity.weeklyHours} saat`)],
+      ]),
+      'Odanı korumak için tek gereken: odada konuşmak. Bir hafta daha kaçarsa oda risk altına girer.',
+      stamp(),
+    ],
+  });
+}
+
+// Ay sonu şart denetiminde odası silinen sahibine giden kart
+function inactivityCard(room, stat) {
+  return page({
+    title: 'Kalıcı Oda Şart Yetersizliğinden Kapatıldı',
+    sub: `${room.name} odası ay sonu şartını karşılamadığı için kapatıldı ve kanalları silindi.`,
+    accent: colors.danger,
+    blocks: [
+      rows([
+        ['Oda', roomTag(room)],
+        ['İncelenen Ay', chip(monthLabel(stat.month))],
+        ['Kaçan Hafta', stat.missed ? chip(`${stat.missed} / ${stat.weeks} hafta`) : chip('yok')],
+        ['Ay Toplamı', chip(`${hoursLabel(stat.total)} / ${hoursLabel(stat.required)}`)],
+      ]),
+      'Gereksinimleri sağladığında başvuru panelinden tekrar oda isteyebilirsin.',
+      stamp(),
+    ],
+  });
 }
 
 // Kişi limiti formu (0 = sınırsız)
