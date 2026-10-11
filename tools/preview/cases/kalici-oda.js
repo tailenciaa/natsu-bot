@@ -69,6 +69,7 @@ module.exports = ({ mock, src }) => {
   const noMentions = { allowedMentions: { parse: [] } };
   const message = (container) => ({ components: [container], ...noMentions });
 
+  // Eski bir oda kaydı: ayrı yazı kanalı ve limitsiz oda. textChannelId artık hiçbir kartta gösterilmez.
   const second = room({
     id: '1-0002',
     no: 2,
@@ -83,7 +84,15 @@ module.exports = ({ mock, src }) => {
 
   return [
     { id: 'panel', title: 'Başvuru paneli: kurallar ve gereksinimler', where: 'Kalıcı oda bilgi kanalı', visibility: 'panel', kind: 'message', build: () => message(k.applyPanel()) },
-    { id: 'form', title: 'Form: kalıcı oda başvurusu', where: 'Başvuru Yap butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.applicationModal() },
+    {
+      id: 'uye-secimi',
+      title: 'Başvurunun ilk adımı: üye seçme menüsü',
+      where: 'Başvuru Yap butonu',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => message(k.memberPicker()),
+    },
+    { id: 'form', title: 'Form: kalıcı oda başvurusu', where: 'Formu Aç butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.applicationModal() },
     {
       id: 'basvuru-alindi',
       title: 'Başvuru alındı: kanala düşen özet',
