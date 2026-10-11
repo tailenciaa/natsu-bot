@@ -169,7 +169,7 @@ module.exports = ({ mock, src }) => {
       where: 'Doğrudan mesaj',
       visibility: 'dm',
       kind: 'message',
-      build: () => message(k.weekMissedCard(room(), previousWeekKey(), 28 * mock.HOUR)),
+      build: () => message(k.weekMissedCard(room(), previousWeekKey(), sec(28))),
     },
     {
       id: 'dm-sart-kapanis',
