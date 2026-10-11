@@ -17,6 +17,8 @@
 //   profiles                       : profil özelleştirmesi: biyografi, unvan, renk/tema, kapak, vitrin, sahip olunan
 //                                    kozmetikler ve kartın bulunduğu mesaj (kullanıcı ID'si ile)
 //   coins                          : coin cüzdanları, bakiye / toplam kazanç / günlük giriş serisi (kullanıcı ID'si ile)
+//   gorev.users                    : görev ödülü alınmaları, anahtar sayacı, kutu istatistiği ve sezon puanı
+//                                    (kullanıcı ID'si ile; ilerlemenin kendisi burada tutulmaz, ilgili sistemlerden okunur)
 //   profileVisits                  : profil kartını başkalarının kaç kez gördüğü ve son görenler (kullanıcı ID'si ile)
 //   newAccountRole                 : yeni/şüpheli hesap kısıtlama rolünün ID'si (sunucu ID'si ile)
 //   privateRooms                   : açık özel odalar, sahibiyle birlikte (ses kanalı ID'si ile)
