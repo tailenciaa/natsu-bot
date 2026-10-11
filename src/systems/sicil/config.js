@@ -49,11 +49,11 @@ module.exports = {
   // Ceza puanı kısıtlama kademeleri: toplam puan eşiği geçilince rol otomatik verilir, puan eşiğin altına düşünce
   // (örneğin sicilden silinince) rol geri alınır. Rolün kanallarda neyi kısıtlayacağını (mesaj atamama, ses
   // kısıtlaması, tepki verememe vb.) Discord'da o role izin olarak sen tanımlarsın, bot sadece rolü yönetir.
-  // roleId null olduğu sürece o kademe devre dışıdır.
+  // Roller Discord'da hazır durur; bot asla rol OLUŞTURMAZ. roleId null olan kademe devre dışıdır.
   pointTiers: [
-    { points: 15, roleId: null, label: 'Kısıtlama I' },
-    { points: 30, roleId: null, label: 'Kısıtlama II' },
-    { points: 50, roleId: null, label: 'Kısıtlama III' },
+    { points: 15, roleId: '1556645163944640612', label: 'Kısıtlama I' },
+    { points: 30, roleId: '1556645165148541000', label: 'Kısıtlama II' },
+    { points: 50, roleId: '1556645166725730374', label: 'Kısıtlama III' },
   ],
 
   // Süreli cezaların bitip bitmediği kaç saniyede bir kontrol edilir

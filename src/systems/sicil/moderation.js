@@ -352,31 +352,18 @@ async function syncJailVisibility(guild) {
   console.log(`[sicil] Jail rolünün kanal görünürlüğü senkronize edildi (${channels.size} kanal).`);
 }
 
-// Ceza puanı kısıtlama rolleri (config.pointTiers) bir kere oluşturulur ve ID'leri kaydedilir (data.pointTierRoles).
-// Sonraki açılışlarda sadece kayıtlı ID kullanılır: rolü Discord'dan düzenlemek (ad, renk, izin, sıra) yeni rol açmaz,
-// silinen rol da yeniden oluşturulmaz (o kademe devre dışı kalır). config'te roleId elle yazılmışsa ona dokunulmaz.
-async function ensureTierRoles(guild) {
-  const saved = (data.pointTierRoles ??= {});
+// Kısıtlama rolleri Discord'da hazır durur ve ID'leri config.pointTiers içinde yazılıdır; bot rol OLUŞTURMAZ
+// (oluşturulan rol her yeniden başlatmada tekrarlanıyor, sunucuda yığın rol birikiyordu). Açılışta sadece ID'ler
+// doğrulanır: bulunamayan ya da boş ID'li kademe devre dışı kalır ve loga yazılır, ceza işlemi yine çalışır.
+async function checkTierRoles(guild) {
   for (const tier of config.pointTiers) {
-    if (tier.roleId) continue;
-    const id = saved[tier.points];
-    if (id) {
-      const role = guild.roles.cache.get(id) ?? (await guild.roles.fetch(id).catch(() => null));
-      if (role) tier.roleId = id;
-      else console.warn(`[sicil] ${tier.label} rolü silinmiş, bu kademe devre dışı (yeniden oluşturulmaz).`);
+    if (!tier.roleId) {
+      console.warn(`[sicil] ${tier.label} kademesi kapalı: config.pointTiers içinde roleId yok.`);
       continue;
     }
-    const role = await guild.roles
-      .create({ name: tier.label, permissions: [], mentionable: false, hoist: false, reason: 'Ceza puanı kısıtlama rolü (bir kere oluşturulur)' })
-      .catch((err) => {
-        console.error(`[sicil] ${tier.label} rolü oluşturulamadı:`, err.message);
-        return null;
-      });
-    if (!role) continue;
-    saved[tier.points] = role.id;
-    save();
-    tier.roleId = role.id;
-    console.log(`[sicil] ${tier.label} rolü oluşturuldu: ${role.id}`);
+    if (!guild.roles.cache.has(tier.roleId)) {
+      console.error(`[sicil] ${tier.label} rolü sunucuda bulunamadı (${tier.roleId}); bu kademe devre dışı.`);
+    }
   }
 }
 
