@@ -248,12 +248,23 @@ async function handle(interaction) {
   if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
 
   const [adim, ...kuyruk] = interaction.customId.slice(ui.IDS.prefix.length + 1).split(':');
+
+  // Hapis: sayfaya bakmak serbest, oyun oynamak yasak. Sekme ve bahis düğmeleri dokunulmaz; gezi, rulet ve
+  // merdiven ise reddedilir — üye cezasını çekmeden salonun kazancından yararlanamaz.
+  if (['kesif', 'rulet', 'merdiven'].includes(adim)) {
+    const hapis = hirsizlik.hapista(interaction.user.id);
+    if (hapis) return replyError(interaction, 'İçeridesin, salon kapalı.', `Tahliyen ${core.rel(hapis)} içinde. Erken çıkmak için /sokak sayfasından kefalet ödeyebilirsin.`);
+  }
+
   switch (adim) {
     case 'sekme': {
       const tab = kuyruk[0];
       if (!ui.TABLAR[tab]) return replyError(interaction, 'Bu sekme artık yok.', '/oyun ile sayfayı yeniden aç.');
       return interaction.update({ components: [panelFor(interaction, tab)], allowedMentions: { parse: [] } });
     }
+    case 'sokak':
+      // Arka Sokaklar ayrı mesaj olarak açılır: suç sayfası kendi düğmelerini taşır, salonun mesajı bozulmaz
+      return respond(interaction, hirsizlik.panelFor(interaction), { allowedMentions: { parse: [] } });
     case 'bahis': {
       const tab = kuyruk[0];
       if (!ui.TABLAR[tab]) return replyError(interaction, 'Bu sekme artık yok.', '/oyun ile sayfayı yeniden aç.');

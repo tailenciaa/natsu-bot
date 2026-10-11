@@ -14,6 +14,7 @@ const IDS = {
   kesif: 'oyun:kesif:', // + bölge anahtarı
   rulet: 'oyun:rulet:', // + kirmizi | siyah | yesil
   merdiven: 'oyun:merdiven:', // + bas | cik | cek
+  sokak: 'oyun:sokak', // salonun altındaki Arka Sokaklar kapısı (suç dünyası sayfasını ayrı mesajda açar)
 };
 
 const TABLAR = { kesif: 'Keşif', rulet: 'Rulet', merdiven: 'Merdiven' };
@@ -69,15 +70,26 @@ function sicil(kumar) {
 }
 
 // Panel iskeleti: başlık + açıklama, istenirse hemen altında geri bildirim, bloklar, düğme sıraları, cüzdan, sekmeler
-function kabuk({ tab, title, sub, blocks = [], rows = [], feedback, balance, bahis, kalanTavan, at }) {
+// Hapis durumu başlığın altına kendi satırıyla yazılır ve tüm oyun düğmeleri kilitlenir: üye cezasını çekmeden
+// salonun kazancından yararlanamaz, ama sayfayı gezip ne olduğunu okuyabilir.
+function hapisBlok(hapis) {
+  return `### İçeridesin\nArka Sokaklarda yakalandın; tahliye ${core.rel(hapis)} içinde olur. O ana kadar **gezi, rulet ve merdiven** kapalı.` +
+    ' Kefaletle erken çıkmak için alttaki **Arka Sokaklar** düğmesini kullan.';
+}
+
+function kabuk({ tab, title, sub, blocks = [], rows = [], feedback, balance, bahis, kalanTavan, hapis, at }) {
   const container = core.page({
     title,
     sub,
     blocks: feedback ? [feedback, ...blocks] : blocks,
-    accent: feedback ? core.colors.success : undefined,
+    accent: hapis ? core.colors.danger : feedback ? core.colors.success : undefined,
   });
+  if (hapis) container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(hapisBlok(hapis)));
   for (const row of rows) container.addActionRowComponents(row);
-  container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(cuzdan({ balance, bahis, kalanTavan })));
+  container
+    .addActionRowComponents(new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.sokak).setLabel('Arka Sokaklar').setStyle(ButtonStyle.Secondary)))
+    .addSeparatorComponents(core.divider())
+    .addTextDisplayComponents(core.text(cuzdan({ balance, bahis, kalanTavan })));
   return (
     container
       .addActionRowComponents(sekmeSatiri(tab))
@@ -100,7 +112,7 @@ function bolgeSatirlari(seviye, sayim) {
 }
 
 function kesifSekmesi(state) {
-  const { seviye, kesif, kesifHazir: hazir } = state;
+  const { seviye, kesif, kesifHazir: hazir, hapis } = state;
 
   const ritim = hazir.sebep === 'kota'
     ? `### Bugünün Gezisi\nBugünkü **${config.kesif.gunlukAdet}** gezinin hepsini yaptın. Gece sıfırlanır; o zamana kadar **Rulet** ve **Şans Merdiveni** açık.`
@@ -111,7 +123,7 @@ function kesifSekmesi(state) {
   const rows = new ActionRowBuilder().addComponents(
     config.kesif.bolgeler.map((b) => {
       const button = new ButtonBuilder().setCustomId(`${IDS.kesif}${b.key}`).setLabel(b.ad);
-      if (seviye < b.seviye || !hazir.ok) return button.setStyle(ButtonStyle.Secondary).setDisabled(true);
+      if (hapis || seviye < b.seviye || !hazir.ok) return button.setStyle(ButtonStyle.Secondary).setDisabled(true);
       return button.setStyle(ButtonStyle.Primary);
     }),
   );
@@ -138,12 +150,13 @@ function ruletSekmesi(state) {
   const sans = (renk) => `${Math.round((config.rulet.cepler[renk] / toplam) * 100)}%`;
 
   const renkSatiri = new ActionRowBuilder().addComponents(
-    Object.entries(config.rulet.renkler).map(([key, renk]) =>
-      new ButtonBuilder()
+    Object.entries(config.rulet.renkler).map(([key, renk]) => {
+      const button = new ButtonBuilder()
         .setCustomId(`${IDS.rulet}${key}`)
-        .setLabel(`${renk.ad} ${sayisal(renk.odul)}x`)
-        .setStyle(key === 'yesil' ? ButtonStyle.Danger : ButtonStyle.Primary),
-    ),
+        .setLabel(`${renk.ad} ${sayisal(renk.odul)}x`);
+      if (state.hapis) return button.setStyle(ButtonStyle.Secondary).setDisabled(true);
+      return button.setStyle(key === 'yesil' ? ButtonStyle.Danger : ButtonStyle.Primary);
+    }),
   );
 
   return kabuk({
@@ -190,10 +203,12 @@ function merdivenSekmesi(state) {
 
   const eylem = merdiven
     ? new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.merdiven}cik`).setLabel('Bir Basamak Çık').setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId(`${IDS.merdiven}cek`).setLabel('Parayı Çek').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`${IDS.merdiven}cik`).setLabel('Bir Basamak Çık').setStyle(state.hapis ? ButtonStyle.Secondary : ButtonStyle.Primary).setDisabled(Boolean(state.hapis)),
+        new ButtonBuilder().setCustomId(`${IDS.merdiven}cek`).setLabel('Parayı Çek').setStyle(state.hapis ? ButtonStyle.Secondary : ButtonStyle.Success).setDisabled(Boolean(state.hapis)),
       )
-    : new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`${IDS.merdiven}bas`).setLabel('Tırman').setStyle(ButtonStyle.Success));
+    : new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.merdiven}bas`).setLabel('Tırman').setStyle(state.hapis ? ButtonStyle.Secondary : ButtonStyle.Success).setDisabled(Boolean(state.hapis)),
+      );
 
   const masada = merdiven
     ? `### Masada\nÇıkılan basamak: **${merdiven.adim} / ${adimlar.length}** · pot: ${coin(Math.round(merdivenPot(adimlar, merdiven.adim) * merdiven.bahis))}\n` +
