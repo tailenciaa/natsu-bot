@@ -251,7 +251,49 @@ async function handleRenameSubmit(interaction) {
   return finishEdit(interaction, room, 'Oda ismi güncellendi.');
 }
 
+// Üye Ekle: seçilen üyeye kanal görünür olur ve girebilir; oda kilitli ya da gizli olsa bile
+async function handleAddMember(interaction) {
+  const room = store.getRoom(interaction.channelId);
+  const err = ownerError(interaction, room);
+  if (err) return replyError(interaction, err);
+  const targetId = interaction.values[0];
+  if (targetId === room.ownerId) return replyError(interaction, 'Oda zaten senin.', 'Kendi iznin her zaman açık durur.');
+  const wait = takeCooldown(interaction.channelId, ui.IDS.add);
+  if (wait) return slowDown(interaction, wait);
+
+  await interaction.deferUpdate();
+  const member = await interaction.guild.members.fetch(targetId).catch(() => null);
+  if (!member || member.user.bot) return replyError(interaction, 'Üye bulunamadı.', 'Sunucuda bulunan bir üyeyi seç.');
+  const given = await interaction.channel.permissionOverwrites
+    .edit(targetId, { ViewChannel: true, Connect: true })
+    .then(() => true, logFailure('Üyeye izin verilemedi'));
+  if (!given) return replyError(interaction, 'Üyeye izin verilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
+  return redraw(interaction, room);
+}
+
+// Üye Çıkar: üyenin odadaki ayrı izni silinir ve odadaysa dışarı alınır; seçilen üye yasaklıysa yasağı kalkar
+async function handleDropAccess(interaction) {
+  const room = store.getRoom(interaction.channelId);
+  const err = ownerError(interaction, room);
+  if (err) return replyError(interaction, err);
+  const targetId = interaction.values[0];
+  if (targetId === room.ownerId) return replyError(interaction, 'Kendi iznin kaldırılamaz.', 'Odadan ayrılmak için kanaldan çıkman yeterli.');
+  if (!interaction.channel.permissionOverwrites.cache.has(targetId)) {
+    return replyError(interaction, 'Bu üyenin odanda ayrı izni yok.', 'Davet ettiğin ya da yasakladığın bir üyeyi seç.');
+  }
+  const wait = takeCooldown(interaction.channelId, ui.IDS.drop);
+  if (wait) return slowDown(interaction, wait);
+
+  await interaction.deferUpdate();
+  const removed = await interaction.channel.permissionOverwrites.delete(targetId).then(() => true, logFailure('Üyenin izni kaldırılamadı'));
+  if (!removed) return replyError(interaction, 'İzin kaldırılamadı.', 'Botun bu kanalı yönetme izni olmalı.');
+  const member = await interaction.guild.members.fetch(targetId).catch(() => null);
+  if (member?.voice.channelId === interaction.channelId) await member.voice.disconnect().catch(logFailure('Üye odadan atılamadı'));
+  return redraw(interaction, room);
+}
+
 async function handleKick(interaction) {
+  const room = store.getRoom(interaction.channelId);
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const targetId = interaction.values[0];
@@ -332,6 +374,8 @@ module.exports = {
     [ui.IDS.renameModal]: handleRenameSubmit,
   },
   prefixed: [
+    [ui.IDS.add, handleAddMember],
+    [ui.IDS.drop, handleDropAccess],
     [ui.IDS.kick, handleKick],
     [ui.IDS.ban, handleBan],
     [ui.IDS.transfer, handleTransfer],

@@ -103,9 +103,13 @@ const menuHint = (id) =>
 
 // Odada ayrı izni olan üyeler: davetliler girer, yasaklılar giremez. Liste yoksa menünün ne işe yaradığı yazılır.
 function accessBlock({ invited, banned }) {
+  const line = (title, ids) => {
+    const shown = ids.slice(0, 12).map((id) => `<@${id}>`).join(' ');
+    return `**${title}:** ${ids.length > 12 ? `${shown} +${ids.length - 12} kişi daha` : shown}`;
+  };
   const parts = [];
-  if (invited.length) parts.push(`**Davetli:** ${invited.map((id) => `<@${id}>`).join(' ')}`);
-  if (banned.length) parts.push(`**Yasaklı:** ${banned.map((id) => `<@${id}>`).join(' ')}`);
+  if (invited.length) parts.push(line('Davetli', invited));
+  if (banned.length) parts.push(line('Yasaklı', banned));
   return `### Odadaki İzinler\n${parts.length ? parts.join('\n') : 'Davet ettiğin ya da yasakladığın üye yok. Oda kilitliyken içeri girebilmesi için birini **Üye Ekle**.'}`;
 }
 
