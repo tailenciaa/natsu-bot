@@ -158,6 +158,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 ## 4. Teknik sınırlar
 
 - Bir mesajda en çok 40 bileşen (iç içe olanlar dahil) ve toplam 4000 karakter metin. Aşılırsa `tidy` düzenlemeyi bırakır; liste uzunlukları buna göre sınırlanır (ör. sicilde sayfa başına 6 kayıt).
+- Bir menünün üstündeki her başlık bloğu üç bileşen yer (çizgi + metin + satır + menü = 4). Sınırdayken çizgilerini yitirmemek için kontrol paneli başına nefes alanı bırakılır: aynı işi gören menüler tek `###` başlığı altında yan yana dizilir, aralarında çizgi olmaz, ayırıcı olarak menünün kendi placeholderı yeter (ör. `ozel-oda/ui.js` panelinde At/Yasakla/Devret üç menüsü tek **Üye İşlemleri** başlığındadır). Liste içerikleri bileşen sayısını büyütmez: üyeler tek metin bloğunun içinde, en çok 12 ad + "+N kişi daha" olarak gösterilir.
 - Etiket/seçenek sınırları: buton etiketi 80, `customId` 100, menüde 25 seçenek, modal başlığı 45, modal alan etiketi 45, modal alan açıklaması 100.
 - Etkileşime 3 saniye içinde cevap verilir (ağır işten önce `deferReply` / `deferUpdate`); modal açan butonlarda modaldan önce yavaş iş yapılmaz. Cevap yolları `respond` ile açılır.
 - Her `allowedMentions` bilinçlidir: yalnızca gerçekten bildirim gitmesi gerekenler etiketlenir (yeni talepte yetkili rolü, ana seviyede üye, çekiliş kazananı).
@@ -190,7 +191,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 | `/sicil` yetkili komut kanalı dışında (üye kendi sicilini bakıyor) | Sadece kullanana; ceza kaydı kanalda görünmez |
 | Test ve önizleme (`/seviye test`, `/aktif test`, `/saygi test`, `/etiket test`) | Sadece kullanana, etiket yok; asıl duyuru kanala düşer |
 | Çekilişin bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanala düşer |
-| Özel oda kontrol paneli düğmeleri | `update` ile panelin kendisi yeniden çizilir, yeni mesaj atmaz |
+| Özel oda kontrol paneli düğme ve menüleri | `update` ile panelin kendisi yeniden çizilir, yeni mesaj atmaz |
 | Modallar (formlar) | Discord gereği zaten sadece açana görünür |
 
 - Görünürlük **defer anında kilitlenir**: `deferReply({ flags: core.CV2 })` ile açılan bir akışın sonundaki `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Akışın yarısı gizli yarısı açık kalamaz; bu yüzden gizli bir akış baştan `core.EPHEMERAL_CV2` ile ertelenir, açık akış baştan açık.
