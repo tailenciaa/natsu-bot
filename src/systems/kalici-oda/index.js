@@ -614,7 +614,7 @@ async function handleMyRoom(interaction) {
     return replyError(interaction, 'Senin bir kalıcı odan yok.', 'Başvuru panelinden oda isteyebilirsin; odası olan üye bu komutla panelini açar.');
   }
   await interaction.deferReply({ flags: core.CV2 });
-  return respond(interaction, ui.roomPanel(room, statusOf(room)));
+  return respond(interaction, ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room)));
 }
 
 // ── Odayı açık tutan şart ───────────────────────────────────────────────────────
@@ -750,7 +750,7 @@ async function closeRoom(guild, room, reason, dm) {
   clearCooldowns(room.id);
   await takeOwnerRole(guild, room.ownerId);
 
-  for (const key of ['categoryId', 'voiceChannelId', 'textChannelId']) {
+  for (const key of roomChannelKeys(room)) {
     const channel = await guild.channels.fetch(room[key]).catch(() => null);
     if (channel) await channel.delete().catch(() => {});
   }
