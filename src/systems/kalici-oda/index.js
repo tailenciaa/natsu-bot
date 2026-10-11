@@ -203,7 +203,7 @@ async function handleApplySubmit(interaction) {
       .catch(hata('Başvuru kanala gönderilemedi'));
     if (!message) {
       store.removeApplication(id);
-      return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
+      return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yöneticiye haber ver.');
     }
     store.updateApplication(id, { messageId: message.id });
 

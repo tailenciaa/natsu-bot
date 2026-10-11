@@ -347,7 +347,7 @@ function roomList(rooms, pendingCount) {
   });
 }
 
-// Başvuru sahibinin kendi aldığını gördüğü özet: sonucu sadece başvuran görür, yetkililer zaten kanaldaki kartı izliyor
+// Başvuru sahibinin kendi aldığını gördüğü özet: sonucu sadece başvuran görür, yöneticiler zaten kanaldaki kartı izliyor
 function submitted({ user, app, memberCount }) {
   return receipt({
     title: 'Başvuru Alındı',
