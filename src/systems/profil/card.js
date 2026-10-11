@@ -511,18 +511,11 @@ function drawBadges(ctx, rows, y) {
   });
 }
 
-// Puan bandının sağindeki hücreler: üyenin sırası ve puanın bölümlere göre dağılımı. Skor.js tek kaynaktır;
-// burada yalnızca biçimlendirilir.
+// Puan bandının sağındaki hücreler: puanın bölümlere göre dağılımı. Skor.js tek kaynaktır; burada yalnızca
+// biçimlendirilir. Bölüm sayısı sekiz olduğu için hücreler tam dört sütunluk iki satıra oturur; üyenin sırası
+// hücre olarak yinelenmez, bandın solundaki etiketin yanında yazılır.
 function skorCells(view) {
-  const cells = [
-    {
-      label: 'Sunucu Sırası',
-      value: view.scoreRank ? `#${view.scoreRank}` : '-',
-      note: view.scoreRank ? `${number(view.scoreSize)} üye` : 'kayıt yok',
-    },
-  ];
-  for (const part of view.score.parts) cells.push({ label: part.label, value: number(part.points), note: `/ ${part.max}` });
-  return cells;
+  return view.score.parts.map((part) => ({ label: part.label, value: number(part.points), note: `/ ${part.max}` }));
 }
 
 // Puan bandı: kartın manşeti. Solda toplam puan ve rütbenin ilerleme çubuğu, sağda puanın hangi bölümden kaç
@@ -536,7 +529,16 @@ function drawSkor(ctx, y, view, c) {
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
   ctx.font = font(700, 18);
-  ctx.fillText('PROFİL PUANI', inner, y + 44);
+  const etiket = 'PROFİL PUANI';
+  ctx.fillText(etiket, inner, y + 44);
+  // Sıra burada yazılır: hücrelere çıkarsa bölüm sayısıyla çakışır ve aynı bilgi iki kez görünür
+  const etiketW = ctx.measureText(etiket).width;
+  ctx.font = font(500, 18);
+  ctx.fillText(
+    view.scoreRank ? `${number(view.scoreRank)}. sıra / ${number(view.scoreSize)} üye` : 'sıra henüz hesaplanmadı',
+    inner + etiketW + 16,
+    y + 44,
+  );
 
   const big = number(s.total);
   ctx.font = font(700, 86);
