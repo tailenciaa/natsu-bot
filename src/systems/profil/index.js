@@ -113,7 +113,7 @@ async function kapakPageMessage(interaction) {
 }
 
 async function openKapak(interaction) {
-  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  await interaction.deferReply();
   return interaction.editReply(await kapakPageMessage(interaction));
 }
 
@@ -135,7 +135,7 @@ async function kapakAction(interaction, neylem) {
   else if (neylem === 'kaldir') Object.assign(patch, { banner: null, bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'banner' });
 
   store.set(interaction.user.id, patch);
-  await interaction.update({ ...(await kapakPageMessage(interaction)), attachments: [], flags: core.EPHEMERAL_CV2 });
+  await interaction.update({ ...(await kapakPageMessage(interaction)), attachments: [] });
   return refreshLiveCard(interaction);
 }
 
@@ -163,7 +163,7 @@ async function gorunumMessage(interaction) {
 }
 
 async function openGorunum(interaction) {
-  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  await interaction.deferReply();
   return interaction.editReply(await gorunumMessage(interaction));
 }
 
@@ -172,7 +172,7 @@ async function gorunumAction(interaction, neylem) {
   const current = opacityOf(store.get(interaction.user.id));
   const next = neylem === 'azalt' ? current - OPACITY_STEP : neylem === 'artir' ? current + OPACITY_STEP : OPACITY_DEFAULT;
   store.set(interaction.user.id, { glassOpacity: clamp(Math.round(next), 0, 100) });
-  await interaction.update({ ...(await gorunumMessage(interaction)), attachments: [], flags: core.EPHEMERAL_CV2 });
+  await interaction.update({ ...(await gorunumMessage(interaction)), attachments: [] });
   return refreshLiveCard(interaction);
 }
 
@@ -406,8 +406,8 @@ async function handleSettings(interaction) {
       return refresh(interaction);
     }
     case 'vitrin':
-      return respond(interaction, await vitrinMessage(interaction), { ephemeral: true });
-    // Mağaza, rozet ve vitrin sayfaları kişiye özel ayrı mesaj olarak açılır: geri düğmesi o mesajı kaldırır,
+      return respond(interaction, await vitrinMessage(interaction));
+    // Mağaza, rozet ve vitrin sayfaları kanalda kalıcı ayrı mesaj olarak açılır: geri düğmesi o mesajı kaldırır,
     // profil kartı ve düzenleme düğmeleri olduğu gibi kalır
     case 'geri':
       return interaction.message.delete().catch((err) => console.error('[profil] Sayfa kapatılamadı:', err.message));
@@ -423,14 +423,14 @@ async function handleSettings(interaction) {
       return refreshLiveCard(interaction);
     }
     case 'puan':
-      return respond(interaction, await puanMessage(interaction), { ephemeral: true });
+      return respond(interaction, await puanMessage(interaction));
     case 'rozetler': {
       const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
       const m = rozet.measures();
       // Sayfa açılırken görev rolleri de eşitlenir: hedef yeni aşıldıysa rol beklemeden verilsin
       if (member) await gorev.syncMember(member, m).catch((err) => console.error('[profil] Görev rolleri sayfa açılışında eşitlenemedi:', err.message));
       const ctx = rozet.contextOfMember(interaction.guild, member, interaction.user.id, m);
-      return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length), { ephemeral: true });
+      return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length));
     }
     case 'magaza': {
       const page = shopMessage(interaction, arg ?? 'cerceve', arg2);
