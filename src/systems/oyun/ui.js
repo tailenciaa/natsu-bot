@@ -74,7 +74,7 @@ function sicil(kumar) {
 // salonun kazancından yararlanamaz, ama sayfayı gezip ne olduğunu okuyabilir.
 function hapisBlok(hapis) {
   return `### İçeridesin\nArka Sokaklarda yakalandın; tahliye ${core.rel(hapis)} içinde olur. O ana kadar **gezi, rulet ve merdiven** kapalı.` +
-    ' Kefaletle erken çıkmak için alttaki **Arka Sokaklar** düğmesini kullan.';
+    ' Kefaletle erken çıkmak için **Arka Sokaklar** düğmesini kullan.';
 }
 
 function kabuk({ tab, title, sub, blocks = [], rows = [], feedback, balance, bahis, kalanTavan, hapis, at }) {

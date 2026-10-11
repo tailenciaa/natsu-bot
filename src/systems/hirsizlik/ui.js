@@ -41,12 +41,19 @@ function cuzdan(state) {
 }
 
 function hapisBlok(state) {
-  if (!state.hapis) {
-    return `### Sokaktasın\nİçeride değilsin; **/oyun** ve **/çal** açık. Bugün **${state.gunluk} / ${config.gunlukAdet}** girişim yaptın.`;
+  if (state.hapis) {
+    return `### İçeridesin\n**${state.hapisTur === 'kasa' ? 'Kasaya zorlama' : 'Üye soyma'}** girişiminden yakalandın. ` +
+      `Tahliye ${core.rel(state.hapis)} içinde olur; o ana kadar Oyun Salonu, keşif ve yeni suç kapalı.\n` +
+      `Kefaleti ödersen hemen çıkarsın: ${coin(state.kefalet)} doğrudan Devletin Kasasına yazar, geri verilmez.`;
   }
-  return `### İçeridesin\n**${state.hapisTur === 'kasa' ? 'Kasaya zorlama' : 'Üye soyma'}** girişiminden yakalandın. ` +
-    `Tahliye ${core.rel(state.hapis)} içinde olur; o ana kadar Oyun Salonu, keşif ve yeni suç kapalı.\n` +
-    `Kefaleti ödersen hemen çıkarsın: ${coin(state.kefalet)} doğrudan Devletin Kasasına yazar, geri verilmez.`;
+  // Seviyesi sokağa henüz çıkmamış üye "açık" sanmasın: kapılar ölçülen seviyeye göre tek tek sayılır
+  if (state.seviye < config.minSeviye) {
+    return `### Sokak sana kapalı\nÖlçülen seviyen **${state.seviye}**. Suç işleyebilmen için **${config.minSeviye}**, ` +
+      `Devletin Kasasını zorlaman için **${config.kasaMinSeviye}** seviye gerekir. Seviyen mesaj ve ses seviyenden ` +
+      `büyük olanıdır; kasa ve sicil şimdiden izlenebilir, **/oyun** açık.`;
+  }
+  const kasa = state.seviye < config.kasaMinSeviye ? ` Kasa zorlaması seviye **${config.kasaMinSeviye}** ister.` : '';
+  return `### Sokaktasın\nİçeride değilsin; **/çal uye** açık${kasa} Bugün **${state.gunluk} / ${config.gunlukAdet}** girişim yaptın.`;
 }
 
 function kasaBlok(state) {
@@ -82,11 +89,13 @@ function sonKayitlar(sicil) {
 
 function kurallarBloku() {
   return `### Nasıl İşler?\n` +
-    `1. **/çal kullanici** ile bir üyeyi hedef alırsın; kurbanın **${sure(config.uye.pencere)}** direnme süresi doğar.\n` +
+    `1. **/çal uye kullanici:@üye** ile bir üyeyi hedef alırsın; kurbanın **${sure(config.uye.pencere)}** direnme süresi doğar.\n` +
     `2. Kurban **Diren** düğmesine basarsa yüksek olasılıkla yakalanırsın: ceza kasaya yatar, hapis sana.\n` +
     `3. Kurban dokunmazsa bakiyesinin **${yuzde(config.uye.oran.min)}-${yuzde(config.uye.oran.max)}** arası el değiştirir.\n` +
     `4. **/çal kasa** daha büyük oyun: kartı gören herkes müdahale edebilir, ilk basan polistir.\n` +
-    `5. Seviyen her iki tarafta da ağırlık taşır: yüksek seviye daha az yakalanır, daha çok yakalatır.`;
+    `5. Seviyen her iki tarafta da ağırlık taşır: yüksek seviye daha az yakalanır, daha çok yakalatır.\n` +
+    `6. Kapılar seviyeyle açılır: suç işleyebilmen **${config.minSeviye}**, kasa **${config.kasaMinSeviye}**, ` +
+    `hedef olabilmen için kurbanın en az **${config.korumaSeviye}** seviyede olması gerekir.`;
 }
 
 function panel(state) {
