@@ -156,7 +156,7 @@ async function handleDetail(interaction) {
   // Sicil mesajı aynen yeniden kaydedilir ki menü son seçilen kayıtta kalmasın (sadece kendisine görünen sicilde de çalışır)
   await interaction.editReply({ components: interaction.message.components.map((c) => c.toJSON()), allowedMentions: { parse: [] } }).catch(() => {});
   if (!view) return replyError(interaction, 'Bu kayıt bulunamadı.');
-  return respond(interaction, view);
+  return respond(interaction, view, { ephemeral: true });
 }
 
 // İşlem butonları: sicil-y:<kullanıcı>:<işlem>:<kayıt>:<sicil mesajı>. Yetki her işlemde ayrıca kontrol edilir.
