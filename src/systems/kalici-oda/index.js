@@ -236,7 +236,7 @@ async function refreshCard(guild, app, room) {
     .catch(hata('Başvuru kartı güncellenemedi'));
 }
 
-// Onaylanan başvuruda oda kanallarını açar, kaydı yazar ve paneli odanın yazı kanalına düşürür
+// Onaylanan başvuruda oda kanallarını açar ve odayı sahibine teslim edilecek kayıtla birlikte yazar
 async function openRoom(guild, app) {
   const memberIds = [app.userId, ...app.members].slice(0, config.maxExtraMembers + 1);
   const overwrites = [
@@ -285,14 +285,9 @@ async function openRoom(guild, app) {
     textChannelId: text.id,
     applicationId: app.id,
     approvedBy: null,
-    panelMessageId: null,
+    weeks: {}, // biten haftaların odadaki toplam sesi; ay sonu şart denetimi bundan okunur
     createdAt: Date.now(),
   });
-
-  const panel = await text
-    .send({ components: [ui.roomPanel(room)], flags: core.CV2, allowedMentions: { parse: [] } })
-    .catch(hata('Oda kontrol paneli gönderilemedi'));
-  if (panel) store.updateRoom(room.id, { panelMessageId: panel.id });
 
   return room;
 }
