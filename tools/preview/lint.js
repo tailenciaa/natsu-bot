@@ -242,6 +242,10 @@ function lint(norm) {
     const emojis = emojisIn(s.value);
     if (emojis.length) err('emoji', s.path, `Emoji/süs simgesi: ${codepoints(emojis)}`);
 
+    // Hesaptan çıkan bozuk değerler kullanıcıya ulaşmasın: NaN, undefined, geçersiz tarih
+    const broken = s.value.match(/NaN|undefined|null|Invalid Date|\[object /);
+    if (broken) err('bozuk-deger', s.path, `Metinde bozuk değer: ${broken[0]} — ölçümın gerçek değer döndürdüğü kontrol edilsin`);
+
     const plain = stripTokens(s.value);
 
     const low = lower(plain);

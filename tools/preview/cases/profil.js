@@ -26,8 +26,8 @@ module.exports = ({ mock, ui, src }) => {
   // Puan sayfası: gerçek hesap skor.js'ten gelir, ölçümler elle verilir ki dolu/yeni durumun ikisi de görünsün.
   // Liste index.js'teki puanMessage gibi kurulur: ilk 10 ve dışındaysa üyenin kendi satırı.
   const skor = src('systems/profil/skor');
-  const skorDolu = skor.scoreOf({ mesajLevel: 42, sesLevel: 28, voiceHours: 310, streamHours: 46, rep: 61, owned: 5, streak: 9, visits: 118, days: 430 }, 11);
-  const skorYeni = skor.scoreOf({ mesajLevel: 1, sesLevel: 0, voiceHours: 0, streamHours: 0, rep: 0, owned: 0, streak: 1, visits: 0, days: 3 }, 0);
+  const skorDolu = skor.scoreOf({ mesajLevel: 42, sesLevel: 28, voiceHours: 310, streamHours: 46, rep: 61, owned: 5, streak: 9, questsDone: 44, visits: 118, days: 430 }, 11);
+  const skorYeni = skor.scoreOf({ mesajLevel: 1, sesLevel: 0, voiceHours: 0, streamHours: 0, rep: 0, owned: 0, streak: 1, questsDone: 0, visits: 0, days: 3 }, 0);
   const puanListesi = (sen) => {
     const ilk = [
       { rank: 1, name: 'zeynep', total: 968, tier: 'Destan' },
