@@ -546,7 +546,123 @@ async function handleMyRoom(interaction) {
   return respond(interaction, ui.roomPanel(room, statusOf(room)));
 }
 
-// ── Yetkili komutları ──────────────────────────────────────────────────────────
+// ── Odayı açık tutan şart ───────────────────────────────────────────────────────
+// Haftalık ölçüm + ay sonu denetimi. Hafta biterken odadakilerin (sahip dahil) son 7 gündeki toplam sesi odanın
+// kaydına yazılır; hedefin altındaysa sahibine uyarı gider. Ay başında geçen ayın kayıtlarına bakılır: kaçırılan
+// hafta ya da ay hedefinin altında kalan toplam varsa oda "şart yetersizliği" ile kapatılır.
+
+// İstanbul takviminde ay anahtarı (YYYY-AA) ve bir önceki ayın anahtarı
+const monthKey = (ms = Date.now()) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' }).slice(0, 7);
+const previousMonthKey = (ms = Date.now()) => monthKey(new Date(`${monthKey(ms)}-01T12:00:00Z`).getTime() - DAY);
+
+// Sıradaki ay sonu kontrolü, değerlendirilecek ayın ilk günüdür; panelde "sonraki kontrol" olarak gösterilir
+function nextReviewAt(now = Date.now()) {
+  const [year, month] = monthKey(now).split('-').map(Number);
+  const next = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, '0')}`;
+  return new Date(`${next}-01T00:00:00+03:00`).getTime();
+}
+
+// Odanın bir ay içindeki haftalık kayıtları: [pazartesi anahtarı, saniye], eskiden yeniye
+const monthWeeks = (room, month) =>
+  Object.entries(room.weeks ?? {})
+    .filter(([week]) => week.startsWith(month))
+    .sort(([a], [b]) => a.localeCompare(b));
+
+// Panele ve uyarılara yazılacak güncel durum
+function activityStats(room, weekSeconds, now = Date.now()) {
+  const weeks = monthWeeks(room, monthKey(now));
+  const weeklyTarget = config.activity.weeklyHours * 3600;
+  const recorded = Object.entries(room.weeks ?? {}).sort(([a], [b]) => a.localeCompare(b)).at(-1);
+  return {
+    weekSeconds,
+    lastWeekSeconds: recorded?.[1] ?? null,
+    missedWeeks: weeks.filter(([, seconds]) => seconds < weeklyTarget).length,
+    monthSeconds: weeks.reduce((sum, [, seconds]) => sum + seconds, 0),
+    reviewAt: nextReviewAt(now),
+  };
+}
+
+// Panel her açıldığında ve her işlem sonrası canlı ölçümle yeniden çizilir
+const statusOf = (room) => activityStats(room, weeklyVoiceSeconds([room.ownerId, ...room.members]));
+
+// Haftalık şart kaçınca gönderilen bilgilendirme: bir başarısızlık bildirimi olduğu için kanala değil kişiye düşer
+async function warnMissedWeek(guild, room, week, seconds) {
+  const owner = await guild.client.users.fetch(room.ownerId).catch(() => null);
+  await owner?.send({ components: [ui.weekMissedCard(room, week, seconds)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+  return logSystem
+    .write(guild.client, 'bot', {
+      color: 'warning',
+      title: 'Kalıcı Oda Şartı Kaçtı',
+      lines: [
+        `**Oda:** #${core.pad(room.no)} ${room.name}`,
+        `**Sahip:** <@${room.ownerId}>`,
+        `**Hafta:** ${ui.monthLabel(week)}`,
+        `**Odadakilerin sesi:** ${ui.hoursLabel(seconds)} / ${config.activity.weeklyHours} saat`,
+      ],
+    })
+    .catch(() => {});
+}
+
+// Hafta biterken ölçüm. Odanın açıldığı eksik hafta sayılmaz; bot uzun süre kapalı kalıysa bir hafta denetimsiz
+// geçer (oda lehine), dönem anahtarı sayesinde her hafta yalnızca bir kez işlenir.
+async function checkWeeklyActivity(guild) {
+  if (!config.activity.enabled) return;
+  const week = previousWeekKey();
+  if (store.lastAudit(guild.id, 'week') === week) return;
+
+  for (const room of store.roomsOf(guild.id)) {
+    if (weekKey(room.createdAt) === week) continue;
+    const seconds = weeklyVoiceSeconds([room.ownerId, ...room.members]);
+    store.recordWeek(room.id, week, seconds);
+    if (seconds < config.activity.weeklyHours * 3600) await warnMissedWeek(guild, room, week, seconds);
+  }
+  store.setLastAudit(guild.id, 'week', week);
+}
+
+// Geçen ayın kayıtları: şartı karşılamayan oda kapatılır. Ay hedefi sayılan hafta kadarına bölünür ki ayın
+// ortasında açılan oda ilk ayda tam hedefle ölçülmesin.
+async function evaluateMonth(guild, room, month) {
+  const weeks = monthWeeks(room, month);
+  if (!weeks.length) return; // oda o ay hiç ölçülmemiş: kapatma sebebi sayılmaz
+
+  const weeklyTarget = config.activity.weeklyHours * 3600;
+  const stat = {
+    month,
+    weeks: weeks.length,
+    missed: weeks.filter(([, seconds]) => seconds < weeklyTarget).length,
+    total: weeks.reduce((sum, [, seconds]) => sum + seconds, 0),
+    required: Math.round((config.activity.monthlyHours * 3600 * weeks.length) / 4),
+  };
+  if (!stat.missed && stat.total >= stat.required) return;
+
+  const reason =
+    `Şart yetersizliği: ${ui.monthLabel(month)} ayında ${stat.missed} hafta haftalık ${config.activity.weeklyHours} saat hedefinin altında kaldı, ` +
+    `ay toplamı ${ui.hoursLabel(stat.total)} / ${ui.hoursLabel(stat.required)}.`;
+  await closeRoom(guild, room, reason, ui.inactivityCard(room, stat));
+}
+
+async function checkMonthlyActivity(guild) {
+  if (!config.activity.enabled) return;
+  const month = previousMonthKey();
+  if (store.lastAudit(guild.id, 'month') === month) return;
+
+  for (const room of store.roomsOf(guild.id)) await evaluateMonth(guild, room, month);
+  store.setLastAudit(guild.id, 'month', month);
+}
+
+// Denetimler 15 dakikada bir dönem anahtarına bakar; her hafta ve her ay bir kez işlenir
+function startActivityChecks(client) {
+  const guild = client.guilds.cache.get(guildId);
+  if (!guild) return;
+  const run = () =>
+    checkWeeklyActivity(guild)
+      .then(() => checkMonthlyActivity(guild))
+      .catch((err) => console.error('[kalıcı-oda] Şart denetimi hatası:', err.message));
+  setInterval(run, CHECK_INTERVAL).unref();
+  run();
+}
+
+// ── Yönetici komutları ─────────────────────────────────────────────────────────
 
 // /kalici-oda kapat ve devret için oda numarasından kayıt; bulunamazsa null
 function roomByNumber(interaction) {
@@ -556,10 +672,12 @@ function roomByNumber(interaction) {
   return room ?? null;
 }
 
-// Odayı kapatır: kalan kanalları siler, kaydı temizler, sahibine haber verir
-async function closeRoom(guild, room, reason) {
+// Odayı kapatır: kaydı ve sahip rolünü kaldırır, kalan kanalları siler, sahibine haber verir, duyurur ve loglar.
+// dm verilirse sahibine genel uyarı yerine o kart gider (ay sonu denetiminde rakamlı kart kullanılır).
+async function closeRoom(guild, room, reason, dm) {
   store.deleteRoom(room.id);
   clearCooldowns(room.id);
+  await takeOwnerRole(guild, room.ownerId);
 
   for (const key of ['categoryId', 'voiceChannelId', 'textChannelId']) {
     const channel = await guild.channels.fetch(room[key]).catch(() => null);
@@ -569,7 +687,7 @@ async function closeRoom(guild, room, reason) {
   const owner = await guild.client.users.fetch(room.ownerId).catch(() => null);
   await owner
     ?.send({
-      components: [core.alert('Kalıcı odan kapatıldı.', reason ? `**Sebep:** ${reason}` : 'Bir yetkili tarafından kapatıldı.', 'danger')],
+      components: [dm ?? core.alert('Kalıcı odan kapatıldı.', reason ? `**Sebep:** ${reason}` : 'Bir yönetici tarafından kapatıldı.', 'danger')],
       flags: core.CV2,
       allowedMentions: { parse: [] },
     })
@@ -599,7 +717,7 @@ async function handleClose(interaction) {
   return respond(interaction, core.alert(`Kalıcı oda #${core.pad(room.no)} kapatıldı.`, 'Kanallar silindi, sahibine haber verildi.', 'success'));
 }
 
-// Sahibi sunucudan ayrılmış odaları yetkili başka bir üyeye teslim eder
+// Sahibi sunucudan ayrılmış odaları yönetici başka bir üyeye teslim eder
 async function handleAssign(interaction) {
   const room = roomByNumber(interaction);
   if (!room) return;
@@ -618,21 +736,27 @@ async function handleAssign(interaction) {
     members: [...room.members.filter((id) => id !== target.id && id !== previousId), ...(previous ? [previousId] : [])].slice(0, config.maxExtraMembers),
   });
 
-  const channel = await fetchTextChannel(interaction.guild, room.textChannelId);
-  if (channel && updated.panelMessageId) {
-    await channel.messages
-      .edit(updated.panelMessageId, { components: [ui.roomPanel(updated)], allowedMentions: { parse: [] } })
-      .catch(hata('Oda paneli güncellenemedi'));
-  }
+  await takeOwnerRole(interaction.guild, previousId);
+  await giveOwnerRole(interaction.guild, target.id);
+
   const exOwner = await interaction.client.users.fetch(previousId).catch(() => null);
   await exOwner
     ?.send({ components: [core.alert('Kalıcı odanın sahipliği devredildi.', `<@${target.id}> artık <#${updated.voiceChannelId}> odasının sahibi.`, 'warning')], flags: core.CV2, allowedMentions: { parse: [] } })
     .catch(() => {});
-  return respond(interaction, core.alert(`Oda #${core.pad(updated.no)} <@${target.id}> üyesine devredildi.`, undefined, 'success'));
+  const newOwner = await interaction.client.users.fetch(target.id).catch(() => null);
+  await newOwner
+    ?.send({ components: [ui.readyCard(updated)], flags: core.CV2, allowedMentions: { parse: [] } })
+    .catch(() => {});
+  return respond(interaction, core.alert(`Oda #${core.pad(updated.no)} <@${target.id}> üyesine devredildi.`, 'Yeni sahibine odası ve **/kalici-oda odam** komutu bildirildi.', 'success'));
 }
 
+// Komut herkese açık tanımlı: `odam` kendi odasını yöneten üyeye, diğer alt komutlar yalnızca yöneticilere çalışır
 async function handleCommand(interaction) {
   const sub = interaction.options.getSubcommand();
+  if (sub === 'odam') return handleMyRoom(interaction);
+  if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+    return replyError(interaction, 'Bu alt komutu yalnızca yöneticiler kullanabilir.', 'Kendi odan için **/kalici-oda odam** komutunu kullan.');
+  }
   if (sub === 'liste') return handleList(interaction);
   if (sub === 'kapat') return handleClose(interaction);
   return handleAssign(interaction);
