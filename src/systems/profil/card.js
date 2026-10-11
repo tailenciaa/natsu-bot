@@ -264,23 +264,23 @@ function drawIdentity(ctx, user, view, c) {
   const textMax = Math.min(WIDTH - PAD - textX, 1040);
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 52);
-  ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER - 128);
+  ctx.font = font(700, 56);
+  ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER - 126);
   ctx.fillStyle = c.muted;
-  ctx.font = font(400, 25);
+  ctx.font = font(400, 27);
   ctx.fillText(fitText(ctx, `@${user.username}${custom.pronoun ? ` · ${custom.pronoun}` : ''}`, textMax), textX, HEADER - 88);
   if (custom.title) {
-    ctx.font = font(500, 22);
-    const width = ctx.measureText(custom.title).width + 40;
+    ctx.font = font(500, 24);
+    const width = ctx.measureText(custom.title).width + 44;
     ctx.fillStyle = hexAlpha(c.accent, 0.24);
-    roundRect(ctx, textX, HEADER - 76, width, 42, 21);
+    roundRect(ctx, textX, HEADER - 76, width, 44, 22);
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.strokeStyle = hexAlpha(c.accent, 0.55);
-    roundRect(ctx, textX + 0.5, HEADER - 75.5, width - 1, 41, 20.5);
+    roundRect(ctx, textX + 0.5, HEADER - 75.5, width - 1, 43, 21.5);
     ctx.stroke();
     ctx.fillStyle = c.accent;
-    ctx.fillText(custom.title, textX + 20, HEADER - 46);
+    ctx.fillText(custom.title, textX + 22, HEADER - 45);
   }
   return { avatarX, avatarY };
 }
@@ -314,21 +314,21 @@ function paintAmbient(ctx, height, p) {
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
 function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(255,255,255,0.18)') {
-  ctx.font = font(500, 22);
-  const width = ctx.measureText(text).width + 40;
+  ctx.font = font(500, 24);
+  const width = ctx.measureText(text).width + 44;
   const x = right - width;
   ctx.fillStyle = color;
-  roundRect(ctx, x, y, width, 48, 24);
+  roundRect(ctx, x, y, width, 52, 26);
   ctx.fill();
   if (border) {
     ctx.lineWidth = 1;
     ctx.strokeStyle = border;
-    roundRect(ctx, x + 0.5, y + 0.5, width - 1, 47, 23.5);
+    roundRect(ctx, x + 0.5, y + 0.5, width - 1, 51, 25.5);
     ctx.stroke();
   }
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
-  ctx.fillText(text, x + width / 2, y + 32);
+  ctx.fillText(text, x + width / 2, y + 35);
   return width;
 }
 
@@ -395,10 +395,10 @@ function drawIcon(ctx, icon, cx, cy, r, color) {
 // Rozet etiketlerinin satırlara dağılımı: her etiket yazısına göre genişler, sığmayan alt satıra iner. En fazla
 // iki satır ayrılır; hiç sığdıramadıkların yerine son satıra tek bir "+N" etiketi konur.
 function badgeRows(ctx, badges, maxWidth) {
-  ctx.font = font(500, 19);
+  ctx.font = font(500, 21);
   const items = badges.map((b) => {
     const textWidth = Math.round(ctx.measureText(b.label).width);
-    return { ...b, w: textWidth + (b.icon ? 68 : 46), textWidth };
+    return { ...b, w: textWidth + (b.icon ? 74 : 50), textWidth };
   });
 
   const rows = [[]];
@@ -438,12 +438,12 @@ function drawBadges(ctx, rows, y) {
       roundRect(ctx, x + 0.5, ry + 0.5, b.w - 1, BADGE_ROW_H - 1, (BADGE_ROW_H - 1) / 2);
       ctx.stroke();
 
-      const iconX = b.icon ? x + 26 : x + 20;
-      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 10.5 : 5.5, b.color);
+      const iconX = b.icon ? x + 27 : x + 21;
+      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 11 : 6, b.color);
       ctx.fillStyle = mix(b.color, '#ffffff', 0.3);
-      ctx.font = font(500, 19);
+      ctx.font = font(500, 21);
       ctx.textAlign = 'left';
-      ctx.fillText(b.label, x + (b.icon ? 44 : 34), ry + 27);
+      ctx.fillText(b.label, x + (b.icon ? 46 : 36), ry + 29);
       x += b.w + BADGE_GAP;
     }
   });
