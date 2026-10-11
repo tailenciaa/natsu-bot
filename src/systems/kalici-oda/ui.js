@@ -306,16 +306,23 @@ function roomPanel(room, status, roster = []) {
 function memberMenus(container, roster) {
   const label = (value) => container.addTextDisplayComponents(text(value));
   const menu = (builder) => container.addActionRowComponents(new ActionRowBuilder().addComponents(builder));
+  // Menünün hemen altına gelen başlık çizgisiz kalmasın: menü satırlarının altına çizgi elle eklenir
+  const ara = () => container.addSeparatorComponents(divider());
 
   container.addSeparatorComponents(divider());
-  label('### Üye Ekle\nsunucudan seçtiğin üye odana katılır');
+  label('### Üye Ekle\nSunucudan seçtiğin üye odana katılır.');
   menu(select(`${IDS.add}:0`, 'Odaya eklenecek üyeyi seç'));
 
-  if (!roster.length) return label('**Üye Çıkar** ve **Sahipliği Devret** odada senin dışında üye olunca açılır; önce üye ekle.');
+  if (!roster.length) {
+    ara();
+    return label('**Üye Çıkar** ve **Sahipliği Devret** odada senin dışında üye olunca açılır; önce üye ekle.');
+  }
 
-  label('### Üye Çıkar\nodandaki üyeler listelenir');
+  ara();
+  label('### Üye Çıkar\nOdandaki üyeler listelenir.');
   menu(memberMenu(`${IDS.remove}:0`, 'Odadan çıkarılacak üyeyi seç', roster));
-  label('### Sahipliği Devret\noda seçtiğin üyeye geçer, sen odada kalırsın');
+  ara();
+  label('### Sahipliği Devret\nOda seçtiğin üyeye geçer, sen odada kalırsın.');
   menu(memberMenu(`${IDS.transfer}:0`, 'Sahipliği devredeceğin üyeyi seç', roster));
   return container;
 }
