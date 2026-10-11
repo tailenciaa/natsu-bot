@@ -186,9 +186,9 @@ function rejectedCard(app) {
     sub: 'Kalıcı oda başvurun incelendi ve reddedildi; kararın gerekçesi kartta yazıyor. Gereksinimleri sağladığında panelden tekrar başvurabilirsin.',
     accent: colors.danger,
     blocks: [
-      `**Başvuru Bilgileri**\n${rows([
+      `**Başvuru**\n${rows([
         ['Oda Adı', chip(app.roomName)],
-        ['Karar Veren', app.reviewedBy ? `<@${app.reviewedBy}>` : 'Yetkililer'],
+        ['Karar Veren', app.reviewedBy ? `<@${app.reviewedBy}>` : 'Yöneticiler'],
       ])}`,
       app.note ? `**Sebep**\n${quote(app.note)}` : null,
       stamp(app.reviewedAt ?? Date.now()),
@@ -241,7 +241,7 @@ function roomPanel(room, status) {
         ['Kanallar', `<#${room.voiceChannelId}> · <#${room.textChannelId}>`],
       ])}`,
       activityBlock(status),
-      'Bu oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz.',
+      'Oda boş kalsa bile kapanmaz; odayı yalnızca ay sonu şartı ya da bir yönetici kapatabilir.',
       stamp(room.createdAt),
     ],
   });
