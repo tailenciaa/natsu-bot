@@ -130,8 +130,8 @@ function receipt({ title, sub, pairs = [], note, user, accent = 'success', at = 
 // Sayfa butonları: "«" ve "»" (emoji gibi görünen ok simgeleri yok); uçlarda pasif
 function pagerRow({ prevId, nextId, page, pageCount }) {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(prevId).setLabel('«').setStyle(ButtonStyle.Primary).setDisabled(page <= 0),
-    new ButtonBuilder().setCustomId(nextId).setLabel('»').setStyle(ButtonStyle.Primary).setDisabled(page >= pageCount - 1),
+    new ButtonBuilder().setCustomId(prevId).setLabel('«').setStyle(ButtonStyle.Secondary).setDisabled(page <= 0),
+    new ButtonBuilder().setCustomId(nextId).setLabel('»').setStyle(ButtonStyle.Secondary).setDisabled(page >= pageCount - 1),
   );
 }
 

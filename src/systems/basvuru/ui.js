@@ -225,7 +225,7 @@ function applicationNotice(app, applicantUser) {
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(reviewId('gorusme'))
-          .setStyle(app.meetingBy ? ButtonStyle.Secondary : ButtonStyle.Success)
+          .setStyle(app.meetingBy ? ButtonStyle.Secondary : ButtonStyle.Primary)
           .setLabel(app.meetingBy ? 'Görüşmeye Çağrıldı' : 'Görüşmeye Çağır')
           .setDisabled(Boolean(app.meetingBy)),
         new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
@@ -458,7 +458,7 @@ function meetingHoldNotice(app, state = 'open') {
     ['Aşama', chip('Görüşme')],
     ['Beklemeye Alan', `<@${h.by}>`],
   ]);
-  const buttons = [new ButtonBuilder().setCustomId(`${IDS.review}:${app.id}:gorusme`).setStyle(ButtonStyle.Success).setLabel('Görüşmeye Çağır')];
+  const buttons = [new ButtonBuilder().setCustomId(`${IDS.review}:${app.id}:gorusme`).setStyle(ButtonStyle.Primary).setLabel('Görüşmeye Çağır')];
   let sub;
   let status;
   if (state === 'protected') {

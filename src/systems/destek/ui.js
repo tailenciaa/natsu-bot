@@ -119,7 +119,7 @@ function ticketPanel(ticket) {
       row.addComponents(
         new ButtonBuilder()
           .setCustomId(IDS.notify)
-          .setStyle(ButtonStyle.Primary)
+          .setStyle(ButtonStyle.Secondary)
           .setLabel(ticket.notified ? 'Hatırlatıldı' : 'Hatırlat')
           .setDisabled(Boolean(ticket.notified)),
       );
