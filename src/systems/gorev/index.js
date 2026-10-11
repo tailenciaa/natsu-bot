@@ -62,7 +62,7 @@ function durum(interaction, tab) {
   const userId = interaction.user.id;
   const m = olcum.olcumler();
   // Yol sekmesi rozet sayısını, profil puanını ve ömür boyu ses süresini okur; bu üçü tek geçişte toplanır
-  const ek = tab === 'yol' ? olcum.ekler(interaction.guild, interaction.member, userId, m) : null;
+  const ek = tab === 'yol' ? olcum.ekler(interaction.guild, interaction.member, userId) : null;
   const anahtar = store.anahtar(userId);
   return {
     tab,
@@ -146,7 +146,7 @@ async function demetAl(interaction) {
 async function yolTopla(interaction) {
   const userId = interaction.user.id;
   const m = olcum.olcumler();
-  const ek = olcum.ekler(interaction.guild, interaction.member, userId, m);
+  const ek = olcum.ekler(interaction.guild, interaction.member, userId);
   const hazir = olcum.yolDurumu(userId, m, ek).filter((s) => s.alinabilir);
   if (!hazir.length) return replyError(interaction, 'Toplanacak hazır adım yok.', 'Sıradaki adımı bitirdiğinde düğme kendiliğinden açılır; liste Keşif Yolu sekmesinde.');
 
