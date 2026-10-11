@@ -31,13 +31,17 @@ function olcumler(at = Date.now()) {
   };
 }
 
-// Rozet ve puan Keşif Yolu'nun son adımlarında gerekiyor; kart açıldığında zaten hesaplandığı için ayrı bir
-// geçiş istenmiyor. Yalnızca Yol sekmesi bunu çağırır.
+// Rozet, puan ve ömür boyu ses süresi Keşif Yolu'nun adımlarında gerekiyor; kart açıldığında zaten hesaplandığı
+// için ayrı bir geçiş istenmiyor. Yalnızca Yol sekmesi bunu çağırır.
 function ekler(guild, member, userId, m) {
   const measures = m ?? rozet.measures();
   const ctx = rozet.contextOfMember(guild, member, userId, measures);
   const kazanilan = rozet.earned(ctx);
-  return { rozetSayisi: kazanilan.length, puan: skor.scoreOf(ctx, kazanilan.length).total };
+  return {
+    rozetSayisi: kazanilan.length,
+    puan: skor.scoreOf(ctx, kazanilan.length).total,
+    sesToplam: measures.voice.get(userId) ?? 0,
+  };
 }
 
 // ── Ölçüm adları ──────────────────────────────────────────────────────────────
@@ -59,10 +63,11 @@ const OLCUMLER = {
   kutuHafta: (m, uid) => store.kutuSayilari(uid).hafta,
   kutuToplam: (m, uid) => store.kutuSayilari(uid).toplam,
   demetHafta: (m, uid) => store.demetHafta(uid, m.hafta),
-  renkVar: (m, uid) => (profilStore.get(uid).color ?? null) === null ? 0 : 1,
+  // Renk ve biyografi "var mı" diye sorulur: 0 (siyah) geçerli bir renk seçimidir, boş sayılmaz
+  renkVar: (m, uid) => (profilStore.get(uid).color == null ? 0 : 1),
   bioVar: (m, uid) => (String(profilStore.get(uid).bio ?? '').trim() ? 1 : 0),
   kozmetikSahibi: (m, uid) => profilStore.ownedCount(uid),
-  sesToplam: (m, uid) => m.sesHafta.get(uid) ?? 0,
+  sesToplam: (m, uid, ek) => ek?.sesToplam ?? 0,
   rozetSayisi: (m, uid, ek) => ek?.rozetSayisi ?? 0,
   puan: (m, uid, ek) => ek?.puan ?? 0,
   // İzlenen adımlar: hiçbir depoda izi olmayan iki eylem, etkileşim gözlemiyle görülür (index.js yazar)
@@ -136,8 +141,8 @@ function yolDurumu(uid, m, ek) {
 
 // Sezon: kademe atlanmış mı, puan yetiyor mu
 function sezonDurumu(uid, m) {
-  const puan = store.sezonPuan(uid, m.hafta ? config.sezonAnahtari(m.at) : m.at);
   const sezon = config.sezonAnahtari(m.at);
+  const puan = store.sezonPuan(uid, sezon);
   const alinanlar = store.sezonKademeleri(uid, sezon);
   return {
     sezon,
