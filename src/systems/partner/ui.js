@@ -446,7 +446,7 @@ function trustedActionRow(entry) {
       .setStyle(ButtonStyle.Secondary),
   );
   if (hasContacts) {
-    managementRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Secondary));
+    managementRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Danger));
   }
   rows.push(managementRow);
 
@@ -766,7 +766,7 @@ function partnerPanel(entry, guildName) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '**Neler Yapabilirsin?**\n' +
+        '## Neler Yapabilirsin?\n' +
           `**Meşgul** seçersen yetkililerimiz **${BUSY_DAYS} gün** boyunca sana teklif göndermez.\n` +
           'Yeni partner metnini **Teklif Gönder** butonuyla iletebilirsin; yetkilimiz onaylayınca **otomatik paylaşılır**.',
       ),

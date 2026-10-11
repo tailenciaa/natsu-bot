@@ -53,12 +53,12 @@ function panel() {
 
   return container
     .addSeparatorComponents(divider())
-    .addSectionComponents(row('Ceza Süresi', 'Süreli cezalarının **ne zaman sona ereceğini** öğren.', IDS.sure, 'Süreyi Öğren', ButtonStyle.Success))
+    .addSectionComponents(row('Ceza Süresi', 'Süreli cezalarının **ne zaman sona ereceğini** öğren.', IDS.sure, 'Süreyi Öğren', ButtonStyle.Secondary))
     .addSeparatorComponents(divider())
-    .addSectionComponents(row('Ceza Sebebi', '**Hangi sebeple** cezalandırıldığını görüntüle.', IDS.sebep, 'Sebebi Öğren', ButtonStyle.Success))
+    .addSectionComponents(row('Ceza Sebebi', '**Hangi sebeple** cezalandırıldığını görüntüle.', IDS.sebep, 'Sebebi Öğren', ButtonStyle.Secondary))
     .addSeparatorComponents(divider())
     .addSectionComponents(
-      row('Cezaya İtiraz', 'Cezanın haksız olduğunu düşünüyorsan itiraz için **destek talebi** aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Danger),
+      row('Cezaya İtiraz', 'Cezanın haksız olduğunu düşünüyorsan itiraz için **destek talebi** aç.', IDS.itiraz, 'İtiraz Et', ButtonStyle.Primary),
     );
 }
 
@@ -74,7 +74,7 @@ function jailPanel() {
     )
     .addSeparatorComponents(divider())
     .addSectionComponents(
-      row('Jail Süresi', "Jail'inin ve varsa diğer aktif cezalarının **ne zaman sona ereceğini** öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Success),
+      row('Jail Süresi', "Jail'inin ve varsa diğer aktif cezalarının **ne zaman sona ereceğini** öğren.", IDS.sure, 'Süreyi Öğren', ButtonStyle.Secondary),
     );
 }
 

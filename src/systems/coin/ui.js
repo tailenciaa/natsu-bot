@@ -55,7 +55,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
   });
   return container.addSeparatorComponents(divider()).addActionRowComponents(
     new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(IDS.quests).setLabel('Görevler').setStyle(ButtonStyle.Secondary),
     ),
