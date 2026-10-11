@@ -1,21 +1,24 @@
-// Kalıcı oda sisteminin mesajları: kurallar ve gereksinimler paneli, başvuru formu, yöneticinin karar verdiği
-// başvuru kartı, sahibine giden teslim kartı, /kalici-oda odam komutuyla açılan oda kontrol paneli, şart uyarı
-// kartları, oda listesi ve duyuru kanalına düşen açılış/kapanış kayıtları.
+// Kalıcı oda sisteminin mesajları: kurallar ve gereksinimler paneli, başvurunun üye seçimi adımı ve formu,
+// yöneticinin karar verdiği başvuru kartı, sahibine giden teslim kartı, /kalici-oda odam komutuyla açılan oda kontrol
+// paneli, şart uyarı kartları, oda listesi ve duyuru kanalına düşen açılış/kapanış kayıtları.
 const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   LabelBuilder,
   ModalBuilder,
+  StringSelectMenuBuilder,
   TextInputBuilder,
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { colors, pad, unix, panel, page, rows, chip, pills, quote, receipt, stamp, divider, text } = require('../../core/ui');
+const { colors, pad, unix, panel, page, rows, chip, pills, quote, receipt, stamp, divider, text, shorten } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
   apply: 'kalici-oda-basvuru', // paneldeki başvuru butonu
+  pickMembers: 'kalici-oda-basvuru-uyeler', // kalici-oda-basvuru-uyeler:0 (başvurunun üye seçme menüsü)
+  openForm: 'kalici-oda-basvuru-devam', // üye seçiminin sonra açılan başvuru formu
   form: 'kalici-oda-form', // başvuru formu
   question: 'kalici-oda-soru', // kalici-oda-soru:<soru>
   decide: 'kalici-oda-karar', // kalici-oda-karar:<başvuru>:<onayla|ret>
@@ -32,13 +35,26 @@ const IDS = {
   transfer: 'kalici-oda-devret', // kalici-oda-devret:0
 };
 
-// Üye seçim menüsü: Discord kendi üye arama listesini gösterir, odadaki üyeleri tek tek saymaya gerek kalmaz
+// Üye seçim menüsü: Discord kendi üye arama listesini gösterir, odadakileri tek tek saymaya gerek kalmaz
 const select = (customId, placeholder) => new UserSelectMenuBuilder().setCustomId(customId).setPlaceholder(placeholder);
+
+// Başvurudaki üye menüsü: tek seferde odadakilerin tamamı seçilir, bu yüzden çoklu seçim ve sınırlar config'ten
+const memberSelect = () =>
+  select(`${IDS.pickMembers}:0`, 'Odayı kullanacak üyeleri seç')
+    .setMinValues(1)
+    .setMaxValues(config.maxExtraMembers);
+
+// Odadakiler menüye isimleriyle yazılır: çıkarılacak ya da devredilecek üyeyi aramak yerine menüde görmek yeterli
+const memberMenu = (customId, placeholder, roster) =>
+  new StringSelectMenuBuilder()
+    .setCustomId(customId)
+    .setPlaceholder(placeholder)
+    .addOptions(roster.map(({ id, name }) => ({ label: shorten(name || 'Üye', 100), value: id })));
 
 const mentions = (ids) => ids.map((id) => `<@${id}>`).join(' ');
 const hoursLabel = (seconds) => `${Math.round((seconds ?? 0) / 3600)} saat`;
-const limitLabel = (limit) => chip(limit ? `${limit} kişi` : 'sınırsız');
-const memberTotal = (list) => `${list + 1} kişi`;
+// Üye sayısı ve limit tek satırda: "4 / 20" yan yana durunca limitin dolu mu boş mu olduğu hemen anlaşılır
+const usageLabel = (count, limit) => chip(limit ? `${count} / ${limit}` : `${count} / sınırsız`);
 const roomTag = (room) => chip(`#${pad(room.no)} · ${room.name}`);
 
 const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -52,7 +68,7 @@ function monthLabel(key) {
 function applyPanel() {
   const container = panel({
     title: 'Kalıcı Oda Sistemi',
-    sub: 'Sunucuda sana ait kalıcı bir ses ve yazı odası olsun istiyorsan **Başvuru Yap** butonuyla formu doldur. Onay yetkisi sadece yöneticilerde.',
+    sub: 'Sunucuda sana ait kalıcı bir ses odası olsun istiyorsan **Başvuru Yap** ile odanı kullanacakları seç, sonra formu doldur. Onay yetkisi sadece yöneticilerde.',
     button: { id: IDS.apply, label: 'Başvuru Yap' },
   });
 
@@ -76,7 +92,35 @@ function applyPanel() {
     );
 }
 
-// Başvuru formu: oda adı, odada olacak üyeler ve odanın amacı
+// Başvurunun ilk adımı: üyeler ID yazılarak değil menüyle seçilir. Modallerde menü olmadığı için seçim formdan önce
+// yapılır; menüde bırakılan liste ne ise başvuruya o yazılır.
+function memberPicker() {
+  const container = page({
+    title: 'Başvuru · Üye Seçimi',
+    sub: `Odayı birlikte kullanacak üyeleri aşağıdaki menüden seç. Seninle birlikte en az ${config.minMembers} kişi, en fazla ${
+      config.maxExtraMembers + 1
+    } kişi gerekir; kendinizi seçme, başvuran otomatik odada.`,
+    blocks: [
+      `**Nasıl İlerlenir**\n${[
+        '1. Menüyü aç ve odada olacak herkesi **tek seferde** seç (yeni seçim öncekinin yerini alır).',
+        '2. **Formu Aç** düğmesine bas; oda adı ve amacı sorulur.',
+        '3. Başvurun inceleme kanalına düşer, kararı yöneticiler verir ve sonucu sana DM ile gelir.',
+      ].join('\n')}`,
+      rows([
+        ['Asgari Üye', chip(`${config.minMembers} kişi`)],
+        ['Azami Üye', chip(`${config.maxExtraMembers + 1} kişi`)],
+      ]),
+    ],
+  });
+
+  return container
+    .addActionRowComponents(new ActionRowBuilder().addComponents(memberSelect()))
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.openForm).setLabel('Formu Aç').setStyle(ButtonStyle.Primary)),
+    );
+}
+
+// Başvuru formu: oda adı ve odanın amacı (üyeler bir önceki adımda menüden seçildi)
 function applicationModal() {
   const modal = new ModalBuilder().setCustomId(IDS.form).setTitle('Kalıcı Oda Başvurusu');
   for (const question of config.questions) {
