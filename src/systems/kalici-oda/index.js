@@ -99,10 +99,10 @@ const commands = [
 // Başvuru yapılamıyorsa [mesaj, açıklama] döner, yoksa null
 function applyError(interaction) {
   if (!config.channels.applications) {
-    return ['Kalıcı oda başvuruları şu an açık değil.', 'Yetkililer başvuru kanalını ayarladığında tekrar deneyebilirsin.'];
+    return ['Kalıcı oda başvuruları şu an açık değil.', 'Yöneticiler başvuru kanalını ayarladığında tekrar deneyebilirsin.'];
   }
   if (store.roomsOwned(interaction.guildId, interaction.user.id).length >= config.maxRoomsPerOwner) {
-    return ['Zaten bir kalıcı odan var.', 'Yeni bir oda için mevcut odanı devret ya da bir yetkiliden kapatmasını iste.'];
+    return ['Zaten bir kalıcı odan var.', 'Yeni bir oda için mevcut odanı devret ya da bir yöneticiden kapatmasını iste.'];
   }
   if (store.pendingApplications(interaction.guildId).some((a) => a.userId === interaction.user.id)) {
     return ['Bekleyen bir başvurun zaten var.', 'İnceleme bitince sonucu sana DM üzerinden iletilecek.'];

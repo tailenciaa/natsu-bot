@@ -33,7 +33,7 @@ module.exports = {
   // Formda belirtilebilecek azami üye sayısı (başvuran hariç)
   maxExtraMembers: 14,
   // Odayı kullanacakların son 7 gündeki toplam ses süresi hedefi (saat). Başvuruda hesaplanır ve kartta gösterilir;
-  // altında kalan başvuru otomatik reddedilmez, kararı yetkililer verir. Odayı açtıktan sonra koruyacak şartlar
+  // altında kalan başvuru otomatik reddedilmez, kararı yöneticiler verir. Odayı açtıktan sonra koruyacak şartlar
   // aşağıdaki activity bloğundadır (korumak, başvurmaktan daha kolaydır).
   minWeeklyVoiceHours: 60,
   // Oda açılınca ses kanalına konan kişi limiti (0 = sınırsız)
