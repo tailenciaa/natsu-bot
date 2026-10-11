@@ -16,7 +16,7 @@ module.exports = ({ mock, ui, src }) => {
     { id: 'dm-tesekkur', title: 'DM: takviyen için teşekkürler', where: 'Takviye edene', visibility: 'dm', kind: 'message', build: () => ({ components: [b.thanksDm(guild.name, boostConfig.panelChannel, boostConfig.perks)] }) },
     { id: 'kanal-tesekkur', title: 'Teşekkür kanalı bildirimi', where: 'Teşekkür kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [b.channelThanks(booster)], ...noMentions }) },
     { id: 'takviyeci-degil', title: 'Takviyeci olmayan üyeye hata', where: 'Panel butonları', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [b.notBoosterView()], ...eph }) },
-    { id: 'cikartma-bilgi', title: 'Eski panel: çıkartma komuta yönlendirme', where: 'Eski panelin Çıkartma Ekle butonu', visibility: 'public', kind: 'message', build: () => ({ components: [b.stickerInfoView()], ...noMentions }) },
+    { id: 'cikartma-bilgi', title: 'Eski panel: çıkartma komuta yönlendirme', where: 'Eski panelin Çıkartma Ekle butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [b.stickerInfoView()], ...noMentions }) },
     { id: 'form-takma-ad', title: 'Form: takma ad değiştir', where: 'Takma Ad > Değiştir', visibility: 'ephemeral', kind: 'modal', build: () => b.nickModal('Mehmet') },
     { id: 'form-rol-yeni', title: 'Form: özel rol oluştur', where: 'Özel Rol > Ayarla', visibility: 'ephemeral', kind: 'modal', build: () => b.roleModal(null, { icons: true }) },
     { id: 'form-rol-simgesiz', title: 'Form: özel rol (sunucuda rol simgesi yok)', where: 'Özel Rol > Ayarla', visibility: 'ephemeral', kind: 'modal', build: () => b.roleModal(null, { icons: false }) },

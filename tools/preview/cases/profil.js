@@ -170,7 +170,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'vitrin-bos',
       title: 'Vitrin sayfası: hiçbiri doldurulmamış',
       where: 'Profilde Vitrin butonuna basınca',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [p.vitrinPage({}, null, featuredOptions, '**Profil ziyaretleri:** 0')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
@@ -178,7 +178,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'vitrin-dolu',
       title: 'Vitrin sayfası: zamir, bağlantılar ve öne çıkan dolu',
       where: 'Profilde Vitrin butonuna basınca',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -197,7 +197,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'rozet-bos',
       title: 'Rozet sayfası: henüz rozet yok',
       where: 'Profilde Rozetler butonuna basınca',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -214,7 +214,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'rozet-kismen',
       title: 'Rozet sayfası: kazanılanlar ve ilerlemeler',
       where: 'Profilde Rozetler butonuna basınca',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -238,7 +238,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'rozet-gorev',
       title: 'Rozet sayfası: görev rozetleri ve ilerlemeleri',
       where: 'Profilde Rozetler butonu; uzun vadeli hedefler ayrı blokta, hedef dolunca rol de verilir',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -263,7 +263,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-cerceve',
       title: 'Mağaza: çerçeveler, bazıları satın alınmış',
       where: 'Profilde Mağaza butonuna basınca',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -288,7 +288,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-cuzdan',
       title: 'Mağaza: cüzdan kartından açılmış, geri düğmesi cüzdana döner',
       where: '/bakiye cüzdanındaki Mağaza düğmesi; kartın yerini alır, ayrı mesaj atmaz',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -312,7 +312,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-tema',
       title: 'Mağaza: temalar sekmesi',
       where: 'Mağaza sayfasındaki Temalar sekmesi',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -339,7 +339,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-kapak',
       title: 'Mağaza: arka planlar sekmesi, biri satın alınmış',
       where: 'Mağazadaki "Arka Planlar" sekmesi ya da kapak düzenleyicinin aynı adlı düğmesi',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
@@ -366,7 +366,7 @@ module.exports = ({ mock, ui, src }) => {
       id: 'magaza-rozet',
       title: 'Mağaza: rozetler sekmesi, satın alınan kartta görünüyor',
       where: 'Mağazadaki Rozetler sekmesi',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [

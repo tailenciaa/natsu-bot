@@ -74,7 +74,7 @@ module.exports = ({ mock, src }) => {
       id: 'basvuru-alindi',
       title: 'Başvuru alındı: kanala düşen özet',
       where: 'Başvuru formu gönderilince',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => message(k.submitted({ user: owner, app: app(), memberCount: 4 })),
     },
