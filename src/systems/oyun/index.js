@@ -76,6 +76,9 @@ function masaDon(bolge) {
 // Ganimet ilgili sisteme teslim edilir ve okunur sonuç döner. Coin tavana sayılır; tavan dolmuşsa kesinti
 // kartta da yazar ki üye "neden daha az yattı" sorusunu sormasın.
 function ganimetiTeslimEt(userId, satir) {
+  // Boş satır ödül üretmez: coin dalından önce dönülmeli, `aralik` yalnızca coin satırında vardır
+  if (satir.tur === 'bos') return { tur: 'bos', nitelik: satir.nitelik };
+
   if (satir.tur === 'anahtar') {
     gorevStore.anahtarEkle(userId, satir.adet);
     return { tur: 'anahtar', adet: satir.adet, nitelik: satir.nitelik };
