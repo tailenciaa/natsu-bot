@@ -298,40 +298,30 @@ async function refreshCard(guild, app, room) {
     .catch(hata('Başvuru kartı güncellenemedi'));
 }
 
-// Onaylanan başvuruda oda kanallarını açar ve odayı sahibine teslim edilecek kayıtla birlikte yazar
+// Onaylanan başvuruda oda açılır: config.categoryId kategorisinin içine tek bir ses kanalı. Odaya özel kategori ya da
+// ayrı yazı kanalı yoktur; odanın yazısı ses kanalının kendi sohbetidir. Kanal herkesin gözünde durur, bağlanmak ve
+// sohbeti okumak yalnız odadakilerin iznidir.
 async function openRoom(guild, app) {
   const memberIds = [app.userId, ...app.members].slice(0, config.maxExtraMembers + 1);
   const overwrites = [
-    { id: guild.roles.everyone.id, deny: ['ViewChannel'] },
-    { id: guild.members.me?.id ?? guild.client.user.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] },
-    config.roles.team && { id: config.roles.team, allow: ['ViewChannel', 'Connect', 'SendMessages'] },
-    ...memberIds.map((id) => ({ id, allow: ['ViewChannel', 'Connect', 'SendMessages'] })),
+    { id: guild.roles.everyone.id, ...GUEST },
+    { id: guild.members.me?.id ?? guild.client.user.id, allow: ['ViewChannel', 'ReadMessageHistory', 'SendMessages', 'ManageChannels'], deny: [] },
+    config.roles.team && { id: config.roles.team, ...MEMBER },
+    ...memberIds.map((id) => ({ id, ...MEMBER })),
   ].filter(Boolean);
   const reason = `Kalıcı oda başvurusu #${core.pad(app.number)} onaylandı`;
 
-  const category = await guild.channels
-    .create({ name: app.roomName, type: ChannelType.GuildCategory, parent: config.categoryId || undefined, permissionOverwrites: overwrites, reason })
-    .catch(hata('Oda kategorisi açılamadı'));
-  if (!category) return null;
-
   const voice = await guild.channels
-    .create({ name: app.roomName, type: ChannelType.GuildVoice, parent: category.id, userLimit: config.defaultUserLimit, permissionOverwrites: overwrites, reason })
-    .catch(hata('Odanın ses kanalı açılamadı'));
-  const text = await guild.channels
     .create({
       name: app.roomName,
-      type: ChannelType.GuildText,
-      parent: category.id,
+      type: ChannelType.GuildVoice,
+      parent: config.categoryId || undefined,
+      userLimit: config.defaultUserLimit,
       permissionOverwrites: overwrites,
-      topic: `Kalıcı oda · Sahibi: ${app.username} · Başvuru #${core.pad(app.number)}`,
       reason,
     })
-    .catch(hata('Odanın yazı kanalı açılamadı'));
-
-  if (!voice || !text) {
-    await category.delete().catch(() => {});
-    return null;
-  }
+    .catch(hata('Odanın ses kanalı açılamadı'));
+  if (!voice) return null;
 
   const no = store.nextRoomNumber(guild.id);
   const room = store.setRoom(`${guild.id}-${no}`, {
@@ -342,9 +332,9 @@ async function openRoom(guild, app) {
     name: app.roomName,
     members: app.members.filter((id) => id !== app.userId).slice(0, config.maxExtraMembers),
     limit: config.defaultUserLimit,
-    categoryId: category.id,
+    categoryId: config.categoryId ?? null,
     voiceChannelId: voice.id,
-    textChannelId: text.id,
+    textChannelId: null, // eski odalarda ayrı yazı kanalı var; yenilerinde ses kanalının kendi sohbeti kullanılır
     applicationId: app.id,
     approvedBy: null,
     weeks: {}, // biten haftaların odadaki toplam sesi; ay sonu şart denetimi bundan okunur
@@ -352,6 +342,17 @@ async function openRoom(guild, app) {
   });
 
   return room;
+}
+
+// Odanın botun yönettiği kanalları: yeni odalar tek ses kanalıdır. Eski kayıtlarda oda başına açılmış kategori ve
+// ayrı yazı kanalı da olabilir; ikisi bu listeyle taşınır. Paylaşılan kategori (config.categoryId) asla listeye
+// girmez, yoksa bir odaya yapılan işlem diğer odalara ya da tüm sunucuya uygulanır.
+function roomChannelKeys(room) {
+  const keys = [];
+  if (room.categoryId && room.categoryId !== config.categoryId) keys.push('categoryId');
+  keys.push('voiceChannelId');
+  if (room.textChannelId) keys.push('textChannelId');
+  return keys;
 }
 
 // Oda olayı duyuru kanalına herkese açık kart olarak düşer; kanal ayarlanmamışsa sessizce geçilir (log ayrı durur)
