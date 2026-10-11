@@ -406,7 +406,7 @@ async function callToConnect(interaction, app) {
   const sent = await applicant?.send({ components: [ui.connectingDm(app, interaction.guild.name)], flags: core.CV2 }).catch(() => null);
   await startMeeting(interaction.guild, app);
   return respond(interaction, core.alert(
-    'Başvuran ses kanalında, bağlanabilirsin.',
+    'Başvuran ses kanalına bağlanabilirsin.',
     [`<#${applicantChannel}> kanalına git.`, sent ? 'Başvurana hazır olması söylendi.' : "Başvuranın DM'si kapalı."].join('\n'),
     sent ? 'success' : 'warning',
   ));
