@@ -21,7 +21,8 @@ module.exports = ({ mock, ui, src }) => {
   ];
   const noMentions = { allowedMentions: { parse: [] } };
   const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
-  const card = (name, height, label) => mock.pngFile(name, { width: 1200, height, label });
+  // Kart genişliği card.js'teki WIDTH ile aynı; yükseklik rozet satırına göre değişir (1014 / 956)
+  const card = (name, height, label) => mock.pngFile(name, { width: 1800, height, label });
 
   // Mağaza satırları: index.js'teki shopRows aynı biçimde üretilir, burada statik veriyle denenir
   const shopRows = (items) =>
@@ -42,7 +43,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, herkese açık; kontrolleri sadece sahibi kullanır',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 988, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 1014, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-sahibi-temasiz',
@@ -50,7 +51,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, ilk açılış ya da Sıfırla sonrası',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 988, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 1014, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-baskasi',
@@ -58,7 +59,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu başka üyeyle; kontrol yok',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 878, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', false)], files: [card('profil.png', 956, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'bio-modal-bos',
@@ -99,21 +100,34 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, cover: 'yok' })],
-        files: [card('kapak.png', 300, 'Kapak önizlemesi')],
+        components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'otomatik', cover: 'yok' })],
+        files: [card('kapak.png', 400, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
     },
     {
       id: 'kapak-duzenleyici-gorsel',
-      title: 'Kapak düzenleyici: görsel %180 yakın, sağa/aşağı kaydırılmış',
+      title: 'Kapak düzenleyici: kaplama, görsel %180 yakın ve sağa/aşağı kaydırılmış',
       where: 'Düzenleyicide büyüt/kaydır düğmelerine basınca',
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, cover: 'cam' })],
-        files: [card('kapak.png', 300, 'Kapak önizlemesi')],
+        components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, bannerFit: 'kapla', cover: 'cam' })],
+        files: [card('kapak.png', 400, 'Kapak önizlemesi')],
+        flags: ui.EPHEMERAL_CV2,
+        ...noMentions,
+      }),
+    },
+    {
+      id: 'kapak-duzenleyici-sigdir',
+      title: 'Kapak düzenleyici: sığdırma, görselin tamamı görünüyor ve hareket düğmeleri pasif',
+      where: 'Yerleşim düğmesine basıp "Sığdır" seçilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => ({
+        components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/dik-foto.png', bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'sigdir', cover: 'aurora' })],
+        files: [card('kapak.png', 400, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -126,7 +140,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.gorunumPage('profil.png', { themeLabel: THEMES.nebula.label, glass: true, opacity: 30 })],
-        files: [card('profil.png', 988, 'Profil kartı')],
+        files: [card('profil.png', 1014, 'Profil kartı')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -139,7 +153,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.gorunumPage('profil.png', { themeLabel: THEMES.sakura.label, glass: false, opacity: 50 })],
-        files: [card('profil.png', 988, 'Profil kartı')],
+        files: [card('profil.png', 1014, 'Profil kartı')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
