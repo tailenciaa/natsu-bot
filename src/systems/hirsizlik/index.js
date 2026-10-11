@@ -351,7 +351,7 @@ async function uyePusunuSonucLandir(client, g, at) {
   const kart = ui.sonuc({
     title: oldu ? 'Soygun Gerçekleşti' : 'Pusu Boşa Çıktı',
     sub: oldu
-      ? `<@${g.saldirgan}> direnen olmayınca <@${g.hedef}> adlı üyenin cüzdanından ${coin(istenen)} aldı.`
+      ? `<@${g.saldirgan}> kimse direnmeyince <@${g.hedef}> adlı üyenin cüzdanından ${coin(istenen)} aldı.`
       : `<@${g.hedef}> direnmedi ama <@${g.saldirgan}> boş cüzdan buldu; kimse bir şey kaybetmedi.`,
     user: await kullanici(client, oldu ? g.saldirgan : g.hedef),
     accent: oldu ? 'danger' : 'warning',
@@ -359,7 +359,7 @@ async function uyePusunuSonucLandir(client, g, at) {
       ['Saldırgan', `<@${g.saldirgan}>`],
       ['Kurban', `<@${g.hedef}>`],
       ['El Değiştiren', coin(istenen)],
-      ['Kurban Bakiyesi', coin(coinStore.balance(g.hedef))],
+      ['Kurbanın Dokunulmazlığı', core.rel(store.durumOf(g.hedef, at).dokunulmaz || at)],
     ],
     note: 'Kurban artık dokunulmaz; bir süre daha aynı üyeyi hedef alamazsın.',
   });
@@ -388,9 +388,9 @@ async function kasaPusunuSonucLandir(client, g, at) {
   });
 
   const kart = ui.sonuc({
-    title: alinan > 0 ? 'Kasa Soiuldu' : 'Kasa Elmada Kaldı',
+    title: alinan > 0 ? 'Kasa Soyuldu' : 'Kasa Elmada Kaldı',
     sub: alinan > 0
-      ? `<@${g.saldirgan}> kimse müdahale edmeyince Devletin Kasasından ${coin(alinan)} aldı.`
+      ? `<@${g.saldirgan}> kimse müdahale etmeyince Devletin Kasasından ${coin(alinan)} aldı.`
       : `<@${g.saldirgan}> kasaya ulaştı ama ödenecek bir şey kalmadı; para kasada duruyor.`,
     user: await kullanici(client, g.saldirgan),
     accent: alinan > 0 ? 'danger' : 'warning',
@@ -400,12 +400,10 @@ async function kasaPusunuSonucLandir(client, g, at) {
       ['Kalan Kasa', coin(store.kasa())],
       ['Kesinti', coin(odeme.kesilen)],
     ],
-    note: 'Kasa soyulan coin cezalarla birikmiş paraydı; sistem yeni coin üretmedi.',
+    note: 'Kasadan çıkan coin cezalarla birikmiş paraydı; sistem yeni coin üretmedi.',
   });
   return bildir(client, g, kart, [g.saldirgan]);
 }
-
-const kullanici = async (client, userId) => (await client.users.fetch(userId).catch(() => null)) ?? client.users.cache.get(userId) ?? { id: userId };
 
 async function tara(client) {
   const at = Date.now();
