@@ -519,71 +519,109 @@ function drawBadges(ctx, rows, y) {
   });
 }
 
-// Seviye kutusu: başlık, büyük seviye numarası, XP ve ilerleme çubuğu (panel üstünde)
-function levelCard(ctx, x, y, w, h, title, xp, c) {
-  const accent = c.accent;
-  const level = levelFromXp(xp);
-  const current = level > 0 ? levelConfig.xpForLevel(level) : 0;
-  const next = levelConfig.xpForLevel(level + 1);
-
-  glass(ctx, x, y, w, h, 24, c);
-
-  ctx.textAlign = 'left';
-  ctx.fillStyle = c.muted;
-  ctx.font = font(500, 24);
-  ctx.fillText(title, x + 28, y + 42);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 28);
-  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 28, y + 78);
-
-  ctx.textAlign = 'right';
-  ctx.fillStyle = accent;
-  ctx.font = font(700, 74);
-  ctx.fillText(String(level), x + w - 28, y + 88);
-  ctx.fillStyle = c.muted;
-  ctx.font = font(700, 17);
-  ctx.fillText('SEVİYE', x + w - 28, y + 32);
-
-  drawBar(ctx, x + 28, y + h - 32, w - 56, 16, (xp - current) / (next - current), accent, c.track);
+// Puan bandının sağindeki hücreler: üyenin sırası ve puanın bölümlere göre dağılımı. Skor.js tek kaynaktır;
+// burada yalnızca biçimlendirilir.
+function skorCells(view) {
+  const cells = [
+    {
+      label: 'Sunucu Sırası',
+      value: view.scoreRank ? `#${view.scoreRank}` : '-',
+      note: view.scoreRank ? `${number(view.scoreSize)} üye` : 'kayıt yok',
+    },
+  ];
+  for (const part of view.score.parts) cells.push({ label: part.label, value: number(part.points), note: `/ ${part.max}` });
+  return cells;
 }
 
-// İstatistik kutusu: üstte küçük başlık, altında değer, varsa en altta tek satırlık not. Kutu her zaman
-// çizilir; ölçülemeyen alan "-" ile durur, böylece ızgaranın düzeni hiçbir profilde bozulmaz.
-function statTile(ctx, x, y, w, tile, c) {
-  glass(ctx, x, y, w, TILE_H, 18, c);
+// Puan bandı: kartın manşeti. Solda toplam puan ve rütbenin ilerleme çubuğu, sağda puanın hangi bölümden kaç
+// puan geldiği durur. Hücreler ayrı kutu çizilmez, boşlukla ayrılır; bandın tek paneli kartın nefesini bozmaz.
+function drawSkor(ctx, y, view, c) {
+  const s = view.score;
+  const inner = PAD + 36;
+  const barW = 496;
+  glass(ctx, PAD, y, WIDTH - PAD * 2, SKOR_H, 26, c);
+
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
-  ctx.font = font(700, 17);
-  ctx.fillText(fitText(ctx, tile.label.toLocaleUpperCase('tr-TR'), w - 40), x + 20, y + 27);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 32);
-  ctx.fillText(fitText(ctx, tile.value, w - 40), x + 20, y + (tile.sub ? 60 : 70));
-  if (tile.sub) {
+  ctx.font = font(700, 18);
+  ctx.fillText('PROFİL PUANI', inner, y + 44);
+
+  const big = number(s.total);
+  ctx.font = font(700, 86);
+  const bigW = ctx.measureText(big).width;
+  ctx.fillStyle = s.next ? '#ffffff' : c.accent;
+  ctx.fillText(big, inner, y + 124);
+  ctx.fillStyle = c.muted;
+  ctx.font = font(500, 26);
+  ctx.fillText(`/ ${s.max}`, inner + bigW + 14, y + 124);
+
+  const line = s.next ? `${s.tier.label} · ${s.next.label} için ${number(s.next.remaining)} puan` : `${s.tier.label} · en yüksek rütbe`;
+  ctx.font = font(500, 25);
+  ctx.fillStyle = c.muted;
+  ctx.fillText(fitText(ctx, line, barW), inner, y + 158);
+  drawBar(ctx, inner, y + 174, barW, 12, s.next ? s.next.ratio : 1, c.accent, c.track);
+
+  const cells = skorCells(view);
+  const areaX = inner + barW + 76;
+  const colW = (WIDTH - PAD - 34 - areaX) / 4;
+  cells.forEach((cell, i) => {
+    const x = areaX + (i % 4) * colW;
+    const top = y + 30 + Math.floor(i / 4) * 88;
     ctx.fillStyle = c.muted;
-    ctx.font = font(400, 17);
-    ctx.fillText(fitText(ctx, tile.sub, w - 40), x + 20, y + 86);
-  }
+    ctx.font = font(700, 16);
+    ctx.fillText(fitText(ctx, cell.label.toLocaleUpperCase('tr-TR'), colW - 24), x, top + 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = font(700, 33);
+    const valueW = ctx.measureText(cell.value).width;
+    ctx.fillText(cell.value, x, top + 58);
+    ctx.fillStyle = c.muted;
+    ctx.font = font(500, 18);
+    ctx.fillText(fitText(ctx, cell.note, colW - 34 - valueW), x + valueW + 10, top + 58);
+  });
 }
 
-// Kartın veri ızgarası: sunucudaki bütün kayıtların tek bakışta göründüğü kutular. index.js'teki view.js
-// bağlamından beslenir; burada yalnızca biçimlendirilir.
-function statTiles(view) {
+// Şerit sütunu kısa kalsın: saat varsa dakika, gün varsa saat yazılmaz. Ayrıntı /siralama'da.
+function shortDuration(seconds) {
+  const minutes = Math.floor((seconds ?? 0) / 60);
+  const hours = Math.floor(minutes / 60);
+  if (hours >= 24) return `${number(Math.floor(hours / 24))} gün`;
+  return hours > 0 ? `${number(hours)} sa` : `${minutes} dk`;
+}
+
+// Sayı şeridi: kutusuz sütunlar. Eskiden on iki kutuluk bir ızgaraydı; aynı bilgilerin en çok bakılanları şimdi
+// panel çizgisi olmadan, bol boşlukla tek satırda duruyor. Geri kalan ayrıntı puan sayfasında.
+function stripItems(view) {
   const sicil = view.punishments;
   return [
-    { label: 'Mesaj', value: number(view.messageCount ?? 0), sub: view.mesajRank ? `${number(view.mesajRank)}. sırada` : null },
-    { label: 'Ses süresi', value: duration(view.voiceSeconds), sub: view.sesRank ? `${number(view.sesRank)}. sırada` : null },
-    { label: 'Yayın', value: view.streamSeconds >= 60 ? duration(view.streamSeconds) : '-', sub: 'ekran paylaşımı' },
-    { label: 'Saygınlık', value: number(view.rep ?? 0), sub: view.rep ? 'alınan saygı' : 'henüz yok' },
-    { label: 'Giriş serisi', value: view.streak ? `${number(view.streak)} gün` : '-', sub: 'art arda günlük ödül' },
-    { label: 'Ziyaret', value: number(view.visits ?? 0), sub: 'profil görüntülenme' },
-    { label: 'Katılım', value: view.joinedAt ? date(view.joinedAt) : '-', sub: view.joinedAt ? `${age(view.joinedAt)} burada` : null },
-    { label: 'Hesap', value: view.accountAt ? age(view.accountAt) : '-', sub: view.accountAt ? date(view.accountAt) : null },
-    { label: 'Sicil', value: sicil ? (sicil.total ? `${sicil.active} aktif` : 'temiz') : '-', sub: sicil ? `${number(sicil.total)} ceza kaydı` : null },
-    { label: 'Takviye', value: view.premiumSince ? age(view.premiumSince) : '-', sub: view.premiumSince ? 'devam ediyor' : 'takviye yok' },
-    { label: 'Kozmetik', value: view.ownedCount ? `${number(view.ownedCount)} ürün` : '-', sub: 'çerçeve, tema, kapak' },
-    { label: 'Kazanılan', value: number(view.earnedCoins ?? 0), sub: 'toplam coin' },
+    { label: 'Mesaj Seviyesi', value: String(levelFromXp(view.mesajXp ?? 0)) },
+    { label: 'Ses Seviyesi', value: String(levelFromXp(view.sesXp ?? 0)) },
+    { label: 'Mesaj', value: number(view.messageCount ?? 0) },
+    { label: 'Ses Süresi', value: shortDuration(view.voiceSeconds) },
+    { label: 'Yayın', value: view.streamSeconds >= 60 ? shortDuration(view.streamSeconds) : '-' },
+    { label: 'Ziyaret', value: number(view.visits ?? 0) },
+    { label: 'Sicil', value: sicil ? (sicil.total ? `${sicil.active} aktif` : 'Temiz') : '-' },
+    { label: 'Sunucuda', value: view.joinedAt ? age(view.joinedAt) : '-' },
   ];
+}
+
+function drawStrip(ctx, y, view, c) {
+  const items = stripItems(view);
+  const colW = (WIDTH - PAD * 2) / items.length;
+  ctx.textAlign = 'left';
+  items.forEach((item, i) => {
+    const x = PAD + i * colW + 18;
+    if (i) {
+      ctx.fillStyle = hexAlpha(c.accent, 0.2);
+      roundRect(ctx, PAD + i * colW - 1.5, y + 16, 3, STRIP_H - 44, 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = c.muted;
+    ctx.font = font(700, 16);
+    ctx.fillText(fitText(ctx, item.label.toLocaleUpperCase('tr-TR'), colW - 40), x, y + 32);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = font(700, 36);
+    ctx.fillText(fitText(ctx, item.value, colW - 40), x, y + 76);
+  });
 }
 
 // Alt şerit: solda biyografi, sağda vitrin (öne çıkan istatistik ve bağlantılar). Vitrin boşsa biyografi
