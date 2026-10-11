@@ -21,7 +21,7 @@ module.exports = ({ mock, ui, src }) => {
   ];
   const noMentions = { allowedMentions: { parse: [] } };
   const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
-  const card = (name, height, label) => mock.pngFile(name, { width: 1000, height, label });
+  const card = (name, height, label) => mock.pngFile(name, { width: 1200, height, label });
 
   // Mağaza satırları: index.js'teki shopRows aynı biçimde üretilir, burada statik veriyle denenir
   const shopRows = (items) =>
