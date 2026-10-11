@@ -1,5 +1,6 @@
-// Kalıcı oda sisteminin mesajları: kurallar ve gereksinimler paneli, başvuru formu, yetkilinin karar verdiği
-// başvuru kartı, sahibine giden teslim kartı, odanın kendi yazı kanalındaki kontrol paneli ve oda listesi.
+// Kalıcı oda sisteminin mesajları: kurallar ve gereksinimler paneli, başvuru formu, yöneticinin karar verdiği
+// başvuru kartı, sahibine giden teslim kartı, /kalici-oda odam komutuyla açılan oda kontrol paneli, şart uyarı
+// kartları, oda listesi ve duyuru kanalına düşen açılış/kapanış kayıtları.
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -10,7 +11,7 @@ const {
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { colors, pad, panel, page, rows, chip, quote, receipt, stamp, divider, text, pills } = require('../../core/ui');
+const { colors, pad, unix, panel, page, rows, chip, pills, quote, receipt, stamp, divider, text } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
