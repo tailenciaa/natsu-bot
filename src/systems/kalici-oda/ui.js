@@ -289,14 +289,14 @@ function roomPanel(room, status, roster = []) {
     ],
   });
 
-  container.addActionRowComponents(
+  // Üye menüleri önde, oda ayar düğmeleri sonda: kartın altı işlenen işlemlerle, en altı zaman damgasıyla kapanır
+  memberMenus(container, roster);
+  return container.addActionRowComponents(
     new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
     ),
   );
-
-  return memberMenus(container, roster);
 }
 
 // Üye işlemleri: her menünün üstünde ne yaptığı yazar, çıkar ve devret menüleri odadaki üyelerle dolar.
