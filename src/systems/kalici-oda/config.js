@@ -3,9 +3,12 @@
 module.exports = {
   channels: {
     // #kalıcı-oda-bilgi: kurallar ve gereksinimler panelinin gönderileceği kanal. null: panel gönderilmez.
-    panel: null,
+    panel: '1538941087195074702',
     // #kalıcı-oda-başvuruları: gelen başvuruların ve kararların yazılacağı kanal. null: başvuru alınmaz.
-    applications: null,
+    applications: '1538941302681501907',
+    // #kalıcı-oda-duyuruları: açılan ve kapanan odaların herkese açık bildirim kartlarının gideceği kanal.
+    // null: duyuru kartı gönderilmez; olay yine log kaydına işlenir.
+    notifications: '1538941133684482129',
   },
 
   roles: {
