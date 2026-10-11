@@ -270,18 +270,18 @@ function activityBlock(status) {
     .join('\n');
 }
 
-// /kalici-oda odam ile açılan, sadece sahibinin kullanabildiği kontrol paneli
-function roomPanel(room, status) {
+// /kalici-oda odam ile açılan, sadece sahibinin kullanabildiği kontrol paneli.
+// roster: odadaki üyelerin [{ id, name }] listesi; çıkar ve devret menüleri bu listeyle dolar.
+function roomPanel(room, status, roster = []) {
   const container = page({
     title: `Kalıcı Oda · ${room.name}`,
-    sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin. Bu paneli sadece oda sahibi kullanabilir.',
+    sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin. Sohbet, ses kanalının kendi yazısıdır; bu paneli sadece oda sahibi kullanabilir.',
     blocks: [
       `**Oda**\n${rows([
         ['Oda', roomTag(room)],
         ['Sahip', `<@${room.ownerId}>`],
-        ['Üye Sayısı', chip(memberTotal(room.members.length))],
-        ['Kişi Limiti', limitLabel(room.limit)],
-        ['Kanallar', `<#${room.voiceChannelId}> · <#${room.textChannelId}>`],
+        ['Kanal', `<#${room.voiceChannelId}>`],
+        ['Üye / Limit', usageLabel(room.members.length + 1, room.limit)],
       ])}`,
       activityBlock(status),
       'Oda boş kalsa bile kapanmaz; odayı yalnızca ay sonu şartı ya da bir yönetici kapatabilir.',
@@ -289,16 +289,32 @@ function roomPanel(room, status) {
     ],
   });
 
-  return container
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
-      ),
-    )
-    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.add}:0`, 'Odaya eklenecek üyeyi seç')))
-    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.remove}:0`, 'Odadan çıkarılacak üyeyi seç')))
-    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.transfer}:0`, 'Sahipliği devredeceğin üyeyi seç')));
+  container.addActionRowComponents(
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
+    ),
+  );
+
+  return memberMenus(container, roster);
+}
+
+// Üye işlemleri: her menünün üstünde ne yaptığı yazar, çıkar ve devret menüleri odadaki üyelerle dolar.
+// Odada başkası yokken bu iki menü boş liste göstermesin diye tek satır not bırakılır.
+function memberMenus(container, roster) {
+  const label = (value) => container.addTextDisplayComponents(text(value));
+  const menu = (builder) => container.addActionRowComponents(new ActionRowBuilder().addComponents(builder));
+
+  label('**Üye Ekle** · sunucudan seçtiğin üye odana katılır');
+  menu(select(`${IDS.add}:0`, 'Odaya eklenecek üyeyi seç'));
+
+  if (!roster.length) return label('**Üye Çıkar** ve **Sahipliği Devret** odada senin dışında üye olunca açılır; önce üye ekle.');
+
+  label('**Üye Çıkar** · odandaki üyeler listelenir');
+  menu(memberMenu(`${IDS.remove}:0`, 'Odadan çıkarılacak üyeyi seç', roster));
+  label('**Sahipliği Devret** · oda seçtiğin üyeye geçer, sen odada kalırsın');
+  menu(memberMenu(`${IDS.transfer}:0`, 'Sahipliği devredeceğin üyeyi seç', roster));
+  return container;
 }
 
 // Haftalık şart kaçınca sahibine giden uyarı: bir başarısızlık bildirimi olduğu için kanala değil kişiye düşer
@@ -360,14 +376,14 @@ function limitModal(current) {
     );
 }
 
-// Oda ismi formu: kategori, ses ve yazı kanalının adı birlikte değişir
+// Oda ismi formu: odanın ses kanalının adı değişir (sohbet de aynı kanalın içinde olduğu için isimle birlikte gelir)
 function renameModal(current) {
   const input = new TextInputBuilder().setCustomId(IDS.renameInput).setStyle(TextInputStyle.Short).setMaxLength(30).setRequired(true);
   if (current) input.setValue(current);
   return new ModalBuilder()
     .setCustomId(IDS.renameForm)
     .setTitle('Oda İsmini Değiştir')
-    .addLabelComponents(new LabelBuilder().setLabel('Yeni isim').setDescription('Kategori ve iki kanalın adı birlikte değişir.').setTextInputComponent(input));
+    .addLabelComponents(new LabelBuilder().setLabel('Yeni isim').setDescription('Odanın ses kanalının adı değişir.').setTextInputComponent(input));
 }
 
 // /kalici-oda liste: yöneticilerin gördüğü oda dökümü
@@ -375,8 +391,8 @@ function roomList(rooms, pendingCount) {
   const line = (room) =>
     [
       `**#${pad(room.no)} · ${room.name}**`,
-      `${pills([['Üye', room.members.length + 1], ['Limit', room.limit || 'sınırsız']])} · Sahip <@${room.ownerId}>`,
-      `<#${room.voiceChannelId}> · <#${room.textChannelId}>`,
+      `${pills([['Üye / Limit', `${room.members.length + 1} / ${room.limit || 'sınırsız'}`]])} · Sahip <@${room.ownerId}>`,
+      `<#${room.voiceChannelId}>`,
     ].join('\n');
 
   return page({
