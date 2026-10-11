@@ -418,4 +418,39 @@ function vitrinSaved({ user, bad = [] }) {
   });
 }
 
-module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, gorunumPage, rozetPage, vitrinPage, shopPage, purchase, equip, vitrinSaved };
+// ── Puan sayfası ──────────────────────────────────────────────────────────────
+// Kartın manşetindeki sayının dökümü: kaç puan, hangi bölümden ne kadar, bir üst rütbe için ne kaldığı ve
+// sunucunun en yüksek puanlı ilk on üyesi.
+// GİZLİ İSTİSNA: üyenin kendi durum bilgisi; herkesin önünde puan dökümü yazışmasına gerek yok.
+function puanPage({ score, rank, size, top, you }) {
+  const hedef = score.next
+    ? `Bir üst rütbe **${score.next.label}** için **${number(score.next.remaining)}** puan daha gerekiyor.`
+    : 'En yüksek rütbedesin; kimse seni geçemesin.';
+  const merdiven = TIERS.map((t) => (t.min <= score.total ? `**${t.label}**` : t.label)).join(' › ');
+  const liste = top.map((r) => `${r.rank}. **${r.name}** — ${number(r.total)} puan · ${r.tier}${r.you ? ' (sen)' : ''}`).join('\n');
+
+  return core
+    .page({
+      title: 'Profil Puanın',
+      sub: 'Puan; mesaj ve ses etkinliğinden, saygınlıktan, rozetlerden, koleksiyondan, giriş serisinden ve sunucuda geçen yıldan hesaplanır. Ceza puandan düşmez, yalnızca kazanılanlar sayılır.',
+      blocks: [
+        fields([`**${number(score.total)} / ${score.max} puan** · ${score.tier.label}`, rank ? `**Sunucu sırası:** ${chip(`#${rank}`)} ${size} üye arasından` : 'Sıra henüz hesaplanmadı.', hedef]),
+        fields(['**Rütbe merdiveni**', merdiven]),
+        fields([
+          '**Puanın nereden geldi**',
+          ...score.parts.map((p) => `${p.label} ${chip(`${p.points} / ${p.max}`)} — ${p.note}`),
+        ]),
+        fields(['**Sunucunun en yüksek puanları**', liste || 'Henüz puan tablosu hesaplanmadı.']),
+        'Coin için **/gunluk**, saygınlık için sohbet içinde **+rep**, seviye için mesaj ve ses; rozetlerinin ilerlemesini **Rozetler** sayfasından izleyebilir, kazandığın coinleri **Mağaza**dan kozmetiğe çevirebilirsin.',
+      ],
+    })
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(IDS.rozet).setLabel('Rozetler').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
+        geriButton(),
+      ),
+    );
+}
+
+module.exports = { IDS, profile, bioModal, colorModal, bannerModal, vitrinModal, kapakPage, gorunumPage, rozetPage, vitrinPage, shopPage, purchase, equip, vitrinSaved, puanPage };

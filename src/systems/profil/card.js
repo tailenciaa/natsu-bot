@@ -572,11 +572,10 @@ function drawSkor(ctx, y, view, c) {
   });
 }
 
-// Şerit sütunu kısa kalsın: saat varsa dakika, gün varsa saat yazılmaz. Ayrıntı /siralama'da.
+// Şerit sütunu tek bir birim yazsın: saat dolan süre "sa", altında "dk" olarak; ayrıntı /siralama'da.
 function shortDuration(seconds) {
   const minutes = Math.floor((seconds ?? 0) / 60);
   const hours = Math.floor(minutes / 60);
-  if (hours >= 24) return `${number(Math.floor(hours / 24))} gün`;
   return hours > 0 ? `${number(hours)} sa` : `${minutes} dk`;
 }
 
@@ -591,7 +590,7 @@ function stripItems(view) {
     { label: 'Ses Süresi', value: shortDuration(view.voiceSeconds) },
     { label: 'Yayın', value: view.streamSeconds >= 60 ? shortDuration(view.streamSeconds) : '-' },
     { label: 'Ziyaret', value: number(view.visits ?? 0) },
-    { label: 'Sicil', value: sicil ? (sicil.total ? `${sicil.active} aktif` : 'Temiz') : '-' },
+    { label: 'Sicil', value: sicil ? (sicil.active ? `${sicil.active} aktif` : 'Temiz') : '-' },
     { label: 'Sunucuda', value: view.joinedAt ? age(view.joinedAt) : '-' },
   ];
 }
