@@ -285,18 +285,20 @@ function roomPanel(room, status, roster = []) {
       ])}`,
       activityBlock(status),
       'Oda boş kalsa bile kapanmaz; odayı yalnızca ay sonu şartı ya da bir yönetici kapatabilir.',
-      stamp(room.createdAt),
     ],
   });
 
-  // Üye menüleri önde, oda ayar düğmeleri sonda: kartın altı işlenen işlemlerle, en altı zaman damgasıyla kapanır
+  // Üye menüleri önde, oda ayar düğmeleri sonda; zaman damgası kartın en altında durur
   memberMenus(container, roster);
-  return container.addActionRowComponents(
-    new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
-    ),
-  );
+  return container
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(stamp(room.createdAt)));
 }
 
 // Üye işlemleri: her menünün üstünde ne yaptığı yazar, çıkar ve devret menüleri odadaki üyelerle dolar.
