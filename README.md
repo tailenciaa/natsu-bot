@@ -41,9 +41,10 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/yardim` | Komutları kategorilere göre gösterir | Herkes |
 | `/sicil [kullanici]` | Üyenin sicilini gösterir | Herkes kendisininkini, yetkililer herkesinkini |
 | `/seviye [kullanici]` | Mesaj ve ses seviyesini kartla gösterir | Herkes |
-| `/profil [kullanici]` | Geniş profil panosu: kapakta kimlik, **profil puanı bandı** (puan, rütbe, bir üst rütbe hedefi ve puanın geldiği yedi bölüm), sekiz sayılık şerit (mesaj/ses seviyesi, mesaj, ses süresi, yayın, ziyaret, sicil, sunucuda geçen süre), rozetler, biyografi ve vitrin. Altındaki butonlarla biyografi, renk, kapak, panel görünümü, tema, mağaza ve **Puanım** sayfası açılır | Herkes |
+| `/profil [kullanici]` | Geniş profil panosu: kapakta kimlik, **profil puanı bandı** (puan, rütbe, bir üst rütbe hedefi, sunucu sırası ve puanın geldiği sekiz bölüm), sekiz sayılık şerit (mesaj/ses seviyesi, mesaj, ses süresi, yayın, ziyaret, sicil, sunucuda geçen süre), rozetler, biyografi ve vitrin. Altındaki butonlarla biyografi, renk, kapak, panel görünümü, tema, mağaza ve **Puanım** sayfası açılır | Herkes |
 | `/gunluk` | Günlük coin ödülünü toplar, art arda günlerle seri bonusu büyür; kazanç kartı kanala düşer | Herkes |
 | `/bakiye` | Coin cüzdanı: bakiye, kazanç, harcanan, seri ve mağazadan alınanlar (butonlarla mağaza ve siparişler açılır) | Herkes |
+| `/gorev` | İlerleme panosu: beş sekmede günlük görevler ve günün demeti, haftalık görevler, Keşif Yolu (botun sistemlerini gezdiren on bir adım), anahtarla açılan kutu ve ayın sezon eşikleri | Herkes |
 | `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
 | `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
 | `/saygi-siralama` | Tüm zamanların saygınlık tablosu | Herkes |

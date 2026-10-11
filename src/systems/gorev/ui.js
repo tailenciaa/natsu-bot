@@ -240,8 +240,8 @@ function chest({ user, sonuclar, kalanAnahtar, balance, at = Date.now() }) {
     accent: 'success',
     pairs: [
       ['Harcanan', core.chip(`${adet * config.KUTU.anahtar} anahtar`)],
-      ['Kalan Anahtar', `${number(kalanAnahtar)} adet`],
-      ['Yeni Bakiye', number(balance)],
+      ['Kalan Anahtar', core.chip(`${number(kalanAnahtar)} anahtar`)],
+      ['Yeni Bakiye', core.chip(`${number(balance)} coin`)],
     ],
     at,
   });
