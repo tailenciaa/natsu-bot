@@ -84,7 +84,7 @@ function sicilBlok(state) {
 const kayitSatiri = (k) => `**${k.saldirganAd}** → ${k.hedefAd}: ${k.sonuc}${k.miktar ? ` (${coin(k.miktar)})` : ''}`;
 
 function sonKayitlar(sicil) {
-  if (!sicil.length) return `-# Son kayıt yok.`;
+  if (!sicil.length) return `Sokak henüz sessiz; kayda geçmiş bir girişim yok.`;
   return sicil.map((k) => kayitSatiri(k)).join('\n');
 }
 
