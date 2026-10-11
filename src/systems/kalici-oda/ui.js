@@ -36,34 +36,44 @@ const IDS = {
 const select = (customId, placeholder) => new UserSelectMenuBuilder().setCustomId(customId).setPlaceholder(placeholder);
 
 const mentions = (ids) => ids.map((id) => `<@${id}>`).join(' ');
-const hoursLabel = (seconds) => `${Math.floor(seconds / 3600)} saat`;
+const hoursLabel = (seconds) => `${Math.round((seconds ?? 0) / 3600)} saat`;
 const limitLabel = (limit) => chip(limit ? `${limit} kişi` : 'sınırsız');
 const memberTotal = (list) => `${list + 1} kişi`;
+const roomTag = (room) => chip(`#${pad(room.no)} · ${room.name}`);
 
-// Başvuru paneli: kurallar ve gereksinimler yazılır, başvuru butonu başlığın yanında durur
+const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+// Hafta ('2026-10-05') ve ay ('2026-09') anahtarlarını okunur tarihe çevirir
+function monthLabel(key) {
+  const [year, month] = String(key).split('-');
+  return `${MONTHS[Number(month) - 1] ?? month} ${year}`;
+}
+
+// Başvuru paneli: kurallar ve gereksinimler alt alta düzenli satırlar, başvuru butonu başlığın yanında durur
 function applyPanel() {
   const container = panel({
     title: 'Kalıcı Oda Sistemi',
-    sub: 'Sunucuda sana ait kalıcı bir ses ve yazı odası olsun istiyorsan **Başvuru Yap** butonuyla formu doldur; yetkililer başvurunu inceler ve onaylarsa odan açılıp sana teslim edilir.',
+    sub: 'Sunucuda sana ait kalıcı bir ses ve yazı odası olsun istiyorsan **Başvuru Yap** butonuyla formu doldur. Onay yetkisi sadece yöneticilerde.',
     button: { id: IDS.apply, label: 'Başvuru Yap' },
   });
 
-  const requirements = rows([
-    ['Minimum Üye Sayısı', chip(`${config.minMembers} kişi`)],
-    ['Minimum Haftalık Ses Süresi', chip(`${config.minWeeklyVoiceHours} saat`)],
-    ['Özel Ekip Rolü', config.roles.team ? `<@&${config.roles.team}>` : chip('Devre Dışı')],
-  ]);
-
-  container
+  return container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Kurallar**\n${config.rules.map((rule, i) => `${i + 1}. ${rule}`).join('\n')}`))
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        `**Gereksinimler**\n${requirements}\nHaftalık ses süresi, odayı kullanacakların son yedi günde birlikte geçirdiği toplam sestir; başvuruda hesaplanır ve yetkililere gösterilir.`,
+        [
+          '**Gereksinimler**',
+          rows([
+            ['Üye Sayısı', chip(`${config.minMembers} kişi ve üzeri`)],
+            ['Başvuruda Ses Şartı', chip(`${config.minWeeklyVoiceHours} saat / hafta`)],
+            ['Odayı Koruma Şartı', chip(`${config.activity.weeklyHours} saat / hafta · ${config.activity.monthlyHours} saat / ay`)],
+            ['Onayı Veren', 'Yalnızca yöneticiler'],
+          ]),
+          `-# Ses şartı, odayı kullanacakların birlikte geçirdiği toplam süredir; başvuruda hesaplanır, oda açık kaldıkça her hafta yeniden ölçülür.`,
+        ].join('\n'),
       ),
     );
-  return container;
 }
 
 // Başvuru formu: oda adı, odada olacak üyeler ve odanın amacı
@@ -104,19 +114,19 @@ function decisionRow(app) {
   );
 }
 
-// Yetkililerin gördüğü başvuru kartı. room verilirse (başvuru onaylanmış) açılan kanallar da yazılır.
+// Yöneticinin gördüğü başvuru kartı. room verilirse (başvuru onaylanmış) açılan kanallar da yazılır.
 function applicationCard(app, room) {
   const container = page({
     title: 'Kalıcı Oda Başvurusu',
-    sub: 'Bir üye kendine kalıcı bir ses ve yazı odası istiyor; **Onayla** odaları açar ve odayı sahibine teslim eder, **Reddet** kararı ise yazacağın gerekçeyle birlikte başvurana DM olarak gider.',
+    sub: 'Onay odaları açıp sahibine teslim eder; ret gerekçesi başvurana doğrudan mesaj olarak gider. Butonlar yalnızca yöneticilerde çalışır.',
     accent: ACCENT[app.status],
     blocks: [
-      `**Başvuru Bilgileri**\n${rows([
+      `**Başvuru**\n${rows([
         ['Oda Adı', chip(app.roomName)],
         ['Başvuran', `<@${app.userId}>`],
         ['Kişi Sayısı', chip(memberTotal(app.members.length))],
-        ['Haftalık Ses', chip(hoursLabel(app.voiceSeconds))],
-        ['Ses Hedefi', `${chip(`${config.minWeeklyVoiceHours} saat`)} · ${app.voiceOk ? 'karşılandı' : 'karşılanmadı'}`],
+        ['Son 7 Günün Sesi', chip(hoursLabel(app.voiceSeconds))],
+        ['Haftalık Hedef', `${chip(`${config.minWeeklyVoiceHours} saat`)} · ${app.voiceOk ? 'karşılandı' : 'karşılanmadı'}`],
       ])}`,
       app.members.length ? `**Odayı Kullanacaklar**\n${mentions(app.members)}` : null,
       `**Amaç**\n${quote(app.purpose)}`,
