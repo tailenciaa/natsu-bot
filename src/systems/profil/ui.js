@@ -186,7 +186,7 @@ function kapakPage(imageName, custom) {
           !hasImage
             ? 'Kaydırma, yakınlaştırma ve yerleşim ancak bir kapak görselin olduğunda işler; görselleri mağazadan alabilirsin.'
             : fit === 'sigdir'
-              ? 'Sığdırmada görselin tamamı görünür, kenarlarda seçtiğin arka plan efekti durur; bu yüzden yakınlaştırma ve kaydırma kapalıdır.'
+              ? 'Sığdırmada görselin tamamı görünür; kenarlarda kalan yer aynı görselin koyulaştırılmış hâliyle doldurulur, böylece kapak baştan başa uzanır. Yakınlaştırma ve kaydırma bu yüzden kapalıdır.'
               : fit === 'otomatik'
                 ? 'Otomatik yerleşimde kart görseline bakır: geniş bir görsel alanı doldurur, dik bir fotoğrafta görselin tamamı gösterilir.'
                 : 'Kaplamada görsel alanı tamamen doldurur, taşan kısım kırpılır.',

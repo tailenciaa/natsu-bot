@@ -129,7 +129,7 @@ function glass(ctx, x, y, w, h, r, c, tint = '255,255,255') {
 // Kutunun yatay ortalanmış yeri: "kapla" alanı tamamen doldurur, "sığdır" görselin tamamını gösterirken kapağın
 // geri kalanını aynı fotoğrafın koyulaştırılmış hâliyle doldurur. Dönen değer: görsel çizildi mi
 // (false ise tema efekti çizilmiş olur).
-async function drawBanner(ctx, custom, theme, p) {
+async function drawBanner(ctx, custom) {
   let image;
   try {
     image = await loadImageSafe(custom.banner);
@@ -234,7 +234,7 @@ async function paintHeader(ctx, user, view, theme, p, c) {
   ctx.beginPath();
   ctx.rect(0, 0, WIDTH, HEADER);
   ctx.clip(); // yakınlaştırılan görsel ve ışık lekeleri kapağın dışına taşmasın
-  if (!custom.banner || !(await drawBanner(ctx, custom, theme, p))) {
+  if (!custom.banner || !(await drawBanner(ctx, custom))) {
     drawCover(ctx, coverOf(custom.cover).effect ?? theme.effect, { x: 0, y: 0, w: WIDTH, h: HEADER }, p);
   }
 
