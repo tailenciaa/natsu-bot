@@ -52,9 +52,10 @@ function kesifDurumu(userId, at = Date.now()) {
   const gun = config.dayKey(at);
   const used = k.gun[gun] ?? 0;
   const nextAt = k.sonAt + config.kesif.cooldown;
+  const kalan = config.kesif.gunlukAdet - used;
   if (used >= config.kesif.gunlukAdet) return { ok: false, sebep: 'kota', used, nextAt: 0, kalan: 0 };
-  if (at < nextAt) return { ok: true, sebep: null, used, nextAt, kalan: config.kesif.gunlukAdet - used };
-  return { ok: true, sebep: null, used, nextAt: at, kalan: config.kesif.gunlukAdet - used };
+  if (at < nextAt) return { ok: false, sebep: 'bekleme', used, nextAt, kalan };
+  return { ok: true, sebep: null, used, nextAt: at, kalan };
 }
 
 function kesifKaydet(userId, bolgeKey, at = Date.now()) {

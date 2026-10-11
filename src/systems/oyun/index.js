@@ -6,6 +6,7 @@
 // Sonuçlar kural olarak sayfanın kendisinde yazılır (aynı mesaj yerinde yenilenir); yalnızca efsanevi ganimet ve
 // config.duyuruEsik üstü kumarhane kazançları kanalda herkese açık kart olarak anılır.
 const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
+const core = require('../../core/ui');
 const { respond, replyError, isMenuOwner, menuOwnerError } = require('../../core/helpers');
 const coinStore = require('../coin/store');
 const gorevStore = require('../gorev/store');
@@ -63,7 +64,7 @@ function duyur(interaction, card) {
 // ── Keşif ─────────────────────────────────────────────────────────────────────
 // Bölge masasından ağırlıklı tek sonuç çekilir.
 function masaDon(bolge) {
-  const kalan = Math.random() * bolge.masa.reduce((total, satir) => total + satir.agirlik, 0);
+  let kalan = Math.random() * bolge.masa.reduce((total, satir) => total + satir.agirlik, 0);
   for (const satir of bolge.masa) {
     kalan -= satir.agirlik;
     if (kalan <= 0) return satir;
@@ -97,11 +98,11 @@ async function kesif(interaction, bolgeKey) {
   if (!bolge) return replyError(interaction, 'Bu bölge artık salonda yok.', '/oyun ile sayfayı yeniden aç.');
 
   const hazir = store.kesifDurumu(userId);
-  if (hazir.sebep === 'kota') return replyError(interaction, 'Bugünkü gezi kotasın doldu.', `Günde ${config.kesif.gunlukAdet} gezi yapabilirsin; gece sıfırlanır.`);
-  if (!hazir.ok) return replyError(interaction, 'Bekleme süren dolmadı.', `Sıradaki gezi ${core.rel(hazir.nextAt)} içinde hazır.`);
+  if (hazir.sebep === 'kota') return replyError(interaction, 'Bugünkü gezi kotasın doldu.', `Günde ${config.kesif.gunlukAdet} gezi yapabilirsin; gece sıfırlanır. Kumarhane açık.`);
+  if (hazir.sebep === 'bekleme') return replyError(interaction, 'Bekleme süren dolmadı.', `Sıradaki gezi ${core.rel(hazir.nextAt)} içinde hazır olur.`);
 
   const seviye = seviyeOlcumu(userId);
-  if (seviye < bolge.seviye) return replyError(interaction, 'Bu bölge senin seviyene açık değil.', `${bolge.ad} için seviye ${bolge.seviye} gerekir, senin seviyen ${seviye}.`);
+  if (seviye < bolge.seviye) return replyError(interaction, 'Bu bölge senin seviyene açık değil.', `${bolge.ad} için seviye ${bolge.seviye} gerekir, senin ölçülen seviyen ${seviye}.`);
 
   const sonuc = ganimetiTeslimEt(userId, masaDon(bolge));
   store.kesifKaydet(userId, bolge.key);
@@ -114,7 +115,7 @@ async function kesif(interaction, bolgeKey) {
       ui.bigWin({
         user: interaction.user,
         title: 'Efsanevi Ganimet',
-        sub: `<@${userId.id ?? userId}> ${bolge.ad} yolunda efsanevi ganimet buldu: ${satir.replace('Efsanevi ganimet: ', '')}`,
+        sub: `<@${userId}> ${bolge.ad} yolunda efsanevi ganimet buldu: ${satir.replace('Efsanevi ganimet: ', '')}`,
         pairs: [['Bölge', bolge.ad], ['Bugünkü Gezi', `${hazir.used + 1} / ${config.kesif.gunlukAdet}`]],
         accent: 'danger',
       }),
@@ -176,7 +177,12 @@ async function merdivenBaslat(interaction) {
   if (!coinStore.spend(userId, bahis)) return replyError(interaction, 'Bahis alınamadı.', 'Birkaç saniye sonra tekrar dene.');
 
   store.merdivenBaslat(userId, bahis);
-  return guncelle(interaction, 'merdiven', `**Tırmanış başladı:** ${number(bahis)} coin masada. İlk basamak ${Math.round(config.merdiven.adimlar[0].dusme * 100)}% riskle ${sayisal(config.merdiven.adimlar[0].carpim)}x.`);
+  const ilk = config.merdiven.adimlar[0];
+  return guncelle(
+    interaction,
+    'merdiven',
+    `**Tırmanış başladı:** ${number(bahis)} coin masada. İlk basamak ${Math.round(ilk.dusme * 100)}% riskle potu ${ui.sayisal(ilk.carpim)}x yapar.`,
+  );
 }
 
 async function merdivenCik(interaction) {
@@ -197,8 +203,11 @@ async function merdivenCik(interaction) {
 
   const guncel = store.merdivenYukselt(userId);
   const pot = potHesapla(guncel);
-  const satir = `**${guncel.adim}. basamak:** pot ${number(pot)} coin. Çekersen cebine girer, çıkarsan ${Math.round(adimlar[guncel.adim]?.dusme ?? 1 * 100)}% risk.`;
-  return guncelle(interaction, 'merdiven', satir);
+  const sonraki = adimlar[guncel.adim];
+  const uyari = sonraki
+    ? `Sıradaki basamak ${Math.round(sonraki.dusme * 100)}% risk taşır.`
+    : 'Son basamaktasın; çekmek zorundasın.';
+  return guncelle(interaction, 'merdiven', `**${guncel.adim}. basamaktasın:** pot ${number(pot)} coin. Çekersen cebine girer. ${uyari}`);
 }
 
 async function merdivenCek(interaction) {
