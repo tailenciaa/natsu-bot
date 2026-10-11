@@ -107,31 +107,34 @@ async function handleSetupButton(interaction) {
   return interaction.editReply({ components: [await setupView(guild, note)], flags: core.CV2 });
 }
 
-// Panelden kategori seçilince o kategorinin alt başlığına giden bağlantı gönderilir
+// Panelden kategori seçilince o kategorinin alt başlığına giden bağlantı gönderilir.
+// SABİT PANEL KURALI: log paneli kanalda kalıcı ve seçime herkes dokunuyor — bağlantı sadece seçene görünür,
+// kalıcı olsaydı panelin altı "şuraya git" mesajlarıyla dolardı.
 async function handleSelect(interaction) {
   const category = categories.find((c) => c.key === interaction.values[0]);
   if (!category) return interaction.deferUpdate();
 
-  await interaction.deferReply({ flags: core.CV2 });
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const thread = await engine.ensureThread(interaction.client, category.key);
   if (!thread) {
     return interaction.editReply({
       components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun ana log kanalında **alt başlık açma yetkisi** olduğundan emin ol.', 'danger')],
-      flags: core.CV2,
+      flags: core.EPHEMERAL_CV2,
     });
   }
-  return interaction.editReply({ components: [ui.jumpLink(category, thread)], flags: core.CV2 });
+  return interaction.editReply({ components: [ui.jumpLink(category, thread)], flags: core.EPHEMERAL_CV2 });
 }
 
-// Log girdisindeki "Detaylı Bilgi" butonu: kaydedilen ayrıntılar log başlığında herkese açık yazılır
+// Log girdisindeki "Detaylı Bilgi" butonu: kayıt log başlığında zaten herkese açık durur, ayrıntıyı açan
+// sadece kendisi görsün ki her tıklama log başlığını mesajla doldurmasın
 async function handleDetail(interaction) {
   const meta = store.getDetail(interaction.message.id);
   if (!meta) {
     return replyError(interaction, 'Bu logun detayı artık saklanmıyor.', 'Detaylar sadece **en son 600 kayıt** için tutulur.');
   }
   const category = categories.find((c) => c.key === meta.category);
-  await interaction.deferReply({ flags: core.CV2 });
-  return interaction.editReply({ components: [ui.detail(meta, category ? category.label : 'Log')], flags: core.CV2 });
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  return interaction.editReply({ components: [ui.detail(meta, category ? category.label : 'Log')], flags: core.EPHEMERAL_CV2 });
 }
 
 module.exports = {

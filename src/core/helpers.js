@@ -4,13 +4,19 @@ const { staffCommandChannel } = require('./config');
 const ui = require('./ui');
 
 // Etkileşimin durumuna göre doğru şekilde CV2 cevap verir.
-// EV KURALI — botun mesajı KALICIDIR. Açılan her panel, kart, detay, sayfa ve makbuz kanalda herkese açık durur;
-//   "üyenin kendi durumu" bunu değiştirmez (rozet/vitrin/mağaza/kapak sayfaları, görev ve cüzdan panelleri, talep ve
-//   başvuru kartları, ceza/itiraz kartları hep açıktır). Yenilemede kaybolan geçici mesaj kabul edilmez.
-//   GIZLI (`{ ephemeral: true }`) tek istisna: tek satırlık geri bildirim — hata, reddetme, uyarı ve form/onay
-//   bildirimi (`replyError`, `core.alert(...)`); bunların kaydı zaten başka bir kartta durur, kanalda iz bırakmaz.
-//   İkinci istisna: `sicil` — yetkili komut kanalı dışında kişiye özel kalır, çünkü ceza kaydı herkesin önüne
-//   yazılacak bir şey değildir.
+// EV KURALI — görünürlüğü iki soru belirler, ikisi de içeriğe göre değil mesajın kanalda nasıl davrandığına göre sorulur:
+//   1) BU CEVAP BİRİKEBİLİR Mİ? Cevap, kanalda KALICI duran bir panelin butonundan ya da menüsünden geliyorsa ve o
+//     kontrole her üye dokunuyorsa GIZLIDIR (`{ ephemeral: true }`): ceza ve jail süresi, şüpheli hesap kartı,
+//     yayın/etiket/partner rolü onayları, çekilişe katılım, destek ve kalıcı oda başvurusu cevabı, log paneli
+//     bağlantısı ve log detayı, oryantasyon devir seçicisi. Kalıcı gönderilirse aynı mesaj alt alta birikir ve panel
+//     yukarı kaybolur. Aynı gerekçeyle tek satırlık hata, ret, önizleme ve onay uyarıları da gizlidir.
+//   2) YOKSA BİR SAYFA YA DA KAYIT MI? Komutla açılan sayfalar ve çok adımlı akışlar (profil kartı ile rozet, vitrin,
+//     mağaza, kapak, görünüm ve Puanım sayfaları, /bakiye, /gorev) ile topluluğa düşen duyuru ve makbuz kartları
+//     (çekiliş sonucu, seviye duyurusu, haftanın aktifleri ve saygınlık tablosu, günlük ödül ve sipariş kartı)
+//     KALICI ve HERKESE AÇIKTIR. Bunlar yenilemede kaybolmamalı; "üyenin kendi durumu" tek başına gizleme sebebi değildir.
+//   Kalıcı panel ayrımı sayfa ayrımını yenilmez mi? Panelde duran kontrolü kurcalamanın çıktısı geçicidir; üyenin
+//   açtığı sayfayı yeniden görebilmesi gerekir. İki testi aynı anda geçiren mesaj her zaman açıktır.
+//   İstisna: `sicil` — yetkili komut kanalı dışında kişiye özel kalır, çünkü ceza kaydı herkesin önüne yazılmaz.
 // Dikkat: görünürlük defer anında kilitlenir. `deferReply({ flags: core.CV2 })` ile açılmış bir akışın sonundaki
 // `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Buton/menü cevapları
 // `followUp` ile gittiği için onların görünürlüğü defer'den bağımsızdır; slash komutlarında bayrağı defer'de ver.
@@ -35,10 +41,6 @@ async function respond(interaction, container, { ephemeral = false, allowedMenti
 
 // HATA/REDDETME: gizli mesajın kullanılabildiği tek ortak kapı
 const replyError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'), { ephemeral: true });
-
-// AKIŞ İÇİ HATA: komut herkese açık ertelendiyse görünürlük artık değişmez (Discord bayrak değiştirmeyi reddeder),
-// bu yüzden hata da kanalda görünür. Yalnızca `deferReply()` ile açık açılan akışların içinde kullanılır.
-const replyFlowError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'));
 
 // Yöneticiler ya da verilen rollerden (tek rol ya da liste) birine sahip olanlar
 function isStaff(interaction, roleIds) {
