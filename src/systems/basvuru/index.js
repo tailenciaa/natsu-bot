@@ -858,9 +858,10 @@ async function handleRemind(interaction) {
     const staff = await guild.client.users.fetch(staffId).catch(() => null);
     await staff?.send({ components: [ui.applicantWaitingDm(app, guild.name, channelId, stage === 'orientation', true)], flags: core.CV2 }).catch(() => {});
   }
+  // KİŞİYE ÖZEL: hatırlatmayı sadece başvuran kullanabiliyor, onayı da yalnızca o görür
   return interaction.followUp({
     components: [core.alert('Yetkililere hatırlatıldı.', `<t:${Math.floor((Date.now() + REMIND_COOLDOWN) / 1000)}:R> tekrar hatırlatabilirsin.`, 'success')],
-    flags: core.CV2,
+    flags: core.EPHEMERAL_CV2,
     allowedMentions: { parse: [] },
   });
 }
@@ -986,7 +987,8 @@ async function handleReviewSubmit(interaction) {
   }
 
   if (!sent) {
-    await respond(interaction, core.alert('Başvurana DM gönderilemedi.', "DM'si kapalı olabilir, sonucu kendisine ayrıca iletmen gerekiyor.", 'warning'));
+    // Uyarı işlemi yapana özel: başvurana DM gidememesi kanalda karar veren diğer yetkilileri ilgilendirmez
+    await respond(interaction, core.alert('Başvurana DM gönderilemedi.', "DM'si kapalı olabilir, sonucu kendisine ayrıca iletmen gerekiyor.", 'warning'), { ephemeral: true });
   }
 }
 
