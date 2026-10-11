@@ -427,13 +427,12 @@ function submitted({ user, app, memberCount }) {
 function openedNotice(room) {
   return receipt({
     title: 'Kalıcı Oda Açıldı',
-    sub: `<@${room.ownerId}> için **${room.name}** odası açıldı.`,
+    sub: `<@${room.ownerId}> için **${room.name}** odası açıldı; sohbeti ses kanalının içinde.`,
     accent: 'success',
     pairs: [
       ['Oda', chip(`#${pad(room.no)} · ${room.name}`)],
-      ['Ses Kanalı', `<#${room.voiceChannelId}>`],
-      ['Yazı Kanalı', `<#${room.textChannelId}>`],
-      ['Üye', chip(memberTotal(room.members.length))],
+      ['Kanal', `<#${room.voiceChannelId}>`],
+      ['Üye / Limit', usageLabel(room.members.length + 1, room.limit)],
     ],
     at: room.createdAt,
   });
@@ -457,6 +456,7 @@ module.exports = {
   monthLabel,
   hoursLabel,
   applyPanel,
+  memberPicker,
   applicationModal,
   applicationCard,
   submitted,
