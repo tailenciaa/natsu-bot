@@ -102,10 +102,15 @@ function yolSatiri(satir, index) {
 const cüzdan = ({ balance, anahtar }) =>
   `**Cüzdanın**\n${core.pills([['Bakiye', `${number(balance)} coin`], ['Anahtar', `${anahtar} adet · ${config.KUTU.anahtar} adedi 1 kutu`]])}`;
 
-// Panelin iskeleti: başlık ve açıklama, istenirse geri bildirim satırı, bloklar, satırlar, cüzdan ve sekmeler
+// Panelin iskeleti: başlık ve açıklama, istenirse hemen altında geri bildirim satırı, bloklar, satırlar, cüzdan ve sekmeler
 function kabuk({ tab, title, sub, blocks = [], sections = [], rows, feedback, balance, anahtar, at }) {
-  const container = core.page({ title, sub, blocks, accent: feedback ? core.colors.success : undefined });
-  if (feedback) container.addTextDisplayComponents(core.text(feedback));
+  // Ödül aldın gibi geri bildirim üyenin az önce dokunduğu şeydir; listenin sonunda değil, başlığın hemen altında durur
+  const container = core.page({
+    title,
+    sub,
+    blocks: feedback ? [feedback, ...blocks] : blocks,
+    accent: feedback ? core.colors.success : undefined,
+  });
   for (const section of sections) container.addSectionComponents(section);
   for (const row of rows ?? []) container.addActionRowComponents(row);
   container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(cüzdan({ balance, anahtar })));
@@ -190,7 +195,6 @@ function panel(state) {
       ...BASLIK.kutu,
       blocks: [
         core.rows([
-          ['Anahtarın', `${k.anahtar} adet`],
           ['Kutu maliyeti', `${config.KUTU.anahtar} anahtar · üçlü açılım ${config.KUTU.anahtar * 3} anahtar`],
           ['Açtığın kutu', `${number(k.toplam)} (bu hafta ${k.hafta})`],
           ['Kozmetiğe kalan', `${k.garantiKaldi} kutu`],
