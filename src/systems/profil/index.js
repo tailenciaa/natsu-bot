@@ -108,6 +108,7 @@ async function kapakPageMessage(interaction) {
   return {
     components: [ui.kapakPage('kapak.png', custom)],
     files: [new AttachmentBuilder(buffer, { name: 'kapak.png' })],
+    flags: core.CV2,
     allowedMentions: { parse: [] },
   };
 }
@@ -158,6 +159,7 @@ async function gorunumMessage(interaction) {
       }),
     ],
     files: [new AttachmentBuilder(buffer, { name: 'profil.png' })],
+    flags: core.CV2,
     allowedMentions: { parse: [] },
   };
 }
