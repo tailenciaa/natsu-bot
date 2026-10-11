@@ -33,10 +33,11 @@ function olcumler(at = Date.now()) {
   };
 }
 
-// Rozet, puan, ömür boyu ses süresi ve açılan destek talebi Keşif Yolu'nun adımlarında gerekiyor; kart açıldığında
-// zaten hesaplandığı için ayrı bir geçiş istenmiyor. Yalnızca Yol sekmesi bunu çağırır.
-function ekler(guild, member, userId, m) {
-  const measures = m ?? rozet.measures();
+// Rozet, puan, ömür boyu ses süresi ve açılan destek talebi Keşif Yolu'nun adımlarında gerekiyor. Bu dört ölçüm
+// rozet.js'in kendi haritalarından (measures) okunur, görev sayaçlarından (olcumler) değil — ikisi farklı alan
+// adları taşır. Yalnızca Yol sekmesi çağırır.
+function ekler(guild, member, userId) {
+  const measures = rozet.measures();
   const ctx = rozet.contextOfMember(guild, member, userId, measures);
   const kazanilan = rozet.earned(ctx);
   return {
