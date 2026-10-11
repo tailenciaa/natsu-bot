@@ -375,7 +375,7 @@ async function deliver(guild, room) {
       lines: [
         `**Oda:** #${core.pad(room.no)} ${room.name}`,
         `**Sahip:** <@${room.ownerId}>`,
-        `**Kanallar:** <#${room.voiceChannelId}> · <#${room.textChannelId}>`,
+        `**Kanal:** <#${room.voiceChannelId}>`,
         `**Üye sayısı:** ${room.members.length + 1}`,
       ],
     })
