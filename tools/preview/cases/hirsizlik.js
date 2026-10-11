@@ -90,10 +90,11 @@ module.exports = ({ mock, ui, src }) => {
   const garibanDurum = suc.durumOf(gariban.uid);
   const iceride = suc.durumOf(tutuklu.uid);
 
-  // Sonucu yazılmamış bir kasa soygunu: dağılan para kasadan gerçekten düşsün ki sonuç kartındaki
-  // "Kasadan Çıkan" ile "Kalan Kasa" birbirini tutmasın
+  // Sonucu yazılmamış bir kasa soygunu: ödeme gerçek kazanç kapısından (coin/store.addWin) geçer, kasadan
+  // gerçekten düşülen pay çıkarılır ki "Kasadan Çıkan" ile "Kalan Kasa" birbirini tutsun.
   const kasaGanimeti = 600;
-  store.kasaDus(kasaGanimeti);
+  const kasaOdeme = coinStore.addWin(mafya.uid, kasaGanimeti, 'önizleme kasa soygunu');
+  store.kasaDus(kasaOdeme.odenen);
 
   // ── Arka Sokaklar sayfası ─────────────────────────────────────────────────
   const cases = [
@@ -167,7 +168,7 @@ module.exports = ({ mock, ui, src }) => {
           ['Saldırgan', `<@${mafya.uid}>`],
           ['Kurban', `<@${kurban.uid}>`],
           ['Yakalanma Şansı', `%${Math.round(config.yakalanma.taban * 100)}`],
-          ['Ceza', `${number(config.ceza.uye)} coin`],
+          ['Ceza', coin(config.ceza.uye)],
           ['Hapis', p.sure(config.hapis.uye)],
         ],
         note: 'Direnç kurbanı dokunulmaz yapar; soyguncu bir süre daha aynı üyeyi hedef alamaz.',
@@ -179,14 +180,14 @@ module.exports = ({ mock, ui, src }) => {
       'Bekçi süresi dolan pusuyu sonuçlandırdığında kanalda',
       p.sonuc({
         title: 'Soygun Gerçekleşti',
-        sub: `<@${mafya.uid}> kimse direnmeyince <@${kurban.uid}> adlı üyenin cüzdanından ${number(380)} coin aldı.`,
+        sub: `<@${mafya.uid}> kimse direnmeyince <@${kurban.uid}> adlı üyenin cüzdanından ${coin(soyulan)} aldı.`,
         user: mafya.user,
         accent: 'danger',
         pairs: [
           ['Saldırgan', `<@${mafya.uid}>`],
           ['Kurban', `<@${kurban.uid}>`],
-          ['El Değiştiren', `${number(380)} coin`],
-          ['Kurbanın Dokunulmazlığı', ui.rel(Date.now() + config.dokunulmazlik)],
+          ['El Değiştiren', coin(soyulan)],
+          ['Kurbanın Dokunulmazlığı', ui.rel(suc.durumOf(kurban.uid).dokunulmaz)],
         ],
         note: 'Kurban artık dokunulmaz; bir süre daha aynı üyeyi hedef alamazsın.',
       }),
@@ -204,9 +205,9 @@ module.exports = ({ mock, ui, src }) => {
           ['Saldırgan', `<@${kurban.uid}>`],
           ['Müdahale', `<@${tanik.uid}>`],
           ['Yakalanma Şansı', `%${Math.round(config.yakalanma.taban * 100)}`],
-          ['Ceza', `${number(config.ceza.kasa)} coin`],
+          ['Ceza', coin(config.ceza.kasa)],
           ['Hapis', p.sure(config.hapis.kasa)],
-          ['İkramiye', `${number(config.kasa.ikramiye)} coin`],
+          ['İkramiye', coin(config.kasa.ikramiye)],
         ],
       }),
     ),
@@ -216,14 +217,14 @@ module.exports = ({ mock, ui, src }) => {
       'Müdahale edilmeyen kasa girişiminde bekçi kartı anır',
       p.sonuc({
         title: 'Kasa Soyuldu',
-        sub: `<@${mafya.uid}> kimse müdahale etmeyince Devletin Kasasından ${number(600)} coin aldı.`,
+        sub: `<@${mafya.uid}> kimse müdahale etmeyince Devletin Kasasından ${coin(kasaOdeme.odenen)} aldı.`,
         user: mafya.user,
         accent: 'danger',
         pairs: [
           ['Saldırgan', `<@${mafya.uid}>`],
-          ['Kasadan Çıkan', `${number(600)} coin`],
-          ['Kalan Kasa', `${number(store.kasa())} coin`],
-          ['Kesinti', `${number(0)} coin`],
+          ['Kasadan Çıkan', coin(kasaOdeme.odenen)],
+          ['Kalan Kasa', coin(store.kasa())],
+          ['Kesinti', coin(kasaOdeme.kesilen)],
         ],
         note: 'Kasadan çıkan coin cezalarla birikmiş paraydı; sistem yeni coin üretmedi.',
       }),
