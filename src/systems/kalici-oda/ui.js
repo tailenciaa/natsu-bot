@@ -307,6 +307,7 @@ function memberMenus(container, roster) {
   const label = (value) => container.addTextDisplayComponents(text(value));
   const menu = (builder) => container.addActionRowComponents(new ActionRowBuilder().addComponents(builder));
 
+  container.addSeparatorComponents(divider());
   label('**Üye Ekle** · sunucudan seçtiğin üye odana katılır');
   menu(select(`${IDS.add}:0`, 'Odaya eklenecek üyeyi seç'));
 
