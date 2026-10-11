@@ -153,32 +153,19 @@ function weeklyVoiceSeconds(ids) {
 
 const draftKey = (interaction) => `${interaction.guildId}:${interaction.user.id}`;
 
-// Paneldeki "Başvuru Yap": önce üyelerin seçildiği adım açılır. Buton kalıcı panelde olduğu için cevabı birikir;
-// bu yüzden adım gizli açılır ve her seçim aynı mesajı yerinde günceller.
+// Paneldeki "Başvuru Yap": başvurunun ilk adımı açılır, üyeler burada menüyle seçilir. Buton kalıcı panelde olduğu
+// için kanala dönen cevap birikeceğinden adım gizli açılır (SABİT PANEL KURALI); görünürlük cevap anında kilitlenir.
 async function handleApplyButton(interaction) {
   const error = applyError(interaction);
   if (error) return replyError(interaction, ...error);
-  const draft = getDraft(draftKey(interaction)) ?? { members: [], at: Date.now() };
-  drafts.set(draftKey(interaction), draft);
-  return respond(interaction, ui.memberPicker(draft.members), { ephemeral: true });
+  return respond(interaction, ui.memberPicker(), { ephemeral: true });
 }
 
-// Üye seçme menüsü: seçtikler taslağa yazılır ve kart yerinde yenilenir
+// Üye seçme menüsü: mesajın içeriği değişmediği için işlem sadece onaylanır; seçtiklerinin dökümü Formu Aç
+// adımında denetlenir, eksikse üye sayısı söylenerek düzeltmesi istenir
 async function handleMemberPick(interaction) {
-  const draft = mergeDraft(draftKey(interaction), interaction.user.id, interaction.values);
-  await interaction.deferUpdate();
-  return interaction
-    .editReply({ components: [ui.memberPicker(draft.members)], allowedMentions: { parse: [] } })
-    .catch(hata('Üye seçimi kartı güncellenemedi'));
-}
-
-// "Seçimi Sil": taslak boşanır, menü baştan doldurulabilir
-async function handleMemberReset(interaction) {
-  drafts.set(draftKey(interaction), { members: [], at: Date.now() });
-  await interaction.deferUpdate();
-  return interaction
-    .editReply({ components: [ui.memberPicker([])], allowedMentions: { parse: [] } })
-    .catch(hata('Üye seçimi kartı temizlenemedi'));
+  setDraft(draftKey(interaction), interaction.user.id, interaction.values);
+  return interaction.deferUpdate();
 }
 
 // "Formu Aç": üye sayısı yeterliyse oda adı ve amacın sorulduğu form açılır
@@ -186,11 +173,14 @@ async function handleOpenForm(interaction) {
   const error = applyError(interaction);
   if (error) return replyError(interaction, ...error);
   const members = getDraft(draftKey(interaction))?.members ?? [];
+  if (!members.length) {
+    return replyError(interaction, 'Önce odada olacak üyeleri seç.', 'Menüden üyeleri seçtikten sonra tekrar **Formu Aç** butonuna bas.');
+  }
   if (members.length + 1 < config.minMembers) {
     return replyError(
       interaction,
       `Odayı en az ${config.minMembers} kişinin kullanması gerekiyor.`,
-      `Menüden ${config.minMembers - 1} üye seç, sonra **Formu Aç**'a bas. Seçtiğin üye sayısı kartta yazıyor.`,
+      `Menüden ${config.minMembers - 1} üye seç, sonra **Formu Aç**'a bas. Seçimi tek seferde yap: yeni seçim öncekinin yerini alır.`,
     );
   }
   return interaction.showModal(ui.applicationModal());

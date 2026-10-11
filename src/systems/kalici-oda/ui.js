@@ -158,24 +158,24 @@ function decisionRow(app) {
   );
 }
 
-// Yöneticinin gördüğü başvuru kartı. room verilirse (başvuru onaylanmış) açılan kanallar da yazılır.
+// Yöneticinin gördüğü başvuru kartı. room verilirse (başvuru onaylanmış) açılan kanal da yazılır.
 function applicationCard(app, room) {
   const container = page({
     title: 'Kalıcı Oda Başvurusu',
-    sub: 'Onay odaları açıp sahibine teslim eder; ret gerekçesi başvurana doğrudan mesaj olarak gider. Butonlar yalnızca yöneticilerde çalışır.',
+    sub: 'Onay odayı açıp sahibine teslim eder; ret gerekçesi başvurana doğrudan mesaj olarak gider. Butonlar yalnızca yöneticilerde çalışır.',
     accent: ACCENT[app.status],
     blocks: [
       `**Başvuru**\n${rows([
         ['Oda Adı', chip(app.roomName)],
         ['Başvuran', `<@${app.userId}>`],
-        ['Kişi Sayısı', chip(memberTotal(app.members.length))],
+        ['Kişi Sayısı', chip(`${app.members.length + 1} kişi`)],
         ['Son 7 Günün Sesi', chip(hoursLabel(app.voiceSeconds))],
         ['Haftalık Hedef', `${chip(`${config.minWeeklyVoiceHours} saat`)} · ${app.voiceOk ? 'karşılandı' : 'karşılanmadı'}`],
       ])}`,
       app.members.length ? `**Odayı Kullanacaklar**\n${mentions(app.members)}` : null,
       `**Amaç**\n${quote(app.purpose)}`,
       app.status === 'rejected' && app.note ? `**Ret Sebebi**\n${quote(app.note)}` : null,
-      room ? `**Açılan Kanallar**\n<#${room.voiceChannelId}> · <#${room.textChannelId}>` : null,
+      room ? `**Açılan Kanal**\n<#${room.voiceChannelId}>` : null,
       stamp(app.createdAt),
     ],
   });
