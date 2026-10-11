@@ -142,6 +142,7 @@ async function handleApplySubmit(interaction) {
     // KİŞİYE ÖZEL: başvuru özeti (amaç, odada olacak üyeler) sadece başvuranı ilgilendirir; görünürlük defer
     // anında kilitlendiği için gizli bayrak burada verilir. İnceleme kanalı zaten ayrı bir kart alır.
     await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+    const channel = await fetchTextChannel(interaction.guild, config.channels.applications);
     if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
 
     const number = store.nextApplicationNumber(interaction.guildId);
@@ -182,7 +183,7 @@ async function handleApplySubmit(interaction) {
     }
     store.updateApplication(id, { messageId: message.id });
 
-    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }));
+    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }), { ephemeral: true });
   } finally {
     submitting.delete(lockKey);
   }
@@ -298,7 +299,7 @@ async function handleApprove(interaction, app) {
     return respond(
       interaction,
       core.alert('Oda açılamadı.', 'Botun kanal yönetme izni olmayabilir ya da kategori/kanal sınırı dolmuş olabilir; bir sunucu yöneticisine bildir.', 'danger'),
-      { followUp: true },
+      { followUp: true, ephemeral: true },
     );
   }
   const updated = store.updateApplication(app.id, { status: 'approved', reviewedBy: interaction.user.id, reviewedAt: Date.now(), roomId: room.id });

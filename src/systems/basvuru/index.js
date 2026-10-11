@@ -235,7 +235,8 @@ async function handleApplySubmit(interaction) {
 
   submitting.add(lockKey);
   try {
-    await interaction.deferReply({ flags: core.CV2 });
+    // KİŞİYE ÖZEL: "başvurun alındı" cevabı başvuranı ilgilendirir, görünürlük defer anında kilitlenir
+    await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
 
     const channel = await fetchTextChannel(guild, config.channels.applications);
     if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
@@ -296,6 +297,7 @@ async function handleApplySubmit(interaction) {
     await respond(
       interaction,
       core.alert('Başvurun alındı.', 'İnceleme tamamlanınca sonucu sana DM üzerinden ileteceğiz.', 'success'),
+      { ephemeral: true },
     );
   } finally {
     submitting.delete(lockKey);
