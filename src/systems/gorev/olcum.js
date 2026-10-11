@@ -1,10 +1,12 @@
 // Görev ilerlemesinin okunduğu yer. Sayaç tutmaz: mesaj ve ses sayıları sıralama kaydından, saygınlık haftalık
-// tablosundan, günlük ödül ve siparişler coin kaydından, kozmetik/biyografi/renk profil kaydından, kutu ve seri
-// bu sistemin kendi kaydından gelir. Burada üretilen sayılar ile panellerde görünen sayılar aynı kaynaktır.
+// tablosundan, günlük ödül ve siparişler coin kaydından, kozmetik/biyografi/renk profil kaydından, açılan destek
+// talebi destek kaydından, kutu ve seri bu sistemin kendi kaydından gelir. Burada üretilen sayılar ile panellerde
+// görünen sayılar aynı kaynaktır.
 const coinStore = require('../coin/store');
 const saygiStore = require('../saygi/store');
 const siralamaStore = require('../siralama/store');
 const profilStore = require('../profil/store');
+const destekStore = require('../destek/store');
 const rozet = require('../profil/rozet');
 const skor = require('../profil/skor');
 const config = require('./config');
@@ -31,8 +33,8 @@ function olcumler(at = Date.now()) {
   };
 }
 
-// Rozet, puan ve ömür boyu ses süresi Keşif Yolu'nun adımlarında gerekiyor; kart açıldığında zaten hesaplandığı
-// için ayrı bir geçiş istenmiyor. Yalnızca Yol sekmesi bunu çağırır.
+// Rozet, puan, ömür boyu ses süresi ve açılan destek talebi Keşif Yolu'nun adımlarında gerekiyor; kart açıldığında
+// zaten hesaplandığı için ayrı bir geçiş istenmiyor. Yalnızca Yol sekmesi bunu çağırır.
 function ekler(guild, member, userId, m) {
   const measures = m ?? rozet.measures();
   const ctx = rozet.contextOfMember(guild, member, userId, measures);
@@ -41,6 +43,7 @@ function ekler(guild, member, userId, m) {
     rozetSayisi: kazanilan.length,
     puan: skor.scoreOf(ctx, kazanilan.length).total,
     sesToplam: measures.voice.get(userId) ?? 0,
+    destekSayisi: destekStore.ticketsOpenedBy(guild.id, userId).length,
   };
 }
 

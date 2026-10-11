@@ -1,7 +1,7 @@
 // Görevler: üyenin botla her gün temas hâlinde kalması için kurulu ilerleme katmanı. Dört katmanı var:
 //   Günlük   : havuzdan çekilen üç görev, gece 00:00'da yenilenir. Üçü birden bitirilince demet ödülü verilir.
 //   Haftalık : havuzdan çekilen üç ağır görev, pazartesi yenilenir. Anahtar asıl buradan düşer.
-//   Keşif Yolu: botun sistemlerini sırayla gezdiren, tek seferlik on bir adım. Her adım bir sonrakini çeker.
+//   Keşif Yolu: botun sistemlerini sırayla gezdiren, tek seferlik on iki adım. Her adım bir sonrakini çeker.
 //   Kutu      : anahtar harcanan ödül çekilişi; kozmetikler doğrudan mağazadaki sahipliğe geçer.
 // Sezon ise ayın birikimli yarışı: görevlerden puan toplanır, ay eşikleri geçilince tek seferlik ödül alınır.
 //
@@ -48,7 +48,8 @@ const HAFTALIK_HAVUZU = [
 const DEMET = { coin: 120, anahtar: 1, puan: 3 };
 
 // Keşif Yolu: botun sistemlerini gezdiren sıralı adımlar. Sıra bilinçli: kartını tanırsın, sonra yazı yazarsın,
-// sonra sese girersin, sonra mağazayı görürsün. Her adım bir sonrakini tarif eder, sonunda ücretsiz rozet var.
+// sonra sese girersin, sonra desteği görürsün, sonra mağazayı görürsün. Her adım bir sonrakini tarif eder,
+// sonunda ücretsiz rozet var.
 const YOL = [
   { key: 'gunluk-topla', ad: 'Günlük ödülünü topla', tarif: '/gunluk yaz ve ilk coinlerini al.', hedef: 1, olcum: 'gunlukHic', odul: { coin: 100, puan: 5 } },
   { key: 'kartini-gor', ad: 'Kendi profil kartını aç', tarif: '/profil yaz; kartını ve altındaki düzenleme düğmelerini gör.', hedef: 1, olcum: 'goruldu:kartini-gor', odul: { coin: 80, puan: 3 } },
@@ -57,6 +58,7 @@ const YOL = [
   { key: 'rep-ver', ad: 'Birine saygınlık ver', tarif: 'Sohbette "+rep @üye" yaz. Saygınlık hem rozet hem puan getirir.', hedef: 1, olcum: 'repVerdiHic', odul: { coin: 150, anahtar: 1, puan: 5 } },
   { key: 'seste-kal', ad: 'Seslide 10 dakika geçir', tarif: 'Bir sesli kanala gir; 10 dakika kaldığında bu adım kendiliğinden dolar.', hedef: 600, birim: 'sure', olcum: 'sesToplam', odul: { coin: 150, anahtar: 1, puan: 5 } },
   { key: 'cekilis-katil', ad: 'Bir çekilişe katıl', tarif: 'Çekiliş duyurusundaki Katıl düğmesine bas; kazananlar otomatik çekilir.', hedef: 1, olcum: 'goruldu:cekilis-katil', odul: { coin: 120, puan: 4 } },
+  { key: 'destek-ac', ad: 'Bir destek talebi aç', tarif: 'Destek kanalındaki Talep Oluştur düğmesinden bir talep aç. Yetkili talebini kapattığında hizmetini puanlaman istenir.', hedef: 1, olcum: 'destekSayisi', odul: { coin: 150, puan: 5 } },
   { key: 'rozet-kazan', ad: 'İlk rozetini kazan', tarif: 'Profilindeki Rozetler sayfası hangi rozete ne kadar yaklaştığını gösterir.', hedef: 1, olcum: 'rozetSayisi', odul: { coin: 200, anahtar: 1, puan: 6 } },
   { key: 'ilk-kozmetik', ad: 'Mağazadan ilk kozmetiğini al', tarif: 'Mağaza sekmesinden çerçeve, tema ya da sergi rozeti al; kartın değişsin.', hedef: 1, olcum: 'kozmetikSahibi', odul: { coin: 200, anahtar: 1, puan: 6 } },
   { key: 'ilk-kutu', ad: 'İlk kutunu aç', tarif: 'Üç anahtar biriktir ve Kutu sekmesinden aç.', hedef: 1, olcum: 'kutuToplam', odul: { coin: 250, anahtar: 1, puan: 7 } },
