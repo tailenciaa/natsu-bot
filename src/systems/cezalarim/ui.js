@@ -203,9 +203,9 @@ function itirazCard(p, sebep, karar) {
       : 'Üye bir cezaya itiraz etti. Ceza bilgilerini ve iki sebebi inceleyip **İtirazı Onayla** ya da **İtirazı Reddet** butonuyla karar verebilirsin; onaylarsan ceza kaldırılır.',
     accent: karar ? (approved ? colors.success : colors.danger) : colors.warning,
     blocks: [
-      `**Ceza Bilgileri**\n${info}`,
-      `**Ceza Sebebi**\n${quote(p.reason)}`,
-      `**İtiraz Sebebi**\n${quote(sebep)}`,
+      `## Ceza Bilgileri\n${info}`,
+      `## Ceza Sebebi\n${quote(p.reason)}`,
+      `## İtiraz Sebebi\n${quote(sebep)}`,
       kararSatiri,
       kararNotu,
     ],

@@ -46,7 +46,7 @@ function weeklyAnnounce(guild, results, roleId) {
             ['Toplam Saygınlık', chip(winner.value)],
             ['Ödül', `${roleText} rolü`],
           ])}`
-        : '**Henüz Kazanan Yok**\nGeçen hafta kimse saygınlık kazanmadı.',
+        : '## Henüz Kazanan Yok\nGeçen hafta kimse saygınlık kazanmadı.',
     ],
   });
 }

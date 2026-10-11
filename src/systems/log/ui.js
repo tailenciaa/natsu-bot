@@ -22,7 +22,7 @@ const ENTRY_SUB =
 // details: butona basınca gösterilecek ek satırlar (mesaj ID'si, gönderilme zamanı vb.); verilmezse olay satırları gösterilir
 function entry(color, title, lines, details) {
   const list = [].concat(lines).filter((line) => line != null && line !== '');
-  const container = page({ title, sub: ENTRY_SUB, accent: colors[color] ?? colors.primary, blocks: [`**Olay Bilgileri**\n${list.join('\n')}`] })
+  const container = page({ title, sub: ENTRY_SUB, accent: colors[color] ?? colors.primary, blocks: [`## Olay Bilgileri\n${list.join('\n')}`] })
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`-# <t:${unix(Date.now())}:f>`))
     .addActionRowComponents(
@@ -44,9 +44,9 @@ function detail(meta, categoryLabel) {
 
   const blocks = [
     `**${meta.title}**\n**Kategori:** ${categoryLabel}\n**Tarih:** <t:${at}:D>\n**Saat:** <t:${at}:T> (<t:${at}:R>)`,
-    `**Ayrıntılar**\n${body}`.slice(0, 2800),
+    `## Ayrıntılar\n${body}`.slice(0, 2800),
   ];
-  if (ids.length) blocks.push(`**İlgili ID'ler**\n${ids.slice(0, 8).join('\n')}`);
+  if (ids.length) blocks.push(`## İlgili ID'ler\n${ids.slice(0, 8).join('\n')}`);
 
   return page({
     title: 'Log Detayı',
@@ -97,7 +97,7 @@ function jumpLink(category, thread) {
         ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Kategori Açıklaması**\n${category.description}`));
+    .addTextDisplayComponents(text(`## Kategori Açıklaması\n${category.description}`));
 }
 
 const button = (action, label, style, disabled = false) =>
@@ -110,14 +110,14 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
   const complete = ready === rows.length && Boolean(panelUrl);
 
   const blocks = [
-    `**Kurulum Durumu**\n**${ready}/${rows.length} log alt başlığı kurulu${panelUrl ? '' : ', panel gönderilmemiş'}.**`,
-    '**Kanallar**\n' +
+    `## Kurulum Durumu\n**${ready}/${rows.length} log alt başlığı kurulu${panelUrl ? '' : ', panel gönderilmemiş'}.**`,
+    '## Kanallar\n' +
       `**Ana log kanalı:** <#${mainId}>\n` +
       `**Log paneli kanalı:** <#${panelId}>\n` +
       `**Panel:** ${panelUrl ? `[Mesaja git](${panelUrl})` : 'gönderilmemiş'}`,
-    `**Log Alt Başlıkları**\n${rows.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n')}`,
+    `## Log Alt Başlıkları\n${rows.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n')}`,
   ];
-  if (note) blocks.push(`**Son İşlem**\n${note}`);
+  if (note) blocks.push(`## Son İşlem\n${note}`);
 
   return page({
     title: 'Log Kurulumu',
@@ -143,7 +143,7 @@ function resetConfirm() {
     sub: 'Bu işlem bütün log alt başlıklarını silip yeniden açar; alt başlıkların içindeki eski loglar da silineceği için devam etmeden önce ne yapacağından emin olmalısın.',
     accent: colors.danger,
     blocks: [
-      '**Uyarı**\n**Tüm eski loglar kalıcı olarak silinir** ve bu işlem **geri alınamaz.**\n' +
+      '## Uyarı\n**Tüm eski loglar kalıcı olarak silinir** ve bu işlem **geri alınamaz.**\n' +
         'Onaylıyorsan **Evet, Sıfırla** butonuna bas; vazgeçmek için **Vazgeç** butonuna bas.',
     ],
   })

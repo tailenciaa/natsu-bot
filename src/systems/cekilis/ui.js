@@ -144,7 +144,7 @@ function winners(g, ids, reroll = false) {
     accent: colors.success,
     blocks: [
       `**Tebrikler ${mentions(ids)}!**`,
-      `**Ödül**\n${quote(g.prize)}`,
+      `## Ödül\n${quote(g.prize)}`,
       rows([
         ['Çekilişi Başlatan', `<@${g.hostId}>`],
         ['Katılımcı', chip(g.participants.length)],
@@ -163,7 +163,7 @@ function noWinner(g) {
     sub: 'Çekiliş tamamlandı ama kazanan seçilemedi.',
     accent: colors.warning,
     blocks: [
-      `**Ödül**\n${quote(g.prize)}`,
+      `## Ödül\n${quote(g.prize)}`,
       rows([
         ['Sebep', noWinnerReason(g)],
         ['Çekilişi Başlatan', `<@${g.hostId}>`],
@@ -196,7 +196,7 @@ function managementPanel({ active, ended, channelId }) {
     blocks: [
       active.length ? active.map(line).join('\n\n') : '-# Şu an açık çekiliş yok.',
       ended.length
-        ? `**Son Sonuçlananlar**\n${ended.map((g) => `**#${g.no} · ${g.prize}** - ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`).join('\n')}`
+        ? `## Son Sonuçlananlar\n${ended.map((g) => `**#${g.no} · ${g.prize}** - ${g.winners.length ? mentions(g.winners) : 'kazanan seçilemedi'}`).join('\n')}`
         : null,
     ],
   });

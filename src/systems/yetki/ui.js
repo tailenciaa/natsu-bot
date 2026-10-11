@@ -50,11 +50,11 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
   const blocks = done
     ? [
         fields(['**Yeni Yetkili**', `<@${user.id}> artık **yetkili ekibinde.**`, field('Yetkiyi Veren', `<@${by}>`)]),
-        `**Verilen Yetkiler**\n${summary}`,
-        `**Verilen Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\nBazı yetkilerin **rolü henüz ayarlanmadığı** için o roller verilmedi.' : ''}`,
+        `## Verilen Yetkiler\n${summary}`,
+        `## Verilen Roller\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\nBazı yetkilerin **rolü henüz ayarlanmadığı** için o roller verilmedi.' : ''}`,
         stamp(),
       ]
-    : [`**Düzenlenen Üye**\n<@${user.id}> için **yetki düzenliyorsun.**`, `**Seçimler**\n${summary}`];
+    : [`## Düzenlenen Üye\n<@${user.id}> için **yetki düzenliyorsun.**`, `## Seçimler\n${summary}`];
 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
@@ -135,7 +135,7 @@ function grantDm(guildName, { level, permIds, dutyIds, by }) {
     sub: `${guildName} sunucusunda artık yetkili ekibinin bir parçasısın. Sana tanımlanan rütbe, yetkiler ve görev rolleri ile nereden başlayacağın bu mesajda; yeni görevinde başarılar.`,
     accent: colors.success,
     blocks: [
-      `**Yetki Bilgilerin**\n${rows([
+      `## Yetki Bilgilerin\n${rows([
         ['Rütbe', chip(level.label)],
         ['Yetkiler', labelsOf(config.perms, permIds)],
         ['Görev Rolleri', labelsOf(config.duties, dutyIds)],
@@ -165,11 +165,11 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
           `<@${user.id}> artık ${all ? '**yetkili ekibinde değil.**' : '**seçilen yetkilere sahip değil.**'}`,
           field('Yetkiyi Kaldıran', `<@${by}>`),
         ]),
-        `**Kaldırılan Yetkiler**\n${summary(all ? held : picked)}`,
-        `**Kaldırılan Roller**\n${roleIds.map((id) => `<@&${id}>`).join(' ') || 'Kaldırılacak rol kalmamıştı.'}`,
+        `## Kaldırılan Yetkiler\n${summary(all ? held : picked)}`,
+        `## Kaldırılan Roller\n${roleIds.map((id) => `<@&${id}>`).join(' ') || 'Kaldırılacak rol kalmamıştı.'}`,
         stamp(),
       ]
-    : [`**Düzenlenen Üye**\n<@${user.id}>'ın **yetkilerini kaldırıyorsun.**`, `**Şu Anki Yetkileri**\n${summary(held)}`, `**Kaldırılacaklar**\n${summary(picked)}`];
+    : [`## Düzenlenen Üye\n<@${user.id}>'ın **yetkilerini kaldırıyorsun.**`, `## Şu Anki Yetkileri\n${summary(held)}`, `## Kaldırılacaklar\n${summary(picked)}`];
 
   const container = page({
     title: done ? 'Yetki Kaldırıldı' : 'Yetki Kaldır',
@@ -226,7 +226,7 @@ function revokeDm(guildName, { taken, by, all }) {
       : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; kaldırılan yetkileri ve işlemi yapan yetkiliyi bu mesajda görebilirsin.`,
     accent: colors.danger,
     blocks: [
-      `**Kaldırılan Yetkiler**\n${rows([
+      `## Kaldırılan Yetkiler\n${rows([
         ['Rütbe', choice(labelsOf(config.levels, taken.levelIds))],
         ['Yetkiler', labelsOf(config.perms, taken.permIds)],
         ['Görev Rolleri', labelsOf(config.duties, taken.dutyIds)],

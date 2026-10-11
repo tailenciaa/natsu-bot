@@ -326,7 +326,7 @@ const requesterResult = (sonuc, request, by) =>
 function noticeCard(title, sub, infoLines, reason) {
   const container = new ContainerBuilder().setAccentColor(colors.danger).addTextDisplayComponents(head(title, sub));
   if (infoLines.length) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(fields(infoLines)));
-  if (reason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Sebep**\n${quote(reason)}`));
+  if (reason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Sebep\n${quote(reason)}`));
   return container;
 }
 
@@ -531,7 +531,7 @@ function trustedDetail(entry) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(sanitize(entry.content), 1500))}`))
+    .addTextDisplayComponents(text(`## Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(...trustedActionRow(entry));
 }
@@ -628,7 +628,7 @@ function renewalReviewDm(entry) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Partner Metni**\n${quote(shorten(sanitize(entry.content), 1500))}`))
+    .addTextDisplayComponents(text(`## Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -708,7 +708,7 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   }
 
   // Bizim metni
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`**Bizim Sunucumuz**\n${config.ourAdText}`));
+  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Bizim Sunucumuz\n${config.ourAdText}`));
 
 
   if (ourJumpUrl && ourJumpUrl !== partnerJumpUrl) {
