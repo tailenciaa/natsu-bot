@@ -75,4 +75,8 @@ module.exports = {
   // Sayfanın "son girişimler" listesi ve kayıt defterinin tuttuğu satır sayısı
   sicilGoster: 3,
   sicilTut: 40,
+
+  // Bekçinin aralığı: hiç dokunulmamış girişimler burada sonuçlanır. Pencereden kısa tutulur ki üye "süre doldu
+  // ama hâlâ sonuçlanmadı" demesin; tarama ucuz olduğu için fazlası da zarar vermez.
+  bekciAralik: 20 * 1000,
 };

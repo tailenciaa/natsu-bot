@@ -107,6 +107,15 @@ function girisimKapat(id) {
   });
 }
 
+// Pusu kartının mesaj numarası sonra eklenir: bekçi kartı yeni mesaj atmak yerine yerinde sonuç kartına çevirsin
+function girisimMesajKaydet(id, mesajId) {
+  if (!h.girisimler[id]) return null;
+  yaz(() => {
+    h.girisimler[id].mesaj = mesajId;
+  });
+  return h.girisimler[id];
+}
+
 // Bir günde bu kadar taze kayıt bırakılmazsa dosya şişer (bot yeniden başladığında süresi geçmiş yetim kayıt da bu
 // yolla temizlenir; sweep bunları zaten sonuçlandırır)
 function girisimTemizle(at = Date.now()) {
@@ -119,7 +128,7 @@ function girisimTemizle(at = Date.now()) {
 }
 
 // ── Sonuç kayıtları ───────────────────────────────────────────────────────────
-function basariKaydet(userId, miktar, at = Date.now()) {
+function basariKaydet(userId, miktar) {
   yaz(() => {
     const r = rec(userId);
     r.basari += 1;
@@ -216,6 +225,7 @@ module.exports = {
   girisim,
   girisimKaydet,
   girisimKapat,
+  girisimMesajKaydet,
   girisimTemizle,
   acikGirisim,
   bekleyenler,
