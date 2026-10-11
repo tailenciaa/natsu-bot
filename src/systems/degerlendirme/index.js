@@ -196,6 +196,7 @@ async function handleReplySubmit(interaction) {
     sent
       ? core.alert('Yorumun eklendi.', 'Değerlendirmeyi yapan üyeye DM üzerinden bildirildi.', 'success')
       : core.alert('Yorumun eklendi.', "Üyenin DM'si kapalı olduğu için bildirim gönderilemedi.", 'warning'),
+    { ephemeral: true },
   );
 }
 
@@ -257,6 +258,7 @@ async function handleReportSubmit(interaction) {
   await respond(
     interaction,
     core.alert('İtirazın liderlere iletildi.', 'Sonuç sana DM üzerinden bildirilecek.', 'success'),
+    { ephemeral: true },
   );
 }
 

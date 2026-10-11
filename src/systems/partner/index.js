@@ -683,7 +683,8 @@ async function handleStaffStatusCommand(interaction) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu komutu sadece partner yetkilileri kullanabilir.');
   const durum = interaction.options.getString('durum', true);
   store.setStaffStatus(interaction.user.id, durum);
-  return respond(interaction, core.alert(`Durumun **${durum === 'aktif' ? 'Aktif' : 'Meşgul'}** olarak ayarlandı.`, null, 'success'));
+  // KİŞİYE ÖZEL: kendi müsaitlik durumu ayarı sadece yetkiliyi ilgilendirir
+  return respond(interaction, core.alert(`Durumun **${durum === 'aktif' ? 'Aktif' : 'Meşgul'}** olarak ayarlandı.`, null, 'success'), { ephemeral: true });
 }
 
 async function handleTrustedSelect(interaction) {
