@@ -210,7 +210,7 @@ function merdivenSekmesi(state) {
     sub: 'Açgözlülüğün oyunu: potu çekene kadar sayılmaz. Düğmeye her basışta ya basamak atlayıp çarpanı büyütürsün ' +
       'ya da düşüp bahsi kaybedersin. Erken çeken kazanır, son basamağı isteyen düşer.',
     blocks: [masada, `### Basamaklar\n${basamakSatirlari(merdiven?.adim ?? 0, merdiven?.bahis ?? bahis)}`, sicil(state.kumar)],
-    rows: merdiven ? [eylem] : [bahisSatiri(bahis), eylem],
+    rows: merdiven ? [eylem] : [bahisSatiri(bahis, 'merdiven'), eylem],
   });
 }
 

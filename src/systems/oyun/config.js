@@ -50,6 +50,9 @@ module.exports = {
     cooldown: 20 * 60 * 1000,
     gunlukAdet: 8,
 
+    // Bölge masasından kozmetik düşerse ama üyenin hepsi zaten sahipliğindeyse ödül boşa gitmesin: bu kadar coin verilir
+    kozmetikYedek: 350,
+
     // Bölge masası: ağırlıklar 100'ü toplar. `seviye` kapısı, üyenin mesaj ya da ses seviyesinin büyük olanıdır
     // (günlük ödülle aynı ölçüm), böylece keşif sunucuda vakit geçirmenin ödülü olur.
     // Nitelikler kartın rengini ve duyuruyu belirler: efsanevi ganimet kanalda anılır.
