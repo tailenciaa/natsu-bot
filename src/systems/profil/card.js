@@ -132,8 +132,28 @@ async function drawBanner(ctx, custom) {
   return true;
 }
 
+// Kapağın alt kenarının kendi ortalama tonu. Gövde bu tondan başlayınca üyenin görseli ile kart zemini birbirine
+// oturur; aksi halde parlak bir kapağın altında renk uyuşmazlığından ince bir çizgi belirir.
+function bottomTone(ctx) {
+  try {
+    const { data } = ctx.getImageData(0, HEADER - 6, WIDTH, 6);
+    const sum = [0, 0, 0];
+    for (let i = 0; i < data.length; i += 4) {
+      sum[0] += data[i];
+      sum[1] += data[i + 1];
+      sum[2] += data[i + 2];
+    }
+    const n = data.length / 4 || 1;
+    const hex = (v) => Math.round(v / n).toString(16).padStart(2, '0');
+    return `#${hex(sum[0])}${hex(sum[1])}${hex(sum[2])}`;
+  } catch {
+    return null; // okunamazsa temanın kendi gövde tonu kullanılır
+  }
+}
+
 // Kapağın tamamı: görsel varsa o, yoksa satın alınan kapak efekti (custom.cover), o da yoksa temanın efekti.
-// Üst soldaki etiketlerin okunması için hafif bir karartma, altta zemine geçiş için yumuşak kararmanın eklenir.
+// Üst soldaki etiketlerin okunması için hafif bir karartma, altta zemine geçiş için yumuşak bir kararmanın eklenir.
+// Dönen değer kapağın altındaki ilk gövde rengidir (bkz. bottomTone).
 async function paintHeader(ctx, view, theme, p, c) {
   const custom = view.custom;
   ctx.save();
@@ -149,30 +169,39 @@ async function paintHeader(ctx, view, theme, p, c) {
   shade.addColorStop(1, 'rgba(8,5,10,0)');
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, WIDTH, 130);
-  // Kapağın altındaki kararma gövdenin ilk tonuna bağlanır: hedef gövde rengi olmazsa koyu bir kapak ile zemin
-  // arasında sert, kirli bir bant oluşur.
-  const fade = ctx.createLinearGradient(0, HEADER - 100, 0, HEADER);
-  fade.addColorStop(0, hexAlpha(c.bgTop, 0));
-  fade.addColorStop(1, c.bgTop);
+
+  // Geçiş rengi: kapağın kendi alt tonu, koyulaştırılıp temanın gövde rengine yaklaştırılır. Koyulaştırma parlak
+  // bir fotoğrafın kartı soldurmasını, yaklaştırma da gövdenin tema renginden kopmamasını sağlar.
+  const tone = bottomTone(ctx);
+  const seam = tone ? mix(mix(tone, '#000000', 0.55), c.bgTop, 0.35) : c.bgTop;
+  // Kapağın altındaki kararma geçiş rengine bağlanır: hedef gövde rengi olmazsa kapak ile zemin arasında sert,
+  // kirli bir bant oluşur.
+  const fade = ctx.createLinearGradient(0, HEADER - 150, 0, HEADER);
+  fade.addColorStop(0, hexAlpha(seam, 0));
+  fade.addColorStop(0.55, hexAlpha(seam, 0.55));
+  fade.addColorStop(1, seam);
   ctx.fillStyle = fade;
-  ctx.fillRect(0, HEADER - 100, WIDTH, 100);
+  ctx.fillRect(0, HEADER - 150, WIDTH, 150);
   ctx.restore();
+  return seam;
 }
 
 // Kapağın rengi gövdeye hafif bir ışımayla sızar. Cam paneller yarı saydam olduğu için arkalarında bu ışımayı
 // görür; saydamlık ayarının fark edilebilir olmasını sağlayan şey budur. Düz panelleri ise kapatır, görünmez.
-// Işıma kapağın hemen altında başlamaz (koyu bir kapağın altındaki açık bant kartı kirli gösterir): sıfırdan açılır,
-// gövdenin içinde güçlenir ve kartın altına doğru yeniden söner.
+// Işıma kapağın birleşim çizgisinde sıfır alfa ile açılır ve parlamaların üst ucu o çizgiye hiç değmez: gövde,
+// kapağın bağladığı renkten kesintisiz devam eder.
 function paintAmbient(ctx, height, p) {
   const body = height - HEADER;
-  const bleed = ctx.createLinearGradient(0, HEADER, 0, HEADER + Math.max(240, Math.round(body * 0.8)));
+  const bleed = ctx.createLinearGradient(0, HEADER, 0, HEADER + Math.max(240, Math.round(body * 0.85)));
   bleed.addColorStop(0, hexAlpha(p.to, 0));
-  bleed.addColorStop(0.3, hexAlpha(p.to, 0.12));
+  bleed.addColorStop(0.4, hexAlpha(p.to, 0.12));
   bleed.addColorStop(1, hexAlpha(p.to, 0));
   ctx.fillStyle = bleed;
   ctx.fillRect(0, HEADER, WIDTH, body);
 
   const glow = (x, y, r, color, a) => {
+    r = Math.min(r, y - HEADER); // parlamanın üst ucu kapağın altında başlamaz
+    if (r <= 0) return;
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
     g.addColorStop(0, hexAlpha(color, a));
     g.addColorStop(1, hexAlpha(color, 0));
@@ -180,8 +209,8 @@ function paintAmbient(ctx, height, p) {
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   };
   // İki parlama aynı güçte ve gövdeye yayılmış durur; bir köşeye toplanan güçlü parlama kartı dengesiz gösterir
-  glow(WIDTH * 0.1, HEADER + Math.round(body * 0.45), 430, p.accent, 0.055);
-  glow(WIDTH * 0.9, height - Math.round(body * 0.22), 400, p.accent, 0.06);
+  glow(WIDTH * 0.1, HEADER + Math.round(body * 0.62), Math.round(body * 0.6), p.accent, 0.06);
+  glow(WIDTH * 0.9, height - 60, body, p.accent, 0.06);
 }
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
@@ -462,12 +491,15 @@ async function buildProfileCard(user, view) {
   ctx.clip();
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, height);
+  // Kapak önce çizilir: döndürdüğü alt ton gövdenin ilk rengi olur, böylece ikisi birleşim çizgisinde kesintisiz
+  // devam eder. Gövde o tondan tema renginin karanlığına, oradan kartın altında neredeyse siyaha iner.
+  const seam = await paintHeader(ctx, view, theme, p, c);
   const body = ctx.createLinearGradient(0, HEADER, 0, height);
-  body.addColorStop(0, c.bgTop);
+  body.addColorStop(0, seam);
+  body.addColorStop(0.4, c.bgTop);
   body.addColorStop(1, c.bgBottom);
   ctx.fillStyle = body;
   ctx.fillRect(0, HEADER, WIDTH, height - HEADER);
-  await paintHeader(ctx, view, theme, p, c);
   paintAmbient(ctx, height, p);
 
   // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
@@ -477,13 +509,13 @@ async function buildProfileCard(user, view) {
   pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 26, rankColor);
   pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 76, accent, '#120a10', null);
 
-  // Avatar kapağın altına taşar; gövde rengindeki kalın halka kapakla arasını ayırır
+  // Avatar kapağın altına taşar; kapağın bağlandığı tondaki kalın halka kapakla arasını ayırır
   const avatarSize = 184;
   const avatarX = PAD;
   const avatarY = HEADER - 92;
   ctx.beginPath();
   ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 10, 0, Math.PI * 2);
-  ctx.fillStyle = c.bgTop;
+  ctx.fillStyle = seam;
   ctx.fill();
   await drawAvatar(ctx, user, avatarX, avatarY, avatarSize, accent);
 
