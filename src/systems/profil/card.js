@@ -198,17 +198,20 @@ function avgTone(ctx, x, y, w, h) {
   }
 }
 
-// Kapağın alt bandındaki karartma: soldan sağa incelen yatay bir karartı kimlik yazılarını tutar. Güç, bölgenin
-// ölçülen parlaklığına göre ayarlanır; parlak bir fotoğrafta koyulaşır, koyu bir fotoğrafta inceltir. Eskisi gibi
-// kapağın yarısını kapatmaz: görselin üst ve sağ bölümü olduğu gibi kalır.
+// Kapağın alt bandındaki karartma: sol alt köşeden yayılan ışınsal bir karartı kimlik yazılarını tutar. Köşeden
+// yayıldığı için dikdörtgen bandın kenar çizgisi oluşmaz, görselin üst ve sağ bölümü olduğu gibi kalır. Güç,
+// bölgenin ölçülen parlaklığına göre ayarlanır; parlak fotoğrafta koyulaşır, koyu fotoğrafta inceltir.
 function drawHeroScrim(ctx) {
   const tone = avgTone(ctx, 0, HEADER - SCRIM_H, Math.round(WIDTH * 0.6), SCRIM_H);
   const strength = clamp(0.3 + (tone ? luminance(tone) : 0.35) * 0.5, 0.3, 0.78);
-  const left = ctx.createLinearGradient(0, 0, Math.round(WIDTH * 0.72), 0);
-  left.addColorStop(0, `rgba(6,4,8,${strength.toFixed(3)})`);
-  left.addColorStop(1, 'rgba(6,4,8,0)');
-  ctx.fillStyle = left;
-  ctx.fillRect(0, HEADER - SCRIM_H, WIDTH, SCRIM_H);
+  const a = (k) => `rgba(6,4,8,${(strength * k).toFixed(3)})`;
+  const glow = ctx.createRadialGradient(0, HEADER, 0, 0, HEADER, Math.round(WIDTH * 0.78));
+  glow.addColorStop(0, a(1));
+  glow.addColorStop(0.45, a(0.82));
+  glow.addColorStop(0.75, a(0.35));
+  glow.addColorStop(1, 'rgba(6,4,8,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, WIDTH, HEADER);
 }
 
 // Kapağın tamamı: görsel varsa o, yoksa satın alınan kapak efekti (custom.cover), o da yoksa temanın efekti.
