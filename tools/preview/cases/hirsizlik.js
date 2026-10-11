@@ -67,6 +67,15 @@ module.exports = ({ mock, ui, src }) => {
   // Sinan kasaya zorlamaktan yakalandı: içerideki üyenin sayfasında kefalet düğmesi doğar
   store.hapisVer(tutuklu.uid, config.hapis.kasa, 'kasa', mock.ago(6 * mock.MIN));
 
+  // Berk kefaletini ödeyip tahliye oldu: hapis gerçek kapıdan kurulur, para coin kuralıyla kasaya yazar,
+  // sonra tahliye de store'un kendi kapısından temizlenir. Sayfa o üyenin okumasından gelir.
+  const serbest = uye({ ad: 'Berk', seviye: 21, coin: 1200 });
+  store.hapisVer(serbest.uid, config.hapis.uye, 'uye', mock.ago(9 * mock.MIN));
+  const bedel = store.kefaletBedeli(serbest.uid);
+  coinStore.spend(serbest.uid, bedel);
+  store.kasaEkle(bedel);
+  store.hapisBitir(serbest.uid);
+
   // ── Arka Sokaklar sayfası ─────────────────────────────────────────────────
   const cases = [
     kartCase(
@@ -91,15 +100,7 @@ module.exports = ({ mock, ui, src }) => {
       'sokak-kefalet',
       'Suç sayfası: kefalet ödendikten sonra aynı mesajda geri bildirim',
       'Kefalet Ver düğmesinden sonra aynı sayfa',
-      p.panel(
-        {
-          ...sayfa(kurban),
-          hapis: 0,
-          hapisTur: null,
-          kefalet: 0,
-        },
-        `**Kefalet ödendi:** ${number(350)} coin kasaya yazıldı ve tahliye oldun.`,
-      ),
+      p.panel(sayfa(serbest, `**Kefalet ödendi:** ${number(bedel)} coin kasaya yazıldı ve tahliye oldun.`)),
     ),
 
     // ── Pusu kartları ────────────────────────────────────────────────────────
@@ -219,7 +220,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: suç dünyası üyenin seviyesine kapalı',
       '/çal uye kullanan yeni hesapta',
       'Suç dünyası senin seviyene kapalı.',
-      `Girişim için seviye ${config.minSeviye} gerekir, ölçülen seviyen ${yeni.coin ? 0 : 0}.`,
+      `Girişim için seviye ${config.minSeviye} gerekir, ölçülen seviyen ${suc.durumOf(yeni.uid).seviye}.`,
     ),
     hataCase(
       'hata-hapis',
@@ -247,7 +248,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: hedef üye yeni soyulduğu için korunuyor',
       'Dokunulmazlık süresinde /çal uye denemesinde',
       'Bu üye dokunulmaz.',
-      `${ui.rel(Date.now() + 2 * mock.SAAT)} kadar hedef olamaz; yeni soyulan ya da direnen üye bir süre korunur.`,
+      `${ui.rel(suc.durumOf(mafya.uid).dokunulmaz)} kadar hedef olamaz; yeni soyulan ya da direnen üye bir süre korunur.`,
     ),
     hataCase(
       'hata-kasa-bos',
