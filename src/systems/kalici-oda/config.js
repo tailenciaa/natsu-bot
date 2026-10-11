@@ -23,8 +23,10 @@ module.exports = {
     owner: '1558768699530281055',
   },
 
-  // Kalıcı odaların açılacağı kategori. null: odalar sunucu kökünde açılır.
-  categoryId: null,
+  // Kalıcı odaların açılacağı kategori: her oda bu kategorinin içine tek bir ses kanalı olarak açılır. Odaya özel
+  // alt kategori ya da ayrı yazı kanalı oluşturulmaz; odanın yazısı ses kanalının kendi sohbetidir. Bu kategori
+  // @everyone'a kapalıysa odalar kimseye görünmez (bot açılışta logda uyarır). null: sunucu köküne açılır.
+  categoryId: '1538520845775929385',
 
   // Bir üyenin aynı anda en fazla kaç kalıcı odası olabilir
   maxRoomsPerOwner: 1,
@@ -61,16 +63,9 @@ module.exports = {
   ],
 
   // Başvuru formunun soruları (modalda en fazla 5 alan). Cevaplar başvuru kartında etiket-değer satırı olarak çizilir.
+  // Üyeler burada sorulmaz: başvurunun ilk adımında üye seçme menüsüyle seçilir, ID yazılmaz.
   questions: [
-    { id: 'ad', label: 'Oda adı', description: 'Kategori ve kanal adında görünür.', placeholder: 'Örn: Müzik Odası', max: 30 },
-    {
-      id: 'kisiler',
-      label: 'Odada kimler olacak?',
-      description: 'Üyeleri etiketleyerek ya da ID yazarak belirt, başvuran sayılmaz.',
-      placeholder: 'Örn: <@123456789012345678> <@234567890123456789>',
-      paragraph: true,
-      max: 600,
-    },
+    { id: 'ad', label: 'Oda adı', description: 'Ses kanalının adı olur.', placeholder: 'Örn: Müzik Odası', max: 30 },
     {
       id: 'amac',
       label: 'Oda ne için kullanılacak?',
