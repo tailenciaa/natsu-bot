@@ -541,7 +541,7 @@ function cancelledDm(app, guildName) {
 // state: open (devral butonu açık) | returned (yetkili döndü) | taken (biri devraldı) | closed (oryantasyon bitti)
 function takeoverNotice(app, state) {
   const o = app.orientation;
-  const heading = `**Başvuru ${appNo(app)}**`;
+  const heading = `### Başvuru ${appNo(app)}`;
   const record = 'Bu mesaj başvurular kanalında kayıt olarak kalır.';
   if (state === 'open') {
     const step = config.steps[o.step];
@@ -757,7 +757,7 @@ function choiceResult(app, which, lines = []) {
 // state: open (başvuran henüz kanalda değil) | waiting (başvuran kanalda bekliyor) | taken | closed
 function pendingNotice(app, state, channelId, reminder) {
   const o = app.orientation;
-  const heading = `**Başvuru ${appNo(app)}**`;
+  const heading = `### Başvuru ${appNo(app)}`;
   const record = 'Bu mesaj başvurular kanalında kayıt olarak kalır.';
   if (state === 'taken') {
     return card(

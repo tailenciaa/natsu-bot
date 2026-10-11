@@ -356,7 +356,7 @@ function applicantWaitingDm(app, guildName, channelId, orientation, reminder) {
 // Görüşme başlayınca (ikisi aynı görüşme kanalına girince) kanalın sohbetine atılan karar paneli: görüşmeye çağıran yetkili
 // başvurunun devam edip etmeyeceğine buradan karar verir. state: open | rejected | hold (beklemeye alındı) | resumed (başka yetkili üstlendi)
 function decisionPanel(app, state = 'open', remindDisabled) {
-  const head = `**Başvuru ${appNo(app)}**`;
+  const head = `### Başvuru ${appNo(app)}`;
   if (state === 'rejected') {
     const auto = !app.reviewedBy;
     return card(
@@ -439,7 +439,7 @@ function decisionPanel(app, state = 'open', remindDisabled) {
 // taken (üstlenildi) | superseded (süre dolduğu için yeni bildirim gönderildi)
 function meetingHoldNotice(app, state = 'open') {
   const h = app.onHold ?? {};
-  const head = `**Başvuru ${appNo(app)}**`;
+  const head = `### Başvuru ${appNo(app)}`;
   if (state === 'taken') {
     return card(
       'Görüşme Üstlenildi',
@@ -484,7 +484,7 @@ function transferRequestDm(app, requesterId, stage, state = 'pending') {
   const until = stage === 'meeting' ? app.onHold?.until : app.orientation?.holdUntil;
   const what = stage === 'meeting' ? 'görüşmesini' : 'oryantasyonunu';
   const whatAcc = stage === 'meeting' ? 'görüşmeyi' : 'oryantasyonu';
-  const head = `**Başvuru ${appNo(app)} · ${chip(stageName(stage))}**`;
+  const head = `### Başvuru ${appNo(app)} · ${chip(stageName(stage))}`;
   if (state !== 'pending') {
     const text_ = {
       approved: [`Devir Onaylandı`, `${head}\n**<@${requesterId}> ${whatAcc} devraldı.** Artık başvuruyla o ilgileniyor.`, 'success'],
@@ -519,7 +519,7 @@ function transferRequestDm(app, requesterId, stage, state = 'pending') {
 // Devir isteği sonuçlanınca isteyen yetkiliye giden DM. state: approved | rejected
 function transferResultDm(app, holderId, stage, state) {
   const until = stage === 'meeting' ? app.onHold?.until : app.orientation?.holdUntil;
-  const head = `**Başvuru ${appNo(app)} · ${chip(stageName(stage))}**`;
+  const head = `### Başvuru ${appNo(app)} · ${chip(stageName(stage))}`;
   return state === 'approved'
     ? card(
         'Devir Onaylandı',
