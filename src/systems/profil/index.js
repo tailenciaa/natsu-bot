@@ -224,56 +224,9 @@ async function puanMessage(interaction) {
 
 // ── Mağaza ────────────────────────────────────────────────────────────────────
 
-const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar', kapak: 'Arka Planlar', rozet: 'Rozetler' };
-
-// Ürün türleri tek yerde tanımlıdır: sahiplik listesi (field), kartta hangi alanla giyildiği (wear), giyilmemişken
-// kabul edilen varsayılanı (def) ve ücretsiz sayılan anahtar (free). `wear: null` olan türde giyme adımı yoktur:
-// satın alınan sergi rozeti kartta kendiliğinden görünür. Ücretsiz temalar mağazada değil tema menüsünde durur.
-const SHOP = {
-  cerceve: {
-    field: 'ownedFrames',
-    wear: 'frame',
-    def: 'yok',
-    free: (key) => key === 'yok',
-    items: () => kozmetik.FRAMES.map((f) => ({ key: f.key, name: f.label, note: f.note, price: f.price })),
-  },
-  tema: {
-    field: 'ownedThemes',
-    wear: 'theme',
-    def: null,
-    free: () => false,
-    items: () =>
-      Object.entries(THEMES)
-        .filter(([, theme]) => theme.price > 0)
-        .map(([key, theme]) => ({ key, name: theme.label, note: theme.description, price: theme.price })),
-  },
-  kapak: {
-    field: 'ownedCovers',
-    wear: 'cover',
-    def: 'yok',
-    free: (key) => key === 'yok',
-    items: () => kapak.COVERS.map((c) => ({ key: c.key, name: c.label, note: c.note, price: c.price })),
-  },
-  rozet: {
-    field: 'ownedBadges',
-    wear: null,
-    def: null,
-    free: () => false,
-    items: () => kozmetik.SHOP_BADGES.map((b) => ({ key: b.key, name: b.label, note: b.note, price: b.price })),
-  },
-};
-
-const catalog = (tur) => (SHOP[tur]?.items() ?? []).map((item) => ({ ...item, tur }));
-
-const ownsItem = (tur, custom, key) => {
-  const shop = SHOP[tur];
-  return Boolean(shop) && (shop.free(key) || (custom[shop.field] ?? []).includes(key));
-};
-
-const wornItem = (tur, custom, key) => {
-  const shop = SHOP[tur];
-  return Boolean(shop?.wear) && (custom[shop.wear] ?? shop.def) === key;
-};
+// Raf tanımı, ürün listeleri ve sahiplik sorguları katalog.js'te durur: görev kutusu ve sezon ödülleri de
+// aynı kataloğu okuduğu için bir ürün iki yerde farklı adla ya farklı fiyatla görünemez.
+const { SHOP_TABS, SHOP, catalog, ownsItem, wornItem } = require('./katalog');
 
 // Mağaza sayfasının satırları: sahiplik ve bakiye durumuna göre düğme etiketi belirlenir. kaynak, ürün düğmesinin
 // sonuna eklenir ki satın alma/giyme sonrası yenilenen sayfada geri düğmesi aynı yere dönsün.
