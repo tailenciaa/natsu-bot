@@ -1,7 +1,8 @@
 // Seviye sistemi: mesaj ve ses aktivitesiyle ayrı ayrı XP kazanılır, her seviye atlamada kanala kart duyurusu gider
-// ve üye etiketlenir; rol verme sadece ana seviyelerde (5'in katları, 100'e kadar) olur, ara seviyelerde karttaki rol
-// paneli "sıradaki rol" olarak gösterilir. Üyede her türden (mesaj/ses) sadece ulaştığı en yüksek ana seviyenin rolü
-// durur (düşük olanlar alınır); bot açılırken ve üye sunucuya (tekrar) girince roller XP'ye göre otomatik eşitlenir.
+// ve üye etiketlenir; rol verme sadece ana seviyelerde (5'in katları, 100'e kadar) olur. Kartın sağ kutusu her
+// seviyede çizilir: ana seviyede kazanılan rol, her seviyede de coin ödülü yazar. Üyede her türden (mesaj/ses)
+// sadece ulaştığı en yüksek ana seviyenin rolü durur (düşük olanlar alınır); bot açılırken ve üye sunucuya
+// (tekrar) girince roller XP'ye göre otomatik eşitlenir.
 // XP kalıcıdır; sıralama sistemindeki günlük istatistiklerden bağımsızdır ama ses süresi aynı yöntemle sayılır:
 // botlar ve AFK kanalı sayılmaz, dakikada bir kredi verilir.
 const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
@@ -88,6 +89,7 @@ async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {
       roleColor: member?.displayColor ?? 0,
       roleName: role?.name ?? null,
       roleDotColor: role?.color ?? 0,
+      coinReward: coinConfig.awards.levelUp,
     });
     await channel.send({
       content: `<@${user.id}>`,
@@ -104,8 +106,8 @@ async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {
   }
 }
 
-// XP ekler; atlanan her seviye duyurulur ve üye etiketlenir. Rol verme sadece ana seviyelerde (5, 10, 15...);
-// ara seviyelerde karttaki rol paneli "sıradaki rol" olarak gösterilir
+// XP ekler; atlanan her seviye duyurulur, coin ödülü verilir ve üye etiketlenir. Rol verme sadece ana
+// seviyelerde (5, 10, 15...); ara seviyelerde duyuru kartında yalnızca coin ödülü yazar
 async function grantXp(guild, userId, kind, amount) {
   const before = levelFromXp(store.xpOf(kind, userId));
   const after = levelFromXp(store.addXp(kind, userId, amount));
@@ -119,7 +121,7 @@ async function grantXp(guild, userId, kind, amount) {
     store.markAnnounced(kind, userId, level);
     coin.add(userId, coinConfig.awards.levelUp, `${kind} seviye ${level}`);
 
-    // Rol işlemleri sadece ana seviyelerde; ara seviyede role null kalır, kartta "sıradaki rol" paneli gösterilir
+    // Rol işlemleri sadece ana seviyelerde; ara seviyede role null kalır, kartın ödül kutusunda yalnızca coin yazar
     let role = null;
     if (config.milestones.includes(level)) {
       const roleId = config.roles[kind][level];
