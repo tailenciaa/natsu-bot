@@ -76,8 +76,8 @@ const COLOR = /^#?([0-9a-fA-F]{6})$/;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 // ── Kapak düzenleyici ────────────────────────────────────────────────────────
-// GİZLİ İSTİSNA: kapak ve görünüm düzenleyicileri kişiye özel kalır. Büyütme/kaydırma adımları üyenin kendi
-// ayarıdır ve her dokunuşta aynı mesajı yeniden çizer; kanala açılsa herkesin önünde bir düzenleme oturumu açılır.
+// Düzenleyici komutla açılan bir SAYFADIR: kanalda kalıcı ve herkese açık durur, yenilemede kaybolmaz. Her
+// dokunuş (büyütme/kaydırma/yerleşim) aynı mesajı yerinde yeniden çizdiği için kanala mesaj biriktirmez.
 
 // Sınırlar card.js'teki okuma ile aynı: görsel en fazla 3 kat büyütülür, kaydırma taşan alanla ölçülür
 const ZOOM_STEP = 0.1;
@@ -207,7 +207,7 @@ async function checkImage(url) {
 
 // Puan sayfası: kartın manşetindeki sayının dökümü ve sunucunun ilk 10'u. Tabloyu skor.js tek geçişte hesaplar
 // (beş dakika önbellekte durur), böylece kartla sayfadaki sıra asla birbirini tutmazlık etmez.
-// GİZLİ İSTİSNA: üyenin kendi durum bilgisi.
+// Karttan açılan bir SAYFA olduğu için kalıcı ve herkese açıktır; sekme düğmeleri aynı mesajı yerinde yeniler.
 async function puanMessage(interaction) {
   const { guild } = interaction;
   const view = await profileView(guild, interaction.user.id);

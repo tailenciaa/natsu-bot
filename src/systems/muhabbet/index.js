@@ -70,6 +70,9 @@ function queueError(interaction) {
 }
 
 // Paneldeki "Muhabbet Başlat": ya sıraya girilir ya da sırada kalındığı sürede yeri öğrenilir
+// GIZLI: bu panelin cevapları sadece basana görünür (aşağıdaki SABİT PANEL KURALI notu)
+const GIZLI = { ephemeral: true };
+
 async function handleStart(interaction) {
   const error = queueError(interaction);
   if (error) return replyError(interaction, ...error);

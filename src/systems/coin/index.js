@@ -65,8 +65,8 @@ const walletView = (interaction) =>
 
 const ordersView = (interaction, page = 0) => ui.orders({ user: interaction.user, items: store.purchasesOf(interaction.user.id), page });
 
-// /bakiye: cüzdan kartı yalnızca sahibine görünür — bakiye, seri ve siparişler kişisel bilgidir. Mağaza ve
-// siparişler kartın yerini alır, ayrı mesaj atmaz; bu yüzden onlar da aynı kişiye özel mesajda kalır.
+// /bakiye: cüzdan kartı komutla açılan bir SAYFADIR, bu yüzden kanalda kalıcı ve herkese açıktır (yenilemede
+// kaybolmasın). Mağaza ve siparişler kartın yerini alır, ayrı mesaj atmaz; sayfa tek mesajda gezilir.
 async function handleWallet(interaction) {
   return respond(interaction, walletView(interaction));
 }
@@ -85,7 +85,7 @@ async function handleBack(interaction) {
 }
 
 // coin-gorev: cüzdandan görev paneline geçiş. Panel kendi sekmelerini taşıdığı için cüzdan kartının yerini
-// almaz, ayrı ve yalnızca basana görünür mesaj olarak açılır; ilerleme panelin çizildiği anda yeniden ölçülür.
+// almaz, ayrı bir mesaj olarak açılır; ilerleme panelin çizildiği anda yeniden ölçülür.
 async function handleQuests(interaction) {
   if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
   if (!interaction.guild) return replyError(interaction, 'Görevler sunucuda kullanılır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
