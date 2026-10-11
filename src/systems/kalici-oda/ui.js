@@ -74,12 +74,12 @@ function applyPanel() {
 
   return container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**Kurallar**\n${config.rules.map((rule, i) => `${i + 1}. ${rule}`).join('\n')}`))
+    .addTextDisplayComponents(text(`## Kurallar\n${config.rules.map((rule, i) => `${i + 1}. ${rule}`).join('\n')}`))
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
         [
-          '**Gereksinimler**',
+          '## Gereksinimler',
           rows([
             ['Üye Sayısı', chip(`${config.minMembers} kişi ve üzeri`)],
             ['Başvuruda Ses Şartı', chip(`${config.minWeeklyVoiceHours} saat / hafta`)],
@@ -101,7 +101,7 @@ function memberPicker() {
       config.maxExtraMembers + 1
     } kişi gerekir; kendini seçmene gerek yok, başvuran otomatik odada.`,
     blocks: [
-      `**Nasıl İlerlenir**\n${[
+      `## Nasıl İlerlenir\n${[
         '1. Menüyü aç ve odada olacak herkesi **tek seferde** seç (yeni seçim öncekinin yerini alır).',
         '2. **Formu Aç** düğmesine bas; oda adı ve amacı sorulur.',
         '3. Başvurun inceleme kanalına düşer, kararı yöneticiler verir ve sonucu sana DM ile gelir.',
@@ -165,17 +165,17 @@ function applicationCard(app, room) {
     sub: 'Onay odayı açıp sahibine teslim eder; ret gerekçesi başvurana doğrudan mesaj olarak gider. Butonlar yalnızca yöneticilerde çalışır.',
     accent: ACCENT[app.status],
     blocks: [
-      `**Başvuru**\n${rows([
+      `## Başvuru\n${rows([
         ['Oda Adı', chip(app.roomName)],
         ['Başvuran', `<@${app.userId}>`],
         ['Kişi Sayısı', chip(`${app.members.length + 1} kişi`)],
         ['Son 7 Günün Sesi', chip(hoursLabel(app.voiceSeconds))],
         ['Haftalık Hedef', `${chip(`${config.minWeeklyVoiceHours} saat`)} · ${app.voiceOk ? 'karşılandı' : 'karşılanmadı'}`],
       ])}`,
-      app.members.length ? `**Odayı Kullanacaklar**\n${mentions(app.members)}` : null,
-      `**Amaç**\n${quote(app.purpose)}`,
-      app.status === 'rejected' && app.note ? `**Ret Sebebi**\n${quote(app.note)}` : null,
-      room ? `**Açılan Kanal**\n<#${room.voiceChannelId}>` : null,
+      app.members.length ? `## Odayı Kullanacaklar\n${mentions(app.members)}` : null,
+      `## Amaç\n${quote(app.purpose)}`,
+      app.status === 'rejected' && app.note ? `## Ret Sebebi\n${quote(app.note)}` : null,
+      room ? `## Açılan Kanal\n<#${room.voiceChannelId}>` : null,
       stamp(app.createdAt),
     ],
   });
