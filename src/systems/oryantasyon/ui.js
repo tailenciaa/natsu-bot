@@ -108,12 +108,9 @@ function noticeRow(app) {
 }
 
 // Adım türüne göre kısa "ne yapılacak" cümlesi — yetkili ve başvuran için ayrı satırlar
-function stepHint(step, app) {
-  const o = app.orientation;
-  const staff = `<@${o.staffId}>`;
+function stepHint(step) {
   if (step.type === 'areas') return `**Başvuran için:** Menüden en az bir görev alanı seç; birden fazla seçebilirsin.\n**Yetkili için:** Başvuran seçimini yaptıktan sonra **Anlatıldı, Devam** ile ilerliyorsun.`;
   if (step.type === 'final') return `**Yetkili için:** Seviyeyi kontrol et ve **Yetki Ver** ile roller verip oryantasyonu tamamla.`;
-  if (o.awaitingConfirm) return `${staff} konuyu anlattı. **Başvuran:** konuyu anladıysan **Anladım, Devam** butonuna bas.`;
   return `**Yetkili için:** Konuyu anlat${step.skippable ? '; başvuran biliyorsa **Biliyor, Atla** ile geç' : ''}, bitince **Anlatıldı, Devam** ile ilerliyorsun.\n**Başvuran için:** Dinle ve anlamadığın yeri sor; bildiğin bir konu varsa yetkiliye söyle.`;
 }
 
