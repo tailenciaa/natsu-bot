@@ -64,6 +64,12 @@ module.exports = ({ mock, ui, src }) => {
   store.sicilEkle({ tip: 'uye', saldirgan: kurban.uid, saldirganAd: 'Deniz', hedef: mafya.uid, hedefAd: 'Kaan', sonuc: 'direnildi, saldırgan yakalandı', miktar: 0, at: mock.ago(25 * mock.MIN) });
   store.sicilEkle({ tip: 'kasa', saldirgan: tanik.uid, saldirganAd: 'Ece', hedef: null, hedefAd: 'Devletin Kasası', sonuc: 'kefalet ödeyip tahliye oldu', miktar: 900, at: mock.ago(6 * mock.MIN) });
 
+  // Mert sokağa yeni çıkmış: üye soyabiliyor ama kasaya henüz erişemiyor, tek girişiminden sonra beklemede
+  const yarim = uye({ ad: 'Mert', seviye: 8, coin: 760 });
+  store.girisimKaydet({ id: 'oniz3', tip: 'uye', saldirgan: yarim.uid, hedef: kurban.uid, kanal: '1', sonAt: mock.ago(28 * mock.MIN) }, mock.ago(2 * mock.MIN));
+  store.girisimKapat('oniz3');
+  store.direnisKaydet(kurban.uid, mock.ago(2 * mock.MIN));
+
   // Sinan kasaya zorlamaktan yakalandı: içerideki üyenin sayfasında kefalet düğmesi doğar
   store.hapisVer(tutuklu.uid, config.hapis.kasa, 'kasa', mock.ago(6 * mock.MIN));
 
@@ -95,6 +101,12 @@ module.exports = ({ mock, ui, src }) => {
       'Suç sayfası: girişi, başarısı ve kaybı olan üye, son kayıt listesi dolu',
       'Aynı sayfa sicil birikmiş üyede',
       p.panel(sayfa(mafya)),
+    ),
+    kartCase(
+      'sokak-kapidan',
+      'Suç sayfası: seviyesi üyeye ama kasaya yetmeyen üye, iki kapı ayrı sayılır',
+      '/sokak komutunun açtığı sayfa (orta seviye)',
+      p.panel(sayfa(yarim)),
     ),
     kartCase(
       'sokak-iceride',

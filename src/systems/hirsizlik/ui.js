@@ -20,7 +20,8 @@ const sure = (ms) => {
   if (sn < 60) return `${sn} sn`;
   const dk = Math.floor(sn / 60);
   if (dk < 60) return `${dk} dk`;
-  return `${Math.floor(dk / 60)} sa ${dk % 60} dk`;
+  const sa = Math.floor(dk / 60);
+  return dk % 60 ? `${sa} sa ${dk % 60} dk` : `${sa} sa`;
 };
 
 const yuzde = (v) => `${Math.round(v * 100)}%`;
@@ -53,7 +54,7 @@ function hapisBlok(state) {
       `büyük olanıdır; kasa ve sicil şimdiden izlenebilir, **/oyun** açık.`;
   }
   const kasa = state.seviye < config.kasaMinSeviye ? ` Kasa zorlaması seviye **${config.kasaMinSeviye}** ister.` : '';
-  return `### Sokaktasın\nİçeride değilsin; **/çal uye** açık${kasa} Bugün **${state.gunluk} / ${config.gunlukAdet}** girişim yaptın.`;
+  return `### Sokaktasın\nİçeride değilsin; **/çal uye** açık.${kasa} Bugün **${state.gunluk} / ${config.gunlukAdet}** girişim yaptın.`;
 }
 
 function kasaBlok(state) {
