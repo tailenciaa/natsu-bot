@@ -28,7 +28,7 @@ function blocks() {
       'Sesli kanalda vakit geçirdikçe seviye atlarsın ve bu seviye mesaj seviyenden **ayrı birikir**.',
       '**Seviyeni gör:** `/seviye` ya da `/profil`',
     ].join('\n'),
-    ['### Ses Rolleri', 'Her **5 seviyede** bir ses rolü kazanırsın; sayı, o rol için gereken ses seviyesidir.', ...early.map(perkLine)].join('\n'),
+    ['### Ses Rolleri', 'Her **5 seviyede** bir ses rolü kazanırsın; rollerin adı **N Ses Seviyesi**dir ve sayı o seviyeyi gösterir.', ...early.map(perkLine)].join('\n'),
     ['### İleri Seviye Rolleri', ...late.map(perkLine)].join('\n'),
     [
       '### Yayın',
