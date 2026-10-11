@@ -42,6 +42,11 @@ async function respond(interaction, container, { ephemeral = false, allowedMenti
 // HATA/REDDETME: gizli mesajın kullanılabildiği tek ortak kapı
 const replyError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'), { ephemeral: true });
 
+// AKIŞ İÇİ HATA: akışın görünürlüğü defer anında kilitlendiği için, `deferReply()` ile AÇIK açılmış bir akışın
+// hatası gizli yapılamaz (Discord bayrak değiştirmeyi reddeder) ve kanalda görünür. Yalnızca açık ertelenmiş
+// akışların içinde kullanılır; aksi hâlde üye de yetkili de hiçbir uyarı görmez.
+const replyFlowError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'));
+
 // Yöneticiler ya da verilen rollerden (tek rol ya da liste) birine sahip olanlar
 function isStaff(interaction, roleIds) {
   if (interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) return true;
@@ -88,4 +93,4 @@ function stillMember(guild, userId) {
   return guild.members.cache.size < guild.memberCount * 0.9 || guild.members.cache.has(userId);
 }
 
-module.exports = { respond, replyError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
+module.exports = { respond, replyError, replyFlowError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
