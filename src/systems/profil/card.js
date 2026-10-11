@@ -510,7 +510,7 @@ function statTiles(view) {
     { label: 'Katılım', value: view.joinedAt ? date(view.joinedAt) : '-', sub: view.joinedAt ? `${age(view.joinedAt)} burada` : null },
     { label: 'Hesap', value: view.accountAt ? age(view.accountAt) : '-', sub: view.accountAt ? date(view.accountAt) : null },
     { label: 'Sicil', value: sicil ? (sicil.total ? `${sicil.active} aktif` : 'temiz') : '-', sub: sicil ? `${number(sicil.total)} ceza kaydı` : null },
-    { label: 'Takviye', value: view.premiumSince ? age(view.premiumSince) : '-', sub: view.premiumSince ? `_${date(view.premiumSince)}den beri_`.replace(/_/g, '') : 'takviye yok' },
+    { label: 'Takviye', value: view.premiumSince ? age(view.premiumSince) : '-', sub: view.premiumSince ? 'devam ediyor' : 'takviye yok' },
     { label: 'Kozmetik', value: view.ownedCount ? `${number(view.ownedCount)} ürün` : '-', sub: 'çerçeve, tema, kapak' },
     { label: 'Kazanılan', value: number(view.earnedCoins ?? 0), sub: 'toplam coin' },
   ];
@@ -545,7 +545,6 @@ function drawFoot(ctx, y, view, c) {
   ctx.fillStyle = hexAlpha(c.accent, 0.75);
   roundRect(ctx, x, y + 22, 6, FOOT_H - 44, 3);
   ctx.fill();
-  const textRight = x + vitrinW - 26;
   ctx.textAlign = 'left';
   if (view.featured) {
     ctx.fillStyle = c.muted;
@@ -559,12 +558,6 @@ function drawFoot(ctx, y, view, c) {
     ctx.fillStyle = '#efe6ea';
     ctx.font = font(500, 19);
     ctx.fillText(fitText(ctx, view.links.join('   ·   '), vitrinW - 60), x + 30, y + (view.featured ? 100 : 60));
-  }
-  ctx.textAlign = 'left';
-  if (view.visits > 0 && !view.featured && !view.links?.length) {
-    ctx.fillStyle = c.muted;
-    ctx.font = font(400, 18);
-    ctx.fillText(`${number(view.visits)} profil ziyareti`, x + 30, y + 60);
   }
 }
 
@@ -647,18 +640,17 @@ async function buildProfileCard(user, view) {
   ctx.fillRect(0, 0, WIDTH, height);
   // Kapak önce çizilir: döndürdüğü alt ton gövdenin ilk rengi olur, böylece ikisi birleşim çizgisinde kesintisiz
   // devam eder. Gövde o tondan tema renginin karanlığına, oradan kartın altında neredeyse siyaha iner.
-  const seam = await paintHeader(ctx, user, view, theme, p, c);
+  const hero = await paintHeader(ctx, user, view, theme, p, c);
   const body = ctx.createLinearGradient(0, HEADER, 0, height);
-  body.addColorStop(0, seam);
+  body.addColorStop(0, hero.seam);
   body.addColorStop(0.26, c.bgTop);
   body.addColorStop(1, c.bgBottom);
   ctx.fillStyle = body;
   ctx.fillRect(0, HEADER, WIDTH, height - HEADER);
   paintAmbient(ctx, height, p);
 
-  // Avatar kapağın içindeki yerinde çizilir; halkası karartının üstünde durur
-  const { avatarX, avatarY } = drawIdentity(ctx, user, view, c);
-  await drawAvatar(ctx, user, avatarX, avatarY, AVATAR, accent);
+  // Avatar kapağın içindeki yerinde çizilir: yazılar ve karartma hazır, halkasının üstüne sadece görsel gelir
+  await drawAvatar(ctx, user, hero.avatarX, hero.avatarY, AVATAR, accent);
 
   if (rows.length) drawBadges(ctx, rows, badgesY);
 
@@ -695,11 +687,10 @@ async function buildHeaderPreview(user, view, note = null) {
   ctx.clip();
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, HEADER);
-  await paintHeader(ctx, user, view, theme, p, c);
+  const hero = await paintHeader(ctx, user, view, theme, p, c);
   ctx.restore();
 
-  const { avatarX, avatarY } = drawIdentity(ctx, user, view, c);
-  await drawAvatar(ctx, user, avatarX, avatarY, AVATAR, c.accent);
+  await drawAvatar(ctx, user, hero.avatarX, hero.avatarY, AVATAR, c.accent);
 
   if (note) {
     ctx.font = font(500, 21);
