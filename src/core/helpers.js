@@ -17,6 +17,8 @@ const ui = require('./ui');
 // Dikkat: görünürlük defer anında kilitlenir. `deferReply({ flags: core.CV2 })` ile açılmış bir akışın sonundaki
 // `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Buton/menü cevapları
 // `followUp` ile gittiği için onların görünürlüğü defer'den bağımsızdır; slash komutlarında bayrağı defer'de ver.
+// Dikkat: tam tersi de geçerli — `deferReply({ flags: core.EPHEMERAL_CV2 })` ile açılan akışın her cevabı
+// `{ ephemeral: true }` olmak zorunda; bayraklar uyuşmazsa Discord mesajı/son düzenlemeyi reddeder.
 // Butonlarda deferUpdate kullanıldığı için orijinal mesajın üzerine yazmamak adına followUp yapılır.
 // Dikkat: deferReply edilmiş komut ya da deferUpdate edilmiş modal gönderimi (butona bağlı olmayan, deferred) ise cevap
 // editReply ile verilir; yani modalın bağlı olduğu mesajı (varsa) cevabın yeni haliyle DEĞİŞTİRİR. Hata/onay bildirimini
