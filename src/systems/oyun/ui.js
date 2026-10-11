@@ -120,7 +120,7 @@ function kesifSekmesi(state) {
     ...state,
     tab: 'kesif',
     title: 'Keşif',
-    sub: 'Seviyen yükseldikçe yeni bölgeler açılır. Gezi ücretsizdir, tek sınırı bekleme süresi ile günlük kotalır: ' +
+    sub: 'Seviyen yükseldikçe yeni bölgeler açılır. Gezi ücretsizdir, tek sınırı bekleme süresi ile günlük kotadır: ' +
       'bölgenin masasından coin, kutu anahtarı ya da doğrudan mağazandaki bir kozmetik çıkar. Ölçülen seviyen: ' +
       `**${seviye}** (mesaj ve ses seviyenden büyük olanı).`,
     blocks: [
@@ -178,7 +178,7 @@ function basamakSatirlari(adim, bahis) {
       carpim *= basamak.carpim;
       const pot = number(Math.round(bahis * carpim));
       const satir = `${index + 1}. ${sayisal(basamak.carpim)}x — ${Math.round(basamak.dusme * 100)}% düşme — pot ${pot} coin`;
-      return index === adim - 1 ? `**${satir}  buradasın**` : satir;
+      return index === adim - 1 ? `**${satir} · buradasın**` : satir;
     })
     .join('\n');
 }

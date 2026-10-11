@@ -65,7 +65,7 @@ module.exports = ({ mock, ui, src }) => {
 
   // Tavan dolu: kazançlarının tamamı günlük tavana sayılmış, coin ganimeti cebine girmiyor
   const sinan = uye({ ad: 'Sinan', seviye: 22, coin: 520 });
-  coinStore.addWin(sinan.uid, config.winCap, 'önizleme oyunu');
+  coinStore.addWin(sinan.uid, coinConfig.winCap, 'önizleme oyunu');
   const kesik = coinStore.addWin(sinan.uid, 180, 'keşif');
   const tavanDolu = oyun.durumOf(
     sinan.uid,
@@ -199,7 +199,7 @@ module.exports = ({ mock, ui, src }) => {
       'hata-kota',
       'Reddetme: günün gezi kotası dolu',
       'Kota dolmuş üyenin gezi düğmesi',
-      'Bugünkü gezi kotasın doldu.',
+      'Bugünkü gezi kotan doldu.',
       `Günde ${config.kesif.gunlukAdet} gezi yapabilirsin; gece sıfırlanır. Kumarhane açık.`,
     ),
     hataCase(

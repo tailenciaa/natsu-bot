@@ -99,7 +99,7 @@ async function kesif(interaction, bolgeKey) {
   if (!bolge) return replyError(interaction, 'Bu bölge artık salonda yok.', '/oyun ile sayfayı yeniden aç.');
 
   const hazir = store.kesifDurumu(userId);
-  if (hazir.sebep === 'kota') return replyError(interaction, 'Bugünkü gezi kotasın doldu.', `Günde ${config.kesif.gunlukAdet} gezi yapabilirsin; gece sıfırlanır. Kumarhane açık.`);
+  if (hazir.sebep === 'kota') return replyError(interaction, 'Bugünkü gezi kotan doldu.', `Günde ${config.kesif.gunlukAdet} gezi yapabilirsin; gece sıfırlanır. Kumarhane açık.`);
   if (hazir.sebep === 'bekleme') return replyError(interaction, 'Bekleme süren dolmadı.', `Sıradaki gezi ${core.rel(hazir.nextAt)} içinde hazır olur.`);
 
   const seviye = seviyeOlcumu(userId);
