@@ -26,7 +26,7 @@ module.exports = {
         },
         {
           "heading": "Burada neler var?",
-          "text": "Anime sohbetinin yanında **genel sohbet, oyun odaları ve takımlar, etkinlikler, sesli kanallar, özel oda, çekilişler ve seviye sistemi** var. Hiç anime izlemediysen de rahat edersin."
+          "text": "Anime sohbetinin yanında **genel sohbet, oyun odaları ve takımlar, etkinlikler, sesli kanallar, özel oda, çekilişler, seviye, görev ve profil sistemi** var. Hiç anime izlemediysen de rahat edersin."
         },
         {
           "heading": "Hedefimiz",
@@ -56,7 +56,16 @@ module.exports = {
         },
         {
           "heading": "Botumuz Kazuki",
-          "text": "Komutları görmek ve kullanmak için <#1538536351119446127> kanalında **`/yardim`** yaz."
+          "text": "Kazuki sunucunun içinde çalışan asistanımız: seviyen, profilin, coin bakiyen ve görevlerin tek yerden takip edilir. Komutların tam listesini görmek için <#1538536351119446127> kanalında **`/yardim`** yaz.",
+          "items": [
+            "**`/gorev`** — her gün üç kısa görev çekilir (mesaj yaz, seste kal, ekran paylaş, `/gunluk`, birine saygınlık ver); üçü birden bitince günün demeti açılır ve coin, sezon puanı ile kutu anahtarı verir.",
+            "**`/profil`** — seviyeni, rozetlerini ve profil puanını gösteren kartı çizer; puanın sunucudaki sıranı belirler.",
+            "**`/gunluk`** — günde bir kez coin toplar; arka arkaya giriş yaptıkça seri büyür ve ödül artar.",
+            "**`/bakiye`** — cüzdanını ve coinlerini harcadığın profil mağazasını açar.",
+            "**`/seviye`** — mesaj ve ses seviyeni, **`/siralama`** — haftanın en aktiflerini gösterir.",
+            "**`/saygi-ver`** — beğendiğin bir üyeye günde bir saygınlık verir; haftanın en saygın üyesi seçilir."
+          ],
+          "note": "Nereden başlayacağını bilmiyorsan **`/gorev`** ile başla: Keşif Yolu botun bütün sistemlerini sırayla gezdiriyor."
         }
       ]
     },
