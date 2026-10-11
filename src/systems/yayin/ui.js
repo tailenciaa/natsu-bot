@@ -66,6 +66,8 @@ function released({ user }) {
     title: 'Yayın Yetkisi Bırakıldı',
     sub: `<@${user.id}> yayın yetkisinden çıktı; istediği zaman panelden geri alabilir.`,
     user,
+    // Yetki bırakmak ödül değildir; kartın rengi yeşil değil tarafsız mavi
+    accent: 'primary',
     pairs: [['Rol', `<@&${config.role}>`]],
   });
 }
