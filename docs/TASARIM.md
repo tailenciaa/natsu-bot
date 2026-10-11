@@ -25,7 +25,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 5. **Mobilde de güzel**: kısa tek satır başlık, boşlukla ortalama yok, geniş tablo yok. Panel butonu başlığın yanında (section aksesuarı), sekmeler buton olarak kalır.
 6. Metin ile yerleşim tutarlı: yön sözcüğü ("aşağıdaki", "sağdaki") yerine butonun adı yazılır ("**Hatırlat** butonuyla...").
 7. **Test, önizleme ve log mesajları kimseyi etiketlemez** (`allowedMentions: { parse: [] }`).
-8. Bilgi komutları (yardım, seviye, profil, sıralama, sicil, saygı ve VIP listesi) herkese açık; hata ve kişisel sonuçlar sadece kullanana görünür.
+8. Bilgi komutları (yardım, seviye, profil, sıralama, saygı ve VIP listesi) ve komutla açılan sayfalar herkese açık ve kalıcıdır; hata ile kalıcı panel buton/menü cevapları sadece kullanana görünür (§6).
 9. Komut listesi minimal: butonla yapılabilen işin slash komutu yoktur. Kanal ve rol ID'leri koda sabit, hiçbir akış "şu kanala mı gitsin?" diye sormaz.
 10. Seviye atlama duyurusu (görsel kart), profil ve seviye kartları, bot durum yazısı, kurallar ve bilgilendirme içerik metinleri onaylı tasarımlardır; yalnızca açık hata ve yazım düzeltmesi yapılır. Tek istisna: bilgilendirmedeki **Botumuz Kazuki** bloğu botun kendi üstlenimini anlatır, yeni bir sistem eklendiğinde oradaki komut listesi de güncellenir.
 
@@ -96,9 +96,9 @@ küçüğüdür: başlık, altında tek cümlelik özet, çizgiyle ayrılmış `
 
 - `user` verilirse başlığın sağında üyenin avatarı durur.
 - **Görünürlük:** kazanç ve harcama kartları **herkese açık** gönderilir (`respond(..., { ephemeral: false })`, `<@üye>`
-  `allowedMentions.users` içinde tutulur) ki üye kazandığını göstersin; kart ayarı, kendi durumu ve başvuru özeti gibi
-  kişisel işlemler **sadece kullanana** kalır (tam liste §6'da; karşı üyenin de görmesi gereken muhabbet sıra kartları
-  bunun dışındadır). Hata ve reddetmeler `alert` olarak kişiye özel kalır, kart haline getirilmez.
+  `allowedMentions.users` içinde tutulur) ki üye kazandığını göstersin; kalıcı bir panelin butonundan çıkan cevaplar,
+  kart ayarı ve hata/ret uyarıları **sadece kullanana** kalır (tam liste §6'da). Hata ve reddetmeler `alert` olarak
+  kişiye özel kalır, kart haline getirilmez.
 - Herkese açık kart 3. tekil şahısla yazılır (`<@üye> ... topladı`), kişiye özel kart üyeye hitap eder (`... topladın`)
   ve @etiket içermez.
 - Sayılar `chip` içinde durur; başlık cümlesinde geçen ürün adı satırlarda yinelenmez.
@@ -116,7 +116,7 @@ Sekme değişimi ve aynı sayfadaki her düğme **yazıldığı mesajı güncell
 
 Bir panelin düğmesi **yeni bir mesaj** açtığında (profil kartının mağaza, rozet ve vitrin sayfaları) o sayfanın **Geri** düğmesi olmak zorundadır; Geri sayfa mesajını kaldırır (`interaction.message.delete()`) ve kişi açtığı panele döner. Geri düğmesi görünür kontrollerin içinde durur — sekme sayfasındaysa listenin altındaki kendi satırında.
 
-Cüzdan (`/bakiye`) bundan ayrıdır ve **tek mesajda gezilir**: Mağaza ve Siparişlerim cüzdan kartının yerini alır, asla yeni mesaj atmaz. Mağazanın alt gezinme satırı nereden açıldığına göre belirlenir: cüzdandan açılan sayfada **Cüzdana Dön** cüzdan kartını yeniden yazar ve yanına **Siparişlerim** eklenir, profil kartından açılan sayfada tek başına Geri mesajı kaldırır. Kaynak, mağazanın sekme, al ve giy düğmelerinin customId sonunda taşınır (`profil-ayar:magaza:tema:cuzdan`), böylece yerinde yenilenen sayfada yön kaybolmaz. Cüzdandaki **Görevler** düğmesi bundan istisnadır: görev paneli kendi beş sekmesini taşıdığı için cüzdanın yerini almaz, ayrı ve yalnızca basana görünür bir mesaj olarak açılır (`coin-gorev` → `gorev/index.js`'in dışa açtığı `panelFor`). Bir sistemin paneli başka bir sistemden açılırken o panelin çizim fonksiyonu dışa açılır, ikinci bir panel asla yazılmaz.
+Cüzdan (`/bakiye`) bundan ayrıdır ve **tek mesajda gezilir**: Mağaza ve Siparişlerim cüzdan kartının yerini alır, asla yeni mesaj atmaz. Mağazanın alt gezinme satırı nereden açıldığına göre belirlenir: cüzdandan açılan sayfada **Cüzdana Dön** cüzdan kartını yeniden yazar ve yanına **Siparişlerim** eklenir, profil kartından açılan sayfada tek başına Geri mesajı kaldırır. Kaynak, mağazanın sekme, al ve giy düğmelerinin customId sonunda taşınır (`profil-ayar:magaza:tema:cuzdan`), böylece yerinde yenilenen sayfada yön kaybolmaz. Cüzdandaki **Görevler** düğmesi bundan istisnadır: görev paneli kendi beş sekmesini taşıdığı için cüzdanın yerini almaz, ayrı ve kanalda kalıcı bir mesaj olarak açılır (`coin-gorev` → `gorev/index.js`'in dışa açtığı `panelFor`). Bir sistemin paneli başka bir sistemden açılırken o panelin çizim fonksiyonu dışa açılır, ikinci bir panel asla yazılmaz.
 
 Sayısal özetlerde her satıra bir `**Etiket:** \`kutu\`` yığını kurulmaz: kartın asıl sayısı kendi satırında kalın verilir (`**Mevcut Bakiye:** \`187 coin\``), ikincil sayılar `pills` ile tek satırda toplanır (`` `Kazanç: 42.000 coin` · `Harcanan: 23.600 coin` ``).
 
@@ -179,16 +179,14 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 | Durum | Görünürlük |
 | --- | --- |
 | İşlem sonucu ve onay kartları (satın alma, giyme, saygı, VIP, seviye/çekiliş duyuruları, `/gunluk`, **kutu açılışı**) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs |
-| Liste ve sıralama tabloları, paneller, duyurular, loglar, talep/ortaklık kartları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
-| Bilgi komutları (seviye, profil, sıralama, yardım menüsü) | Herkese açık; gezinme butonları yine `isMenuOwner` ile sadece komutu kullanana çalışır |
-| **Kendi durum bilgisi:** `/cezalarım` süre-sebep-itiraz kartları, `/sicil` detayı, `yenihesap` kısıt durumu, `/bakiye` cüzdanı ve siparişleri, `/gorev` paneli (üyenin kendi ilerlemesi ve kendi Al düğmeleri), kural kabul onayı, etiket/rozet/vitrin/mağaza/kapak sayfaları, profil **Puanım** sayfası | Sadece kullanana |
-| **Kendi tercihi:** yayın ve partner görme rolü al/bırak, takviye takma adı, özel rol, renk ve simge seçimi, `partner-durum` müsaitliği, yetki verme/almada "DM gidemedi" uyarısı | Sadece kullanana |
-| **Kendi süreci:** destek talebi açıldı cevabı, kalıcı oda ve yetkili alım başvurusu alındı cevabı, "başvurana DM gönderilemedi" uyarısı, oto partner/yenileme "incelemeye gönderildi / son bir adım" cevapları, değerlendirme yorumu ve itirazı gönderildi cevabı | Sadece kullanana; sürecin kanaldaki kartı, inceleme kaydı ve sonuç DM'i eskisi gibi açık/özel kalır |
+| Liste ve sıralama tabloları, paneller, duyurular, loglar, talep/ortaklık inceleme kartları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
+| **Sayfalar:** `/profil` kartı ve rozet/vitrin/mağaza/kapak/görünüm/**Puanım** sayfaları, `/bakiye` cüzdanı, `/gorev` paneli, `/seviye`, `/siralama`, `/yardim` | Kalıcı ve herkese açık; sekmeler ve düzenleme düğmeleri `update` ile aynı mesajı yerinde yeniler |
+| **Kalıcı panel cevapları:** `cezalarim` süre/sebep/itiraz kartları, `yenihesap` kısıt kartı, `sicil` ceza detayı, yayın/etiket/partner görme rolü onayları, çekilişe katılım, destek ve kalıcı oda başvurusu cevabı, log paneli bağlantısı ve detayı, oryantasyon devir seçicisi, muhabbet sıra/eşleşme kartları | Sadece basana (`{ ephemeral: true }`) — kalıcı olsalar panelin altı dolar ve panel kaybolur |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana (`replyError`) |
-| Çekilişte "zaten katıldın" tekrarı ve bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanalda düşer |
 | `/sicil` yetkili komut kanalı dışında (üye kendi sicilini bakıyor) | Sadece kullanana; ceza kaydı kanalda görünmez |
 | Test ve önizleme (`/seviye test`, `/aktif test`, `/saygi test`, `/etiket test`) | Sadece kullanana, etiket yok; asıl duyuru kanala düşer |
-| Muhabbet odası eşleşme/sıra kartları, özel oda içi işlemler | Açık kalır (bilgi iki tarafa da ya da odadakilerin hepsine lazımdır; gizli kart karşı üyeye ulaşmaz) |
+| Çekilişin bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanala düşer |
+| Özel oda kontrol paneli düğmeleri | `update` ile panelin kendisi yeniden çizilir, yeni mesaj atmaz |
 | Modallar (formlar) | Discord gereği zaten sadece açana görünür |
 
 - Görünürlük **defer anında kilitlenir**: `deferReply({ flags: core.CV2 })` ile açılan bir akışın sonundaki `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Akışın yarısı gizli yarısı açık kalamaz; bu yüzden gizli bir akış baştan `core.EPHEMERAL_CV2` ile ertelenir, açık akış baştan açık.
@@ -218,7 +216,7 @@ Yeni mesaj eklerken `tools/preview/cases/<sistem>.js` içine bir case eklenir; `
 1. Embed, emoji ya da ok simgesi var mı (⭐ hariç)?
 2. Ana cümle ve anahtar sözcükler kalın, açıklama normal boyutta (`-#` yalnızca izin verilen yerlerde), ilgisiz bloklar çizgiyle ayrılmış mı?
 3. Bilgi satırları `rows` ile mi kuruluyor ve kısa değerler (numara, süre, durum, sayı) `chip` içinde mi?
-4. İşlem bildirimi `receipt` kartıyla mı çiziliyor; kazanç/harcama herkese açık, kişisel ayar sadece kullanana mı?
+4. İşlem bildirimi `receipt` kartıyla mı çiziliyor; görünürlük §6'nın iki testinden geçti mi (kalıcı panelin buton cevabı → gizli, komutla açılan sayfa ve topluluk kaydı → kalıcı ve açık)?
 5. Aynı bilgi mesajda iki kez geçiyor mu? Takip mesajı öncekini tekrar ediyor mu?
 6. Başlık kısa ve tek satır mı? Buton en çok 20 karakter ve Başlık Düzeni mi?
 7. Yön sözcüğü gerçekten doğru mu, buton adı metinde doğru yazılmış mı?
