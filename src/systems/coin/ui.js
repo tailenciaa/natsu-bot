@@ -10,6 +10,7 @@ const IDS = {
   wallet: 'coin-bakiye', // mağaza ve sipariş sayfasından cüzdana dönüş
   quests: 'coin-gorev', // cüzdandan görev paneline geçiş: panel ayrı mesaj olur, kendi sekmeleriyle açılır
   arcade: 'coin-oyun', // cüzdandan Oyun Salonuna geçiş: sayfa ayrı mesaj olur, kendi sekmeleriyle açılır
+  crime: 'coin-hirsizlik', // cüzdandan Arka Sokaklara geçiş: suç dünyası da ayrı mesaj olarak açılır
 };
 
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz
@@ -62,6 +63,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
       new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(IDS.quests).setLabel('Görevler').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(IDS.arcade).setLabel('Oyun Salonu').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(IDS.crime).setLabel('Arka Sokaklar').setStyle(ButtonStyle.Secondary),
     ),
   );
 }

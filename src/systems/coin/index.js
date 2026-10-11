@@ -9,6 +9,7 @@ const { levelFromXp } = require('../seviye/level');
 const seviyeStore = require('../seviye/store');
 const gorev = require('../gorev'); // Görevler düğmesi aynı paneli açar; yalnızca store'a değil, panele de bağlı tek yön
 const oyun = require('../oyun'); // Oyun Salonu düğmesi de aynı düzeni izler: sayfanın çizim fonksiyonu dışa açılır
+const hirsizlik = require('../hirsizlik'); // Arka Sokaklar düğmesi suç dünyası sayfasını açar (para burada el değiştirir)
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -100,6 +101,14 @@ async function handleArcade(interaction) {
   return respond(interaction, oyun.panelFor(interaction, 'kesif'));
 }
 
+// coin-hirsizlik: cüzdandan Arka Sokaklara geçiş. Suç dünyası paranın el değiştirdiği yer olduğu için kapısı
+// cüzdandadır; sayfa ayrı mesaj olarak açılır ve kendi düğmelerini taşır.
+async function handleCrime(interaction) {
+  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
+  if (!interaction.guild) return replyError(interaction, 'Sokaklar sunucuda çalışır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
+  return respond(interaction, hirsizlik.panelFor(interaction));
+}
+
 module.exports = {
   name: 'coin',
   commands,
@@ -110,6 +119,6 @@ module.exports = {
   },
   slash: { gunluk: handleDaily, bakiye: handleWallet },
   // coin-bakiye butonu sabit bir kimlik taşır (sayfa taşımaz), bu yüzden önek değil doğrudan buton tablosunda
-  buttons: { [ui.IDS.wallet]: handleBack, [ui.IDS.quests]: handleQuests, [ui.IDS.arcade]: handleArcade },
+  buttons: { [ui.IDS.wallet]: handleBack, [ui.IDS.quests]: handleQuests, [ui.IDS.arcade]: handleArcade, [ui.IDS.crime]: handleCrime },
   prefixed: [[ui.IDS.orders, handleOrders]],
 };

@@ -10,6 +10,7 @@ const core = require('../../core/ui');
 const { respond, replyError, isMenuOwner, menuOwnerError } = require('../../core/helpers');
 const coinStore = require('../coin/store');
 const gorevStore = require('../gorev/store');
+const hirsizlik = require('../hirsizlik'); // Suç Dünyası kapısı: içerideki üye salonda oyun oynayamaz
 const katalog = require('../profil/katalog');
 const { levelFromXp } = require('../seviye/level');
 const seviyeStore = require('../seviye/store');
@@ -43,6 +44,8 @@ function durumOf(userId, tab, feedback, at = Date.now()) {
     balance: coinStore.balance(userId),
     bahis: store.bahis(userId),
     kalanTavan: coinStore.winStatus(userId, at).kalan,
+    // Suç dünyasının hapis hanesi salona da yansır: içerideki üye gezemez, rulet çeviremez, tırmanamaz
+    hapis: hirsizlik.hapista(userId, at),
     kesif: store.kesifSayilari(userId),
     kesifHazir: store.kesifDurumu(userId, at),
     kumar: store.kumarSayilari(userId),
