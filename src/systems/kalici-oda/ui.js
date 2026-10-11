@@ -10,7 +10,7 @@ const {
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { colors, panel, page, rows, chip, quote, receipt, stamp, divider, text, pills } = require('../../core/ui');
+const { colors, pad, panel, page, rows, chip, quote, receipt, stamp, divider, text, pills } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -285,6 +285,37 @@ function submitted({ user, app, memberCount }) {
   });
 }
 
+// ── Duyuru kanalı kartları ────────────────────────────────────────────────────
+// config.channels.notifications'a düşen herkese açık kayıtlar: odanın açıldığını ve kapandığını sunucu görür.
+
+function openedNotice(room) {
+  return receipt({
+    title: 'Kalıcı Oda Açıldı',
+    sub: `<@${room.ownerId}> için **${room.name}** odası açıldı.`,
+    accent: 'success',
+    pairs: [
+      ['Oda', chip(`#${pad(room.no)} · ${room.name}`)],
+      ['Ses Kanalı', `<#${room.voiceChannelId}>`],
+      ['Yazı Kanalı', `<#${room.textChannelId}>`],
+      ['Üye', chip(memberTotal(room.members.length))],
+    ],
+    at: room.createdAt,
+  });
+}
+
+function closedNotice(room, reason) {
+  return receipt({
+    title: 'Kalıcı Oda Kapatıldı',
+    sub: `**${room.name}** odası kapatıldı, kanalları silindi.`,
+    accent: 'danger',
+    pairs: [
+      ['Oda', chip(`#${pad(room.no)} · ${room.name}`)],
+      ['Sahip', `<@${room.ownerId}>`],
+      reason ? ['Sebep', reason] : null,
+    ].filter(Boolean),
+  });
+}
+
 module.exports = {
   IDS,
   applyPanel,
@@ -298,4 +329,6 @@ module.exports = {
   limitModal,
   renameModal,
   roomList,
+  openedNotice,
+  closedNotice,
 };

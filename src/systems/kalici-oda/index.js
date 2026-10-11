@@ -273,10 +273,18 @@ async function openRoom(guild, app) {
   return room;
 }
 
-// Sahibine teslim kartını gönderir ve odayı loglar
+// Oda olayı duyuru kanalına herkese açık kart olarak düşer; kanal ayarlanmamışsa sessizce geçilir (log ayrı durur)
+async function announce(guild, container) {
+  if (!config.channels.notifications) return;
+  const channel = await fetchTextChannel(guild, config.channels.notifications);
+  await channel?.send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } }).catch(hata('Oda bildirimi gönderilemedi'));
+}
+
+// Sahibine teslim kartını gönderir, odayı duyurur ve loglar
 async function deliver(guild, room) {
   const owner = await guild.client.users.fetch(room.ownerId).catch(() => null);
   await owner?.send({ components: [ui.readyCard(room)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
+  await announce(guild, ui.openedNotice(room));
   return logSystem
     .write(guild.client, 'bot', {
       color: 'success',
