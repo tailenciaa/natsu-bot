@@ -206,16 +206,15 @@ function rejectModal(app) {
 function readyCard(room) {
   return page({
     title: 'Yeni Kalıcı Oda Açıldı!',
-    sub: 'Odan oluşturuldu ve sana teslim edildi. İsim, kişi limiti, üye ve devir işlemleri artık **/kalici-oda odam** komutunda.',
+    sub: 'Odan oluşturuldu ve sana teslim edildi. İsim, kişi limiti, üye ve devir işlemleri artık **/kalici-oda odam** komutunda; sohbet ise odanın ses kanalının içinde.',
     accent: colors.success,
     blocks: [
       `**Oda**\n${rows([
         ['Oda', roomTag(room)],
         ['Sahibi', `<@${room.ownerId}>`],
-        ['Kişi Sayısı', chip(memberTotal(room.members.length))],
-        ['Kişi Limiti', limitLabel(room.limit)],
+        ['Kanal', `<#${room.voiceChannelId}>`],
+        ['Üye / Limit', usageLabel(room.members.length + 1, room.limit)],
       ])}`,
-      `**Kanallar**\n<#${room.voiceChannelId}> · <#${room.textChannelId}>`,
       room.members.length ? `**Üyeler**\n${mentions(room.members)}` : null,
       activityBlock(null),
       stamp(room.createdAt),
