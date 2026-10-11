@@ -49,11 +49,12 @@ module.exports = ({ mock, ui, src }) => {
   store.kasaEkle(905);
 
   // Kaan'ın geçmişi: girişimleri gerçek sayaca yazılır, kartları kapatıldıktan sonra sicilde kalır
+  const soyulan = 380; // zarın yüzü: canlıda oran rastgele, burada senaryonun seçtiği sonuç
   store.girisimKaydet({ id: 'oniz1', tip: 'uye', saldirgan: mafya.uid, hedef: kurban.uid, kanal: '1', sonAt: mock.ago(2 * mock.MIN) }, mock.ago(4000));
   store.girisimKapat('oniz1');
   store.girisimKaydet({ id: 'oniz2', tip: 'kasa', saldirgan: mafya.uid, hedef: null, kanal: '1', sonAt: mock.ago(60 * mock.MIN) }, mock.ago(6 * mock.MIN));
   store.girisimKapat('oniz2');
-  store.basariKaydet(mafya.uid, 380);
+  store.basariKaydet(mafya.uid, soyulan);
   store.basariKaydet(mafya.uid, 240);
   store.yakalanmaKaydet(mafya.uid);
   store.kayipKaydet(mafya.uid, 120, mock.ago(1000));
@@ -118,7 +119,7 @@ module.exports = ({ mock, ui, src }) => {
       'sokak-kefalet',
       'Suç sayfası: kefalet ödendikten sonra aynı mesajda geri bildirim',
       'Kefalet Ver düğmesinden sonra aynı sayfa',
-      p.panel(sayfa(serbest, `**Kefalet ödendi:** ${number(bedel)} coin kasaya yazıldı ve tahliye oldun.`)),
+      p.panel(sayfa(serbest, `**Kefalet ödendi:** ${coin(bedel)} kasaya yazıldı ve tahliye oldun.`)),
     ),
 
     // ── Pusu kartları ────────────────────────────────────────────────────────
