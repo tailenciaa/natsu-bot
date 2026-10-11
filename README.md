@@ -63,7 +63,6 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
 | `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
 | `/kalici-oda liste`, `kapat`, `devret` | Kalıcı odaları ve bekleyen başvuruları listeler, oda kapatır, sahibi ayrılmış odayı bir üyeye devreder (başvuru panelden yapılır) | Yöneticiler |
-| `/muhabbet liste`, `kapat`, `sirayi-temizle` | Açık muhabbet odalarını ve sırayı listeler, bir odayı kapatır, sırayı boşaltır (sıraya paneldeki butondan girilir) | Yöneticiler |
 | `/log kur` | Log kurulum menüsünü açar | Yöneticiler |
 
 Ceza komutları (`/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban`, `/ceza-kaldir`, `/ceza-sil`) ve `/yetki-ver` ile `/yetki-al` sadece yetkili komut kanalında çalışır.
@@ -78,7 +77,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
 | Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, rol ödülleri), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `gorev` (günlük ve haftalık görevler, Keşif Yolu, kutu, sezon puanı ve eşikleri), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
-| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği odalar), `muhabbet` (sıraya giren iki üyeyi baş başa getiren geçici odalar), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
+| Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği odalar), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
 
