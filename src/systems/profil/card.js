@@ -1,14 +1,18 @@
 // Profil kartı: üyenin profili tek geniş bir görselde toplanır (PNG, Buffer döner). Kapağın içinde avatar, ad,
-// unvan ve sıralama/coin etiketleri; gövdede rozet şeridi, mesaj-ses seviye kutuları, on iki istatistik kutusu ve
-// biyografi + vitrin şeridi çizilir. Kutular temaya göre düz opak ya da yarı saydam "buzlu cam" panel olarak
-// çizilir; cam temalarda saydamlığı üye kendisi ayarlar (custom.glassOpacity). Kapak görseli büyütülüp dört yöne
-// kaydırılabilir (bannerZoom / bannerX / bannerY) ve "banner" ya da "sığdır" yerleşiminden biriyle oturtulur
-// (bannerFit; boşsa banner'dır: görsel kapağın tamamını doldurur, kırpılan şeridi görselden seçilir). Çerçeveler kartın kenarına çizilir, yazılar
+// unvan ve sıralama/coin etiketleri; gövdede tek büyük **puan bandı** (profil puanı, rütbe ilerlemesi ve puanın
+// hangi bölümlerden geldiği), sekiz sütunluk çıplak sayı şeridi, rozet şeridi ve biyografi + vitrin şeridi çizilir.
+// Kutu kalabalığı bilinçli olarak kaldırıldı: eskiden on dört panel üst üste bindiği için her şey iç içe
+// görünüyordu. Şimdi gövdede yalnızca iki panel (puan bandı ve alt şerit) var; sayılar panel kutusu olmadan,
+// bol boşlukla çiziliyor. Coin ve kozmetik temalar ayrı panel değil, kapaktaki etiket ve puan bandındaki hücre.
+// Paneller temaya göre düz opak ya da yarı saydam "buzlu cam" olarak çizilir; cam temalarda saydamlığı üye kendisi
+// ayarlar (custom.glassOpacity). Kapak görseli büyütülüp dört yöne kaydırılabilir (bannerZoom / bannerX / bannerY)
+// ve "banner" ya da "sığdır" yerleşiminden biriyle oturtulur (bannerFit; boşsa banner'dır: görsel kapağın tamamını
+// doldurur, kırpılan şeridi görselden seçilir). Çerçeveler kartın kenarına çizilir, yazılar
 // assets/fonts altındaki Poppins ile çizilir.
 //
 // Kart bilinçli olarak enlemesine geniş ve az bantlı: Discord sohbetteki görseli yüksekliğinden kıptığı için,
 // aynı içeriği daha az dikey banda yaymak kartı sohbette belirgin biçimde büyütür. Bu yüzden kimlik bloğu
-// kapağın içine taşındı (ayrı bir isim bandı yok) ve alt bilgiler tek ızgarada toplandı.
+// kapağın içine taşındı (ayrı bir isim bandı yok) ve alt bilgiler tek şeritte toplandı.
 const {
   FONT,
   canvasLib,
@@ -31,18 +35,17 @@ const { resolveTheme } = require('./themes');
 
 const WIDTH = 1800;
 const PAD = 60;
-const HEADER = 400; // kapak: kimlik bloğu da burada çizildiği için geniş tutulur
+const HEADER = 380; // kapak: kimlik bloğu da burada çizildiği için geniş tutulur
 const AVATAR = 176;
 const BADGE_ROW_H = 40;
 const BADGE_GAP = 12;
 const BADGE_ROW_GAP = 14;
 const BADGE_ROWS_MAX = 2;
-const LEVEL_H = 124;
-const TILE_H = 96;
-const TILE_COLS = 6;
-const TILE_GAP = 16;
+const SKOR_H = 210;
+const STRIP_H = 104;
 const FOOT_H = 118;
-const GAP = 18;
+const GAP = 22;
+const HEADER_GAP = 28;
 const BOTTOM = 44;
 
 // Kapağın altındaki karartmanın yüksekliği: yazıların okunduğu bant, görselin geri kalanı açık kalır
