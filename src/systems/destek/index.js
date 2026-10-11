@@ -205,9 +205,9 @@ async function createTicket(interaction, reason, afterCreate) {
 
   creating.add(lockKey);
   try {
-    // KİŞİYE ÖZEL: kendi talebinin açıldığı bilgisi (ve alt başlık adı sebebi) herkesi ilgilendirmez; görünürlük
-    // defer anında kilitlendiği için burada açıkça gizli bayrak verilir.
-    await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+    // Kalıcı ve herkese açık: talebinin açıldığı kart kanalda durur; görünürlük defer anında kilitlendiği için
+    // akışın sonundaki tüm cevaplar açık bayrakla yazılır.
+    await interaction.deferReply();
 
     const existing = await findOpenTicket(guild, user.id);
     if (existing) return replyError(interaction, `Zaten açık bir destek talebin var: <#${existing}>`);
@@ -274,7 +274,7 @@ async function createTicket(interaction, reason, afterCreate) {
       return replyError(interaction, 'Talebin oluşturulamadı.', 'Birkaç dakika sonra yeniden dene.');
     }
 
-    await respond(interaction, ui.ticketCreated(thread), { ephemeral: true });
+    await respond(interaction, ui.ticketCreated(thread));
 
     const logChannel = await fetchTextChannel(guild, config.channels.log);
     await logChannel

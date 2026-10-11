@@ -139,9 +139,9 @@ async function handleApplySubmit(interaction) {
   submitting.add(lockKey);
 
   try {
-    // KİŞİYE ÖZEL: başvuru özeti (amaç, odada olacak üyeler) sadece başvuranı ilgilendirir; görünürlük defer
-    // anında kilitlendiği için gizli bayrak burada verilir. İnceleme kanalı zaten ayrı bir kart alır.
-    await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+    // Kalıcı ve herkese açık: başvuru özeti kanalda durur; görünürlük defer anında kilitlendiği için akışın
+    // sonundaki tüm cevaplar açık bayrakla yazılır. İnceleme kanalı zaten ayrı bir kart alır.
+    await interaction.deferReply();
     const channel = await fetchTextChannel(interaction.guild, config.channels.applications);
     if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
 
@@ -183,7 +183,7 @@ async function handleApplySubmit(interaction) {
     }
     store.updateApplication(id, { messageId: message.id });
 
-    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }), { ephemeral: true });
+    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }));
   } finally {
     submitting.delete(lockKey);
   }

@@ -68,7 +68,7 @@ const ordersView = (interaction, page = 0) => ui.orders({ user: interaction.user
 // /bakiye: cüzdan kartı yalnızca sahibine görünür — bakiye, seri ve siparişler kişisel bilgidir. Mağaza ve
 // siparişler kartın yerini alır, ayrı mesaj atmaz; bu yüzden onlar da aynı kişiye özel mesajda kalır.
 async function handleWallet(interaction) {
-  return respond(interaction, walletView(interaction), { ephemeral: true });
+  return respond(interaction, walletView(interaction));
 }
 
 // coin-siparis:<sayfa>: siparişler ayrı mesaj olmaz, cüzdan kartının yerini alır
@@ -89,7 +89,7 @@ async function handleBack(interaction) {
 async function handleQuests(interaction) {
   if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
   if (!interaction.guild) return replyError(interaction, 'Görevler sunucuda kullanılır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
-  return respond(interaction, gorev.panelFor(interaction, 'gunluk'), { ephemeral: true });
+  return respond(interaction, gorev.panelFor(interaction, 'gunluk'));
 }
 
 module.exports = {

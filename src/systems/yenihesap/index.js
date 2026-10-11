@@ -95,7 +95,7 @@ function handleChannelCreate(channel) {
 // Üyenin kendi kısıt durumu başkalarını ilgilendirmez: kart yalnızca butona basana görünür
 function handleSure(interaction) {
   const hasRestriction = Boolean(config.roleId && interaction.member?.roles.cache.has(config.roleId));
-  return respond(interaction, ui.sureView(interaction.user, hasRestriction), { ephemeral: true });
+  return respond(interaction, ui.sureView(interaction.user, hasRestriction));
 }
 
 module.exports = {

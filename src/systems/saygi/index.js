@@ -192,7 +192,7 @@ async function handleTable(interaction) {
 async function handlePreview(interaction) {
   const results = topUsers(interaction.guild, store.weekTotals(weekKey()));
   // GİZLİ İSTİSNA: önizleme; asıl duyuru kanala düşer, örnek sadece komutu kullanana görünür
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId), { ephemeral: true });
+  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId));
 }
 
 function handleReady(client) {

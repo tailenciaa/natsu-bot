@@ -143,7 +143,7 @@ async function handlePreview(interaction) {
   const results = {};
   for (const kind of ['ses', 'mesaj', 'yayin']) results[kind] = topUsers(interaction.guild, store.totals(kind, weekKey()));
   // GİZLİ İSTİSNA: önizleme; asıl duyuru kanala düşer, örnek sadece komutu kullanana görünür
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results), { ephemeral: true });
+  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results));
 }
 
 // Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar

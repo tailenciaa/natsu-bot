@@ -103,7 +103,7 @@ const handleEmojiForm = (interaction) =>
 
 // ── Çıkartma Ekle: eski panellerdeki buton; dosya yüklemesi modalla yapılamadığı için komuta yönlendirir ─
 
-const handleStickerButton = (interaction) => (isBooster(interaction) ? respond(interaction, ui.stickerInfoView(), { ephemeral: true }) : notBooster(interaction));
+const handleStickerButton = (interaction) => (isBooster(interaction) ? respond(interaction, ui.stickerInfoView()) : notBooster(interaction));
 
 // ── Takma Ad ──────────────────────────────────────────────────────────────────────
 

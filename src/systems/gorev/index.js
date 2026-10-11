@@ -291,8 +291,8 @@ async function observe(interaction) {
 }
 
 async function handleCommand(interaction) {
-  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
-  return respond(interaction, panelFor(interaction, 'gunluk'), { ephemeral: true });
+  await interaction.deferReply();
+  return respond(interaction, panelFor(interaction, 'gunluk'));
 }
 
 module.exports = {
