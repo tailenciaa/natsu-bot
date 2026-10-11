@@ -86,11 +86,11 @@ const PAN_STEP = 0.1;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const round2 = (value) => Math.round(value * 100) / 100;
 
-// Kapak yerleşimi üç duruma döner: otomatik (kart görselin oranına kendisi karar verir), kapla (alanı doldur,
-// taşanı kırp) ve sığdır (görselin tamamı görünsün, kalan yere arka plan efekti çizilsin).
-const FITS = ['otomatik', 'kapla', 'sigdir'];
-const FIT_LABEL = { otomatik: 'Otomatik', kapla: 'Kapla', sigdir: 'Sığdır' };
-const fitOf = (custom) => (FITS.includes(custom.bannerFit) ? custom.bannerFit : 'otomatik');
+// Kapak yerleşimi iki duruma döner: banner (görsel kapağın tamamına yayılır, kırpılan şeridi bot seçer) ve
+// sığdır (görselin tamamı görünür, kenarlar aynı görselin koyusuyla doldurulur).
+const FITS = ['banner', 'sigdir'];
+const FIT_LABEL = { banner: 'Banner', sigdir: 'Sığdır' };
+const fitOf = (custom) => (custom.bannerFit === 'sigdir' ? 'sigdir' : 'banner');
 
 const kapakValues = (custom) => ({
   zoom: clamp(Number(custom.bannerZoom) || 1, 1, 3),

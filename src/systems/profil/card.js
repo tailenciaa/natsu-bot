@@ -126,9 +126,64 @@ function glass(ctx, x, y, w, h, r, c, tint = '255,255,255') {
   ctx.stroke();
 }
 
-// Kutunun yatay ortalanmış yeri: "kapla" alanı tamamen doldurur, "sığdır" görselin tamamını gösterirken kapağın
-// geri kalanını aynı fotoğrafın koyulaştırılmış hâliyle doldurur. Dönen değer: görsel çizildi mi
-// (false ise tema efekti çizilmiş olur).
+// Kapağın hangi şeridi göreceği: kaplama kırpıldığında dışarıda kalan bant seçilirken fotoğrafın kendisi
+// ölçülür ve en kontrastlı (en "kalabalık") şerit bulunur. Telefonla çekilmiş dik bir fotoğrafta özne tek bir
+// yatay şeritte durur; kadrajın ortasını almak yerine o şeridi almak kapağı düzgün gösterir. Eşit kontrastlarda
+// merkeze yakın şerit yeğlenir. Dönen değer -1..1 arası kaydırma; görsel o eksende kırpılmıyorsa 0.
+function focusPan(image) {
+  const scale = Math.max(WIDTH / image.width, HEADER / image.height);
+  const drawnW = image.width * scale;
+  const drawnH = image.height * scale;
+  const axis = drawnH > HEADER + 1 ? 'y' : drawnW > WIDTH + 1 ? 'x' : null;
+  if (!axis) return { x: 0, y: 0 };
+
+  try {
+    const cols = 40;
+    const rows = clamp(Math.round((image.height / image.width) * cols), 8, 120);
+    const probe = canvasLib().createCanvas(cols, rows);
+    const pctx = probe.getContext('2d');
+    pctx.drawImage(image, 0, 0, cols, rows);
+    const { data } = pctx.getImageData(0, 0, cols, rows);
+    const lum = (c, r) => {
+      const i = (r * cols + c) * 4;
+      return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    };
+
+    const n = axis === 'y' ? rows : cols;
+    const band = clamp(Math.round((n * (axis === 'y' ? HEADER : WIDTH)) / (axis === 'y' ? drawnH : drawnW)), 2, n);
+    let best = 0;
+    let bestScore = -1;
+    for (let start = 0; start + band <= n; start += 1) {
+      let sum = 0;
+      let sumSq = 0;
+      let count = 0;
+      for (let i = start; i < start + band; i += 1) {
+        for (let j = 0; j < (axis === 'y' ? cols : rows); j += 1) {
+          const v = axis === 'y' ? lum(j, i) : lum(i, j);
+          sum += v;
+          sumSq += v * v;
+          count += 1;
+        }
+      }
+      const mean = sum / count;
+      const centreBias = 1 - (Math.abs((start + band / 2) / n - 0.5) * 0.6);
+      const score = (sumSq / count - mean * mean) * centreBias;
+      if (score > bestScore) {
+        bestScore = score;
+        best = start;
+      }
+    }
+    const pan = n > band ? (best / (n - band)) * 2 - 1 : 0;
+    return axis === 'y' ? { x: 0, y: pan } : { x: pan, y: 0 };
+  } catch {
+    return { x: 0, y: 0 };
+  }
+}
+
+// Kapağın yerleşimi iki durumdan biridir. "banner" (varsayılan) görseli kapağın tamamına yayar: alanı
+// dolduracak ölçek, otomatik odak şeridi ve üyenin kendi kaydırması birlikte uygulanır; kapak her zaman
+// baştan başa fotoğraftır. "sığdır" görselin tamamını gösterirken kenarlarda kalan yeri aynı fotoğrafın
+// koyulaştırılmış hâliyle doldurur. Dönen değer: görsel çizildi mi (false ise tema efekti çizilmiş olur).
 async function drawBanner(ctx, custom) {
   let image;
   try {
@@ -138,22 +193,20 @@ async function drawBanner(ctx, custom) {
     return false;
   }
 
-  // Kaplamada görünen alan kapağın alanı, görselin ölçeklenmiş alanına bölünür. Üye yerleşimi kendisi
-  // seçmemişse bu oran karar verir: dik bir telefon fotoğrafı kaplamada ince bir şeride dönüğü için sığdırılır.
   const coverScale = Math.max(WIDTH / image.width, HEADER / image.height);
-  const visible = (WIDTH * HEADER) / (image.width * coverScale * image.height * coverScale);
-  const mode = custom.bannerFit === 'kapla' || custom.bannerFit === 'sigdir' ? custom.bannerFit : visible < 0.3 ? 'sigdir' : 'kapla';
 
-  if (mode === 'kapla') {
+  if (custom.bannerFit !== 'sigdir') {
     const zoom = clamp(Number(custom.bannerZoom) || 1, 1, 3);
+    const focus = focusPan(image);
     const scale = coverScale * zoom;
     const w = image.width * scale;
     const h = image.height * scale;
     const roomX = (w - WIDTH) / 2;
     const roomY = (h - HEADER) / 2;
-    const x = (WIDTH - w) / 2 + clamp(Number(custom.bannerX) || 0, -1, 1) * roomX;
-    const y = (HEADER - h) / 2 + clamp(Number(custom.bannerY) || 0, -1, 1) * roomY;
-    ctx.drawImage(image, x, y, w, h);
+    // Üyenin kaydırması otomatik odağın üstüne biner: 0 bırakıldığında kadrajı bot seçer
+    const panX = clamp(focus.x + clamp(Number(custom.bannerX) || 0, -1, 1), -1, 1);
+    const panY = clamp(focus.y + clamp(Number(custom.bannerY) || 0, -1, 1), -1, 1);
+    ctx.drawImage(image, (WIDTH - w) / 2 + panX * roomX, (HEADER - h) / 2 + panY * roomY, w, h);
     return true;
   }
 
