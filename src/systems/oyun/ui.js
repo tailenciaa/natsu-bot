@@ -44,12 +44,13 @@ function cuzdan({ balance, bahis, kalanTavan }) {
   ])}`;
 }
 
-// Bahis satırı: beş düğme, seçili olan yeşil. Kumarhane sekmelerinin üstünde durur.
-function bahisSatiri(aktif) {
+// Bahis satırı: beş düğme, seçili olan yeşil. Kumarhane sekmelerinin üstünde durur. Sekme adı customId'de
+// taşınır ki bahis değişince üye hangi sayfada kaldığını kaybetmesin.
+function bahisSatiri(aktif, tab) {
   return new ActionRowBuilder().addComponents(
     config.bets.map((value) =>
       new ButtonBuilder()
-        .setCustomId(`${IDS.bahis}${value}`)
+        .setCustomId(`${IDS.bahis}${tab}:${value}`)
         .setLabel(`${number(value)} coin`)
         .setStyle(value === aktif ? ButtonStyle.Success : ButtonStyle.Secondary),
     ),
@@ -159,21 +160,17 @@ function ruletSekmesi(state) {
       ])}`,
       sicil(state.kumar),
     ],
-    rows: [bahisSatiri(state.bahis), renkSatiri],
+    rows: [bahisSatiri(state.bahis, 'rulet'), renkSatiri],
   });
 }
 
 // ── Şans Merdiveni ────────────────────────────────────────────────────────────
 // Verilen basamağa kadar çıkan çarpanların toplamı
 function merdivenPot(adimlar, adim) {
-  return adımlara(adimlar, adim);
-}
-
-function adımlara(adimlar, adim) {
   return adimlar.slice(0, adim).reduce((carpan, a) => carpan * a.carpim, 1);
 }
 
-// Basamak tablosu: düşülen yer kalın ve "buradasın" ile işaretli; üye hangi basakta duracağını sayıya bakarak seçer
+// Basamak tablosu: çıkılan satır kalın ve "buradasın" ile işaretli; üye hangi basamakta duracağını sayıya bakarak seçer
 function basamakSatirlari(adim, bahis) {
   let carpim = 1;
   return config.merdiven.adimlar
@@ -199,12 +196,12 @@ function merdivenSekmesi(state) {
     : new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`${IDS.merdiven}bas`).setLabel('Tırman').setStyle(ButtonStyle.Success));
 
   const masada = merdiven
-    ? `### Masada\nÇıkılan basamak: **${merdiven.adim} / ${adimlar.length}** · pot: ${coin(merdivenPot(adimlar, merdiven.adim) * merdiven.bahis)}\n` +
+    ? `### Masada\nÇıkılan basamak: **${merdiven.adim} / ${adimlar.length}** · pot: ${coin(Math.round(merdivenPot(adimlar, merdiven.adim) * merdiven.bahis))}\n` +
       (merdiven.adim > son
         ? 'Son basamaktasın; buradan yukarı yok, çekmek zorundasın.'
         : `Sıradaki basamakta ${Math.round(adimlar[merdiven.adim].dusme * 100)}% ihtimalle düşersin; çıkarsan pot ${number(Math.round(merdiven.bahis * merdivenPot(adimlar, merdiven.adim + 1)))} coin olur.`)
     : `### Nasıl Oynanır?\nBahsini seçip tırmanmaya başla. Her basamakta çarpan büyür, düşme olasılığı da büyür. ` +
-      `"Parayı Çek" dediğin an pot cüzdanına döner; düştüğün an bahis yanar. Sekizinci basamak ${sayisal(merdivenPot(adimlar, adimlar.length) * 1)}x verir ama oraya varan azdır.`;
+      `"Parayı Çek" dediğin an pot cüzdanına döner; düştüğün an bahis yanar. Sekizinci basamak ${sayisal(merdivenPot(adimlar, adimlar.length))}x verir ama oraya varan azdır.`;
 
   return kabuk({
     ...state,
