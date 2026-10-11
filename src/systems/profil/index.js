@@ -438,7 +438,7 @@ async function handleSettings(interaction) {
       // profil kartındaki düğme sekme taşımadığı için mağaza ilk açılışta kişiye özel ayrı mesaj olur
       return arg
         ? interaction.update({ components: [page], attachments: [], allowedMentions: { parse: [] } })
-        : respond(interaction, page, { ephemeral: true });
+        : respond(interaction, page);
     }
     case 'al':
       return buy(interaction, arg, arg2, arg3);
@@ -480,8 +480,8 @@ async function handleSettings(interaction) {
       const problem = value ? await checkImage(value) : null;
       if (problem) return replyError(interaction, 'Kapak görseli kaydedilmedi.', problem);
       store.set(interaction.user.id, { banner: value || null });
-      // Modal gönderimi eski mesajı güncelleyemez: düzenleyici yeni bir kişiye özel mesaj olarak, kaydedilen görselle açılır
-      await interaction.followUp({ ...(await kapakPageMessage(interaction)), flags: core.EPHEMERAL_CV2 });
+      // Modal gönderimi eski mesajı güncelleyemez: düzenleyici kanalda kalıcı yeni bir mesaj olarak, kaydedilen görselle açılır
+      await interaction.followUp({ ...(await kapakPageMessage(interaction)), flags: core.CV2 });
       return refreshLiveCard(interaction);
     }
     default:
