@@ -14,6 +14,9 @@ const store = require('./store');
 const ui = require('./ui');
 
 const isBooster = (interaction) => Boolean(interaction.member?.premiumSince);
+// KİŞİYE ÖZEL: takviye ayarları (çıkartma bilgisi, takma ad, özel rol, renk ve simge seçimi) üyenin kendi
+// tercihidir; kimse başkasının "takma adın değiştirildi" onayını görmek zorunda değil. Bu yüzden tüm boost
+// cevapları butonu basana görünür gönderilir.
 const notBooster = (interaction) => respond(interaction, ui.notBoosterView(), { ephemeral: true });
 const errorCode = (err) => err?.code ?? err?.rawError?.code;
 
@@ -100,7 +103,7 @@ const handleEmojiForm = (interaction) =>
 
 // ── Çıkartma Ekle: eski panellerdeki buton; dosya yüklemesi modalla yapılamadığı için komuta yönlendirir ─
 
-const handleStickerButton = (interaction) => (isBooster(interaction) ? respond(interaction, ui.stickerInfoView()) : notBooster(interaction));
+const handleStickerButton = (interaction) => (isBooster(interaction) ? respond(interaction, ui.stickerInfoView(), { ephemeral: true }) : notBooster(interaction));
 
 // ── Takma Ad ──────────────────────────────────────────────────────────────────────
 
@@ -122,10 +125,10 @@ async function handleNickForm(interaction) {
       console.error('[boost] Takma ad değiştirilemedi:', err.message);
       return false;
     });
-  if (!ok) return respond(interaction, core.alert('Takma ad değiştirilemedi.', 'Botun rolü senin rolünden üstte olmalı.', 'danger'));
+  if (!ok) return respond(interaction, core.alert('Takma ad değiştirilemedi.', 'Botun rolü senin rolünden üstte olmalı.', 'danger'), { ephemeral: true });
   // Eski takma ad değişiklik başarılı olduktan sonra saklanır; sonraki değişikliklerde üzerine yazılmaz
   if (!store.hasSavedNick(member.id)) store.saveNick(member.id, previousNick);
-  return respond(interaction, core.alert(`Takma adın \`${newNick.replace(/`/g, "'")}\` olarak değiştirildi.`, 'Takviyen bitince eski adına döner.', 'success'));
+  return respond(interaction, core.alert(`Takma adın \`${newNick.replace(/`/g, "'")}\` olarak değiştirildi.`, 'Takviyen bitince eski adına döner.', 'success'), { ephemeral: true });
 }
 
 // ── Özel Rol ─────────────────────────────────────────────────────────────────
@@ -208,10 +211,10 @@ async function handleRoleForm(interaction) {
     }
   } catch (err) {
     console.error('[boost] Özel rol oluşturulamadı/güncellenemedi:', err.message);
-    return respond(interaction, core.alert('Rol oluşturulamadı ya da güncellenemedi.', roleErrorHint(err), 'danger'));
+    return respond(interaction, core.alert('Rol oluşturulamadı ya da güncellenemedi.', roleErrorHint(err), 'danger'), { ephemeral: true });
   }
 
-  return respond(interaction, core.alert(`Rolün \`${role.name.replace(/`/g, "'")}\` olarak ayarlandı.`, 'Takviyen bitince rol geri alınır.', 'success'));
+  return respond(interaction, core.alert(`Rolün \`${role.name.replace(/`/g, "'")}\` olarak ayarlandı.`, 'Takviyen bitince rol geri alınır.', 'success'), { ephemeral: true });
 }
 
 // ── Renk Rolü: hazır (gradyan) rollerden birini tek seçimli seçme menüsü ──────
@@ -231,11 +234,11 @@ async function handleColorRole(interaction) {
       console.error('[boost] Renk rolü verilemedi:', err.message);
       return false;
     });
-  if (!ok) return respond(interaction, core.alert('Renk rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'));
+  if (!ok) return respond(interaction, core.alert('Renk rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'), { ephemeral: true });
 
   const stale = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId).map((r) => r.id);
   if (stale.length) await interaction.member.roles.remove(stale, 'Booster işlemleri: renk rolü değişti').catch((err) => console.error('[boost] Eski renk rolü alınamadı:', err.message));
-  return respond(interaction, core.alert('Renk rolün ayarlandı.', undefined, 'success'));
+  return respond(interaction, core.alert('Renk rolün ayarlandı.', undefined, 'success'), { ephemeral: true });
 }
 
 // ── Simge Rolü: hazır rollerden birini tek seçimli seçme menüsü (renk rolüyle aynı mantık) ────
@@ -254,11 +257,11 @@ async function handleIconRole(interaction) {
       console.error('[boost] Simge rolü verilemedi:', err.message);
       return false;
     });
-  if (!ok) return respond(interaction, core.alert('Simge rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'));
+  if (!ok) return respond(interaction, core.alert('Simge rolü verilemedi.', 'Botun rolü bu rolden üstte olmalı.', 'danger'), { ephemeral: true });
 
   const stale = interaction.member.roles.cache.filter((r) => allIds.includes(r.id) && r.id !== roleId).map((r) => r.id);
   if (stale.length) await interaction.member.roles.remove(stale, 'Booster işlemleri: simge rolü değişti').catch((err) => console.error('[boost] Eski simge rolü alınamadı:', err.message));
-  return respond(interaction, core.alert('Simge rolün ayarlandı.', undefined, 'success'));
+  return respond(interaction, core.alert('Simge rolün ayarlandı.', undefined, 'success'), { ephemeral: true });
 }
 
 module.exports = {
