@@ -244,11 +244,11 @@ function shopRows(tur, custom, kaynak = null) {
     if (!shop.wear) {
       return owned
         ? { ...base, state: 'Kartında görünüyor', id: wearId(item.key), label: 'Sahipsin', disabled: true }
-        : { ...base, state: priceTag(item.price), id: buyId(item.key), label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
+        : { ...base, state: priceTag(item.price), id: buyId(item.key), label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Success };
     }
-    if (item.price === 0) return { ...base, state: 'Ücretsiz', id: wearId(item.key), label: 'Giy', wearStyle: ButtonStyle.Secondary };
+    if (item.price === 0) return { ...base, state: 'Ücretsiz', id: wearId(item.key), label: 'Giy', wearStyle: ButtonStyle.Primary };
     if (owned) return { ...base, state: 'Sahipsin', id: wearId(item.key), label: 'Giy', wearStyle: ButtonStyle.Primary };
-    return { ...base, state: priceTag(item.price), id: buyId(item.key), label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Secondary };
+    return { ...base, state: priceTag(item.price), id: buyId(item.key), label: `Al · ${number(item.price)}`, wearStyle: ButtonStyle.Success };
   });
 }
 

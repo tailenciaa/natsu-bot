@@ -313,9 +313,10 @@ function rozetPage(list, earnedCount) {
 function vitrinPage(current, featuredKey, featuredOptions, visitLine) {
   const links = current.links ?? {};
   return new ContainerBuilder()
-    .addTextDisplayComponents(text('## Vitrin'))
     .addTextDisplayComponents(
-      text('Kartında öne çıkarmak istediğin istatistiği seç, bağlantılarını ve zamirini düzenle. Seçtiklerin profil kartının alt şeridinde görünür.'),
+      text(
+        '## Vitrin\nKartında öne çıkarmak istediğin istatistiği seç, bağlantılarını ve zamirini düzenle. Seçtiklerin profil kartının alt şeridinde görünür.',
+      ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
@@ -359,9 +360,10 @@ function shopPage(tab, tabs, balance, items, kaynak = null) {
     new ButtonBuilder().setCustomId(b.id).setLabel(b.label).setStyle(ButtonStyle.Secondary),
   );
   const container = new ContainerBuilder()
-    .addTextDisplayComponents(text('## Profil Mağazası'))
     .addTextDisplayComponents(
-      text('Coinler günlük giriş, seviye atlama, haftalık derece ve saygınlık vermekten birikir. Alınan kozmetik kalıcıdır; istediğin zaman değiştirip tekrar giyebilirsin.'),
+      text(
+        '## Profil Mağazası\nCoinler günlük giriş, seviye atlama, haftalık derece ve saygınlık vermekten birikir. Alınan kozmetik kalıcıdır; istediğin zaman değiştirip tekrar giyebilirsin.',
+      ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`**Bakiyen:** ${core.chip(`${balance.toLocaleString('tr-TR')} coin`)}`))
