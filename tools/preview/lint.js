@@ -244,7 +244,7 @@ function lint(norm) {
 
     // Hesaptan çıkan bozuk değerler kullanıcıya ulaşmasın: NaN, undefined, geçersiz tarih
     const broken = s.value.match(/NaN|undefined|null|Invalid Date|\[object /);
-    if (broken) err('bozuk-deger', s.path, `Metinde bozuk değer: ${broken[0]} — ölçümın gerçek değer döndürdüğü kontrol edilsin`);
+    if (broken) err('bozuk-deger', s.path, `Metinde bozuk değer: ${broken[0]} — ölçümün gerçek değer döndürdüğü kontrol edilsin`);
 
     const plain = stripTokens(s.value);
 
