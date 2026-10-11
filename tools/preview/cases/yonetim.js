@@ -338,7 +338,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Yayın kanalı, bot açılırken gönderilen kalıcı panel',
       visibility: 'panel',
       kind: 'message',
-      build: () => ({ components: [yayin.panel()] }),
+      build: () => ({ components: [yayin.panel()], ...noMentions }),
     },
     {
       id: 'yayin-alindi',
