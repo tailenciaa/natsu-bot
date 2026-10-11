@@ -102,6 +102,6 @@ module.exports = {
   },
   slash: { gunluk: handleDaily, bakiye: handleWallet },
   // coin-bakiye butonu sabit bir kimlik taşır (sayfa taşımaz), bu yüzden önek değil doğrudan buton tablosunda
-  buttons: { [ui.IDS.wallet]: handleBack },
+  buttons: { [ui.IDS.wallet]: handleBack, [ui.IDS.quests]: handleQuests },
   prefixed: [[ui.IDS.orders, handleOrders]],
 };
