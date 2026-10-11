@@ -153,6 +153,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 - Rozet şeridi en çok iki satır; sığmayanlar tek bir "**+N**" hapsine dönüşür. Coin ile alınan sergi rozetleri başa yazılır (ücretli olan, kazanılanların arasında kaybolmaz).
 - Kapak düzenleyicide görsel %100-300 yakınlaştırılır ve kaydırma yalnızca taşan alan kadar yapılır (-1..1); görselin arkasında boşluk oluşamaz. Hareket düğmeleri her zaman durur, görsel yokken ya da sığdırmada pasifleşir. Görünüm sayfasındaki saydamlık düğmeleri de aynı kuralı izler: cam olmayan temada kaybolmaz, pasifleşir.
 - Arka plan efektleri (`kapak.js`) temaların kendi efektiyle aynı boyacıları kullanır; tema ve arka plan tek yerde çizilir.
+- **Seviye atlama kartı** (`seviye/levelup-card.js`) iki sabit kutudur: soldaki seviye kutusu her kartta 330 px, sağdaki ödül kutusu kalan genişliktir ve **her zaman çizilir**. Rol sadece ana seviyelerde verildiği için kutu boş kalınca seviye kutusu tüm satıra yayılıyor ve kart bozuk duruyordu; şimdi rolsüz seviyelerde ödül kutusunun başlığı **SEVİYE ÖDÜLÜ**, ana seviyede **KAZANILAN ROL** olur ve altında her seviyenin coin ödülü (`coin/config.js` → `awards.levelUp`) altın renkli `+N coin` satırıyla yazılır. Coin tonu tema renginden bağımsızdır (`COIN_COLOR`), böylece coin her yerde aynı görünür.
 
 ## 4. Teknik sınırlar
 
