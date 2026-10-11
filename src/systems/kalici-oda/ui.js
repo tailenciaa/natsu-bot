@@ -79,7 +79,7 @@ function applyPanel() {
     .addTextDisplayComponents(
       text(
         [
-          '## Gereksinimler',
+          '### Gereksinimler',
           rows([
             ['Üye Sayısı', chip(`${config.minMembers} kişi ve üzeri`)],
             ['Başvuruda Ses Şartı', chip(`${config.minWeeklyVoiceHours} saat / hafta`)],
@@ -259,7 +259,7 @@ function activityBlock(status) {
     : null;
 
   return [
-    '## Odayı Açık Tutan Şart',
+    '### Odayı Açık Tutan Şart',
     targets,
     measured,
     status

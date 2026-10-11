@@ -113,19 +113,19 @@ const GUIDE_TITLE = 'Özel Oda Rehberi';
 function guidePanel() {
   const blocks = [
     [
-      '## Oda Nasıl Açılır?',
+      '### Oda Nasıl Açılır?',
       `1. <#${config.createChannelId}> kanalına gir; senin için **kendi ses kanalın** açılır.`,
       '2. Odanın adı görünen adından oluşur, istediğin zaman değiştirebilirsin.',
       '3. Ayarları odanın yazı sohbetindeki **kontrol panelinden** yaparsın.',
     ].join('\n'),
     [
-      '## Oda Sahibi Neler Yapabilir?',
+      '### Oda Sahibi Neler Yapabilir?',
       '1. Odayı **kilitleyerek** yeni girişleri durdurur, **gizleyerek** kanal listesinden saklar.',
       '2. Kişi limitini ve odanın adını değiştirir; kişi limiti **0** ise oda sınırsızdır.',
       '3. Odadaki üyeleri **atar**, tekrar girmesini **engeller** ya da sahipliği **devreder**.',
     ].join('\n'),
     [
-      '## Bilmen Gerekenler',
+      '### Bilmen Gerekenler',
       '1. Paneli sadece **oda sahibi** kullanabilir.',
       '2. İşlemler arasında kısa bir bekleme vardır.',
       '3. Odada kimse kalmayınca **oda silinir**.',

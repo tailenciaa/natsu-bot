@@ -205,7 +205,7 @@ function reviewCard(request, decided) {
     .addTextDisplayComponents(
       text(
         fields([
-          '## Talep Bilgileri',
+          '### Talep Bilgileri',
           rows([
             ['Gönderen', `<@${request.requesterId}>`],
             ['Sunucu ID', chip(request.serverId)],
