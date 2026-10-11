@@ -30,9 +30,9 @@ module.exports = {
 
   // Bir üyenin aynı anda en fazla kaç kalıcı odası olabilir
   maxRoomsPerOwner: 1,
-  // Odayı en az kaç kişi kullanacak (başvuran dahil); formda etiketlenen üyelerden sayılır
+  // Odayı en az kaç kişi kullanacak (başvuran dahil); başvurunun üye seçimi adımında seçtiklerinden sayılır
   minMembers: 4,
-  // Formda belirtilebilecek azami üye sayısı (başvuran hariç)
+  // Üye seçme menüsünden seçilebilecek azami üye sayısı (başvuran hariç)
   maxExtraMembers: 14,
   // Odayı kullanacakların son 7 gündeki toplam ses süresi hedefi (saat). Başvuruda hesaplanır ve kartta gösterilir;
   // altında kalan başvuru otomatik reddedilmez, kararı yöneticiler verir. Odayı açtıktan sonra koruyacak şartlar
