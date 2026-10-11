@@ -267,6 +267,7 @@ async function handleApplySubmit(interaction) {
       return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yöneticiye haber ver.');
     }
     store.updateApplication(id, { messageId: message.id });
+    drafts.delete(draftKey(interaction)); // başvuru kanala düştü: üye seçimi taslağı bitti
 
     return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }), { ephemeral: true });
   } finally {
