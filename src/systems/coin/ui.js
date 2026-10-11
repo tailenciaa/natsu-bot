@@ -9,6 +9,7 @@ const IDS = {
   orders: 'coin-siparis', // coin-siparis:<sayfa>
   wallet: 'coin-bakiye', // mağaza ve sipariş sayfasından cüzdana dönüş
   quests: 'coin-gorev', // cüzdandan görev paneline geçiş: panel ayrı mesaj olur, kendi sekmeleriyle açılır
+  arcade: 'coin-oyun', // cüzdandan Oyun Salonuna geçiş: sayfa ayrı mesaj olur, kendi sekmeleriyle açılır
 };
 
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz
@@ -42,7 +43,9 @@ function daily({ user, amount, streak, base, bonus, balance, nextAt }) {
 function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now() }) {
   const container = page({
     title: 'Coin Cüzdanım',
-    sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece** ve **saygınlık vermekten** birikir; **görevler** hem coin hem kutu anahtarı verir. Harcadığın yer profil mağazasıdır.',
+    sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece**, **saygınlık** ve **görevlerden** birikir; ' +
+      '**keşif** ve **eğlence** de coin verir ama günlük tavanı vardır. Harcama yerleri profil mağazası, **butik** ve ' +
+      '**kumarhane**dir; kumarhanede masa uzun vadede daima kazanır.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
       `### Cüzdan Bilgileri\n**Mevcut Bakiye:** ${coin(balance)}\n${pills([
@@ -58,6 +61,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
       new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(IDS.quests).setLabel('Görevler').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(IDS.arcade).setLabel('Oyun Salonu').setStyle(ButtonStyle.Secondary),
     ),
   );
 }

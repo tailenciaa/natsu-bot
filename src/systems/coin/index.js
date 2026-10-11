@@ -8,6 +8,7 @@ const { respond, replyError, isMenuOwner, menuOwnerError } = require('../../core
 const { levelFromXp } = require('../seviye/level');
 const seviyeStore = require('../seviye/store');
 const gorev = require('../gorev'); // Görevler düğmesi aynı paneli açar; yalnızca store'a değil, panele de bağlı tek yön
+const oyun = require('../oyun'); // Oyun Salonu düğmesi de aynı düzeni izler: sayfanın çizim fonksiyonu dışa açılır
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -92,6 +93,13 @@ async function handleQuests(interaction) {
   return respond(interaction, gorev.panelFor(interaction, 'gunluk'));
 }
 
+// coin-oyun: cüzdandan Oyun Salonuna geçiş. Sayfa da kendi sekmelerini taşıdığı için ayrı mesaj olarak açılır.
+async function handleArcade(interaction) {
+  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
+  if (!interaction.guild) return replyError(interaction, 'Salon sunucuda çalışır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
+  return respond(interaction, oyun.panelFor(interaction, 'kesif'));
+}
+
 module.exports = {
   name: 'coin',
   commands,
@@ -102,6 +110,6 @@ module.exports = {
   },
   slash: { gunluk: handleDaily, bakiye: handleWallet },
   // coin-bakiye butonu sabit bir kimlik taşır (sayfa taşımaz), bu yüzden önek değil doğrudan buton tablosunda
-  buttons: { [ui.IDS.wallet]: handleBack, [ui.IDS.quests]: handleQuests },
+  buttons: { [ui.IDS.wallet]: handleBack, [ui.IDS.quests]: handleQuests, [ui.IDS.arcade]: handleArcade },
   prefixed: [[ui.IDS.orders, handleOrders]],
 };

@@ -32,6 +32,7 @@ const SELF = 'yardim';
 // eklenir. Bir kategoride listelenecek komut kalmıyorsa kategori hiç gösterilmez.
 const CATEGORIES = [
   ['hesap', 'Profil, seviye, coin ve cüzdan komutları'],
+  ['oyun', 'Oyun Salonu, suç dünyası, eğlence ve evlilik komutları'],
   ['siralama', 'Sıralamalar ve saygınlık'],
   ['partner', 'Partner sunucular'],
 ];
