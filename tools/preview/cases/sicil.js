@@ -105,7 +105,7 @@ module.exports = ({ mock, ui, src }) => {
     { id: 'detay-kaldirildi', title: 'Ceza detayı: kaldırılmış ban', where: 'Sicil menüsünden ceza seçince', visibility: 'ephemeral', kind: 'message', build: () => detail(punishment({ type: 'ban', status: 'lifted', liftedBy: staff.id, endedAt: Date.now(), liftReason: 'İtirazı haklı bulundu.' })) },
     { id: 'detay-salt-okunur', title: 'Ceza detayı: yetkisiz görünüm', where: 'Sicil menüsünden ceza seçince', visibility: 'ephemeral', kind: 'message', build: () => detail(punishment({ reason: longReason }), false) },
 
-    { id: 'tur-secici', title: 'Ceza Ver: tür seçici', where: 'Sicilde Ceza Ver butonuna basınca', visibility: 'public', kind: 'message', build: () => ({ components: [sicil.typePicker(member, '123456789', ['uyari', 'mute', 'jail', 'ban'])], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
+    { id: 'tur-secici', title: 'Ceza Ver: tür seçici', where: 'Sicilde Ceza Ver butonuna basınca', visibility: 'public', kind: 'message', build: () => ({ components: [sicil.typePicker(member, '123456789', ['uyari', 'mute', 'jail', 'ban'])], flags: ui.CV2, ...noMentions }) },
     { id: 'form-ceza', title: 'Form: ceza ver (susturma)', where: 'Tür seçilince açılır', visibility: 'ephemeral', kind: 'modal', build: () => sicil.punishModal(member, 'mute', '123456789') },
     { id: 'form-ceza-uyari', title: 'Form: ceza ver (uyarı)', where: 'Tür seçilince açılır', visibility: 'ephemeral', kind: 'modal', build: () => sicil.punishModal(member, 'uyari', '123456789') },
     { id: 'form-sure', title: 'Form: süre ekle', where: 'Ceza detayında Süre Ekle butonu', visibility: 'ephemeral', kind: 'modal', build: () => sicil.extendModal(punishment(), '123456789') },

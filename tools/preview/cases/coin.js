@@ -97,7 +97,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [coin.wallet({ user, balance: 18400, earned: 42000, spent: 23600, streak: 5, readyAt: Date.now() + 9 * 3600 * 1000 })],
-        flags: ui.EPHEMERAL_CV2,
+        flags: ui.CV2,
         ...noMentions,
       }),
     },
@@ -109,7 +109,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [coin.wallet({ user, balance: 800, earned: 800, spent: 0, streak: 0, readyAt: Date.now() })],
-        flags: ui.EPHEMERAL_CV2,
+        flags: ui.CV2,
         ...noMentions,
       }),
     },
@@ -121,7 +121,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [coin.orders({ user, items: purchases, page: 0 })],
-        flags: ui.EPHEMERAL_CV2,
+        flags: ui.CV2,
         ...noMentions,
       }),
     },
@@ -131,7 +131,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Cüzdan kartındaki Siparişlerim butonu',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [coin.orders({ user, items: [], page: 0 })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
+      build: () => ({ components: [coin.orders({ user, items: [], page: 0 })], flags: ui.CV2, ...noMentions }),
     },
     {
       id: 'siparisler-uzun',
@@ -139,7 +139,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Sipariş listesi ikinci sayfada',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [coin.orders({ user, items: manyPurchases, page: 1 })], flags: ui.EPHEMERAL_CV2, ...noMentions }),
+      build: () => ({ components: [coin.orders({ user, items: manyPurchases, page: 1 })], flags: ui.CV2, ...noMentions }),
     },
   ];
 };
