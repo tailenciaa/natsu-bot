@@ -102,10 +102,36 @@ module.exports = {
     return room;
   },
 
+  // Biten bir haftanın odadaki toplam sesi (saniye) haftanın pazartesi anahtarıyla yazılır. Oda ay sonu şartını
+  // geçmişi üzerinden aşsın diye tutulur; 9 haftadan eski kayıt atılır.
+  recordWeek(id, week, seconds) {
+    const room = data.permanentRooms[id];
+    if (!room) return null;
+    room.weeks ??= {};
+    room.weeks[week] = seconds;
+    const keys = Object.keys(room.weeks).sort();
+    for (const key of keys.slice(0, Math.max(0, keys.length - 9))) delete room.weeks[key];
+    save();
+    return room;
+  },
+
   deleteRoom(id) {
     if (!data.permanentRooms[id]) return false;
     delete data.permanentRooms[id];
     save();
     return true;
+  },
+
+  // ── Şart denetimi ────────────────────────────────────────────────────────────
+  // Denetimler dönem başına bir kez çalışır: hangi haftanın/ayın işlendiği sunucu kaydında durur.
+  lastAudit(guildId, kind) {
+    return guildData(guildId).permanentRoomAudit?.[kind] ?? null;
+  },
+
+  setLastAudit(guildId, kind, period) {
+    const g = guildData(guildId);
+    g.permanentRoomAudit ??= {};
+    g.permanentRoomAudit[kind] = period;
+    save();
   },
 };
