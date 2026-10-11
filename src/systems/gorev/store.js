@@ -128,10 +128,10 @@ function kutuKaydet(userId) {
   });
 }
 
-// Kozmetik çıkınca garanti sayacı sıfırlanır, coin çıkınca bir ilerler
+// Kozmetik çıkınca sayaç sıfırlanır, coin/anahtar çıkınca bir ilerler
 function kutuGaranti(userId, kozmetikCikti) {
   return yaz(userId, (r) => {
-    r.kutu.garanti = kozmetikCikti ? 1 : (r.kutu.garanti % config.KUTU.garanti) + 1;
+    r.kutu.garanti = kozmetikCikti ? 0 : (r.kutu.garanti % config.KUTU.garanti) + 1;
   });
 }
 
