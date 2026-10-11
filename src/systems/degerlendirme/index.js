@@ -321,11 +321,14 @@ async function handleReview(interaction) {
     const where = rating.meetingChannelId
       ? `kendisinin <#${rating.meetingChannelId}> kanalında beklendiği söylendi`
       : 'bir görüşme kanalında olmadığı için kanallardan birine geçmesi söylendi';
+    // Kararın kaydı itiraz kartının kendisi (kanalda, yerinde güncellendi). Bu cevap ise yalnızca çağıran
+    // liderin sürecidir: DM'in ulaşıp ulaşmadığı liderlerin kanalında herkese yazılmaz.
     return respond(
       interaction,
       sent
         ? core.alert('Yetkili görüşmeye çağrıldı.', `Yetkiliye DM üzerinden ${where}.`, 'success')
         : core.alert('Yetkili görüşmeye çağrıldı.', "Yetkilinin DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.", 'warning'),
+      { ephemeral: true },
     );
   }
 

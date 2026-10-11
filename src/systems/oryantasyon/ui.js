@@ -207,7 +207,7 @@ function panel(app, applicantUser) {
   ];
   if (presence) blocks.push(`**Kanal Durumu**\n${presence}`);
   blocks.push(`### ${step.title}\n${stepBody(step, app).replace(/\n{2,}/g, '\n')}`);
-  blocks.push(stepHint(step, app));
+  blocks.push(stepHint(step));
 
   const container = card(
     `Oryantasyon - Başvuru #${pad(app.number)}`,
@@ -231,12 +231,7 @@ function panel(app, applicantUser) {
       .setLabel('Geri')
       .setDisabled(o.step === 0),
   );
-  if (o.awaitingConfirm) {
-    nav.addComponents(
-      new ButtonBuilder().setCustomId(actionId(app, 'ileri')).setStyle(ButtonStyle.Secondary).setLabel('Onay Bekleniyor').setDisabled(true),
-      new ButtonBuilder().setCustomId(actionId(app, 'anladim')).setStyle(ButtonStyle.Success).setLabel('Anladım, Devam'),
-    );
-  } else if (step.type === 'final') {
+  if (step.type === 'final') {
     nav.addComponents(
       new ButtonBuilder().setCustomId(actionId(app, 'ver')).setStyle(ButtonStyle.Success).setLabel('Yetki Ver').setDisabled(!o.areas.length),
     );
@@ -516,7 +511,9 @@ function completedDm(app, guildName) {
       '**Seni aramızda görmekten çok mutluyuz!**\n' +
         'Başvurudan oryantasyona kadar gösterdiğin ilgi için teşekkürler. İlk günlerde takıldığın her şeyi ' +
         `<@${o.staffId}> ya da diğer yetkililere sorabilirsin, kimse her şeyi ilk günden bilmez.\n` +
-        '**Unutma:** yetkili olmak bir ayrıcalık değil, bir sorumluluk.',
+        '**Unutma:** yetkili olmak bir ayrıcalık değil, bir sorumluluk.\n' +
+        '**İlk işin:** `/gorev` panelini aç. Günlük ve haftalık görevler hem coin hem profil puanı getiriyor, ' +
+        'Keşif Yolu ise botun bütün sistemlerini sana tek tek gezdiriyor.',
       `-# ${guildName} - <t:${unix(o.finishedAt)}:F>`,
     ],
     'success',

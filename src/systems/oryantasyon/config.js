@@ -191,7 +191,7 @@ module.exports = {
         '**Sicil**\n' +
         '`/sicil` ile kendi puanını, taleplerini ve geçmişini görebilirsin.\n' +
         '**Yardım**\n' +
-        '`/yardim` ile botun tüm komutlarını ve kimlerin kullanabileceğini görebilirsin.',
+        '`/yardim` herkese açık üye komutlarını listeler; yetkili komutları bu menüde görünmez, burada öğrendiklerin ve paneller yeterlidir.',
     },
     {
       id: 'alan',

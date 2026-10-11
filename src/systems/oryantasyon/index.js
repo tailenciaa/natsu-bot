@@ -919,7 +919,9 @@ async function handleAction(interaction) {
   if (['aktar', 'aktar-sec'].includes(action) && !['waiting', 'active'].includes(o.status)) {
     return replyError(interaction, 'Oryantasyon henüz bir yetkiliye verilmedi.', 'Önce bir yetkili oryantasyonu üstlenmeli.');
   }
-  if (action === 'aktar') return respond(interaction, ui.transferPicker(app));
+  // Seçim menüsü yalnızca aktaran yetkilinindir: başvuranın ya da kanalın diğer yetkilisinin önünde
+  // "kimi seçeceksin" penceresi açılmaz, böylece mesajın Geri yolu olmaması da sorun üretmez
+  if (action === 'aktar') return respond(interaction, ui.transferPicker(app), { ephemeral: true });
   if (action === 'aktar-sec') return handleTransfer(interaction, app);
   if (action === 'iptal') return interaction.showModal(ui.cancelModal(app));
   if (action === 'iptal-form') return handleCancel(interaction, app);

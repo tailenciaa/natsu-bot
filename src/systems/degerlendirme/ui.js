@@ -341,7 +341,7 @@ function meetingDm(rating, guildName) {
         `${refText(rating)} için aldığın değerlendirmeye yaptığın itiraz için görüşme yapılacak.`,
       '**Nereye Geçmelisin?**\n' +
         (waitingIn
-          ? `<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor!`
+          ? `<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor.`
           : 'Görüşme için ses kanallarından birine katıl; katılma butonları bu mesajda.'),
     ],
   })
