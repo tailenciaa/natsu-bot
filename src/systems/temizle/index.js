@@ -47,6 +47,7 @@ async function handleSil(interaction) {
       skipped > 0 ? `Kanalda daha az mesaj vardı ya da ${skipped} mesaj 14 günden eskiydi.` : null,
       'success',
     ),
+    { ephemeral: true },
   );
 }
 
