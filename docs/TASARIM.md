@@ -13,7 +13,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 - Veri şemaları (`data` alan adları), `store.js` mantığı, zamanlayıcılar, süreler, eşikler, XP değerleri, izin ve rol kontrolleri.
 - Kanal ve rol ID'leri (her sistemin `config.js` dosyasında sabit), `syncPanel` anahtarları ve panel `buttonId`'leri.
 - Slash komut, alt komut ve seçenek adları (açıklamaları serbestçe düzeltilebilir).
-- `core/ui.js` içindeki `tidy` otomatik düzenleyicisi: ayırıcı çizgileri kendisi ekler, bu yüzden kodda ayrıca çizgi eklenmez. `tidy` yalnızca buton/menü satırlarının **üstüne** çizgi koyar; bir menü satırının hemen altına gelen başlık ya da metin bloğu varsa o çizgi arayüz kodunda elle eklenir (bkz. `kalici-oda/ui.js` `memberMenus`).
+- `core/ui.js` içindeki `tidy` otomatik düzenleyicisi: ayırıcı çizgileri kendisi ekler, bu yüzden kodda ayrıca çizgi eklenmez. `tidy` yalnızca buton/menü satırlarının **üstüne** çizgi koyar; bir menü satırının hemen altına gelen başlık ya da metin bloğu varsa o çizgi arayüz kodunda elle eklenir (bkz. `kalici-oda/ui.js` `memberMenus`). Ard arda gelen iki kontrol satırı arasına çizgi konmaz — bu buton ızgaraları için istenen davranıştır; birbiryle ilgisi olmayan bir kontrol grubu çizgi istiyorsa kendi `###` başlığını ve elle çizgisini alır (bkz. `kalici-oda/ui.js` `roomPanel` içindeki `### Oda Ayarı`).
 
 ## 2. Kalıcı tercihler
 
