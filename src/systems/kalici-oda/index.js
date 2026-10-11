@@ -433,7 +433,7 @@ async function handleDecision(interaction) {
 }
 
 // ── Oda kontrol paneli ─────────────────────────────────────────────────────────
-// Panel artık odanın yazı kanalında değil, /kalici-oda odam komutunda durur. Oda bu yüzden kanaldan değil
+// Panel odanın kanalında değil, /kalici-oda odam komutunda durur. Oda bu yüzden kanaldan değil
 // paneli kullanan kişinin sahipliğinden bulunur: devredilen ya da kapanan odanın eski paneli işlem yapamaz.
 
 const roomOf = (interaction) => store.roomsOwned(interaction.guildId, interaction.user.id)[0] ?? null;
@@ -441,17 +441,25 @@ const roomOf = (interaction) => store.roomsOwned(interaction.guildId, interactio
 const noRoomError = (interaction) =>
   replyError(interaction, 'Bu paneli sadece oda sahibi kullanabilir.', 'Odan devredilmiş ya da kapatılmış olabilir; kendi odan için komutu yeniden kullan.');
 
-const redraw = (interaction, room) =>
-  interaction.editReply({ components: [ui.roomPanel(room, statusOf(room))], allowedMentions: { parse: [] } }).catch(hata('Oda paneli güncellenemedi'));
+// Üye menüleri isimlerle dolsun diye odadakilerin görünen adları toplanır; ID yazmak ya da aramak gerekmez
+async function rosterOf(guild, room) {
+  if (!room.members.length) return [];
+  const fetched = await guild.members.fetch({ user: room.members }).catch(() => null);
+  return room.members.map((id) => ({ id, name: fetched?.get(id)?.displayName ?? guild.members.cache.get(id)?.displayName ?? 'Üye' }));
+}
 
-// Odanın üç kanalında da erişimi açar ya da kapatır (kategori görünürlüğü, kanallar erişimi taşır)
+async function redraw(interaction, room) {
+  const panel = ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room));
+  return interaction.editReply({ components: [panel], allowedMentions: { parse: [] } }).catch(hata('Oda paneli güncellenemedi'));
+}
+
+// Odanın kanallarında erişimi açar ya da kapatır (kategori erişimi taşır, kanal erişimi sohbeti ve bağlanmayı)
 async function setAccess(guild, room, targetId, allow) {
-  for (const key of ['categoryId', 'voiceChannelId', 'textChannelId']) {
+  for (const key of roomChannelKeys(room)) {
     const channel = await guild.channels.fetch(room[key]).catch(() => null);
     if (!channel) continue;
     if (allow) {
-      const perms = key === 'categoryId' ? { ViewChannel: true } : { ViewChannel: true, Connect: true, SendMessages: true };
-      await channel.permissionOverwrites.edit(targetId, perms).catch(hata('Oda erişimi verilemedi'));
+      await channel.permissionOverwrites.edit(targetId, key === 'categoryId' ? { ViewChannel: true } : asFlags(MEMBER)).catch(hata('Oda erişimi verilemedi'));
     } else {
       await channel.permissionOverwrites.delete(targetId).catch(hata('Oda erişimi kaldırılamadı'));
     }
@@ -587,7 +595,7 @@ async function handleRenameSubmit(interaction) {
 
   await interaction.deferUpdate();
   let changed = false;
-  for (const key of ['categoryId', 'voiceChannelId', 'textChannelId']) {
+  for (const key of roomChannelKeys(room)) {
     const channel = await interaction.guild.channels.fetch(room[key]).catch(() => null);
     if (!channel) continue;
     changed = (await channel.setName(name, `Kalıcı oda #${core.pad(room.no)} yeniden adlandırıldı`).then(() => true, hata('Oda ismi değiştirilemedi'))) || changed;
