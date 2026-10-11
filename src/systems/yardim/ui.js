@@ -39,7 +39,7 @@ function categoryCard({ category, entries }) {
     title: category.label,
     sub: `${category.desc}. Bu komutların adına tıklayıp hemen kullanabilirsin.`,
     accent: colors.primary,
-    blocks: [`### Komutlar\n${entries.map((entry) => `**${entry.description}**\n${entry.usage}`).join('\n\n')}`],
+    blocks: [`### Komutlar\n${entries.map((entry) => `${entry.description}\n${entry.usage}`).join('\n\n')}`],
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(

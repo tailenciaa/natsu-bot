@@ -16,7 +16,7 @@ const TITLE = `${botName} Sunucu Kuralları`;
 const IDS = { accept: 'kurallar-kabul' };
 
 const sectionText = (section, index) =>
-  `**${section.title}**\n${section.rules.map((rule, i) => `\`${index + 1}.${i + 1}\` ${rule}`).join('\n')}`;
+  `### ${section.title}\n${section.rules.map((rule, i) => `\`${index + 1}.${i + 1}\` ${rule}`).join('\n')}`;
 
 // Panelin en altında kuralları kabul eden üye sayısını gösteren buton bulunur
 function panel() {
