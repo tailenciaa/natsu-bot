@@ -2,6 +2,7 @@
 // kendi klasöründeki store.js üzerinden okur ve yazar.
 //   guilds[id].counter             : destek talebi sayacı
 //   guilds[id].application.counter : başvuru sayacı
+//   guilds[id].permanentRoomAudit  : kalıcı oda şart denetiminin hangi hafta ve ay için işlendiği
 //   tickets / history              : açık / kapanmış destek talepleri (alt başlık ID'si ile)
 //   ratings                        : yetkili değerlendirmeleri (talebin alt başlık ID'si ile)
 //   applications                   : yetkili başvuruları (sunucu-numara ID'si ile)
