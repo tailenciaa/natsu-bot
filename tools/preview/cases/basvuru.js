@@ -330,6 +330,14 @@ module.exports = ({ mock, ui, src }) => {
       build: () => ({ components: [b.meetingStaffWaitingDm(meeting(), guild.name, meetingChannel)] }),
     },
     {
+      id: 'dm-baglaniyor',
+      title: 'DM: birazdan bağlanıyoruz',
+      where: 'Başvurana DM, yetkili ses kanalına katılmak üzereyken',
+      visibility: 'dm',
+      kind: 'message',
+      build: () => ({ components: [b.connectingDm(base(), guild.name)] }),
+    },
+    {
       id: 'karar-paneli-ayrildi',
       title: 'Karar paneli: yetkili kanaldan ayrıldı (süre sayılıyor)',
       where: 'Görüşme kanalının sohbeti, görüşmeyi yürüten yetkili kanaldan ayrılınca panel güncellenir',

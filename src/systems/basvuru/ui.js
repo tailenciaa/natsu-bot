@@ -668,9 +668,9 @@ function meetingLog(app) {
 // Başvuranın "Bir yetkili bağlanıyor" DM'i: direkten bağlan (Bağlan butonu) akışında gönderilir
 function connectingDm(app, guildName) {
   return page({
-    title: `Başvuru #${pad(app.number)} — Birazdan Bağlanıyoruz`,
+    title: 'Birazdan Bağlanıyoruz',
     sub: `${guildName} sunucusuna yaptığın yetkili başvurusuyla ilgili bir yetkili ses kanalına katılmak üzere; hazır ol ve kanalda kal.`,
-    blocks: [`<@${app.userId}>, birazdan bir yetkili bulunduğun ses kanalına **bağlanacak.** Kanalda kal ve hazır ol.`],
+    blocks: [`**Başvuru Bilgileri**\n**Başvuru:** #${pad(app.number)}\n<@${app.userId}>, birazdan bir yetkili bulunduğun ses kanalına **bağlanacak.** Kanalda kal ve hazır ol.`],
   });
 }
 

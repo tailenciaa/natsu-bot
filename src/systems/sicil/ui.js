@@ -243,7 +243,7 @@ function punishmentDetail(p, messageId, canEdit, banner) {
 
 // Değerlendirmeyi sicilden kaldırma butonu (değerlendirme detayının altına eklenir)
 const ratingRemoveButton = (userId, rating, messageId) =>
-  actionButton(userId, 'puansil', rating.id, messageId, 'Değerlendirmeyi Kaldır', ButtonStyle.Danger);
+  actionButton(userId, 'puansil', rating.id, messageId, 'Sicilden Kaldır', ButtonStyle.Danger);
 
 // "Ceza Ver" ile açılan, sadece yetkilinin gördüğü tür seçimi. messageId: güncellenecek sicil mesajı
 function typePicker(user, messageId, allowedTypes) {
