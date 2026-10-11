@@ -68,8 +68,8 @@ module.exports = ({ mock, src }) => {
     {
       id: 'detay',
       title: 'Log detayı: detaylı bilgi',
-      where: 'Log girdisindeki Detaylı Bilgi butonuna basınca aynı mesaj güncellenir',
-      visibility: 'public',
+      where: 'Log girdisindeki Detaylı Bilgi butonuna basınca sadece basana görünür',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [d.detail(silinen.logMeta, mesajKategorisi.label)], ...noMentions }),
     },
@@ -84,8 +84,8 @@ module.exports = ({ mock, src }) => {
     {
       id: 'alt-baslik-linki',
       title: 'Log paneli: kategori seçildi',
-      where: 'Panelde kategori seçince gelen cevap, alt başlığa götürür',
-      visibility: 'public',
+      where: 'Kalıcı panelde kategori seçince sadece seçene görünen cevap, alt başlığa götürür',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [d.jumpLink(mesajKategorisi, altKanal)], ...noMentions }),
     },
