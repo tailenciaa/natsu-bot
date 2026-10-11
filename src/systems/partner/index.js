@@ -232,8 +232,9 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
     return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
   }
 
-  // Bundan sonraki işlemler (DM, kanal mesajları) 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.CV2 });
+  // Bundan sonraki işlemler (DM, kanal mesajları) 3 saniyeyi aşabilir; önce cevap ertelenir.
+  // KİŞİYE ÖZEL: "talebin incelemeye gitti / DM'nden şartları onayla" cevabı sadece talep sahibini ilgilendirir.
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
 
   // Yasaklı sunucu kontrolü
   const bannedInfo = store.isServerBanned(serverId);
@@ -278,6 +279,7 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
     return respond(
       interaction,
       core.alert('Partner talebin incelemeye gönderildi.', 'Şartları daha önce kabul ettiğin için doğrudan yetkili incelemesine düştü.', 'success'),
+      { ephemeral: true },
     );
   }
 
@@ -294,6 +296,7 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
   return respond(
     interaction,
     core.alert('Son bir adım kaldı.', "Partner şartlarını DM kutundan onaylaman gerekiyor; onaylayınca talebin yetkili incelemesine düşecek.", 'success'),
+    { ephemeral: true },
   );
 }
 
@@ -534,8 +537,9 @@ async function handlePanelOfferSubmit(interaction) {
     return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
   }
 
-  // DM ve yetkili kanalı işlemleri 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.CV2 });
+  // DM ve yetkili kanalı işlemleri 3 saniyeyi aşabilir; önce cevap ertelenir.
+  // KİŞİYE ÖZEL: teklifin durumu yalnızca teklifi göndereni ilgilendirir.
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
 
   const number = store.nextRequestNumber(entry.guildId);
   const alreadyAccepted = store.hasAcceptedTerms(interaction.user.id);
@@ -562,7 +566,7 @@ async function handlePanelOfferSubmit(interaction) {
     }
     // Bekleme süresi teklif gerçekten ilerleyince başlar; DM gönderilemeyen deneme süreyi harcamaz
     store.updateTrusted(entry.id, { lastOfferAt: Date.now() });
-    return respond(interaction, core.alert('Son bir adım kaldı.', "Partner şartlarını DM kutundan onaylaman gerekiyor; onaylayınca teklifin yetkili incelemesine düşecek.", 'success'));
+    return respond(interaction, core.alert('Son bir adım kaldı.', "Partner şartlarını DM kutundan onaylaman gerekiyor; onaylayınca teklifin yetkili incelemesine düşecek.", 'success'), { ephemeral: true });
   }
 
   if (!(await sendToReview(interaction.client, request))) {
@@ -570,7 +574,7 @@ async function handlePanelOfferSubmit(interaction) {
     return replyError(interaction, 'Teklifin yetkililere iletilemedi.', 'Birkaç dakika sonra yeniden dene.');
   }
   store.updateTrusted(entry.id, { lastOfferAt: Date.now() });
-  return respond(interaction, core.alert('Teklifin incelemeye gönderildi.', 'Yetkilimiz onaylayınca metnin otomatik paylaşılır, sonucu buradan öğreneceksin.', 'success'));
+  return respond(interaction, core.alert('Teklifin incelemeye gönderildi.', 'Yetkilimiz onaylayınca metnin otomatik paylaşılır, sonucu buradan öğreneceksin.', 'success'), { ephemeral: true });
 }
 
 // Güvenilir listeye eklenen partnerin yetkilisine bizim metni gönder: paylaşılan mesaj bilinmediği için sadece
