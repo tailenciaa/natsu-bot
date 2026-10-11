@@ -58,7 +58,7 @@ module.exports = {
           "heading": "Botumuz Kazuki",
           "text": "Kazuki sunucunun içinde çalışan asistanımız: seviyen, profilin, coin bakiyen ve görevlerin tek yerden takip edilir. Komutların tam listesini görmek için <#1538536351119446127> kanalında **`/yardim`** yaz.",
           "items": [
-            "**`/gorev`** — her gün üç kısa görev çekilir (mesaj yaz, seste kal, ekran paylaş, `/gunluk`, birine saygınlık ver); üçü birden bitince günün demeti açılır ve coin, sezon puanı ile kutu anahtarı verir.",
+            "**`/gorev`** — her gün üç kısa görev çekilir (mesaj yaz, seste kal, ekran paylaş, `/gunluk`, saygınlık ver); üçü birden bitince günün demeti açılır: coin, sezon puanı ve anahtar. Üç anahtardan bir kutu çıkar.",
             "**`/profil`** — seviyeni, rozetlerini ve profil puanını gösteren kartı çizer; puanın sunucudaki sıranı belirler.",
             "**`/gunluk`** — günde bir kez coin toplar; arka arkaya giriş yaptıkça seri büyür ve ödül artar.",
             "**`/bakiye`** — cüzdanını ve coinlerini harcadığın profil mağazasını açar.",
