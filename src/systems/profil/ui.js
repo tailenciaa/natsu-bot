@@ -20,7 +20,10 @@ const core = require('../../core/ui');
 // Ürün türünün tek adı ve coin biçimi coin sisteminden alınır: sipariş listesiyle mağaza bildirimi aynı sözcükleri kullansın
 const { coin, TUR_LABEL } = require('../coin/ui');
 const { coverOf } = require('./kapak');
+const { TIERS } = require('./skor');
 const { THEMES } = require('./themes');
+
+const number = (n) => Number(n).toLocaleString('tr-TR');
 
 // Hepsi profil-ayar:<eylem> ile gelir; index.js'te tek önek altında karşılanır
 const IDS = {
@@ -37,6 +40,7 @@ const IDS = {
   gorunum: 'profil-ayar:gorunum',
   gorunumBtn: 'profil-ayar:gorunum-btn:', // + azalt | artir | sifirla
   rozet: 'profil-ayar:rozetler',
+  score: 'profil-ayar:puan',
   shop: 'profil-ayar:magaza',
   shopTab: 'profil-ayar:magaza:', // + cerceve | tema | kapak | rozet
   geri: 'profil-ayar:geri', // mağaza, rozet ve vitrin sayfalarını kapatır
@@ -86,6 +90,7 @@ function profile(imageName, editable, currentTheme = null, description = 'Profil
         new ButtonBuilder().setCustomId(IDS.color).setLabel('Renk').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.gorunum).setLabel('Görünüm').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.score).setLabel('Puanım').setStyle(ButtonStyle.Secondary),
       ),
     )
     .addActionRowComponents(

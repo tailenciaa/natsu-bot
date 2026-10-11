@@ -13,6 +13,7 @@ const kapak = require('./kapak');
 const kozmetik = require('./kozmetik');
 const gorev = require('./gorev');
 const rozet = require('./rozet');
+const skor = require('./skor');
 const store = require('./store');
 const { FEATURED, featuredOptions, profileView, headerView } = require('./view');
 const { THEMES, resolveTheme } = require('./themes');
@@ -204,6 +205,21 @@ async function checkImage(url) {
   } catch {
     return 'Bağlantı açılamadı. Adresi kontrol edip tekrar dene.';
   }
+}
+
+// Puan sayfası: kartın manşetindeki sayının dökümü ve sunucunun ilk 10'u. Tabloyu skor.js tek geçişte hesaplar
+// (beş dakika önbellekte durur), böylece kartla sayfadaki sıra asla birbirini tutmazlık etmez.
+// GİZLİ İSTİSNA: üyenin kendi durum bilgisi.
+async function puanMessage(interaction) {
+  const { guild } = interaction;
+  const view = await profileView(guild, interaction.user.id);
+  const board = await skor.board(guild);
+  const nameOf = (id) => guild.members.cache.get(id)?.displayName ?? 'biri';
+  const top = board.entries.slice(0, 10).map((entry, i) => ({ ...entry, rank: i + 1, name: nameOf(entry.userId), you: entry.userId === interaction.user.id }));
+  // İlk 10'un dışındaysa kendi satırı listenin altına eklenir: "neredeyim" sorusu cevapsız kalmasın
+  const kendi = board.byUser.get(interaction.user.id);
+  if (kendi && kendi.rank > 10) top.push({ userId: interaction.user.id, rank: kendi.rank, total: kendi.total, tier: kendi.tier, name: nameOf(interaction.user.id), you: true });
+  return ui.puanPage({ score: view.score, rank: view.scoreRank, size: view.scoreSize, top });
 }
 
 // ── Mağaza ────────────────────────────────────────────────────────────────────
@@ -455,6 +471,8 @@ async function handleSettings(interaction) {
       await interaction.editReply({ components: [await vitrinMessage(interaction)], allowedMentions: { parse: [] } });
       return refreshLiveCard(interaction);
     }
+    case 'puan':
+      return respond(interaction, await puanMessage(interaction), { ephemeral: true });
     case 'rozetler': {
       const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
       const m = rozet.measures();
