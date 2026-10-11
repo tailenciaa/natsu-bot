@@ -45,7 +45,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
     sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece** ve **saygınlık vermekten** birikir; **görevler** hem coin hem kutu anahtarı verir. Harcadığın yer profil mağazasıdır.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
-      `**Cüzdan Bilgileri**\n**Mevcut Bakiye:** ${coin(balance)}\n${pills([
+      `## Cüzdan Bilgileri\n**Mevcut Bakiye:** ${coin(balance)}\n${pills([
         ['Kazanç', `${number(earned)} coin`],
         ['Harcanan', `${number(spent)} coin`],
         streak > 0 && ['Seri', `${streak} gün`],
