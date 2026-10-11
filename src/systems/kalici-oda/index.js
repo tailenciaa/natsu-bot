@@ -844,5 +844,5 @@ module.exports = {
   },
   // Zamanlayıcının çağırdığı denetimler; yerel duman testi ve önizleme case'leri için dışarı açık
   // (çerçeve bu alanı okumaz). Paneldeki şart durumu da aynı activityStats'ten gelir, iki ayrı hesap olmasın.
-  denetim: { checkWeeklyActivity, checkMonthlyActivity, activityStats, weeklyVoiceSeconds, monthKey, nextReviewAt },
+  denetim: { checkWeeklyActivity, checkMonthlyActivity, activityStats, statusOf, weeklyVoiceSeconds, monthKey, nextReviewAt },
 };
