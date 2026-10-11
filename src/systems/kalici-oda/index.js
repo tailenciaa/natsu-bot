@@ -908,6 +908,7 @@ module.exports = {
   slash: { 'kalici-oda': handleCommand },
   buttons: {
     [ui.IDS.apply]: handleApplyButton,
+    [ui.IDS.openForm]: handleOpenForm,
     [ui.IDS.limit]: handleLimitButton,
     [ui.IDS.rename]: handleRenameButton,
   },
@@ -917,6 +918,7 @@ module.exports = {
     [ui.IDS.renameForm]: handleRenameSubmit,
   },
   prefixed: [
+    [ui.IDS.pickMembers, handleMemberPick],
     [ui.IDS.decide, handleDecision],
     [ui.IDS.rejectForm, handleRejectSubmit],
     [ui.IDS.add, handleAddMember],
