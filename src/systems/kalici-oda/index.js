@@ -53,6 +53,22 @@ const hata = (what) => (err) => {
   return null;
 };
 
+// Oda sahibi rolü: odası olan üyede durur, odası kapanınca ya da sahipliği devredince geri alınır. Komut sahipliğe
+// baktığı için rol bir şekilde verilemezse oda yönetimi yine çalışır; rol, üyeliğin sunucudaki gözüdür.
+async function giveOwnerRole(guild, userId) {
+  if (!config.roles.owner) return;
+  const member = await guild.members.fetch(userId).catch(() => null);
+  if (!member || member.roles.cache.has(config.roles.owner)) return;
+  await member.roles.add(config.roles.owner, 'Kalıcı oda sahibi').catch(hata('Oda sahibi rolü verilemedi'));
+}
+
+async function takeOwnerRole(guild, userId) {
+  if (!config.roles.owner) return;
+  const member = await guild.members.fetch(userId).catch(() => null);
+  if (!member?.roles.cache.has(config.roles.owner)) return;
+  await member.roles.remove(config.roles.owner, 'Kalıcı odası kapandı ya da devredildi').catch(hata('Oda sahibi rolü alınamadı'));
+}
+
 // Komut herkese açık tanımlanır: `odam` kendi odasını yöneten üyeye, diğer alt komutlar yöneticilere bakar.
 // Yetki kontrolü komut tanımında değil handleCommand içinde yapılır.
 const commands = [
@@ -204,8 +220,8 @@ function reviewError(interaction, app) {
   if (!app) return 'Bu başvuru bulunamadı.';
   if (!isStaff(interaction, config.roles.reviewer)) {
     return config.roles.reviewer
-      ? `Başvuruları sadece <@&${config.roles.reviewer}> rolündekiler ve yöneticiler inceleyebilir.`
-      : 'Başvuruları sadece yöneticiler inceleyebilir.';
+      ? `Başvuruları yalnızca <@&${config.roles.reviewer}> rolündekiler ve yöneticiler onaylayabilir.`
+      : 'Başvuruları yalnızca yöneticiler onaylayabilir.';
   }
   if (app.status !== 'pending') return 'Bu başvuru zaten sonuçlandırıldı.';
   return null;
