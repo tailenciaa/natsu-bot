@@ -48,16 +48,16 @@ module.exports = ({ mock, ui, src }) => {
   // Kasa cezalarla birikmiş olsun: topluluk sayfasında gerçek bir kasa rakamı dursun
   store.kasaEkle(905);
 
-  // Kaan'ın geçmişi: dört girişim, iki başarı, bir yakalanma ve bir direnç kaydı gerçek sayacından gelir
-  store.girisimKaydet({ id: 'oniz1', tip: 'uye', saldirgan: mafya.uid, hedef: kurban.uid, kanal: '1', sonAt: mock.ago(2 * mock.MIN) }, mock.ago(4 * mock.SANIYE));
+  // Kaan'ın geçmişi: girişimleri gerçek sayaca yazılır, kartları kapatıldıktan sonra sicilde kalır
+  store.girisimKaydet({ id: 'oniz1', tip: 'uye', saldirgan: mafya.uid, hedef: kurban.uid, kanal: '1', sonAt: mock.ago(2 * mock.MIN) }, mock.ago(4000));
   store.girisimKapat('oniz1');
   store.girisimKaydet({ id: 'oniz2', tip: 'kasa', saldirgan: mafya.uid, hedef: null, kanal: '1', sonAt: mock.ago(60 * mock.MIN) }, mock.ago(6 * mock.MIN));
   store.girisimKapat('oniz2');
   store.basariKaydet(mafya.uid, 380);
   store.basariKaydet(mafya.uid, 240);
   store.yakalanmaKaydet(mafya.uid);
-  store.kayipKaydet(mafya.uid, 120, mock.ago(mock.SANIYE));
-  store.direnisKaydet(mafya.uid, mock.ago(mock.SANIYE));
+  store.kayipKaydet(mafya.uid, 120, mock.ago(1000));
+  store.direnisKaydet(mafya.uid, mock.ago(1000));
 
   // Toplum kayıt defteri: sayfada görünecek üç satır gerçek yazım kapısından geçer
   store.sicilEkle({ tip: 'uye', saldirgan: mafya.uid, saldirganAd: 'Kaan', hedef: kurban.uid, hedefAd: 'Deniz', sonuc: 'direnç olmadı, coin el değiştirdi', miktar: 380, at: mock.ago(40 * mock.MIN) });
