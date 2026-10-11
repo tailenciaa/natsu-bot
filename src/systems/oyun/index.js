@@ -33,9 +33,8 @@ const seviyeOlcumu = (userId) =>
   Math.max(levelFromXp(seviyeStore.xpOf('mesaj', userId)), levelFromXp(seviyeStore.xpOf('ses', userId)));
 
 // Sayfa çizilirken her şey baştan okunur: eski bir mesajdan basılan düğme asla ödül üretemez.
-function durum(interaction, tab, feedback) {
-  const userId = interaction.user.id;
-  const at = Date.now();
+// durumOf dışa açılır ki önizleme (tools/preview) aynı okuma kapısından geçsin, senaryo için elle durum kurmasın.
+function durumOf(userId, tab, feedback, at = Date.now()) {
   return {
     tab,
     at,
@@ -50,6 +49,8 @@ function durum(interaction, tab, feedback) {
     merdiven: store.merdiven(userId, at),
   };
 }
+
+const durum = (interaction, tab, feedback) => durumOf(interaction.user.id, tab, feedback);
 
 const panelFor = (interaction, tab, feedback) => ui.panel(durum(interaction, tab, feedback));
 
