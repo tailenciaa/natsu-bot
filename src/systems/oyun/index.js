@@ -285,4 +285,5 @@ module.exports = {
   slash: { oyun: handleCommand },
   prefixed: [[ui.IDS.prefix, handle]],
   panelFor,
+  durumOf,
 };
