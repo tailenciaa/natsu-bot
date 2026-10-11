@@ -7,7 +7,7 @@
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError } = require('../../core/helpers');
+const { respond, replyError, replyFlowError } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
 const logSystem = require('../log');
 const config = require('./config');
@@ -256,7 +256,7 @@ async function handleClose(interaction) {
 
   await interaction.deferReply({ flags: core.CV2 });
   const closed = await closeRoom(interaction.guild, room, interaction.options.getString('sebep') ?? 'Bir yetkili odayı kapattı.');
-  if (!closed) return replyError(interaction, 'Oda kapatılamadı.', 'Oda zaten kapanmış olabilir, /muhabbet liste ile kontrol et.');
+  if (!closed) return replyFlowError(interaction, 'Oda kapatılamadı.', 'Oda zaten kapanmış olabilir, /muhabbet liste ile kontrol et.');
   return respond(interaction, core.alert(`Oda #${core.pad(room.no)} kapatıldı.`, 'İki üye bilgilendirildi, kanallar silindi.', 'success'));
 }
 

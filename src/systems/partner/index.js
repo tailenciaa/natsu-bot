@@ -11,7 +11,7 @@
 const { Events, InteractionContextType, SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isStaff, isMenuOwner, menuOwnerError, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, replyFlowError, isStaff, isMenuOwner, menuOwnerError, fetchTextChannel } = require('../../core/helpers');
 const ratings = require('../degerlendirme');
 const config = require('./config');
 const store = require('./store');
@@ -722,7 +722,7 @@ async function handleTrustedAction(interaction) {
   // Yetkili listesini çekmek 3 saniyeyi aşabilir; önce cevap ertelenir
   await interaction.deferReply({ flags: core.CV2 });
   const members = await fetchStaffMembers(interaction.guild);
-  if (!members.length) return replyError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
+  if (!members.length) return replyFlowError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
 
   return respond(interaction, ui.staffSelect(id, members, store.staffStatus));
 }

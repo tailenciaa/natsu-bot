@@ -7,7 +7,7 @@
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, replyFlowError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const logSystem = require('../log');
 const config = require('./config');
 const store = require('./store');
@@ -203,7 +203,7 @@ async function create(interaction) {
   if (!message) {
     g.status = 'cancelled';
     store.save();
-    return replyError(interaction, 'Çekiliş mesajı gönderilemedi.', 'Botun kanaldaki yetkilerini kontrol et.');
+    return replyFlowError(interaction, 'Çekiliş mesajı gönderilemedi.', 'Botun kanaldaki yetkilerini kontrol et.');
   }
   g.messageId = message.id;
   store.save();
