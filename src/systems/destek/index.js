@@ -205,17 +205,18 @@ async function createTicket(interaction, reason, afterCreate) {
 
   creating.add(lockKey);
   try {
-    // Kalıcı ve herkese açık: talebinin açıldığı kart kanalda durur; görünürlük defer anında kilitlendiği için
-    // akışın sonundaki tüm cevaplar açık bayrakla yazılır.
-    await interaction.deferReply();
+    // SABİT PANEL KURALI: "Talep Oluştur" kalıcı panelin butonudur ve her üye basar; açılış kartının aslı
+    // zaten alt başlıkta ve yetkili kanalında düşer, panel kanalına düşen cevap birikeceği için gizlidir.
+    // Görünürlük defer anında kilitlendiği için akışın sonundaki tüm cevaplar gizli bayrakla yazılır.
+    await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
 
     const existing = await findOpenTicket(guild, user.id);
-    if (existing) return replyFlowError(interaction, `Zaten açık bir destek talebin var: <#${existing}>`);
+    if (existing) return replyError(interaction, `Zaten açık bir destek talebin var: <#${existing}>`);
 
     const parent = await fetchTextChannel(guild, config.channels.panel);
     const claimChannel = await fetchTextChannel(guild, config.channels.claim);
     if (parent?.type !== ChannelType.GuildText || !claimChannel) {
-      return replyFlowError(interaction, 'Destek kanalları bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
+      return replyError(interaction, 'Destek kanalları bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
     }
 
     const number = store.nextTicketNumber(guild.id);
@@ -271,10 +272,10 @@ async function createTicket(interaction, reason, afterCreate) {
       console.error('[destek] Talep oluşturulurken hata, talep geri alındı:', err);
       store.deleteTicket(thread.id);
       await thread.delete('Talep oluşturulamadı').catch(() => {});
-      return replyFlowError(interaction, 'Talebin oluşturulamadı.', 'Birkaç dakika sonra yeniden dene.');
+      return replyError(interaction, 'Talebin oluşturulamadı.', 'Birkaç dakika sonra yeniden dene.');
     }
 
-    await respond(interaction, ui.ticketCreated(thread));
+    await respond(interaction, ui.ticketCreated(thread), { ephemeral: true });
 
     const logChannel = await fetchTextChannel(guild, config.channels.log);
     await logChannel

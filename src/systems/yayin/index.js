@@ -40,7 +40,7 @@ async function handleLeave(interaction) {
   });
   if (!removed) return replyError(interaction, 'Rol alınamadı.', 'Lütfen bir yetkiliye bildir.');
 
-  return respond(interaction, ui.released({ user: interaction.user }));
+  return respond(interaction, ui.released({ user: interaction.user }), { ephemeral: true });
 }
 
 module.exports = {

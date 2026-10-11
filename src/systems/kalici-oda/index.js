@@ -139,11 +139,11 @@ async function handleApplySubmit(interaction) {
   submitting.add(lockKey);
 
   try {
-    // Kalıcı ve herkese açık: başvuru özeti kanalda durur; görünürlük defer anında kilitlendiği için akışın
-    // sonundaki tüm cevaplar açık bayrakla yazılır. İnceleme kanalı zaten ayrı bir kart alır.
-    await interaction.deferReply();
+    // SABİT PANEL KURALI: başvuru butonu kalıcı panelde, her üye basabilir. Başvurunun asıl kartı inceleme
+    // kanalına düşer; panel kanalına dönen cevap birikeceği için gizlidir. Görünürlük defer anında kilitlenir.
+    await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
     const channel = await fetchTextChannel(interaction.guild, config.channels.applications);
-    if (!channel) return replyFlowError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
+    if (!channel) return replyError(interaction, 'Başvurular kanalı bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
 
     const number = store.nextApplicationNumber(interaction.guildId);
     const id = `${interaction.guildId}-${number}`;
@@ -179,11 +179,11 @@ async function handleApplySubmit(interaction) {
       .catch(hata('Başvuru kanala gönderilemedi'));
     if (!message) {
       store.removeApplication(id);
-      return replyFlowError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
+      return replyError(interaction, 'Başvurun gönderilemedi.', 'Birkaç dakika sonra yeniden dene; sorun sürerse bir yetkiliye haber ver.');
     }
     store.updateApplication(id, { messageId: message.id });
 
-    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }));
+    return respond(interaction, ui.submitted({ user: interaction.user, app, memberCount: members.length + 1 }), { ephemeral: true });
   } finally {
     submitting.delete(lockKey);
   }

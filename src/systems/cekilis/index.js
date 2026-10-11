@@ -311,15 +311,15 @@ async function handleJoin(interaction) {
     return replyError(interaction, 'Bu çekilişe katılmak için gereken role sahip değilsin.', `Gerekli rol: <@&${g.roleId}>`);
   }
   if (g.participants.includes(interaction.user.id)) {
-    // GİZLİ İSTİSNA: "zaten katıldın" tekrarları kişiye özel. Yüzlerce katılımcının butona basışı kanala
-    // ayrı ayrı mesaj düşürürdü; sonuçta değişen bir şey olmadığı için duyurulacak bir işlem de yok.
-    return interaction.reply({ components: [ui.joined(g)], flags: core.CV2, allowedMentions: { parse: [] } });
+    // SABİT PANEL KURALI: çekiliş mesajı kanalda kalıcı ve yüzlerce kişi aynı butona basıyor. Kalıcı cevap
+    // paneli yukarı iterdi; burada değişen bir şey yok, duyurulacak bir işlem de yok.
+    return interaction.reply({ components: [ui.joined(g)], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
   }
   g.participants.push(interaction.user.id);
   store.save();
-  // Butondaki sayı güncellenir; katılma onayı kişiye özel kalır (yukarıdaki aynı gerekçe)
+  // Butondaki sayı güncellenir; katılma onayı sadece basana görünür (yukarıdaki aynı gerekçe)
   await interaction.update({ components: [ui.panel(g)], allowedMentions: { parse: [] } });
-  return interaction.followUp({ components: [ui.joined(g)], flags: core.CV2, allowedMentions: { parse: [] } });
+  return interaction.followUp({ components: [ui.joined(g)], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
 }
 
 async function handleLeave(interaction) {
