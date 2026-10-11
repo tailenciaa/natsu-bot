@@ -1,14 +1,17 @@
-// Kalıcı oda sistemi: üye başvuru panelinden form doldurur, başvurular inceleme kanalına düşer, yetkililer karar verir.
-// Onaylanan başvuruda odanın kategorisi, ses ve yazı kanalları açılır; erişim yalnızca odayı kullanacak kişilere verilir,
-// @everyone kanalı göremez. Oda sahibine teslim kartı DM olarak gider, odanın kendi yazı kanalına sadece sahibinin
-// kullanabildiği kontrol paneli düşer (isim, kişi limiti, üye ekle/çıkar, sahiplik devri), açılış ve kapanış ise
-// duyuru kanalında herkese açık kart olarak görünür. Odalar kalıcıdır: içinde kimse olmasa bile kapanmaz,
-// yalnızca yetkililer /kalici-oda kapat ile kapatır. Kanallar elle silinirse oda kaydı kendiliğinden temizlenir.
+// Kalıcı oda sistemi: üye başvuru panelinden form doldurur, başvurular inceleme kanalına düşer, kararı yalnızca
+// yöneticiler verir. Onaylanan başvuruda odanın kategorisi, ses ve yazı kanalları açılır; erişim yalnızca odayı
+// kullanacak kişilere verilir, @everyone kanalı göremez. Sahibine teslim kartı DM olarak gider, odası olan üye
+// oda sahibi rolünü alır ve oda ayarlarını **/kalici-oda odam** komutuyla yönetir (isim, kişi limiti, üye ekle/çıkar,
+// sahiplik devri) — panel artık odanın yazı kanalına düşmez. Oda kalıcıdır ama ay sonu şartına bağlıdır: odadakilerin
+// ses süresi her hafta ölçülüp odaya yazılır, hedefin altındaki hafta sahibine hatırlatılır ve ay başında geçen ay
+// şartı karşılamayan oda "şart yetersizliği" ile kapatılır. Açılış ve kapanış duyuru kanalında herkese açık kart olarak
+// görünür, sahibi ayrılmış odayı yönetici bir üyeye devreder. Kanallar elle silinirse oda kaydı ve rolü temizlenir.
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
+const { weekKey, previousWeekKey } = require('../aktif/week');
 const siralama = require('../siralama/store');
 const logSystem = require('../log');
 const config = require('./config');
@@ -16,6 +19,8 @@ const store = require('./store');
 const ui = require('./ui');
 
 const DAY = 24 * 60 * 60 * 1000;
+// Şart denetimleri 15 dakikada bir dönem anahtarıyla kontrol edilir; dönem işlendiyse tekrar çalışmaz
+const CHECK_INTERVAL = 15 * 60 * 1000;
 const submitting = new Set();
 
 // Panel işlemlerine art arda basıp oda yönetimini kilitlemeyi engelleyen kısa beklemeler
@@ -48,12 +53,14 @@ const hata = (what) => (err) => {
   return null;
 };
 
+// Komut herkese açık tanımlanır: `odam` kendi odasını yöneten üyeye, diğer alt komutlar yöneticilere bakar.
+// Yetki kontrolü komut tanımında değil handleCommand içinde yapılır.
 const commands = [
   new SlashCommandBuilder()
     .setName('kalici-oda')
-    .setDescription('Kalıcı odaları ve başvurularını yönetir.')
+    .setDescription('Kalıcı odanı yönetir ya da odaları ve başvuruları listeler.')
     .setContexts(InteractionContextType.Guild)
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand((s) => s.setName('odam').setDescription('Kendi kalıcı odanın kontrol panelini açar: isim, limit, üye ve devir işlemleri.'))
     .addSubcommand((s) => s.setName('liste').setDescription('Sunucudaki tüm kalıcı odaları ve bekleyen başvuruları listeler.'))
     .addSubcommand((s) =>
       s
