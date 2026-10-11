@@ -65,6 +65,7 @@ açıklama satırı (normal yazı)
 - `sub` bilerek iki satırı dolduracak uzunluktadır: bütün mesajlar aynı genişlikte görünsün diye. Kısa tutulmaz, doldurma da yapılmaz; bloklardaki bilgiyi tekrar etmeyen gerçek bir açıklama yazılır.
 - Her blok `### Bölüm Başlığı` ya da kalın ana cümleyle başlar, ardından düz değer satırları, en sonda normal yazıyla açıklama gelir; önemli sözcükler kalın yazılır. Bir blok en fazla yaklaşık 8 satırdır.
 - Serbest metin (konu, sebep, yorum) `quote()` ile alıntı bloğunda, etiket-değer satırları `**Etiket:** değer` biçimindedir.
+- **Rol etiketi çoklu listede kullanılmaz:** uzun bir ayrıcalık listesinde her satırı renkli rol etiketiyle (`<@&...>`) başlatmak tek bakışta okunmayan bir renk duvarı oluşturur. Rolün adı üye listesinde zaten görünür; listenin kendi satırında gereken değer `chip` olarak yazılır (`5` · açıklama) ve rolün adlandırması bölümün açıklama cümlesinde bir kez söylenir (ör. `sesbilgi/ui.js` ses rolleri). Tekil atıflarda (ödül alan üye, rol veren işlem) rol etiketi yine doğru seçimdir.
 
 ### Etiket-değer satırları: `rows`, `chip`, `pills`
 
