@@ -23,10 +23,11 @@ const { levelFromXp } = require('../seviye/level');
 const { coverOf, drawCover } = require('./kapak');
 const { resolveTheme } = require('./themes');
 
-// Discord kartı sohbet içinde ~440 px genişliğe küçülttüğü için tüm ölçek bol tutulur: 1000 px'lik tuvalde
-// çizilen yazılar önizlemede okunabilsin.
-const WIDTH = 1000;
-const PAD = 48;
+// Discord kartı sohbet içinde yükseklikten kırptığı için tuval geniş tutulur: 1200 px'lik bir kart sohbette daha
+// geniş alan kaplar ve yazılar (1000 px'de olduğu gibi) sıkışmadan okunur. Yazı ölçeği yüksekliğe göre ayarlıdır,
+// genişliği artırmak yazıları küçültmez.
+const WIDTH = 1200;
+const PAD = 56;
 const HEADER = 300; // kapağın yüksekliği: banner'ın belirgin görünmesi için geniş tutulur
 const BADGE_ROW_H = 38;
 const BADGE_GAP = 10;
