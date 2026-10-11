@@ -370,17 +370,16 @@ async function handleDecision(interaction) {
 }
 
 // ── Oda kontrol paneli ─────────────────────────────────────────────────────────
+// Panel artık odanın yazı kanalında değil, /kalici-oda odam komutunda durur. Oda bu yüzden kanaldan değil
+// paneli kullanan kişinin sahipliğinden bulunur: devredilen ya da kapanan odanın eski paneli işlem yapamaz.
 
-// Hata varsa mesajı, yoksa null döner
-function ownerError(interaction, room) {
-  if (!room) return 'Burası bir kalıcı oda değil.';
-  if (interaction.user.id !== room.ownerId) return 'Bu paneli sadece oda sahibi kullanabilir.';
-  return null;
-}
+const roomOf = (interaction) => store.roomsOwned(interaction.guildId, interaction.user.id)[0] ?? null;
 
-const roomOf = (interaction) => store.roomOfChannel(interaction.channelId);
+const noRoomError = (interaction) =>
+  replyError(interaction, 'Bu paneli sadece oda sahibi kullanabilir.', 'Odan devredilmiş ya da kapatılmış olabilir; kendi odan için komutu yeniden kullan.');
+
 const redraw = (interaction, room) =>
-  interaction.editReply({ components: [ui.roomPanel(room)], allowedMentions: { parse: [] } }).catch(hata('Oda paneli güncellenemedi'));
+  interaction.editReply({ components: [ui.roomPanel(room, statusOf(room))], allowedMentions: { parse: [] } }).catch(hata('Oda paneli güncellenemedi'));
 
 // Odanın üç kanalında da erişimi açar ya da kapatır (kategori görünürlüğü, kanallar erişimi taşır)
 async function setAccess(guild, room, targetId, allow) {
