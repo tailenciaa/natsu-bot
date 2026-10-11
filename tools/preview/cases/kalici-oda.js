@@ -1,6 +1,9 @@
 // Kalıcı oda sistemi (src/systems/kalici-oda/ui.js)
 module.exports = ({ mock, src }) => {
   const k = src('systems/kalici-oda/ui');
+  // Panelin şart durumu gerçek ölçüm kapısından (index.denetim) gelir: case kendi sayılarını uydurmaz
+  const denetim = src('systems/kalici-oda/index').denetim;
+  const { weekKey, previousWeekKey } = src('systems/aktif/week');
   const owner = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
   const a = mock.user({ username: 'ayse', displayName: 'Ayşe' });
   const b = mock.user({ username: 'fatma', displayName: 'Fatma' });
@@ -13,6 +16,13 @@ module.exports = ({ mock, src }) => {
   const category = mock.channel({ name: 'Müzik Odası', type: 'category', guild });
   const applications = mock.channel({ name: 'kalici-oda-basvuruları', guild });
 
+  // Biten haftaların ölçümleri denetimin kendi pazartesi anahtarlarıyla yazılır: ay toplamı ve kaçan hafta
+  // böylece gerçek takvime oturur, kartta uydurma tarih görünmez
+  const weeks = {
+    [previousWeekKey()]: 28 * mock.HOUR, // hedefin altında: bir hafta kaçmış
+    [weekKey(Date.now() - 14 * mock.DAY)]: 44 * mock.HOUR,
+  };
+
   const room = (o = {}) => ({
     id: '1-0001',
     no: 1,
@@ -24,8 +34,8 @@ module.exports = ({ mock, src }) => {
     categoryId: category.id,
     voiceChannelId: voice.id,
     textChannelId: text.id,
-    panelMessageId: mock.id(),
-    createdAt: mock.ago(6 * mock.HOUR),
+    weeks,
+    createdAt: mock.ago(6 * mock.DAY),
     ...o,
   });
 
