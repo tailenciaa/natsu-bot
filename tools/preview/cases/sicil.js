@@ -66,6 +66,7 @@ module.exports = ({ mock, ui, src }) => {
     category: 'destek',
     ticketNumber: i + 1,
     staffId: staff.id,
+    userId: member.id,
   }));
 
   const base = {
@@ -126,7 +127,7 @@ module.exports = ({ mock, ui, src }) => {
     { id: 'detay-degerlendirme', title: 'Sicil detayı: değerlendirme (kaldırma butonuyla)', where: 'Değerlendirmeler sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(degerlendirme.ratingNotice(ratings[0], staff), [sicil.ratingRemoveButton(member.id, ratings[0], '123456789')])], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
     { id: 'detay-degerlendirme-salt', title: 'Sicil detayı: değerlendirme (kaldırma yetkisi yok)', where: 'Değerlendirmeler sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(degerlendirme.ratingNotice(ratings[0], staff))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
     { id: 'detay-talep', title: 'Sicil detayı: destek talebi', where: 'Destek Talepleri sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(destekUi.claimRequest(mock.ticket({ guildId: guild.id, ownerId: member.id, claimedBy: staff.id, number: 3 })))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
-    { id: 'detay-basvuru', title: 'Sicil detayı: başvuru', where: 'Başvurular sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(basvuruUi.applicationNotice({ ...applications[1], guildId: guild.id, userId: member.id, previous: { total: 1, rejected: 0 }, reviewerRoleId: basvuruConfig.roles.reviewer, acceptRoleId: basvuruConfig.roles.accept, status: 'approved' }, member))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
-    { id: 'form-puan-sil', title: 'Form: değerlendirmeyi sicilden kaldır', where: 'Değerlendirme detayında Değerlendirmeyi Kaldır butonu', visibility: 'ephemeral', kind: 'modal', build: () => sicil.ratingRemoveModal(member.id, ratings[0], '123456789') },
+    { id: 'detay-basvuru', title: 'Sicil detayı: başvuru', where: 'Başvurular sekmesinden kayıt seçince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [sicil.readOnly(basvuruUi.applicationNotice({ ...applications[1], guildId: guild.id, userId: member.id, username: member.username, accountCreatedAt: mock.ago(800 * mock.DAY), joinedAt: mock.ago(120 * mock.DAY), answers: [{ title: 'Ad ve Yaş', answer: 'Mehmet, 19' }, { title: 'Aktiflik', answer: 'Günde 4-5 saat' }], previous: { total: 1, rejected: 0 }, reviewedBy: staff.id, reviewerRoleId: basvuruConfig.roles.reviewer, acceptRoleId: basvuruConfig.roles.accept, status: 'approved' }, member))], flags: ui.EPHEMERAL_CV2, ...noMentions }) },
+    { id: 'form-puan-sil', title: 'Form: değerlendirmeyi sicilden kaldır', where: 'Değerlendirme detayında Sicilden Kaldır butonu', visibility: 'ephemeral', kind: 'modal', build: () => sicil.ratingRemoveModal(member.id, ratings[0], '123456789') },
   ];
 };

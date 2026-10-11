@@ -27,7 +27,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 7. **Test, önizleme ve log mesajları kimseyi etiketlemez** (`allowedMentions: { parse: [] }`).
 8. Bilgi komutları (yardım, seviye, profil, sıralama, sicil, saygı ve VIP listesi) herkese açık; hata ve kişisel sonuçlar sadece kullanana görünür.
 9. Komut listesi minimal: butonla yapılabilen işin slash komutu yoktur. Kanal ve rol ID'leri koda sabit, hiçbir akış "şu kanala mı gitsin?" diye sormaz.
-10. Seviye atlama duyurusu (görsel kart), profil ve seviye kartları, bot durum yazısı, kurallar ve bilgilendirme içerik metinleri onaylı tasarımlardır; yalnızca açık hata ve yazım düzeltmesi yapılır.
+10. Seviye atlama duyurusu (görsel kart), profil ve seviye kartları, bot durum yazısı, kurallar ve bilgilendirme içerik metinleri onaylı tasarımlardır; yalnızca açık hata ve yazım düzeltmesi yapılır. Tek istisna: bilgilendirmedeki **Botumuz Kazuki** bloğu botun kendi üstlenimini anlatır, yeni bir sistem eklendiğinde oradaki komut listesi de güncellenir.
 
 ## 3. Mesaj anatomisi
 
