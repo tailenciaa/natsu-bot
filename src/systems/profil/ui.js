@@ -152,21 +152,25 @@ const bannerModal = (current) =>
         .setTextInputComponent(input('kapak', TextInputStyle.Short, 400, current.banner, 'Örn: https://i.imgur.com/ornek.png')),
     ]);
 
-// Kapak düzenleyici: kartın üst alanı tek başına çizilir, görsel buradan büyütülüp dört yöne kaydırılır.
-// Görsel yokken hareket düğmeleri görünür kalır ama pasiftir (önce görsel ya da arka plan gerekir).
+// Kapak düzenleyici: kartın üst alanı tek başına çizilir, görsel buradan büyütülüp dört yöne kaydırılır ve
+// yerleşimi (otomatik / kapla / sığdır) değiştirilir. Görsel yokken hareket düğmeleri görünür kalır ama pasiftir
+// (önce görsel ya da arka plan gerekir). Sığdırmada yakınlaştırma işlemez; düğmeler yine satırda, pasif durur.
 function kapakPage(imageName, custom) {
   const zoom = Math.round((Number(custom.bannerZoom) || 1) * 100);
   const x = Math.round((Number(custom.bannerX) || 0) * 100);
   const y = Math.round((Number(custom.bannerY) || 0) * 100);
+  const fit = ['otomatik', 'kapla', 'sigdir'].includes(custom.bannerFit) ? custom.bannerFit : 'otomatik';
+  const fitLabel = { otomatik: 'Otomatik', kapla: 'Kapla', sigdir: 'Sığdır' }[fit];
   const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
   const hasImage = Boolean(custom.banner);
+  const movable = hasImage && fit !== 'sigdir';
   const btn = (neylem, label, style = ButtonStyle.Secondary) =>
-    new ButtonBuilder().setCustomId(`${IDS.kapakBtn}${neylem}`).setLabel(label).setStyle(style).setDisabled(!hasImage);
+    new ButtonBuilder().setCustomId(`${IDS.kapakBtn}${neylem}`).setLabel(label).setStyle(style).setDisabled(!movable);
 
   return new ContainerBuilder()
     .addTextDisplayComponents(
       text(
-        '## Kapağı Düzenle\nKartının üst alanındaki görseli büyütüp küçültebilir ve dört yönde kaydırabilirsin. Her dokunuşta kapak önizlemesi hemen çizilir; profil kartın da aynı anda yenilenir.',
+        '## Kapağı Düzenle\nKartının üst alanındaki görseli büyütüp küçültebilir, dört yönde kaydırabilir ve yerleşimini seçebilirsin. Her dokunuşta kapak önizlemesi hemen çizilir; profil kartın da aynı anda yenilenir.',
       ),
     )
     .addMediaGalleryComponents(
@@ -175,17 +179,28 @@ function kapakPage(imageName, custom) {
     .addTextDisplayComponents(
       text(
         fields([
+          `**Yerleşim:** ${fitLabel}`,
           `**Yakınlaştırma:** %${zoom}`,
           `**Konum:** yatay ${signed(x)}, dikey ${signed(y)}`,
           `**Arka plan:** ${coverOf(custom.cover).label}`,
-          hasImage
-            ? null
-            : 'Kaydırma ve yakınlaştırma ancak bir kapak görselin olduğunda işler; görselleri mağazadan alabilirsin.',
+          !hasImage
+            ? 'Kaydırma, yakınlaştırma ve yerleşim ancak bir kapak görselin olduğunda işler; görselleri mağazadan alabilirsin.'
+            : fit === 'sigdir'
+              ? 'Sığdırmada görselin tamamı görünür, kenarlarda seçtiğin arka plan efekti durur; bu yüzden yakınlaştırma ve kaydırma kapalıdır.'
+              : fit === 'otomatik'
+                ? 'Otomatik yerleşimde kart görseline bakır: geniş bir görsel alanı doldurur, dik bir fotoğrafta görselin tamamı gösterilir.'
+                : 'Kaplamada görsel alanı tamamen doldurur, taşan kısım kırpılır.',
         ]),
       ),
     )
     .addActionRowComponents(
-      new ActionRowBuilder().addComponents(btn('buyut', 'Büyüt'), btn('kucult', 'Küçült'), btn('sola', 'Sola'), btn('saga', 'Sağa')),
+      new ActionRowBuilder().addComponents(
+        btn('buyut', 'Büyüt'),
+        btn('kucult', 'Küçült'),
+        btn('sola', 'Sola'),
+        btn('saga', 'Sağa'),
+        new ButtonBuilder().setCustomId(`${IDS.kapakBtn}yerlesim`).setLabel(`Yerleşim: ${fitLabel}`).setStyle(ButtonStyle.Secondary).setDisabled(!hasImage),
+      ),
     )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(btn('yukari', 'Yukarı'), btn('asagi', 'Aşağı'), btn('sifirla', 'Sıfırla', ButtonStyle.Danger)),
