@@ -1,9 +1,14 @@
-// Profil kartı: kapak (kullanıcının görseli, satın alınan kapak efekti ya da temanın kendi efekti), avatar, ad,
-// unvan, rozetler, biyografi, mesaj/ses seviye kutuları, alt bilgi kutuları ve vitrin şeridi içeren görsel
-// (PNG, Buffer döner). Kutular temaya göre düz opak ya da yarı saydam "buzlu cam" panel olarak çizilir; cam
-// temalarda saydamlığı üye kendisi ayarlar (custom.glassOpacity). Kapak görseli yakınlaştırılıp kaydırılabilir
-// (custom.bannerZoom / bannerX / bannerY). Yükseklik çizilecek içeriğe göre hesaplanır.
-// Çerçeveler kartın kenarına çizilir, yazılar assets/fonts altındaki Poppins ile çizilir.
+// Profil kartı: üyenin profili tek geniş bir görselde toplanır (PNG, Buffer döner). Kapağın içinde avatar, ad,
+// unvan ve sıralama/coin etiketleri; gövdede rozet şeridi, mesaj-ses seviye kutuları, on iki istatistik kutusu ve
+// biyografi + vitrin şeridi çizilir. Kutular temaya göre düz opak ya da yarı saydam "buzlu cam" panel olarak
+// çizilir; cam temalarda saydamlığı üye kendisi ayarlar (custom.glassOpacity). Kapak görseli büyütülüp dört yöne
+// kaydırılabilir (bannerZoom / bannerX / bannerY) ve "kapla" ya da "sığdır" yerleşiminden biriyle oturtulur
+// (bannerFit; boşsa görselin kendine göre otomatik seçilir). Çerçeveler kartın kenarına çizilir, yazılar
+// assets/fonts altındaki Poppins ile çizilir.
+//
+// Kart bilinçli olarak enlemesine geniş ve az bantlı: Discord sohbetteki görseli yüksekliğinden kıptığı için,
+// aynı içeriği daha az dikey banda yaymak kartı sohbette belirgin biçimde büyütür. Bu yüzden kimlik bloğu
+// kapağın içine taşındı (ayrı bir isim bandı yok) ve alt bilgiler tek ızgarada toplandı.
 const {
   FONT,
   canvasLib,
@@ -12,6 +17,7 @@ const {
   roundRect,
   hexAlpha,
   mix,
+  luminance,
   makeScheme,
   loadImageSafe,
   drawAvatar,
@@ -23,40 +29,51 @@ const { levelFromXp } = require('../seviye/level');
 const { coverOf, drawCover } = require('./kapak');
 const { resolveTheme } = require('./themes');
 
-// Discord kartı sohbet içinde yükseklikten kırptığı için tuval geniş tutulur: 1200 px'lik bir kart sohbette daha
-// geniş alan kaplar ve yazılar (1000 px'de olduğu gibi) sıkışmadan okunur. Yazı ölçeği yüksekliğe göre ayarlıdır,
-// genişliği artırmak yazıları küçültmez.
-const WIDTH = 1200;
-const PAD = 56;
-const HEADER = 300; // kapağın yüksekliği: banner'ın belirgin görünmesi için geniş tutulur
-const BADGE_ROW_H = 38;
-const BADGE_GAP = 10;
+const WIDTH = 1800;
+const PAD = 60;
+const HEADER = 400; // kapak: kimlik bloğu da burada çizildiği için geniş tutulur
+const AVATAR = 176;
+const BADGE_ROW_H = 40;
+const BADGE_GAP = 12;
 const BADGE_ROW_GAP = 14;
 const BADGE_ROWS_MAX = 2;
-const BIO_H = 106;
-const LEVEL_H = 132;
-const INFO_H = 80;
-const FOOTER_H = 92;
+const LEVEL_H = 124;
+const TILE_H = 96;
+const TILE_COLS = 6;
+const TILE_GAP = 16;
+const FOOT_H = 118;
 const GAP = 18;
-const BOTTOM = 40;
+const BOTTOM = 44;
+
+// Kapağın altındaki karartmanın yüksekliği: yazıların okunduğu bant, görselin geri kalanı açık kalır
+const SCRIM_H = 250;
 
 // Saydamlık ayarının aralığı: 0 koyu (belirgin) panel, 100 neredeyse görünmez panel. Varsayılan bugünkü görünüm.
 const OPACITY_DEFAULT = 50;
 const OPACITY_STEP = 10;
 
 const font = (weight, size) => `${weight} ${size}px ${FONT}`;
-const number = (n) => n.toLocaleString('tr-TR');
+const number = (n) => Number(n).toLocaleString('tr-TR');
 const date = (ms) => new Date(ms).toLocaleDateString('tr-TR', { timeZone: 'Europe/Istanbul', day: 'numeric', month: 'short', year: 'numeric' });
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 function duration(seconds) {
-  const minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor((seconds ?? 0) / 60);
   const h = Math.floor(minutes / 60);
-  return h > 0 ? `${h} sa ${minutes % 60} dk` : `${minutes} dk`;
+  return h > 0 ? `${number(h)} sa ${minutes % 60} dk` : `${minutes} dk`;
+}
+
+// Bir tarihten bugüne geçen süre "3 yıl 2 ay" gibi kısa yazılır: katılım ve hesap yaşı kutularında kullanılır
+function age(ms) {
+  const days = Math.max(0, Math.floor((Date.now() - ms) / 86400000));
+  const years = Math.floor(days / 365);
+  if (years >= 1) return `${years} yıl ${Math.floor(((days % 365) / 30) | 0)} ay`;
+  if (days >= 30) return `${Math.floor(days / 30)} ay`;
+  return `${days} gün`;
 }
 
 // Panel tarzı: cam temalarda gradyan + parlama + ince kenar, saydamlık üyenin ayarıyla ölçeklenir;
-// düz temalarda panel zeminden açılmış tek renkle doldurulur ( opak, parlama yok ).
+// düz temalarda panel zeminden açılmış tek renkle doldurulur (opak, parlama yok).
 function panelStyle(theme, custom, base) {
   // null/undefined "ayar yok" demektir (Number(null) 0 olduğu için doğrudan Number() kullanılmaz)
   const opacity = clamp(Number(custom.glassOpacity ?? OPACITY_DEFAULT), 0, 100) / 100;
@@ -96,11 +113,11 @@ function glass(ctx, x, y, w, h, r, c, tint = '255,255,255') {
   ctx.save();
   roundRect(ctx, x, y, w, h, r);
   ctx.clip();
-  const sheen = ctx.createLinearGradient(x, y, x, y + 22);
+  const sheen = ctx.createLinearGradient(x, y, x, y + 26);
   sheen.addColorStop(0, alpha(tint, 0.24, p));
   sheen.addColorStop(1, `rgba(${tint},0)`);
   ctx.fillStyle = sheen;
-  ctx.fillRect(x, y, w, 22);
+  ctx.fillRect(x, y, w, 26);
   ctx.restore();
 
   ctx.lineWidth = 1.5;
@@ -109,10 +126,9 @@ function glass(ctx, x, y, w, h, r, c, tint = '255,255,255') {
   ctx.stroke();
 }
 
-// Kapak görseli: alanı kaplayacak ölçek, sonra kullanıcının ayarladığı yakınlaştırma ve kaydırma. Kaydırma
-// oranı -1 ile 1 arasındadır ve yalnızca taşan (ekranın dışına kalan) alan kadar hareket eder; böylece kapakta
-// boşluk oluşmaz. Görsel yüklenemezse false döner ve tema efekti çizilir.
-async function drawBanner(ctx, custom) {
+// Kutunun yatay ortalanmış yeri: "kapla" alanı tamamen doldurur, "sığdır" görselin tamamını tema efektinin
+// üstüne yerleştirir. Dönen değer: görsel çizildi mi (false ise tema efekti çizilmiş olur).
+async function drawBanner(ctx, custom, theme, p) {
   let image;
   try {
     image = await loadImageSafe(custom.banner);
@@ -120,23 +136,54 @@ async function drawBanner(ctx, custom) {
     console.error('[profil] Kapak görseli yüklenemedi:', err.message);
     return false;
   }
-  const zoom = clamp(Number(custom.bannerZoom) || 1, 1, 3);
-  const scale = Math.max(WIDTH / image.width, HEADER / image.height) * zoom;
+
+  // Kaplamada görünen alan kapağın alanı, görselin ölçeklenmiş alanına bölünür. Üye yerleşimi kendisi
+  // seçmemişse bu oran karar verir: dik bir telefon fotoğrafı kaplamada ince bir şeride dönüğü için sığdırılır.
+  const coverScale = Math.max(WIDTH / image.width, HEADER / image.height);
+  const visible = (WIDTH * HEADER) / (image.width * coverScale * image.height * coverScale);
+  const mode = custom.bannerFit === 'kapla' || custom.bannerFit === 'sigdir' ? custom.bannerFit : visible < 0.3 ? 'sigdir' : 'kapla';
+
+  if (mode === 'kapla') {
+    const zoom = clamp(Number(custom.bannerZoom) || 1, 1, 3);
+    const scale = coverScale * zoom;
+    const w = image.width * scale;
+    const h = image.height * scale;
+    const roomX = (w - WIDTH) / 2;
+    const roomY = (h - HEADER) / 2;
+    const x = (WIDTH - w) / 2 + clamp(Number(custom.bannerX) || 0, -1, 1) * roomX;
+    const y = (HEADER - h) / 2 + clamp(Number(custom.bannerY) || 0, -1, 1) * roomY;
+    ctx.drawImage(image, x, y, w, h);
+    return true;
+  }
+
+  // Sığdır: tüm görsel görünür; kalan yere üyenin arka plan efekti çizilir ve görsel gölgeyle üstüne konur
+  drawCover(ctx, coverOf(custom.cover).effect ?? theme.effect, { x: 0, y: 0, w: WIDTH, h: HEADER }, p);
+  const scale = Math.min(WIDTH / image.width, HEADER / image.height);
   const w = image.width * scale;
   const h = image.height * scale;
-  const roomX = (w - WIDTH) / 2;
-  const roomY = (h - HEADER) / 2;
-  const x = (WIDTH - w) / 2 + clamp(Number(custom.bannerX) || 0, -1, 1) * roomX;
-  const y = (HEADER - h) / 2 + clamp(Number(custom.bannerY) || 0, -1, 1) * roomY;
+  const x = (WIDTH - w) / 2;
+  const y = (HEADER - h) / 2;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 46;
+  ctx.shadowOffsetY = 12;
+  ctx.fillStyle = '#0a0608';
+  roundRect(ctx, x - 7, y - 7, w + 14, h + 14, 26);
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  roundRect(ctx, x, y, w, h, 20);
+  ctx.clip();
   ctx.drawImage(image, x, y, w, h);
+  ctx.restore();
   return true;
 }
 
-// Kapağın alt kenarının kendi ortalama tonu. Gövde bu tondan başlayınca üyenin görseli ile kart zemini birbirine
-// oturur; aksi halde parlak bir kapağın altında renk uyuşmazlığından ince bir çizgi belirir.
-function bottomTone(ctx) {
+// Verilen bölgenin ortalama rengi (#rrggbb). Kapağın alt tonu ve karartmanın gücü buradan ölçülür; okunamazsa
+// null döner ve çağıran temanın kendi rengini kullanır.
+function avgTone(ctx, x, y, w, h) {
   try {
-    const { data } = ctx.getImageData(0, HEADER - 6, WIDTH, 6);
+    const { data } = ctx.getImageData(x, y, w, h);
     const sum = [0, 0, 0];
     for (let i = 0; i < data.length; i += 4) {
       sum[0] += data[i];
@@ -147,43 +194,95 @@ function bottomTone(ctx) {
     const hex = (v) => Math.round(v / n).toString(16).padStart(2, '0');
     return `#${hex(sum[0])}${hex(sum[1])}${hex(sum[2])}`;
   } catch {
-    return null; // okunamazsa temanın kendi gövde tonu kullanılır
+    return null;
   }
 }
 
+// Kapağın alt bandındaki karartma: soldan sağa incelen yatay bir karartı kimlik yazılarını tutar. Güç, bölgenin
+// ölçülen parlaklığına göre ayarlanır; parlak bir fotoğrafta koyulaşır, koyu bir fotoğrafta inceltir. Eskisi gibi
+// kapağın yarısını kapatmaz: görselin üst ve sağ bölümü olduğu gibi kalır.
+function drawHeroScrim(ctx) {
+  const tone = avgTone(ctx, 0, HEADER - SCRIM_H, Math.round(WIDTH * 0.6), SCRIM_H);
+  const strength = clamp(0.3 + (tone ? luminance(tone) : 0.35) * 0.5, 0.3, 0.78);
+  const left = ctx.createLinearGradient(0, 0, Math.round(WIDTH * 0.72), 0);
+  left.addColorStop(0, `rgba(6,4,8,${strength.toFixed(3)})`);
+  left.addColorStop(1, 'rgba(6,4,8,0)');
+  ctx.fillStyle = left;
+  ctx.fillRect(0, HEADER - SCRIM_H, WIDTH, SCRIM_H);
+}
+
 // Kapağın tamamı: görsel varsa o, yoksa satın alınan kapak efekti (custom.cover), o da yoksa temanın efekti.
-// Üst soldaki etiketlerin okunması için hafif bir karartma, altta zemine geçiş için yumuşak bir kararmanın eklenir.
-// Dönen değer kapağın altındaki ilk gövde rengidir (bkz. bottomTone).
-async function paintHeader(ctx, view, theme, p, c) {
+// Üst sağdaki etiketler kendi koyu dolgularıyla geldiği için ek karartma istemez; karartma yalnızca alttaki
+// kimlik bandına çizilir. Dönen değer: gövdenin ilk rengi (seam) ve avatarın yeri.
+async function paintHeader(ctx, user, view, theme, p, c) {
   const custom = view.custom;
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, WIDTH, HEADER);
   ctx.clip(); // yakınlaştırılan görsel ve ışık lekeleri kapağın dışına taşmasın
-  if (!custom.banner || !(await drawBanner(ctx, custom))) {
+  if (!custom.banner || !(await drawBanner(ctx, custom, theme, p))) {
     drawCover(ctx, coverOf(custom.cover).effect ?? theme.effect, { x: 0, y: 0, w: WIDTH, h: HEADER }, p);
   }
-  // Etiketlerin (sıra ve coin) okunması için kapağın üstüne ince bir karartma; görseli bastırmayacak kadar hafif
-  const shade = ctx.createLinearGradient(0, 0, 0, 130);
-  shade.addColorStop(0, 'rgba(8,5,10,0.3)');
-  shade.addColorStop(1, 'rgba(8,5,10,0)');
-  ctx.fillStyle = shade;
-  ctx.fillRect(0, 0, WIDTH, 130);
 
-  // Geçiş rengi: kapağın kendi alt tonu, koyulaştırılıp temanın gövde rengine yaklaştırılır. Koyulaştırma parlak
-  // bir fotoğrafın kartı soldurmasını, yaklaştırma da gövdenin tema renginden kopmamasını sağlar.
-  const tone = bottomTone(ctx);
-  const seam = tone ? mix(mix(tone, '#000000', 0.68), c.bgTop, 0.45) : c.bgTop;
-  // Kapağın altındaki kararma geçiş rengine bağlanır: hedef gövde rengi olmazsa kapak ile zemin arasında sert,
-  // kirli bir bant oluşur.
-  const fade = ctx.createLinearGradient(0, HEADER - 150, 0, HEADER);
+  // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
+  const rankColor = 'rgba(10,6,12,0.58)';
+  let right = WIDTH - PAD;
+  right -= pill(ctx, `Ses  ${view.sesRank ? `#${view.sesRank}` : '-'}`, right, 28, rankColor) + 12;
+  pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 28, rankColor);
+  pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 92, c.accent, '#120a10', null);
+
+  // Birleşim rengi kapağın kendi alt tonundan türer ve ince bir karartmayla gövdeye bağlanır. Gövde bu tondan
+  // başladığı için çizgi ya da kirli bant oluşmaz; karartma yazılardan önce çizilir ki altlarına almasınlar.
+  const tone = avgTone(ctx, 0, HEADER - 6, WIDTH, 6);
+  const seam = tone ? mix(mix(tone, '#000000', 0.34), c.bgTop, 0.4) : c.bgTop;
+  const fade = ctx.createLinearGradient(0, HEADER - 70, 0, HEADER);
   fade.addColorStop(0, hexAlpha(seam, 0));
-  fade.addColorStop(0.55, hexAlpha(seam, 0.55));
-  fade.addColorStop(1, seam);
+  fade.addColorStop(1, hexAlpha(seam, 0.72));
   ctx.fillStyle = fade;
-  ctx.fillRect(0, HEADER - 150, WIDTH, 150);
+  ctx.fillRect(0, HEADER - 70, WIDTH, 70);
+
+  // Kimlik bandının karartması çizilip ad, kullanıcı adı ve unvan üstüne yazılır
+  drawHeroScrim(ctx);
+  const identity = drawIdentity(ctx, user, view, c);
   ctx.restore();
-  return seam;
+  return { seam, ...identity };
+}
+
+// Kimlik bloğu: kapağın sol alt köşesinde avatar, yanında ad, kullanıcı adı (zamiriyle) ve unvan etiketi
+function drawIdentity(ctx, user, view, c) {
+  const custom = view.custom;
+  const avatarX = PAD;
+  const avatarY = HEADER - AVATAR - 30;
+
+  // Avatarın halkası: dışta koyu bir bant, içte vurgu rengi; görselin üzerinde net dursun
+  ctx.beginPath();
+  ctx.arc(avatarX + AVATAR / 2, avatarY + AVATAR / 2, AVATAR / 2 + 13, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(8,5,10,0.72)';
+  ctx.fill();
+
+  const textX = avatarX + AVATAR + 36;
+  const textMax = Math.min(WIDTH - PAD - textX, 1040);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = font(700, 52);
+  ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER - 128);
+  ctx.fillStyle = c.muted;
+  ctx.font = font(400, 25);
+  ctx.fillText(fitText(ctx, `@${user.username}${custom.pronoun ? ` · ${custom.pronoun}` : ''}`, textMax), textX, HEADER - 88);
+  if (custom.title) {
+    ctx.font = font(500, 22);
+    const width = ctx.measureText(custom.title).width + 40;
+    ctx.fillStyle = hexAlpha(c.accent, 0.24);
+    roundRect(ctx, textX, HEADER - 76, width, 42, 21);
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = hexAlpha(c.accent, 0.55);
+    roundRect(ctx, textX + 0.5, HEADER - 75.5, width - 1, 41, 20.5);
+    ctx.stroke();
+    ctx.fillStyle = c.accent;
+    ctx.fillText(custom.title, textX + 20, HEADER - 46);
+  }
+  return { avatarX, avatarY };
 }
 
 // Kapağın rengi gövdeye hafif bir ışımayla sızar. Cam paneller yarı saydam olduğu için arkalarında bu ışımayı
@@ -214,22 +313,22 @@ function paintAmbient(ctx, height, p) {
 }
 
 // Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
-function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(255,255,255,0.16)') {
-  ctx.font = font(500, 19);
-  const width = ctx.measureText(text).width + 34;
+function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(255,255,255,0.18)') {
+  ctx.font = font(500, 22);
+  const width = ctx.measureText(text).width + 40;
   const x = right - width;
   ctx.fillStyle = color;
-  roundRect(ctx, x, y, width, 42, 21);
+  roundRect(ctx, x, y, width, 48, 24);
   ctx.fill();
   if (border) {
     ctx.lineWidth = 1;
     ctx.strokeStyle = border;
-    roundRect(ctx, x + 0.5, y + 0.5, width - 1, 41, 20.5);
+    roundRect(ctx, x + 0.5, y + 0.5, width - 1, 47, 23.5);
     ctx.stroke();
   }
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
-  ctx.fillText(text, x + width / 2, y + 28);
+  ctx.fillText(text, x + width / 2, y + 32);
   return width;
 }
 
@@ -296,10 +395,10 @@ function drawIcon(ctx, icon, cx, cy, r, color) {
 // Rozet etiketlerinin satırlara dağılımı: her etiket yazısına göre genişler, sığmayan alt satıra iner. En fazla
 // iki satır ayrılır; hiç sığdıramadıkların yerine son satıra tek bir "+N" etiketi konur.
 function badgeRows(ctx, badges, maxWidth) {
-  ctx.font = font(500, 17);
+  ctx.font = font(500, 19);
   const items = badges.map((b) => {
     const textWidth = Math.round(ctx.measureText(b.label).width);
-    return { ...b, w: textWidth + (b.icon ? 62 : 40), textWidth };
+    return { ...b, w: textWidth + (b.icon ? 68 : 46), textWidth };
   });
 
   const rows = [[]];
@@ -319,7 +418,7 @@ function badgeRows(ctx, badges, maxWidth) {
     used += b.w + BADGE_GAP;
   }
 
-  if (hidden > 0) rows[rows.length - 1].push({ key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 56, textWidth: 26 });
+  if (hidden > 0) rows[rows.length - 1].push({ key: 'diger', label: `+${hidden}`, color: '#c3ccd6', w: 60, textWidth: 28 });
   return rows.filter((row) => row.length);
 }
 
@@ -339,12 +438,12 @@ function drawBadges(ctx, rows, y) {
       roundRect(ctx, x + 0.5, ry + 0.5, b.w - 1, BADGE_ROW_H - 1, (BADGE_ROW_H - 1) / 2);
       ctx.stroke();
 
-      const iconX = b.icon ? x + 24 : x + 18;
-      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 9.5 : 5, b.color);
+      const iconX = b.icon ? x + 26 : x + 20;
+      drawIcon(ctx, b.icon, iconX, ry + BADGE_ROW_H / 2, b.icon ? 10.5 : 5.5, b.color);
       ctx.fillStyle = mix(b.color, '#ffffff', 0.3);
-      ctx.font = font(500, 17);
+      ctx.font = font(500, 19);
       ctx.textAlign = 'left';
-      ctx.fillText(b.label, x + (b.icon ? 40 : 30), ry + 25);
+      ctx.fillText(b.label, x + (b.icon ? 44 : 34), ry + 27);
       x += b.w + BADGE_GAP;
     }
   });
@@ -357,68 +456,115 @@ function levelCard(ctx, x, y, w, h, title, xp, c) {
   const current = level > 0 ? levelConfig.xpForLevel(level) : 0;
   const next = levelConfig.xpForLevel(level + 1);
 
-  glass(ctx, x, y, w, h, 22, c);
+  glass(ctx, x, y, w, h, 24, c);
 
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 18);
-  ctx.fillText(title, x + 26, y + 38);
+  ctx.font = font(500, 20);
+  ctx.fillText(title, x + 28, y + 40);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 21);
-  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 26, y + 70);
+  ctx.font = font(700, 24);
+  ctx.fillText(`${number(xp - current)} / ${number(next - current)} XP`, x + 28, y + 74);
 
   ctx.textAlign = 'right';
   ctx.fillStyle = accent;
-  ctx.font = font(700, 56);
-  ctx.fillText(String(level), x + w - 26, y + 76);
+  ctx.font = font(700, 62);
+  ctx.fillText(String(level), x + w - 28, y + 80);
   ctx.fillStyle = c.muted;
-  ctx.font = font(500, 14);
-  ctx.fillText('SEVİYE', x + w - 26, y + 26);
+  ctx.font = font(500, 15);
+  ctx.fillText('SEVİYE', x + w - 28, y + 30);
 
-  drawBar(ctx, x + 26, y + h - 32, w - 52, 16, (xp - current) / (next - current), accent, c.track);
+  drawBar(ctx, x + 28, y + h - 32, w - 56, 16, (xp - current) / (next - current), accent, c.track);
 }
 
-// Alt bilgi kutusu: sol üstte küçük başlık, altında değer
-function infoBox(ctx, x, y, w, label, value, c) {
-  glass(ctx, x, y, w, INFO_H, 18, c);
+// İstatistik kutusu: üstte küçük başlık, altında değer, varsa en altta tek satırlık yant not. Kutu her zaman
+// çizilir; ölçülemeyen alan "-" ile durur, böylece ızgaranın düzeni hiçbir profilde bozulmaz.
+function statTile(ctx, x, y, w, tile, c) {
+  glass(ctx, x, y, w, TILE_H, 18, c);
   ctx.textAlign = 'left';
   ctx.fillStyle = c.muted;
   ctx.font = font(500, 14);
-  ctx.fillText(label.toLocaleUpperCase('tr-TR'), x + 20, y + 27);
+  ctx.fillText(fitText(ctx, tile.label.toLocaleUpperCase('tr-TR'), w - 40), x + 20, y + 27);
   ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 24);
-  ctx.fillText(fitText(ctx, value, w - 40), x + 20, y + 57);
+  ctx.font = font(700, 26);
+  ctx.fillText(fitText(ctx, tile.value, w - 40), x + 20, y + tile.sub ? 58 : 66);
+  if (tile.sub) {
+    ctx.fillStyle = c.muted;
+    ctx.font = font(400, 15);
+    ctx.fillText(fitText(ctx, tile.sub, w - 40), x + 20, y + 80);
+  }
 }
 
-// Vitrin şeridi: solda üyenin öne çıkardığı istatistik, sağda bağlantılar ve ziyaret sayısı
-function drawFooter(ctx, y, view, c) {
-  glass(ctx, PAD, y, WIDTH - PAD * 2, FOOTER_H, 20, c);
-  ctx.fillStyle = hexAlpha(c.accent, 0.75);
-  roundRect(ctx, PAD, y + 20, 6, FOOTER_H - 40, 3);
-  ctx.fill();
+// Kartın veri ızgarası: sunucudaki bütün kayıtların tek bakışta göründüğü kutular. index.js'teki view.js
+// bağlamından beslenir; burada yalnızca biçimlendirilir.
+function statTiles(view) {
+  const sicil = view.punishments;
+  return [
+    { label: 'Mesaj', value: number(view.messageCount ?? 0), sub: view.mesajRank ? `${number(view.mesajRank)}. sırada` : null },
+    { label: 'Ses süresi', value: duration(view.voiceSeconds), sub: view.sesRank ? `${number(view.sesRank)}. sırada` : null },
+    { label: 'Yayın', value: view.streamSeconds >= 60 ? duration(view.streamSeconds) : '-', sub: 'ekran paylaşımı' },
+    { label: 'Saygınlık', value: number(view.rep ?? 0), sub: view.rep ? 'alınan saygı' : 'henüz yok' },
+    { label: 'Giriş serisi', value: view.streak ? `${number(view.streak)} gün` : '-', sub: 'art arda günlük ödül' },
+    { label: 'Ziyaret', value: number(view.visits ?? 0), sub: 'profil görüntülenme' },
+    { label: 'Katılım', value: view.joinedAt ? date(view.joinedAt) : '-', sub: view.joinedAt ? `${age(view.joinedAt)} burada` : null },
+    { label: 'Hesap', value: view.accountAt ? age(view.accountAt) : '-', sub: view.accountAt ? date(view.accountAt) : null },
+    { label: 'Sicil', value: sicil ? (sicil.total ? `${sicil.active} aktif` : 'temiz') : '-', sub: sicil ? `${number(sicil.total)} ceza kaydı` : null },
+    { label: 'Takviye', value: view.premiumSince ? age(view.premiumSince) : '-', sub: view.premiumSince ? `_${date(view.premiumSince)}den beri_`.replace(/_/g, '') : 'takviye yok' },
+    { label: 'Kozmetik', value: view.ownedCount ? `${number(view.ownedCount)} ürün` : '-', sub: 'çerçeve, tema, kapak' },
+    { label: 'Kazanılan', value: number(view.earnedCoins ?? 0), sub: 'toplam coin' },
+  ];
+}
 
-  if (view.featured) {
-    ctx.textAlign = 'left';
+// Alt şerit: solda biyografi, sağda vitrin (öne çıkan istatistik ve bağlantılar). Vitrin boşsa biyografi
+// tüm genişliği kullanır; iki kutu her zaman aynı yükseklikte durur.
+function drawFoot(ctx, y, view, c) {
+  const custom = view.custom;
+  const total = WIDTH - PAD * 2;
+  const vitrinW = view.featured || view.links?.length ? 600 : 0;
+  const bioW = vitrinW ? total - vitrinW - GAP : total;
+
+  glass(ctx, PAD, y, bioW, FOOT_H, 22, c);
+  ctx.fillStyle = c.accent;
+  roundRect(ctx, PAD, y + 22, 6, FOOT_H - 44, 3);
+  ctx.fill();
+  ctx.textAlign = 'left';
+  if (custom.bio) {
+    ctx.fillStyle = '#ece3e8';
+    ctx.font = font(400, 25);
+    wrapLines(ctx, custom.bio, bioW - 72, 2).forEach((line, i) => ctx.fillText(line, PAD + 30, y + 48 + i * 36));
+  } else {
     ctx.fillStyle = c.muted;
-    ctx.font = font(500, 15);
-    ctx.fillText(view.featured.label.toLocaleUpperCase('tr-TR'), PAD + 28, y + 32);
-    ctx.fillStyle = c.accent;
-    ctx.font = font(700, 30);
-    ctx.fillText(fitText(ctx, view.featured.value, 340), PAD + 28, y + 68);
+    ctx.font = font(400, 24);
+    ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 30, y + 66);
   }
 
-  const right = WIDTH - PAD - 26;
-  ctx.textAlign = 'right';
+  if (!vitrinW) return;
+  const x = PAD + bioW + GAP;
+  glass(ctx, x, y, vitrinW, FOOT_H, 22, c);
+  ctx.fillStyle = hexAlpha(c.accent, 0.75);
+  roundRect(ctx, x, y + 22, 6, FOOT_H - 44, 3);
+  ctx.fill();
+  const textRight = x + vitrinW - 26;
+  ctx.textAlign = 'left';
+  if (view.featured) {
+    ctx.fillStyle = c.muted;
+    ctx.font = font(500, 15);
+    ctx.fillText(view.featured.label.toLocaleUpperCase('tr-TR'), x + 30, y + 34);
+    ctx.fillStyle = c.accent;
+    ctx.font = font(700, 32);
+    ctx.fillText(fitText(ctx, view.featured.value, vitrinW - 60), x + 30, y + 72);
+  }
   if (view.links?.length) {
     ctx.fillStyle = '#efe6ea';
     ctx.font = font(500, 19);
-    ctx.fillText(fitText(ctx, view.links.join('   ·   '), 500), right, y + (view.featured ? 40 : 52));
+    ctx.fillText(fitText(ctx, view.links.join('   ·   '), vitrinW - 60), x + 30, y + (view.featured ? 100 : 60));
   }
-  if (view.visits > 0) {
+  ctx.textAlign = 'left';
+  if (view.visits > 0 && !view.featured && !view.links?.length) {
     ctx.fillStyle = c.muted;
-    ctx.font = font(400, 16);
-    ctx.fillText(`${number(view.visits)} profil ziyareti`, right, y + (view.featured || view.links?.length ? 68 : 52));
+    ctx.font = font(400, 18);
+    ctx.fillText(`${number(view.visits)} profil ziyareti`, x + 30, y + 60);
   }
 }
 
@@ -429,7 +575,7 @@ function drawFrame(ctx, height, frame, scheme) {
   const glow = frame.glow === 'accent' ? scheme.accent : frame.glow;
 
   for (const [gx, gy] of [[8, 8], [WIDTH - 8, height - 8]]) {
-    const g = ctx.createRadialGradient(gx, gy, 10, gx, gy, 320);
+    const g = ctx.createRadialGradient(gx, gy, 10, gx, gy, 380);
     g.addColorStop(0, hexAlpha(glow, 0.3));
     g.addColorStop(1, hexAlpha(glow, 0));
     ctx.fillStyle = g;
@@ -449,8 +595,8 @@ function paletteOf(theme, custom) {
     muted: scheme.muted,
     track: scheme.track,
     base: mix(theme.from, '#000000', 0.86),
-    // Gövde zemini düz siyah değil, kapağın kendi renginden türer: kapağın altında başlayıp aşağı doğru kararan
-    // opak bir gradyan. Alfa ile boyanan ışıma gibi kirli bir leke bırakmaz, tema rengini temiz taşır.
+    // Gövde zemini düz siyah değil, kapağın kendi renginden türemiş koyu bir ton: kapağın altında başlayıp
+    // aşağı doğru kararan opak gradyan. Alfa ile boyanan ışıma gibi kirli bir leke bırakmaz.
     bgTop: mix(theme.to, '#000000', 0.82),
     bgBottom: mix(theme.from, '#000000', 0.94),
   };
@@ -463,24 +609,32 @@ function paletteOf(theme, custom) {
   };
 }
 
-// view: { custom, roleColor, mesajXp, sesXp, mesajRank, sesRank, joinedAt, messageCount, voiceSeconds, rep,
-//         badges: [rozet], featured: { label, value } | null, links: [metin], visits: sayı, frame: çerçeve }
+// view: { custom, roleColor, mesajXp, sesXp, mesajRank, sesRank, coins, joinedAt, accountAt, messageCount,
+//         voiceSeconds, streamSeconds, rep, streak, visits, punishments: {active,total}, premiumSince,
+//         ownedCount, earnedCoins, badges: [rozet], featured: {label,value}|null, links: [metin], frame }
+// user: ad/zamir/avatar için discord.js üye ya da kullanıcı nesnesi.
 async function buildProfileCard(user, view) {
   const custom = view.custom;
   const theme = resolveTheme(custom, view.roleColor);
   const { scheme, accent, c, p } = paletteOf(theme, custom);
 
-  // Yükseklik çizimden önce bilinmeli: rozet satırları ve vitrin şeridi kartı uzatır
+  // Yükseklik çizimden önce bilinmeli: rozet satırları ve ızgarasının satır sayısı kartı uzatır
   const probe = measureCtx();
   const rows = badgeRows(probe, view.badges ?? [], WIDTH - PAD * 2);
-  const badgesH = rows.length ? rows.length * BADGE_ROW_H + (rows.length - 1) * BADGE_ROW_GAP + 14 : 0;
-  const hasFooter = Boolean(view.featured || view.links?.length || view.visits > 0);
-  const badgesTop = HEADER + 132;
-  const bioY = badgesTop + badgesH;
-  const levelY = bioY + BIO_H + GAP;
-  const infoY = levelY + LEVEL_H + GAP;
-  const footerY = infoY + INFO_H + GAP;
-  const height = (hasFooter ? footerY + FOOTER_H : infoY + INFO_H) + BOTTOM;
+  const badgesH = rows.length ? rows.length * BADGE_ROW_H + (rows.length - 1) * BADGE_ROW_GAP : 0;
+  const tiles = statTiles(view);
+  const tileRows = Math.ceil(tiles.length / TILE_COLS);
+  const tilesH = tileRows * TILE_H + (tileRows - 1) * TILE_GAP;
+
+  let y = HEADER + 26;
+  const badgesY = y;
+  if (rows.length) y += badgesH + GAP;
+  const levelsY = y;
+  y += LEVEL_H + GAP;
+  const tilesY = y;
+  y += tilesH + GAP;
+  const footY = y;
+  const height = footY + FOOT_H + BOTTOM;
 
   const canvas = canvasLib().createCanvas(WIDTH, height);
   const ctx = canvas.getContext('2d');
@@ -493,96 +647,44 @@ async function buildProfileCard(user, view) {
   ctx.fillRect(0, 0, WIDTH, height);
   // Kapak önce çizilir: döndürdüğü alt ton gövdenin ilk rengi olur, böylece ikisi birleşim çizgisinde kesintisiz
   // devam eder. Gövde o tondan tema renginin karanlığına, oradan kartın altında neredeyse siyaha iner.
-  const seam = await paintHeader(ctx, view, theme, p, c);
+  const seam = await paintHeader(ctx, user, view, theme, p, c);
   const body = ctx.createLinearGradient(0, HEADER, 0, height);
   body.addColorStop(0, seam);
-  body.addColorStop(0.3, c.bgTop);
+  body.addColorStop(0.26, c.bgTop);
   body.addColorStop(1, c.bgBottom);
   ctx.fillStyle = body;
   ctx.fillRect(0, HEADER, WIDTH, height - HEADER);
   paintAmbient(ctx, height, p);
 
-  // Sağ üst: sıralama etiketleri ve altında coin bakiyesi
-  const rankColor = 'rgba(10,6,12,0.5)';
-  let right = WIDTH - PAD;
-  right -= pill(ctx, `Ses  ${view.sesRank ? `#${view.sesRank}` : '-'}`, right, 26, rankColor) + 10;
-  pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 26, rankColor);
-  pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 76, accent, '#120a10', null);
+  // Avatar kapağın içindeki yerinde çizilir; halkası karartının üstünde durur
+  const { avatarX, avatarY } = drawIdentity(ctx, user, view, c);
+  await drawAvatar(ctx, user, avatarX, avatarY, AVATAR, accent);
 
-  // Avatar kapağın altına taşar; kapağın bağlandığı tondaki kalın halka kapakla arasını ayırır
-  const avatarSize = 184;
-  const avatarX = PAD;
-  const avatarY = HEADER - 92;
-  ctx.beginPath();
-  ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 10, 0, Math.PI * 2);
-  ctx.fillStyle = seam;
-  ctx.fill();
-  await drawAvatar(ctx, user, avatarX, avatarY, avatarSize, accent);
+  if (rows.length) drawBadges(ctx, rows, badgesY);
 
-  // Ad, kullanıcı adı (varsa zamiriyle) ve unvan
-  const textX = avatarX + avatarSize + 30;
-  const textMax = WIDTH - PAD - textX;
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#ffffff';
-  ctx.font = font(700, 44);
-  ctx.fillText(fitText(ctx, user.globalName ?? user.username, textMax), textX, HEADER + 40);
-  ctx.fillStyle = c.muted;
-  ctx.font = font(400, 21);
-  ctx.fillText(fitText(ctx, `@${user.username}${custom.pronoun ? ` · ${custom.pronoun}` : ''}`, textMax), textX, HEADER + 70);
-  if (custom.title) {
-    ctx.font = font(500, 19);
-    const width = ctx.measureText(custom.title).width + 34;
-    ctx.fillStyle = hexAlpha(accent, 0.22);
-    roundRect(ctx, textX, HEADER + 84, width, 36, 18);
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = hexAlpha(accent, 0.5);
-    roundRect(ctx, textX + 0.5, HEADER + 84.5, width - 1, 35, 17.5);
-    ctx.stroke();
-    ctx.fillStyle = accent;
-    ctx.fillText(custom.title, textX + 17, HEADER + 108);
-  }
-
-  // Rozetler: kazanılanlar ve satın alınan sergi rozetleri unvanın altında sırayla dizilir
-  if (rows.length) drawBadges(ctx, rows, badgesTop);
-
-  // Biyografi kutusu
-  glass(ctx, PAD, bioY, WIDTH - PAD * 2, BIO_H, 22, c);
-  ctx.fillStyle = accent;
-  roundRect(ctx, PAD, bioY + 20, 6, BIO_H - 40, 3);
-  ctx.fill();
-  ctx.textAlign = 'left';
-  if (custom.bio) {
-    ctx.fillStyle = '#ece3e8';
-    ctx.font = font(400, 23);
-    wrapLines(ctx, custom.bio, WIDTH - PAD * 2 - 64, 2).forEach((line, i) => ctx.fillText(line, PAD + 28, bioY + 44 + i * 34));
-  } else {
-    ctx.fillStyle = c.muted;
-    ctx.font = font(400, 22);
-    ctx.fillText('Henüz bir biyografi eklenmemiş.', PAD + 28, bioY + 58);
-  }
-
-  // Mesaj ve ses seviye kutuları
+  // Mesaj ve ses seviye kutuları yan yana, kartın genişliği ikisini birden rahat alır
   const cardW = (WIDTH - PAD * 2 - GAP) / 2;
-  levelCard(ctx, PAD, levelY, cardW, LEVEL_H, 'Mesaj Seviyesi', view.mesajXp, c);
-  levelCard(ctx, PAD + cardW + GAP, levelY, cardW, LEVEL_H, 'Ses Seviyesi', view.sesXp, c);
+  levelCard(ctx, PAD, levelsY, cardW, LEVEL_H, 'Mesaj Seviyesi', view.mesajXp, c);
+  levelCard(ctx, PAD + cardW + GAP, levelsY, cardW, LEVEL_H, 'Ses Seviyesi', view.sesXp, c);
 
-  // Alt bilgiler
-  const infoW = (WIDTH - PAD * 2 - GAP * 3) / 4;
-  infoBox(ctx, PAD, infoY, infoW, 'Katılım', view.joinedAt ? date(view.joinedAt) : '-', c);
-  infoBox(ctx, PAD + (infoW + GAP) * 1, infoY, infoW, 'Mesaj', number(view.messageCount), c);
-  infoBox(ctx, PAD + (infoW + GAP) * 2, infoY, infoW, 'Ses süresi', duration(view.voiceSeconds), c);
-  infoBox(ctx, PAD + (infoW + GAP) * 3, infoY, infoW, 'Saygınlık', number(view.rep ?? 0), c);
+  // İstatistik ızgarası: altı kutu bir satır, iki satır
+  const tileW = (WIDTH - PAD * 2 - TILE_GAP * (TILE_COLS - 1)) / TILE_COLS;
+  tiles.forEach((tile, i) => {
+    const col = i % TILE_COLS;
+    const row = Math.floor(i / TILE_COLS);
+    statTile(ctx, PAD + col * (tileW + TILE_GAP), tilesY + row * (TILE_H + TILE_GAP), tileW, tile, c);
+  });
 
-  if (hasFooter) drawFooter(ctx, footerY, view, c);
+  drawFoot(ctx, footY, view, c);
 
   drawFrame(ctx, height, view.frame, scheme);
   ctx.restore();
   return canvas.toBuffer('image/png');
 }
 
-// Kapak düzenleyicisinin önizlemesi: kartın üst alanı tek başına çizilir, böylece büyütme ve kaydırma anında görülür
-async function buildHeaderPreview(view, note = null) {
+// Kapak düzenleyicisinin önizlemesi: kartın üst alanı tek başına çizilir, böylece büyütme, kaydırma ve yerleşim
+// anında görülür. Kimlik bloğu ve etiketler de çizilir; üye karartmanın görselini ne kadar kapladığını burada görür.
+async function buildHeaderPreview(user, view, note = null) {
   const theme = resolveTheme(view.custom, view.roleColor);
   const { c, p } = paletteOf(theme, view.custom);
   const canvas = canvasLib().createCanvas(WIDTH, HEADER);
@@ -593,18 +695,21 @@ async function buildHeaderPreview(view, note = null) {
   ctx.clip();
   ctx.fillStyle = c.base;
   ctx.fillRect(0, 0, WIDTH, HEADER);
-  await paintHeader(ctx, view, theme, p, c);
+  await paintHeader(ctx, user, view, theme, p, c);
   ctx.restore();
 
+  const { avatarX, avatarY } = drawIdentity(ctx, user, view, c);
+  await drawAvatar(ctx, user, avatarX, avatarY, AVATAR, c.accent);
+
   if (note) {
-    ctx.font = font(500, 19);
-    const width = ctx.measureText(note).width + 34;
-    ctx.fillStyle = 'rgba(10,6,12,0.6)';
-    roundRect(ctx, WIDTH - PAD - width, HEADER - 62, width, 42, 21);
+    ctx.font = font(500, 21);
+    const width = ctx.measureText(note).width + 38;
+    ctx.fillStyle = 'rgba(10,6,12,0.66)';
+    roundRect(ctx, WIDTH - PAD - width, HEADER - 74, width, 48, 24);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText(note, WIDTH - PAD - width / 2, HEADER - 33);
+    ctx.fillText(note, WIDTH - PAD - width / 2, HEADER - 41);
   }
   return canvas.toBuffer('image/png');
 }
