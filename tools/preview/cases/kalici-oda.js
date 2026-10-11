@@ -146,7 +146,47 @@ module.exports = ({ mock, src }) => {
       build: () => message(k.rejectedCard(app({ status: 'rejected', reviewedBy: reviewer.id, reviewedAt: mock.ago(20 * mock.MIN), note: 'Odayı birlikte kullanacak kadar aktif üye görünmedi.' }))),
     },
 
-    { id: 'oda-paneli', title: 'Odanın kendi kontrol paneli', where: 'Odanın yazı kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomPanel(room())) },
+    {
+      id: 'oda-paneli',
+      title: '/kalici-oda odam: oda kontrol paneli ve şart durumu',
+      where: 'Komutla açıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => message(k.roomPanel(room(), denetim.statusOf(room()))),
+    },
+    {
+      id: 'oda-paneli-yeni',
+      title: '/kalici-oda odam: henüz haftalık kaydı olmayan oda',
+      where: 'Komutla açıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => message(k.roomPanel(second, denetim.statusOf(second))),
+    },
+    {
+      id: 'uyari-hafta',
+      title: 'Haftalık şart kaçınca sahibine giden uyarı',
+      where: 'Doğrudan mesaj',
+      visibility: 'dm',
+      kind: 'message',
+      build: () => message(k.weekMissedCard(room(), previousWeekKey(), 28 * mock.HOUR)),
+    },
+    {
+      id: 'dm-sart-kapanis',
+      title: 'Ay sonu şart denetiminde kapanan oda',
+      where: 'Doğrudan mesaj',
+      visibility: 'dm',
+      kind: 'message',
+      build: () =>
+        message(
+          k.inactivityCard(room(), {
+            month: denetim.monthKey(Date.now() - 32 * mock.DAY),
+            weeks: 4,
+            missed: 1,
+            total: 118 * mock.HOUR,
+            required: 150 * mock.HOUR,
+          }),
+        ),
+    },
     { id: 'form-limit', title: 'Form: kişi limiti', where: 'Limiti Ayarla butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.limitModal(20) },
     { id: 'form-isim', title: 'Form: oda ismi', where: 'İsmi Değiştir butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.renameModal('Müzik Odası') },
 
