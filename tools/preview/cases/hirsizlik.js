@@ -48,8 +48,9 @@ module.exports = ({ mock, ui, src }) => {
   // Kasa cezalarla birikmiş olsun: topluluk sayfasında gerçek bir kasa rakamı dursun
   store.kasaEkle(905);
 
-  // Kaan'ın geçmişi: girişimleri gerçek sayaca yazılır, kartları kapatıldıktan sonra sicilde kalır
-  const soyulan = 380; // zarın yüzü: canlıda oran rastgele, burada senaryonun seçtiği sonuç
+  // Kaan'ın geçmişi: girişimler gerçek sayaca yazılır, kartları kapatıldıktan sonra sicilde kalır.
+  // soyulan zarın yüzüdür: canlıda oran rastgele çekilir, burada senaryonun seçtiği sonuç yazılır.
+  const soyulan = 380;
   store.girisimKaydet({ id: 'oniz1', tip: 'uye', saldirgan: mafya.uid, hedef: kurban.uid, kanal: '1', sonAt: mock.ago(2 * mock.MIN) }, mock.ago(4000));
   store.girisimKapat('oniz1');
   store.girisimKaydet({ id: 'oniz2', tip: 'kasa', saldirgan: mafya.uid, hedef: null, kanal: '1', sonAt: mock.ago(60 * mock.MIN) }, mock.ago(6 * mock.MIN));
@@ -61,9 +62,9 @@ module.exports = ({ mock, ui, src }) => {
   store.direnisKaydet(mafya.uid, mock.ago(1000));
 
   // Toplum kayıt defteri: sayfada görünecek üç satır gerçek yazım kapısından geçer
-  store.sicilEkle({ tip: 'uye', saldirgan: mafya.uid, saldirganAd: 'Kaan', hedef: kurban.uid, hedefAd: 'Deniz', sonuc: 'direnç olmadı, coin el değiştirdi', miktar: 380, at: mock.ago(40 * mock.MIN) });
+  store.sicilEkle({ tip: 'uye', saldirgan: mafya.uid, saldirganAd: 'Kaan', hedef: kurban.uid, hedefAd: 'Deniz', sonuc: 'direnç olmadı, coin el değiştirdi', miktar: soyulan, at: mock.ago(40 * mock.MIN) });
   store.sicilEkle({ tip: 'uye', saldirgan: kurban.uid, saldirganAd: 'Deniz', hedef: mafya.uid, hedefAd: 'Kaan', sonuc: 'direnildi, saldırgan yakalandı', miktar: 0, at: mock.ago(25 * mock.MIN) });
-  store.sicilEkle({ tip: 'kasa', saldirgan: tanik.uid, saldirganAd: 'Ece', hedef: null, hedefAd: 'Devletin Kasası', sonuc: 'kefalet ödeyip tahliye oldu', miktar: 900, at: mock.ago(6 * mock.MIN) });
+  store.sicilEkle({ tip: 'kasa', saldirgan: tanik.uid, saldirganAd: 'Ece', hedef: null, hedefAd: 'Devletin Kasası', sonuc: 'kefalet ödeyip tahliye oldu', miktar: config.kefalet.kasa, at: mock.ago(6 * mock.MIN) });
 
   // Mert sokağa yeni çıkmış: üye soyabiliyor ama kasaya henüz erişemiyor, tek girişiminden sonra beklemede
   const yarim = uye({ ad: 'Mert', seviye: 8, coin: 760 });
@@ -88,6 +89,11 @@ module.exports = ({ mock, ui, src }) => {
   store.hapisVer(gariban.uid, config.hapis.kasa, 'kasa', mock.ago(4 * mock.MIN));
   const garibanDurum = suc.durumOf(gariban.uid);
   const iceride = suc.durumOf(tutuklu.uid);
+
+  // Sonucu yazılmamış bir kasa soygunu: dağılan para kasadan gerçekten düşsün ki sonuç kartındaki
+  // "Kasadan Çıkan" ile "Kalan Kasa" birbirini tutmasın
+  const kasaGanimeti = 600;
+  store.kasaDus(kasaGanimeti);
 
   // ── Arka Sokaklar sayfası ─────────────────────────────────────────────────
   const cases = [
