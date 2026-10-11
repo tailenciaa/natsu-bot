@@ -8,15 +8,13 @@ const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { replyError, respond, isMenuOwner } = require('../../core/helpers');
 const coinStore = require('../coin/store');
-const saygiStore = require('../saygi/store');
-const seviyeStore = require('../seviye/store');
-const siralamaStore = require('../siralama/store');
 const { buildHeaderPreview, buildProfileCard, OPACITY_DEFAULT, OPACITY_STEP } = require('./card');
 const kapak = require('./kapak');
 const kozmetik = require('./kozmetik');
 const gorev = require('./gorev');
 const rozet = require('./rozet');
 const store = require('./store');
+const { FEATURED, featuredOptions, profileView, headerView } = require('./view');
 const { THEMES, resolveTheme } = require('./themes');
 const ui = require('./ui');
 
@@ -30,76 +28,8 @@ const commands = [
 
 const number = (n) => Number(n).toLocaleString('tr-TR');
 
-function duration(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const h = Math.floor(minutes / 60);
-  return h > 0 ? `${h} sa ${minutes % 60} dk` : `${minutes} dk`;
-}
-
-// Vitrinde öne çıkarılabilen istatistikler; değeri üretmeyen (henüz kaydı olmayan) seçenek kartta boş kalır
-const FEATURED = [
-  { key: 'mesaj', label: 'Mesaj sıralaması', note: 'Tüm zamanların mesaj sıran', value: (v) => (v.mesajRank ? `# ${v.mesajRank}` : null) },
-  { key: 'ses', label: 'Ses sıralaması', note: 'Tüm zamanların ses sıran', value: (v) => (v.sesRank ? `# ${v.sesRank}` : null) },
-  { key: 'yayin', label: 'Yayın süresi', note: 'Toplam ekran paylaşımı', value: (v) => (v.streamSeconds >= 3600 ? duration(v.streamSeconds) : null) },
-  { key: 'saygi', label: 'Saygınlık', note: 'Toplam aldığın saygınlık', value: (v) => (v.rep ? `${v.rep} saygınlık` : null) },
-  { key: 'seri', label: 'Giriş serisi', note: 'Art arda günlük ödül', value: (v) => (v.streak ? `${v.streak} günlük seri` : null) },
-  { key: 'coin', label: 'Coin bakiyesi', note: 'Harcayabileceğin coin', value: (v) => `${number(v.balance)} coin` },
-];
-
-const featuredOptions = FEATURED.map(({ key, label, note }) => ({ key, label, note }));
-
-// Bağlantı kartında kısa yazılır: protokol ve www atılır, yol küçük tutulur
-function linkLabel(url) {
-  const host = String(url).replace(/^https?:\/\//, '').replace(/^www\./, '');
-  return core.shorten(host.replace(/\/$/, ''), 34);
-}
-
-// Kartın çizim verisi: ölçümler, rozet bağlamı ve vitrin alanları tek yerde toplanır
-async function viewDataOf(guild, userId) {
-  const messages = siralamaStore.totals('messages', null);
-  const voice = siralamaStore.totals('voice', null);
-  const stream = siralamaStore.totals('stream', null);
-  const member = await guild.members.fetch(userId).catch(() => null);
-  const custom = store.get(userId);
-  const visits = store.visits(userId);
-  const messageCount = messages.get(userId) ?? 0;
-  const voiceSeconds = voice.get(userId) ?? 0;
-  const streamSeconds = stream.get(userId) ?? 0;
-  const rep = saygiStore.allTotals()[userId] ?? 0;
-
-  const stats = {
-    mesajRank: siralamaStore.rankIn(messages, userId),
-    sesRank: siralamaStore.rankIn(voice, userId),
-    streamSeconds,
-    rep,
-    streak: coinStore.streak(userId),
-    balance: coinStore.balance(userId),
-  };
-  const ctx = rozet.context({ guild, member, userId, messageCount, voiceSeconds, streamSeconds, visits: visits.count });
-  // Satın alınan sergi rozetleri başa yazılır: kartta iki satır yer olduğu için kazanılan rozetlerin arasında kaybolmasınlar
-  const badges = [...kozmetik.badgesOf(custom.ownedBadges), ...rozet.earned(ctx)];
-  const featured = FEATURED.find((o) => o.key === custom.featured);
-
-  return {
-    custom,
-    roleColor: member?.displayColor ?? 0,
-    mesajXp: seviyeStore.xpOf('mesaj', userId),
-    sesXp: seviyeStore.xpOf('ses', userId),
-    joinedAt: member?.joinedTimestamp ?? null,
-    messageCount,
-    voiceSeconds,
-    badges,
-    featured: featured ? { label: featured.label, value: featured.value(stats) ?? 'kayıt yok' } : null,
-    links: ['twitch', 'youtube', 'github', 'site'].map((key) => custom.links?.[key]).filter(Boolean).slice(0, 3).map(linkLabel),
-    visits: visits.count,
-    coins: stats.balance,
-    frame: kozmetik.frameOf(custom.frame),
-    ...stats,
-  };
-}
-
 async function buildMessage(guild, user, isSelf) {
-  const view = await viewDataOf(guild, user.id);
+  const view = await profileView(guild, user.id);
   const buffer = await buildProfileCard(user, view);
   return {
     components: [ui.profile('profil.png', isSelf, view.custom.theme)],
