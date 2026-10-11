@@ -210,12 +210,12 @@ async function createTicket(interaction, reason, afterCreate) {
     await interaction.deferReply();
 
     const existing = await findOpenTicket(guild, user.id);
-    if (existing) return replyError(interaction, `Zaten açık bir destek talebin var: <#${existing}>`);
+    if (existing) return replyFlowError(interaction, `Zaten açık bir destek talebin var: <#${existing}>`);
 
     const parent = await fetchTextChannel(guild, config.channels.panel);
     const claimChannel = await fetchTextChannel(guild, config.channels.claim);
     if (parent?.type !== ChannelType.GuildText || !claimChannel) {
-      return replyError(interaction, 'Destek kanalları bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
+      return replyFlowError(interaction, 'Destek kanalları bulunamadı.', 'Lütfen sunucu yöneticilerine bildir.');
     }
 
     const number = store.nextTicketNumber(guild.id);
