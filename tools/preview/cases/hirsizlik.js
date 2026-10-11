@@ -94,7 +94,7 @@ module.exports = ({ mock, ui, src }) => {
       'sokak-suclu',
       'Suç sayfası: girişi, başarısı ve kaybı olan üye, son kayıt listesi dolu',
       'Aynı sayfa sicil birikmiş üyede',
-      p.panel(sayfa(mafia)),
+      p.panel(sayfa(mafya)),
     ),
     kartCase(
       'sokak-iceride',
