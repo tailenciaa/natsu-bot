@@ -17,10 +17,11 @@ module.exports = ({ mock, src }) => {
   const applications = mock.channel({ name: 'kalici-oda-basvuruları', guild });
 
   // Biten haftaların ölçümleri denetimin kendi pazartesi anahtarlarıyla yazılır: ay toplamı ve kaçan hafta
-  // böylece gerçek takvime oturur, kartta uydurma tarih görünmez
+  // böylece gerçek takvime oturur, kartta uydurma tarih görünmez. Ölçüler SANİYE (mock.HOUR milisaniyedir).
+  const sec = (hours) => hours * 3600;
   const weeks = {
-    [previousWeekKey()]: 28 * mock.HOUR, // hedefin altında: bir hafta kaçmış
-    [weekKey(Date.now() - 14 * mock.DAY)]: 44 * mock.HOUR,
+    [previousWeekKey()]: sec(28), // hedefin altında: bir hafta kaçmış
+    [weekKey(Date.now() - 14 * mock.DAY)]: sec(44),
   };
 
   const room = (o = {}) => ({
