@@ -4,9 +4,10 @@
 // /bakiye cüzdanı açar: bakiye, seri, harcanan ve mağaza ile siparişlere giden butonlar tek kartta durur.
 const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
-const { respond, isMenuOwner, menuOwnerError } = require('../../core/helpers');
+const { respond, replyError, isMenuOwner, menuOwnerError } = require('../../core/helpers');
 const { levelFromXp } = require('../seviye/level');
 const seviyeStore = require('../seviye/store');
+const gorev = require('../gorev'); // Görevler düğmesi aynı paneli açar; yalnızca store'a değil, panele de bağlı tek yön
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -81,6 +82,14 @@ async function handleOrders(interaction) {
 async function handleBack(interaction) {
   if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
   return interaction.update({ components: [walletView(interaction)], allowedMentions: { parse: [] } });
+}
+
+// coin-gorev: cüzdandan görev paneline geçiş. Panel kendi sekmelerini taşıdığı için cüzdan kartının yerini
+// almaz, ayrı ve yalnızca basana görünür mesaj olarak açılır; ilerleme panelin çizildiği anda yeniden ölçülür.
+async function handleQuests(interaction) {
+  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
+  if (!interaction.guild) return replyError(interaction, 'Görevler sunucuda kullanılır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
+  return respond(interaction, gorev.panelFor(interaction, 'gunluk'), { ephemeral: true });
 }
 
 module.exports = {
