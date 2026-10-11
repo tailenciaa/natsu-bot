@@ -66,12 +66,10 @@ function panel() {
       ),
     );
 
-  // Panel yalnızca bu mesaj için: başlık, çizgi, açıklama, çizgi, menü
+  // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, çizgi, menü
   return page({
     title: `${botName} Log Paneli`,
-    blocks: [
-      'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
-    ],
+    sub: 'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(new ActionRowBuilder().addComponents(select));
