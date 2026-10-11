@@ -280,7 +280,7 @@ function weekMissedCard(room, week, seconds) {
 // Ay sonu şart denetiminde odası silinen sahibine giden kart
 function inactivityCard(room, stat) {
   return page({
-    title: 'Kalıcı Oda Şart Yetersizliğinden Kapatıldı',
+    title: 'Kalıcı Oda Kapatıldı',
     sub: `${room.name} odası ay sonu şartını karşılamadığı için kapatıldı ve kanalları silindi.`,
     accent: colors.danger,
     blocks: [
