@@ -289,7 +289,7 @@ function postCard(request, trusted, banned) {
         new ButtonBuilder()
           .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
           .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
-          .setStyle(banned ? ButtonStyle.Secondary : ButtonStyle.Danger),
+          .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger),
         new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
       ),
     );
