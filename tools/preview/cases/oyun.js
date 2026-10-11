@@ -10,6 +10,7 @@ module.exports = ({ mock, ui, src }) => {
   const p = src('systems/oyun/ui');
   const oyun = src('systems/oyun');
   const coinStore = src('systems/coin/store');
+  const coinConfig = src('systems/coin/config');
   const seviyeStore = src('systems/seviye/store');
   const seviyeConfig = src('systems/seviye/config');
   const { number } = src('systems/coin/ui');
@@ -126,6 +127,14 @@ module.exports = ({ mock, ui, src }) => {
   const efsaneviSatir = p.ganimetSatiri({ tur: 'coin', miktar: efsanevi.odenen, kesilen: efsanevi.kesilen, nitelik: 'efsanevi' });
   const efsaneviGezi = store.kesifSayilari(efsaneviUye.uid).gun + 1;
 
+  // Reddetme senaryolarının sayıları da gerçek kayıtlardan okunur
+  const magara = config.kesif.bolgeler.find((b) => b.key === 'magara');
+  const kilitliSeviye = ruletBos.seviye;
+  const fakir = uye({ ad: 'Deniz', seviye: 3, coin: 240 });
+  store.setBahis(fakir.uid, config.maxBet);
+  const fakirBahis = store.bahis(fakir.uid);
+  const fakirCuzdan = coinStore.balance(fakir.uid);
+
   return [
     panelCase(kesifYeni, 'kesif-yeni', 'Keşif sekmesi: yeni üye, tek bölge açık, gezisi hazır', '/oyun komutunun açtığı sayfa'),
     panelCase(kesifBasari, 'kesif-ganimet', 'Keşif sekmesi: üç bölge açık, bulunmuş kozmetik satırının üstte', 'Gezi düğmesinden sonra aynı sayfa'),
@@ -184,7 +193,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: bölge üyenin seviyesine kapalı',
       'Kilitli bölge düğmesine eski bir sayfadan basıldığında',
       'Bu bölge senin seviyene açık değil.',
-      `Kırık Mağara için seviye 20 gerekir, senin ölçülen seviyen 6.`,
+      `${magara.ad} için seviye ${magara.seviye} gerekir, senin ölçülen seviyen ${kilitliSeviye}.`,
     ),
     hataCase(
       'hata-kota',
@@ -198,10 +207,10 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: bahsi karşılayacak coin yok',
       'Bakiyesi seçili bahsin altında kalan üyede renk düğmesi',
       'Bahsini karşılayacak coinin yok.',
-      `Masaya ${number(1000)} coin konuyor; cüzdanında ${number(240)} coin var.`,
+      `Masaya ${number(fakirBahis)} coin konuyor; cüzdanında ${number(fakirCuzdan)} coin var.`,
     ),
     hataCase(
-      'hata-cekilis-yok',
+      'hata-tirmanis-yok',
       'Reddetme: masada tırmanış yokken basamak düğmesi',
       'Eski sayfadan basılan Bir Basamak Çık düğmesi',
       'Masada tırmanışın yok.',
