@@ -173,7 +173,7 @@ async function paintHeader(ctx, view, theme, p, c) {
   // Geçiş rengi: kapağın kendi alt tonu, koyulaştırılıp temanın gövde rengine yaklaştırılır. Koyulaştırma parlak
   // bir fotoğrafın kartı soldurmasını, yaklaştırma da gövdenin tema renginden kopmamasını sağlar.
   const tone = bottomTone(ctx);
-  const seam = tone ? mix(mix(tone, '#000000', 0.55), c.bgTop, 0.35) : c.bgTop;
+  const seam = tone ? mix(mix(tone, '#000000', 0.68), c.bgTop, 0.45) : c.bgTop;
   // Kapağın altındaki kararma geçiş rengine bağlanır: hedef gövde rengi olmazsa kapak ile zemin arasında sert,
   // kirli bir bant oluşur.
   const fade = ctx.createLinearGradient(0, HEADER - 150, 0, HEADER);
@@ -496,7 +496,7 @@ async function buildProfileCard(user, view) {
   const seam = await paintHeader(ctx, view, theme, p, c);
   const body = ctx.createLinearGradient(0, HEADER, 0, height);
   body.addColorStop(0, seam);
-  body.addColorStop(0.4, c.bgTop);
+  body.addColorStop(0.3, c.bgTop);
   body.addColorStop(1, c.bgBottom);
   ctx.fillStyle = body;
   ctx.fillRect(0, HEADER, WIDTH, height - HEADER);
