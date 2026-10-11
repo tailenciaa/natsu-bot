@@ -82,6 +82,10 @@ module.exports = ({ mock, ui, src }) => {
   store.yolAl(uid, 'kartini-gor');
   const yolIki = olcum.yolDurumu(uid, m, ek);
 
+  // Demet senaryosu: senaryoda gerçekten bitmiş üç günlük görev (22 mesaj, 22 dk yayın, günlük ödül alındı).
+  // Yarım kalan görev "alınmış" gösterilemez; panel canlıda olcum.durum'un bitti demediğini asla almaz.
+  const ucbitemis = [gunluk('mesaj-20', true), gunluk('yayin-20', true), gunluk('gunluk-odul', true)];
+
   return [
     panelCase(
       'gunluk',

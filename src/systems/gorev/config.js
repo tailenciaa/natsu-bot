@@ -37,7 +37,7 @@ const HAFTALIK_HAVUZU = [
   { key: 'mesaj-250', ad: '250 mesaj yaz', tarif: 'Bu hafta toplam 250 mesaj at; pazartesi sıfırlanır.', hedef: 250, birim: 'mesaj', olcum: 'mesajHafta', odul: { coin: 400, anahtar: 1, puan: 10 } },
   { key: 'ses-10sa', ad: '10 saat seste kal', tarif: 'Bu hafta sesli kanallarda toplam 10 saat geçirmiş ol.', hedef: 36000, birim: 'sure', olcum: 'sesHafta', odul: { coin: 450, anahtar: 1, puan: 10 } },
   { key: 'yayin-2sa', ad: '2 saat ekran paylaş', tarif: 'Bu hafta ekran paylaşımıyla toplam 2 saat geçir.', hedef: 7200, birim: 'sure', olcum: 'yayinHafta', odul: { coin: 300, anahtar: 1, puan: 8 } },
-  { key: 'rep-al-10', ad: '10 saygınlık topla', tarif: 'Bu hafta senden başkalarına 10 saygınlık gitsin; sohbet eden alır.', hedef: 10, birim: 'adet', olcum: 'repHafta', odul: { coin: 350, anahtar: 1, puan: 9 } },
+  { key: 'rep-al-10', ad: '10 saygınlık al', tarif: 'Bu hafta diğer üyeler sana toplam 10 saygınlık versin; veren kişi /saygi-ver ile değerlendirir.', hedef: 10, birim: 'adet', olcum: 'repHafta', odul: { coin: 350, anahtar: 1, puan: 9 } },
   { key: 'magaza-al-1', ad: 'Mağazadan bir şey al', tarif: 'Profilindeki Mağaza sekmesinden bir kozmetik satın al.', hedef: 1, birim: 'adet', olcum: 'satinAlmaHafta', odul: { coin: 250, anahtar: 1, puan: 6 } },
   { key: 'kutu-2', ad: '2 kutu aç', tarif: 'Bu hafta anahtarlarınla 2 kutu aç.', hedef: 2, birim: 'adet', olcum: 'kutuHafta', odul: { coin: 300, anahtar: 1, puan: 7 } },
   { key: 'seri-4', ad: '4 gün görevleri bitir', tarif: 'Bu hafta üst üste değil, toplam 4 günün üç günlük görevini de tamamla.', hedef: 4, birim: 'gun', olcum: 'demetHafta', odul: { coin: 500, anahtar: 2, puan: 12 } },
