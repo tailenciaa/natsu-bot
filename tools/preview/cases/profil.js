@@ -100,7 +100,7 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'otomatik', cover: 'yok' })],
+        components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'banner', cover: 'yok' })],
         files: [card('kapak.png', 400, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
@@ -108,12 +108,12 @@ module.exports = ({ mock, ui, src }) => {
     },
     {
       id: 'kapak-duzenleyici-gorsel',
-      title: 'Kapak düzenleyici: kaplama, görsel %180 yakın ve sağa/aşağı kaydırılmış',
+      title: 'Kapak düzenleyici: banner yerleşimi, görsel %180 yakın ve sağa/aşağı kaydırılmış',
       where: 'Düzenleyicide büyüt/kaydır düğmelerine basınca',
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, bannerFit: 'kapla', cover: 'cam' })],
+        components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, bannerFit: 'banner', cover: 'cam' })],
         files: [card('kapak.png', 400, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,

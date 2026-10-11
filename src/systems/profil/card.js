@@ -2,8 +2,8 @@
 // unvan ve sıralama/coin etiketleri; gövdede rozet şeridi, mesaj-ses seviye kutuları, on iki istatistik kutusu ve
 // biyografi + vitrin şeridi çizilir. Kutular temaya göre düz opak ya da yarı saydam "buzlu cam" panel olarak
 // çizilir; cam temalarda saydamlığı üye kendisi ayarlar (custom.glassOpacity). Kapak görseli büyütülüp dört yöne
-// kaydırılabilir (bannerZoom / bannerX / bannerY) ve "kapla" ya da "sığdır" yerleşiminden biriyle oturtulur
-// (bannerFit; boşsa görselin kendine göre otomatik seçilir). Çerçeveler kartın kenarına çizilir, yazılar
+// kaydırılabilir (bannerZoom / bannerX / bannerY) ve "banner" ya da "sığdır" yerleşiminden biriyle oturtulur
+// (bannerFit; boşsa banner'dır: görsel kapağın tamamını doldurur, kırpılan şeridi görselden seçilir). Çerçeveler kartın kenarına çizilir, yazılar
 // assets/fonts altındaki Poppins ile çizilir.
 //
 // Kart bilinçli olarak enlemesine geniş ve az bantlı: Discord sohbetteki görseli yüksekliğinden kıptığı için,

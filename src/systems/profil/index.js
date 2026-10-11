@@ -132,8 +132,8 @@ async function kapakAction(interaction, neylem) {
   else if (neylem === 'asagi') patch.bannerY = round2(clamp(y + PAN_STEP, -1, 1));
   else if (neylem === 'yukari') patch.bannerY = round2(clamp(y - PAN_STEP, -1, 1));
   else if (neylem === 'yerlesim') patch.bannerFit = FITS[(FITS.indexOf(fit) + 1) % FITS.length];
-  else if (neylem === 'sifirla') Object.assign(patch, { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'otomatik' });
-  else if (neylem === 'kaldir') Object.assign(patch, { banner: null, bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'otomatik' });
+  else if (neylem === 'sifirla') Object.assign(patch, { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'banner' });
+  else if (neylem === 'kaldir') Object.assign(patch, { banner: null, bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'banner' });
 
   store.set(interaction.user.id, patch);
   await interaction.update({ ...(await kapakPageMessage(interaction)), attachments: [], flags: core.EPHEMERAL_CV2 });
@@ -415,7 +415,7 @@ async function handleSettings(interaction) {
         bannerZoom: 1,
         bannerX: 0,
         bannerY: 0,
-        bannerFit: 'otomatik',
+        bannerFit: 'banner',
         glassOpacity: null,
         cover: 'yok',
         pronoun: null,

@@ -153,14 +153,14 @@ const bannerModal = (current) =>
     ]);
 
 // Kapak düzenleyici: kartın üst alanı tek başına çizilir, görsel buradan büyütülüp dört yöne kaydırılır ve
-// yerleşimi (otomatik / kapla / sığdır) değiştirilir. Görsel yokken hareket düğmeleri görünür kalır ama pasiftir
+// yerleşimi (banner / sığdır) değiştirilir. Görsel yokken hareket düğmeleri görünür kalır ama pasiftir
 // (önce görsel ya da arka plan gerekir). Sığdırmada yakınlaştırma işlemez; düğmeler yine satırda, pasif durur.
 function kapakPage(imageName, custom) {
   const zoom = Math.round((Number(custom.bannerZoom) || 1) * 100);
   const x = Math.round((Number(custom.bannerX) || 0) * 100);
   const y = Math.round((Number(custom.bannerY) || 0) * 100);
-  const fit = ['otomatik', 'kapla', 'sigdir'].includes(custom.bannerFit) ? custom.bannerFit : 'otomatik';
-  const fitLabel = { otomatik: 'Otomatik', kapla: 'Kapla', sigdir: 'Sığdır' }[fit];
+  const fit = custom.bannerFit === 'sigdir' ? 'sigdir' : 'banner';
+  const fitLabel = { banner: 'Banner', sigdir: 'Sığdır' }[fit];
   const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
   const hasImage = Boolean(custom.banner);
   const movable = hasImage && fit !== 'sigdir';
@@ -186,10 +186,8 @@ function kapakPage(imageName, custom) {
           !hasImage
             ? 'Kaydırma, yakınlaştırma ve yerleşim ancak bir kapak görselin olduğunda işler; görselleri mağazadan alabilirsin.'
             : fit === 'sigdir'
-              ? 'Sığdırmada görselin tamamı görünür; kenarlarda kalan yer aynı görselin koyulaştırılmış hâliyle doldurulur, böylece kapak baştan başa uzanır. Yakınlaştırma ve kaydırma bu yüzden kapalıdır.'
-              : fit === 'otomatik'
-                ? 'Otomatik yerleşimde kart görseline bakır: geniş bir görsel alanı doldurur, dik bir fotoğrafta görselin tamamı gösterilir.'
-                : 'Kaplamada görsel alanı tamamen doldurur, taşan kısım kırpılır.',
+              ? 'Sığdırmada görselin tamamı görünür; kenarlarda kalan yer aynı görselin koyulaştırılmış hâliyle doldurulur. Yakınlaştırma ve kaydırma bu yüzden kapalıdır.'
+              : 'Banner yerleşiminde görsel kapağın tamamını baştan başa doldurur; dik bir fotoğrafta hangi şeridin görüneceğini görselin kendisine bakarak bot seçer. Kaydırma düğmeleri bu kadrajı kendin düzeltmen içindir.',
         ]),
       ),
     )
