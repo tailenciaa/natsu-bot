@@ -54,7 +54,7 @@ const logEnabled = () => Boolean(config.channels.log);
 
 // Kapatma sebebi bölümü: kapanış mesajında, logda ve DM'de aynı görünür
 const reasonText = (closeReason) =>
-  closeReason ? fields(['**Kapatma Sebebi**', closeReason.label, closeReason.note ? quote(closeReason.note) : null]) : null;
+  closeReason ? fields(['### Kapatma Sebebi', closeReason.label, closeReason.note ? quote(closeReason.note) : null]) : null;
 
 // Log satırlarındaki kişi: etiket ve (biliniyorsa) kullanıcı adı
 const personText = (id, user) => `<@${id}>${user ? ` (\`${user.username}\`)` : ''}`;

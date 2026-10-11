@@ -49,7 +49,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
 
   const blocks = done
     ? [
-        fields(['**Yeni Yetkili**', `<@${user.id}> artık **yetkili ekibinde.**`, field('Yetkiyi Veren', `<@${by}>`)]),
+        fields(['### Yeni Yetkili', `<@${user.id}> artık **yetkili ekibinde.**`, field('Yetkiyi Veren', `<@${by}>`)]),
         `### Verilen Yetkiler\n${summary}`,
         `### Verilen Roller\n${roleIds.map((id) => `<@&${id}>`).join(' ')}${missingRoles ? '\nBazı yetkilerin **rolü henüz ayarlanmadığı** için o roller verilmedi.' : ''}`,
         stamp(),
@@ -121,7 +121,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
 // Yeni yetkiliye giden DM'lerin "Başlarken" bölümü: nerede ne yapacağı
 const guideText = () =>
   fields([
-    '**Başlarken**',
+    '### Başlarken',
     field('Komutlar', `Yetkili komutlarını <#${staffCommandChannel}> kanalında kullanabilirsin.`),
     field('Kurallar', `Yetkili kurallarını <#${config.guide.rules}> kanalından okuyabilirsin.`),
     field('İşleyiş', `Yetkili işleyişini <#${config.guide.info}> kanalından öğrenebilirsin.`),
@@ -161,7 +161,7 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
   const blocks = done
     ? [
         fields([
-          '**Yetkisi Kaldırılan**',
+          '### Yetkisi Kaldırılan',
           `<@${user.id}> artık ${all ? '**yetkili ekibinde değil.**' : '**seçilen yetkilere sahip değil.**'}`,
           field('Yetkiyi Kaldıran', `<@${by}>`),
         ]),

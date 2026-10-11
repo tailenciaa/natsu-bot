@@ -271,7 +271,7 @@ function postCard(request, trusted, banned) {
   return container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Paylaşım**', rows([['Paylaşan', `<@${request.requesterId}>`], ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`]])])),
+      text(fields(['### Paylaşım', rows([['Paylaşan', `<@${request.requesterId}>`], ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`]])])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -310,7 +310,7 @@ const requesterResult = (sonuc, request, by) =>
     .addTextDisplayComponents(
       text(
         fields([
-          '**Talep Bilgileri**',
+          '### Talep Bilgileri',
           rows([
             ['Talep', chip(`#${request.number}`)],
             ['Sunucu ID', chip(request.serverId)],
@@ -335,7 +335,7 @@ const serverBannedLog = (serverId, reason, by) =>
   noticeCard(
     'Sunucu Yasaklandı',
     'Bu sunucu **partner sisteminden yasaklandı**. Yasak kaldırılana kadar bu sunucuyla **partner yapılamaz** ve gelen talepler otomatik engellenir.',
-    ['**Yasak Bilgileri**', rows([['Sunucu ID', chip(serverId)], ['Yasaklayan', `<@${by}>`]])],
+    ['### Yasak Bilgileri', rows([['Sunucu ID', chip(serverId)], ['Yasaklayan', `<@${by}>`]])],
     reason,
   );
 
@@ -353,7 +353,7 @@ const renewalCancelledLog = (entry, staffId, reason) =>
   noticeCard(
     'Teklif İptal Edildi',
     'Teklifte bulunma süreci atanan yetkili tarafından **iptal edildi**. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
-    ['**Teklif Bilgileri**', rows([['Sunucu ID', chip(serverLabel(entry))], ['Yetkili', `<@${staffId}>`]])],
+    ['### Teklif Bilgileri', rows([['Sunucu ID', chip(serverLabel(entry))], ['Yetkili', `<@${staffId}>`]])],
     reason,
   );
 
@@ -377,7 +377,7 @@ function trustedList(entries, page = 0) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Liste Durumu**', field('Toplam', chip(`${entries.length} sunucu`)), `-# Sayfa ${current + 1} / ${pageCount}`])),
+      text(fields(['### Liste Durumu', field('Toplam', chip(`${entries.length} sunucu`)), `-# Sayfa ${current + 1} / ${pageCount}`])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -522,7 +522,7 @@ function trustedDetail(entry) {
     .addTextDisplayComponents(
       text(
         fields([
-          '**Kayıt Bilgileri**',
+          '### Kayıt Bilgileri',
           field('Eklenme', `<t:${unix(entry.addedAt)}:F>`),
           field('Ekleyen', `<@${entry.addedBy}>`),
           field('Partner Yetkilisi', contactsText(entry)),
@@ -570,7 +570,7 @@ function staffSelect(trustedId, members, statusOf) {
     .addTextDisplayComponents(
       text(
         fields([
-          '**Yetkili Seçimi**',
+          '### Yetkili Seçimi',
           'Bu teklifle **hangi partner yetkilisinin** ilgileneceğini menüden seç.',
           members.length > 25 ? 'Menüde **ilk 25 yetkili** listelenir.' : null,
         ]),
@@ -607,7 +607,7 @@ function assignedOfferDm(entry, startedBy) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['**Teklif Bilgileri**', field('Partner Sunucu', `\`${serverLabel(entry)}\``), startedBy ? field('Atayan', `<@${startedBy}>`) : null])),
+      text(fields(['### Teklif Bilgileri', field('Partner Sunucu', `\`${serverLabel(entry)}\``), startedBy ? field('Atayan', `<@${startedBy}>`) : null])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -756,7 +756,7 @@ function partnerPanel(entry, guildName) {
     .addTextDisplayComponents(
       text(
         fields([
-          '**Partner Bilgileri**',
+          '### Partner Bilgileri',
           field('Sunucu', `\`${serverLabel(entry)}\``),
           field('Partnerlik', `<t:${unix(entry.addedAt)}:D>`),
           field('Durum', chip(busy ? 'Meşgul' : 'Müsait')),

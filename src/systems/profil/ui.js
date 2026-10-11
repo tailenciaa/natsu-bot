@@ -442,12 +442,12 @@ function puanPage({ score, rank, size, top, you }) {
       sub: 'Puan; mesaj ve ses etkinliğinden, saygınlıktan, rozetlerden, koleksiyondan, giriş serisinden ve sunucuda geçen yıldan hesaplanır. Ceza puandan düşmez, yalnızca kazanılanlar sayılır.',
       blocks: [
         fields([`**${number(score.total)} / ${score.max} puan** · ${score.tier.label}`, rank ? `**Sunucu sırası:** ${core.chip(`#${rank}`)} ${size} üye arasından` : 'Sıra henüz hesaplanmadı.', hedef]),
-        fields(['**Rütbe merdiveni**', merdiven]),
+        fields(['### Rütbe merdiveni', merdiven]),
         fields([
-          '**Puanın nereden geldi**',
+          '### Puanın nereden geldi',
           ...score.parts.map((p) => `${p.label} ${core.chip(`${p.points} / ${p.max}`)} — ${p.note}`),
         ]),
-        fields(['**Sunucunun en yüksek puanları**', liste || 'Henüz puan tablosu hesaplanmadı.']),
+        fields(['### Sunucunun en yüksek puanları', liste || 'Henüz puan tablosu hesaplanmadı.']),
         'Coin için **/gunluk**, saygınlık için sohbet içinde **+rep**, seviye için mesaj ve ses; rozetlerinin ilerlemesini **Rozetler** sayfasından izleyebilir, kazandığın coinleri **Mağaza**dan kozmetiğe çevirebilirsin.',
       ],
     })
