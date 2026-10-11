@@ -337,6 +337,7 @@ async function openRoom(guild, app) {
     textChannelId: null, // eski odalarda ayrı yazı kanalı var; yenilerinde ses kanalının kendi sohbeti kullanılır
     applicationId: app.id,
     approvedBy: null,
+    guestSyncedAt: Date.now(), // açılışta @everyone kuralı kanala zaten yazılıyor, tamir gereksiz
     weeks: {}, // biten haftaların odadaki toplam sesi; ay sonu şart denetimi bundan okunur
     createdAt: Date.now(),
   });
@@ -835,17 +836,43 @@ async function handleCommand(interaction) {
 
 // ── Açılış ve kanal olayları ───────────────────────────────────────────────────
 
-// Bot kapalıyken silinmiş kanalların kayıtlarını temizler, sahip rollerini günceller, şart denetimlerini başlatır
-// ve başvuru panelini bilgi kanalına yerleştirir
+// Odaların açılacağı kategori @everyone'a kapalıysa odalar kimseye görünmez (kanal izni olsa bile kategori
+// görünürlüğü ön koşuldur); yönetici logdan anlasın
+async function checkCategoryVisibility(guild) {
+  if (!config.categoryId) return;
+  const category = await guild.channels.fetch(config.categoryId).catch(() => null);
+  if (!category) return console.error(`[kalıcı-oda] config.categoryId (${config.categoryId}) sunucuda bulunamadı, odalar sunucu köküne açılır.`);
+  if (!category.permissionsFor(guild.roles.everyone)?.has(PermissionFlagsBits.ViewChannel)) {
+    console.error(`[kalıcı-oda] "${category.name}" kategorisinde @everyone için Kanalı Görüntüle kapalı: kalıcı odalar kimseye görünmez.`);
+  }
+}
+
+// Odanın ses kanalarında @everyone kuralını yeniler: kanal görünür, bağlanmak ve sohbeti okumak kapalı
+async function syncGuestVisibility(guild, room) {
+  const channel = await guild.channels.fetch(room.voiceChannelId).catch(() => null);
+  if (!channel) return;
+  await channel.permissionOverwrites
+    .edit(guild.roles.everyone.id, asFlags(GUEST), { reason: 'Kalıcı oda: herkes görsün, bağlanamasın' })
+    .catch(hata('Odanın görünürlüğü güncellenemedi'));
+}
+
+// Bot kapalıyken silinmiş kanalların kayıtlarını temizler, sahip rollerini ve oda görünürlüğünü günceller, şart
+// denetimlerini başlatır ve başvuru panelini bilgi kanalına yerleştirir
 async function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (guild) {
+    await checkCategoryVisibility(guild);
     for (const room of store.roomsOf(guild.id)) {
-      const still = await guild.channels.fetch(room.categoryId).then(() => true, () => false);
+      const still = await guild.channels.fetch(room.voiceChannelId).then(() => true, () => false);
       if (!still) {
         store.deleteRoom(room.id);
         clearCooldowns(room.id);
         continue;
+      }
+      // Eski odalar @everyone'a tamamen kapalı açılmıştı; kural değiştiği için kanal bir kez düzeltilir
+      if (!room.guestSyncedAt) {
+        await syncGuestVisibility(guild, room);
+        store.updateRoom(room.id, { guestSyncedAt: Date.now() });
       }
       // Oda hâlâ var ama sahibi rolü bir şekilde düşmüşse (bot kapalıyken alınmış gibi) tamamlanır
       await giveOwnerRole(guild, room.ownerId);
@@ -863,14 +890,15 @@ async function handleReady(client) {
   });
 }
 
-// Bir kanal elle silinirse oda kapanmış sayılır: kalan kanallar temizlenir, kayıt ve sahip rolü düşürülür
+// Odanın ses kanalı elle silinirse oda kapanmış sayılır: kalan kanallar temizlenir, kayıt ve sahip rolü düşürülür.
+// Eski kayıtlarda kalan ayrı yazı kanalı silinirse oda kapanmaz, odanın kendisi duruyordur.
 async function handleChannelDelete(channel) {
   const room = store.roomOfChannel(channel.id);
   if (!room) return;
   clearCooldowns(room.id);
   store.deleteRoom(room.id);
   await takeOwnerRole(channel.guild, room.ownerId);
-  for (const key of ['categoryId', 'voiceChannelId', 'textChannelId']) {
+  for (const key of roomChannelKeys(room)) {
     if (room[key] === channel.id) continue;
     const leftover = await channel.guild.channels.fetch(room[key]).catch(() => null);
     if (leftover) await leftover.delete().catch(() => {});
