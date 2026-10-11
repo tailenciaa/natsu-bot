@@ -88,7 +88,7 @@ function startPrompt(authorId) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '## Oto Partner Nasıl Çalışır?\n' +
+        '### Oto Partner Nasıl Çalışır?\n' +
           "**Sunucu ID'ni** ve **partner metnini** gönderirsin.\n" +
           'Yetkili onaylayınca metnin **otomatik paylaşılır**.',
       ),
@@ -119,8 +119,8 @@ function startPromptSuccess(alreadyAccepted = false) {
     .addTextDisplayComponents(
       text(
         alreadyAccepted
-          ? '## Sıradaki Adım\nYetkililerin **kararını bekle**.'
-          : '## Sıradaki Adım\nSana gelen DM\'deki **Şartları Kabul Et** butonuna bas.',
+          ? '### Sıradaki Adım\nYetkililerin **kararını bekle**.'
+          : '### Sıradaki Adım\nSana gelen DM\'deki **Şartları Kabul Et** butonuna bas.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -172,7 +172,7 @@ function termsDm(acceptCustomId) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '## Şartlar\n' +
+        '### Şartlar\n' +
           '1. Reklam metni **Discord kurallarına** aykırı içerik barındıramaz.\n' +
           '2. Sunucular karşılıklı olarak **aynı gün içinde** birbirini paylaşır.\n' +
           '3. Onaylanan reklam metni **değiştirilemez**; değişiklik için yeni talep açılması gerekir.\n' +
@@ -215,7 +215,7 @@ function reviewCard(request, decided) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`## Partner Metni\n${quote(shorten(inert(request.text), 1500))}`));
+    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(inert(request.text), 1500))}`));
 
   if (decided) {
     const verdict =
@@ -224,7 +224,7 @@ function reviewCard(request, decided) {
         : decided.banned
           ? `<@${decided.by}> talebi **reddetti** ve sunucuyu **yasaklı listesine** aldı.`
           : `<@${decided.by}> talebi **reddetti**.`;
-    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Karar\n${verdict}`));
+    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Karar\n${verdict}`));
   }
 
   return container
@@ -255,7 +255,7 @@ function postCard(request, trusted, banned) {
     )
     .addSeparatorComponents(divider())
     // Bir mesajdaki toplam metin 4000 karakteri geçemez; kayıtlı metin tam kalır, kartta çok uzunsa kırpılır
-    .addTextDisplayComponents(text(`## Tanıtım Metni\n${shorten(sanitize(request.text), 2800)}`));
+    .addTextDisplayComponents(text(`### Tanıtım Metni\n${shorten(sanitize(request.text), 2800)}`));
 
   const files = request.files ?? [];
   const images = files.filter((f) => f.image);
@@ -326,7 +326,7 @@ const requesterResult = (sonuc, request, by) =>
 function noticeCard(title, sub, infoLines, reason) {
   const container = new ContainerBuilder().setAccentColor(colors.danger).addTextDisplayComponents(head(title, sub));
   if (infoLines.length) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(fields(infoLines)));
-  if (reason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Sebep\n${quote(reason)}`));
+  if (reason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Sebep\n${quote(reason)}`));
   return container;
 }
 
@@ -531,7 +531,7 @@ function trustedDetail(entry) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`## Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
+    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(...trustedActionRow(entry));
 }
@@ -628,7 +628,7 @@ function renewalReviewDm(entry) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`## Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
+    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -708,7 +708,7 @@ function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
   }
 
   // Bizim metni
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Bizim Sunucumuz\n${config.ourAdText}`));
+  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Bizim Sunucumuz\n${config.ourAdText}`));
 
 
   if (ourJumpUrl && ourJumpUrl !== partnerJumpUrl) {
@@ -766,7 +766,7 @@ function partnerPanel(entry, guildName) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '## Neler Yapabilirsin?\n' +
+        '### Neler Yapabilirsin?\n' +
           `**Meşgul** seçersen yetkililerimiz **${BUSY_DAYS} gün** boyunca sana teklif göndermez.\n` +
           'Yeni partner metnini **Teklif Gönder** butonuyla iletebilirsin; yetkilimiz onaylayınca **otomatik paylaşılır**.',
       ),

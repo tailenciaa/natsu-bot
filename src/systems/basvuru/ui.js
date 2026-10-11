@@ -210,8 +210,8 @@ function applicationNotice(app, applicantUser) {
       ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip başvuranı **Görüşmeye Çağır** ile sesli mülakata alabilir ya da **Reddet** ile başvuruyu sonuçlandırabilirsin; ilk çağıran yetkili başvuruyu üstlenir.'
       : 'Bu başvurunun bilgileri, cevapları ve güncel durumu burada listelenir. Başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenir ve son durumu gösterir.',
     [
-      `## Başvuran\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
-      `## Cevaplar\n${answersText(app.answers)}`,
+      `### Başvuran\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
+      `### Cevaplar\n${answersText(app.answers)}`,
       status,
     ],
     null,
@@ -283,8 +283,8 @@ function voiceSection(container, app, voice) {
     .addTextDisplayComponents(
       text(
         voice.waitingIn
-          ? `## Görüşme Kanalı\n<@${voice.staffId}> mülakat için seni şu an <#${voice.waitingIn}> kanalında **bekliyor.**\n${expiry}`
-          : `## Görüşme Kanalı\nMülakat için butonlardaki **ses kanallarından birine** katılabilirsin.\n${expiry}`,
+          ? `### Görüşme Kanalı\n<@${voice.staffId}> mülakat için seni şu an <#${voice.waitingIn}> kanalında **bekliyor.**\n${expiry}`
+          : `### Görüşme Kanalı\nMülakat için butonlardaki **ses kanallarından birine** katılabilirsin.\n${expiry}`,
       ),
     )
     .addSeparatorComponents(divider())
@@ -294,11 +294,11 @@ function voiceSection(container, app, voice) {
 // Reddedilen başvurana giden sonuç DM'si (onaylanana oryantasyon sistemi kendi DM'ini gönderir)
 function resultDm(app, guildName, reapplyAt) {
   const blocks = [
-    `## Başvuru Sonucu\nBaşvurun bu sefer **olumlu sonuçlanmadı.**\n` +
+    `### Başvuru Sonucu\nBaşvurun bu sefer **olumlu sonuçlanmadı.**\n` +
       (app.reviewedBy ? `#${pad(app.number)} numaralı başvurunu <@${app.reviewedBy}> değerlendirdi.` : `#${pad(app.number)} numaralı başvurun **otomatik olarak** reddedildi.`) +
       (reapplyAt ? ` **<t:${unix(reapplyAt)}:D>** tarihinden sonra tekrar başvurabilirsin.` : ' İleride tekrar başvurabilirsin.'),
   ];
-  if (app.note) blocks.push(`## Sebep\n${quote(app.note)}`);
+  if (app.note) blocks.push(`### Sebep\n${quote(app.note)}`);
   blocks.push(`-# ${guildName} - <t:${unix(app.reviewedAt)}:F>`);
 
   return card(
@@ -315,7 +315,7 @@ function meetingDm(app, guildName, voice) {
   const container = card(
     'Mülakata Davet Edildin',
     'Yetkili başvurun hakkında seninle sesli bir görüşme yapmak istiyor. Mülakat için hangi ses kanalına katılman gerektiği ve kanal erişiminin ne zaman kapanacağı bu mesajda yazıyor.',
-    [`## Davet\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n#${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
+    [`### Davet\n<@${app.meetingBy}> başvurun hakkında seninle sesli bir görüşme yapmak istiyor.\n#${pad(app.number)} numaralı başvurun için mülakat aşamasına geçildi.`],
     'warning',
   );
   if (voice) voiceSection(container, app, voice);
@@ -670,7 +670,7 @@ function connectingDm(app, guildName) {
   return page({
     title: 'Birazdan Bağlanıyoruz',
     sub: `${guildName} sunucusuna yaptığın yetkili başvurusuyla ilgili bir yetkili ses kanalına katılmak üzere; hazır ol ve kanalda kal.`,
-    blocks: [`## Başvuru Bilgileri\n**Başvuru:** #${pad(app.number)}\n<@${app.userId}>, birazdan bir yetkili bulunduğun ses kanalına **bağlanacak.** Kanalda kal ve hazır ol.`],
+    blocks: [`### Başvuru Bilgileri\n**Başvuru:** #${pad(app.number)}\n<@${app.userId}>, birazdan bir yetkili bulunduğun ses kanalına **bağlanacak.** Kanalda kal ve hazır ol.`],
   });
 }
 

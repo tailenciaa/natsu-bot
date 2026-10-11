@@ -214,7 +214,7 @@ function claimRequest(ticket) {
         ticket.closedBy && ticket.closeReason && ['Kapatma Sebebi', ticket.closeReason.label],
       ]),
       waiting ? `<@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
-      `## Konu\n${quote(ticket.reason)}`,
+      `### Konu\n${quote(ticket.reason)}`,
     ],
   }).addActionRowComponents(row);
 }
@@ -284,7 +284,7 @@ function openLog(ticket, channel, owner) {
         ['Talep Sahibi', personText(owner.id, owner)],
         ['Açılış', `<t:${unix(ticket.createdAt)}:F>`],
       ]),
-      `## Konu\n${quote(ticket.reason)}`,
+      `### Konu\n${quote(ticket.reason)}`,
     ],
   });
 }
@@ -304,7 +304,7 @@ function closeLog(ticket, closedBy, fileName, owner) {
         ['Açılış', `<t:${unix(ticket.createdAt)}:F>`],
         ['Kapanış', `<t:${unix(Date.now())}:F>`],
       ]),
-      `## Konu\n${quote(ticket.reason)}`,
+      `### Konu\n${quote(ticket.reason)}`,
       reasonText(ticket.closeReason),
     ],
   })

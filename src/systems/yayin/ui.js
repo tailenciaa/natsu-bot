@@ -10,7 +10,7 @@ const IDS = {
 };
 
 const RULES =
-  '## Yayın Kuralları\n' +
+  '### Yayın Kuralları\n' +
   '**+18, kan, şiddet** ve rahatsız edici içerik yayınlamak yasaktır.\n' +
   'Ekranında kendi ya da başkalarının **kişisel bilgilerini** göstermemeye dikkat et.\n' +
   'Yayında da **sunucu kuralları** geçerlidir, uymayanın yetkisi alınır.';

@@ -228,10 +228,10 @@ function punishmentDetail(p, messageId, canEdit, banner) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`## Ceza Bilgileri\n${info}`))
+    .addTextDisplayComponents(text(`### Ceza Bilgileri\n${info}`))
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`## Sebep\n${quote(p.reason)}`));
-  if (p.liftReason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`## Kaldırma Sebebi\n${quote(p.liftReason)}`));
+    .addTextDisplayComponents(text(`### Sebep\n${quote(p.reason)}`));
+  if (p.liftReason) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Kaldırma Sebebi\n${quote(p.liftReason)}`));
 
   const actions = [];
   if (canEdit && p.status === 'active' && p.expiresAt) actions.push(actionButton(p.userId, 'sure', p.id, messageId, 'Süre Ekle', ButtonStyle.Primary));
@@ -250,7 +250,7 @@ function typePicker(user, messageId, allowedTypes) {
   return pageBlocks({
     title: 'Ceza Ver',
     sub: 'Vermek istediğin ceza türünü menüden seçersin. Sonraki adımda sebebi ve gerekiyorsa süreyi bir formda yazarsın; ceza kişinin siciline işlenir ve kişiye DM ile bildirilir.',
-    blocks: [`## Ceza Verilecek Üye\n<@${user.id}> için **ceza türünü** menüden seç.`],
+    blocks: [`### Ceza Verilecek Üye\n<@${user.id}> için **ceza türünü** menüden seç.`],
   })
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -369,8 +369,8 @@ function punishDm(p, guildName) {
     sub: 'Sunucudaki davranışın nedeniyle hakkında bir işlem uygulandı. Cezanın türü, süresi ve sebebi bu mesajda; bir daha yaşanmaması için mesajı dikkatle oku.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
     blocks: [
-      `## Ceza Bilgisi\n**${guildName} sunucusunda ${t.verb}.**\n${detail}`,
-      `## Sebep\n${quote(p.reason)}`,
+      `### Ceza Bilgisi\n**${guildName} sunucusunda ${t.verb}.**\n${detail}`,
+      `### Sebep\n${quote(p.reason)}`,
       `-# Ceza #${p.number} - <t:${unix(p.createdAt)}:F>`,
     ],
   });
@@ -382,7 +382,7 @@ function liftDm(p, guildName) {
     sub: 'Sunucudaki cezan sona erdi, artık kısıtlaman yok. Kurallara uymaya devam ettiğin sürece iyi eğlenceler.',
     accent: colors.success,
     blocks: [
-      `## Ceza Bilgisi\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
+      `### Ceza Bilgisi\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezan ${p.status === 'expired' ? 'süresi dolduğu için sona erdi' : 'kaldırıldı'}.**`,
       `-# Ceza #${p.number} - <t:${unix(Date.now())}:F>`,
     ],
   });
@@ -394,7 +394,7 @@ function extendDm(p, extra, guildName) {
     sub: 'Sunucudaki aktif cezanın süresine ekleme yapıldı. Eklenen süreyi ve cezanın yeni bitiş zamanını bu mesajda görebilirsin.',
     accent: colors.warning,
     blocks: [
-      `## Ceza Bilgisi\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezana ${formatDuration(extra)} eklendi.**\n` +
+      `### Ceza Bilgisi\n**${guildName} sunucusundaki ${lower(TYPES[p.type].label)} cezana ${formatDuration(extra)} eklendi.**\n` +
         `**Yeni bitiş:** <t:${unix(p.expiresAt)}:F> (<t:${unix(p.expiresAt)}:R>)`,
       `-# Ceza #${p.number} - <t:${unix(Date.now())}:F>`,
     ],
@@ -419,7 +419,7 @@ function commandResult(p) {
     title: `${t.label} Uygulandı`,
     sub: 'Ceza uygulandı ve kullanıcının siciline işlendi. Kaydı /sicil komutuyla görebilir, ceza sürüyorsa numarasıyla /ceza-kaldir komutunu kullanarak kaldırabilirsin.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
-    blocks: [`## Ceza Bilgileri\n${infoRows(p)}`, `## Sebep\n${quote(p.reason)}`, stamp(p.createdAt)],
+    blocks: [`### Ceza Bilgileri\n${infoRows(p)}`, `### Sebep\n${quote(p.reason)}`, stamp(p.createdAt)],
   });
 }
 
@@ -428,7 +428,7 @@ function commandLift(p, byId, reason) {
     title: `${TYPES[p.type].label} Kaldırıldı`,
     sub: 'Kullanıcının aktif cezası yetkili tarafından kaldırıldı ve sicilinde sona ermiş olarak işlendi.',
     accent: colors.success,
-    blocks: [`## Ceza Bilgileri\n${infoRows(p, byId)}`, `## Sebep\n${quote(reason)}`, stamp()],
+    blocks: [`### Ceza Bilgileri\n${infoRows(p, byId)}`, `### Sebep\n${quote(reason)}`, stamp()],
   });
 }
 
@@ -436,7 +436,7 @@ function commandDelete(p, byId, reason) {
   return pageBlocks({
     title: 'Ceza Kaydı Silindi',
     sub: 'Ceza kaydı sicilden tamamen silindi ve artık kullanıcının sicilinde görünmeyecek.',
-    blocks: [`## Ceza Bilgileri\n${infoRows(p, byId)}`, `## Sebep\n${quote(reason)}`, stamp()],
+    blocks: [`### Ceza Bilgileri\n${infoRows(p, byId)}`, `### Sebep\n${quote(reason)}`, stamp()],
   });
 }
 

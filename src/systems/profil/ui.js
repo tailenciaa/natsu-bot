@@ -301,9 +301,9 @@ function rozetPage(list, earnedCount) {
           done.length ? done.map((b) => b.label).join(' · ') : 'Henüz rozetin yok; ilk hedefler mesaj ve ses seviyeleri.',
         ]),
         gorev.length
-          ? fields(['## Görev Rozetleri\nHedefe ulaşınca kartına rozetle birlikte sunucu rolü de verilir.', gorev.map(line).join('\n')])
+          ? fields(['### Görev Rozetleri\nHedefe ulaşınca kartına rozetle birlikte sunucu rolü de verilir.', gorev.map(line).join('\n')])
           : null,
-        normal.length ? fields(['## Diğer Rozetler', normal.map(line).join('\n')]) : null,
+        normal.length ? fields(['### Diğer Rozetler', normal.map(line).join('\n')]) : null,
       ],
     })
     .addActionRowComponents(new ActionRowBuilder().addComponents(geriButton()));

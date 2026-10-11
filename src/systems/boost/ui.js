@@ -43,13 +43,13 @@ function thanksDm(guildName, panelChannelId, perks) {
     title: 'Takviyen İçin Teşekkürler',
     sub: `${guildName} sunucusunu takviye ettiğin için **çok teşekkür ederiz**; takviyen sürdüğü sürece sana özel avantajlardan yararlanabilir ve bu mesajdaki bilgilerle hepsini kullanabilirsin.`,
     blocks: [
-      `## Avantajların\n${rows([
+      `### Avantajların\n${rows([
         ['Emoji Hakkı', chip(`${perks.emoji} emoji`)],
         ['Çıkartma Hakkı', chip(`${perks.sticker} çıkartma`)],
         ['Takma Ad', chip('panelden değişir')],
         ['Özel Rol', chip('panelden kurulur')],
       ])}`,
-      `## Nasıl Kullanırsın\n1. ${panelLine} üzerinden takma adını değiştir, kendi renginde ve emojinde rolünü kur.\n2. Emoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullan.\n3. Takviyen bitince takma adın ve özel rolün otomatik geri alınır.`,
+      `### Nasıl Kullanırsın\n1. ${panelLine} üzerinden takma adını değiştir, kendi renginde ve emojinde rolünü kur.\n2. Emoji için \`/emoji-ekle\`, çıkartma için \`/cikartma-ekle\` komutunu kullan.\n3. Takviyen bitince takma adın ve özel rolün otomatik geri alınır.`,
       stamp(),
     ],
   });
@@ -99,7 +99,7 @@ function panel(guild) {
     title: 'Booster İşlemleri',
     sub: '**Bu panel sadece sunucuyu takviye eden üyeler içindir.** Takviye ederek takma adını değiştirebilir, sana özel rol oluşturabilir veya diğer booster ayrıcalıklarından yararlanabilirsin.',
     thumbnail: guild?.iconURL({ size: 256 }),
-    blocks: [`## Booster Olmanın Avantajları\n${perkLines().join('\n')}`],
+    blocks: [`### Booster Olmanın Avantajları\n${perkLines().join('\n')}`],
   });
 
   if (config.banner) {
@@ -108,7 +108,7 @@ function panel(guild) {
 
   container
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`## İşlem Seçenekleri\n${optionLines()}`))
+    .addTextDisplayComponents(text(`### İşlem Seçenekleri\n${optionLines()}`))
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(ACTIONS.map((a) => new ButtonBuilder().setCustomId(a.id).setLabel(a.label).setStyle(ButtonStyle.Primary))),

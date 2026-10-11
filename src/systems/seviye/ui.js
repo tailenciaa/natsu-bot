@@ -12,8 +12,8 @@ function levelUpAnnounce(user, kind, level, role) {
     sub: 'Sohbette ve sesli kanallarda aktif oldukça XP kazanırsın; her 5 seviyede bir bu duyuru gelir ve o seviyeye ait rol hesabına otomatik olarak verilir.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
-      `## Yeni Seviye\n**Üye:** <@${user.id}>\n**Tür:** ${KIND_TITLE[kind]}\n**Seviye:** ${level}`,
-      role ? `## Kazanılan Rol\n<@&${role.id}> rolü hesabına verildi.` : null,
+      `### Yeni Seviye\n**Üye:** <@${user.id}>\n**Tür:** ${KIND_TITLE[kind]}\n**Seviye:** ${level}`,
+      role ? `### Kazanılan Rol\n<@&${role.id}> rolü hesabına verildi.` : null,
     ],
   });
 }

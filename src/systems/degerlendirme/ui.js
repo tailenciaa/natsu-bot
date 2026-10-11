@@ -131,31 +131,31 @@ function ratingNotice(rating, staffUser) {
     title = 'Değerlendirme Kaldırıldı';
     sub = 'Bu değerlendirme geçersiz sayılarak yetkilinin sicilinden çıkarıldı; kayıt bilgi amaçlı olarak burada duruyor ve artık yetkilinin puan ortalamasına hiçbir etkisi bulunmuyor.';
     status =
-      `## Durum\n<@${rating.staffId}> yetkilisinin aldığı değerlendirme geçersiz sayıldı.\n` +
+      `### Durum\n<@${rating.staffId}> yetkilisinin aldığı değerlendirme geçersiz sayıldı.\n` +
       (rating.removedAt
         ? `<@${rating.removedBy}> değerlendirmeyi sicilden kaldırdı.`
         : `<@${rating.reviewedBy}> itirazı onayladı, değerlendirme sicilden çıkarıldı.`);
   } else if (disputed) {
     title = 'İtiraz Edilen Değerlendirme';
     sub = 'Değerlendirilen yetkili bu puana itiraz etti ve itiraz liderlere iletildi; inceleme sonuçlanana kadar değerlendirme sicilde bekler, karar verildiğinde bu mesaj güncellenir.';
-    status = `## Durum\n<@${rating.staffId}> bu değerlendirmeye itiraz etti.\nİtiraz liderler tarafından inceleniyor.`;
+    status = `### Durum\n<@${rating.staffId}> bu değerlendirmeye itiraz etti.\nİtiraz liderler tarafından inceleniyor.`;
   } else {
     // Değerlendirmenin nereden geldiği "Kaynak" satırında
     title = 'Yeni Değerlendirme';
     sub = 'Bir üye aldığı hizmeti puanlayıp yorumunu bıraktı. Puan ve yorum yetkilinin sicilinde tutulur; yetkili butonlarla yorum ekleyebilir ya da haksız bulursa itiraz edebilir.';
-    status = `## Durum\n<@${rating.staffId}> yeni bir değerlendirme aldı.`;
+    status = `### Durum\n<@${rating.staffId}> yeni bir değerlendirme aldı.`;
   }
 
   const blocks = [
     status,
-    `## Değerlendirme Detayları\n${rows([
+    `### Değerlendirme Detayları\n${rows([
       ['Puan', removed ? `~~${score}~~` : score],
       ['Değerlendiren', `<@${rating.userId}>`],
       ['Kaynak', refText(rating)],
     ])}`,
-    rating.comment ? `## Yorum\n${quote(rating.comment)}` : '## Yorum\nYorum bırakılmadı.',
+    rating.comment ? `### Yorum\n${quote(rating.comment)}` : '### Yorum\nYorum bırakılmadı.',
   ];
-  if (rating.staffReply) blocks.push(`## Yetkili Yorumu\n${quote(rating.staffReply)}`);
+  if (rating.staffReply) blocks.push(`### Yetkili Yorumu\n${quote(rating.staffReply)}`);
 
   const container = page({
     title,
@@ -248,8 +248,8 @@ function replyDm(rating, guildName) {
     sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye **bir yorum ekledi**; yorumu ve hangi hizmet için kaç puan verdiğini bu mesajda görebilirsin.',
     accent: colors.success,
     blocks: [
-      `## Yorum Bilgileri\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
-      `## Yetkilinin Yorumu\n${quote(rating.staffReply)}`,
+      `### Yorum Bilgileri\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,
+      `### Yetkilinin Yorumu\n${quote(rating.staffReply)}`,
       `-# ${guildName} - <t:${unix(rating.repliedAt)}:F>`,
     ],
   });
@@ -305,11 +305,11 @@ function ratingComplaint(rating) {
     sub: 'Bir yetkili aldığı değerlendirmenin haksız olduğunu düşünerek itiraz etti; liderler itiraz sebebini ve değerlendirmeyi inceleyip onaylayabilir, reddedebilir ya da yetkiliyi görüşmeye çağırabilir.',
     accent: color,
     blocks: [
-      '## İtiraz Bilgileri\n' +
+      '### İtiraz Bilgileri\n' +
         `${rating.leaderRoleId ? `<@&${rating.leaderRoleId}>, ` : ''}<@${rating.staffId}> aldığı bir değerlendirmeye itiraz etti.\n` +
         `<@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
-      `## Değerlendirme\n**Kaynak:** ${refText(rating)}\n**Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : 'Yorum bırakılmadı.'}`,
-      `## İtiraz Sebebi\n${quote(rating.reportReason)}`,
+      `### Değerlendirme\n**Kaynak:** ${refText(rating)}\n**Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : 'Yorum bırakılmadı.'}`,
+      `### İtiraz Sebebi\n${quote(rating.reportReason)}`,
       status,
     ],
   });
@@ -335,10 +335,10 @@ function meetingDm(rating, guildName) {
     sub: 'Değerlendirmeye yaptığın itiraz bir lider tarafından incelendi ve seninle sesli bir görüşme yapılmasına karar verildi.',
     accent: colors.primary,
     blocks: [
-      '## Görüşme Bilgileri\n' +
+      '### Görüşme Bilgileri\n' +
         `<@${rating.meetingBy}> itirazın hakkında seninle sesli bir görüşme yapmak istiyor.\n` +
         `${refText(rating)} için aldığın değerlendirmeye yaptığın itiraz için görüşme yapılacak.`,
-      '## Nereye Geçmelisin?\n' +
+      '### Nereye Geçmelisin?\n' +
         (waitingIn
           ? `<@${rating.meetingBy}> görüşme için seni şu an <#${waitingIn}> kanalında bekliyor.`
           : 'Görüşme için ses kanallarından birine katıl; katılma butonları bu mesajda.'),
@@ -357,17 +357,17 @@ function ratingRequestDm(rating) {
     oryantasyon: {
       title: 'Oryantasyonunu Değerlendir',
       sub: 'Oryantasyonun tamamlandı. Yetkiliye yıldız vererek puanlayabilirsin; geri bildirimin yeni yetkililerin oryantasyonunu geliştirmemize yardımcı olur.',
-      block: `## Başvuru Bilgileri\n**Başvuru:** #${pad(rating.applicationNumber)}`,
+      block: `### Başvuru Bilgileri\n**Başvuru:** #${pad(rating.applicationNumber)}`,
     },
     partner: {
       title: 'Partner Sürecini Değerlendir',
       sub: 'Partner talebin yetkilimiz tarafından sonuçlandırıldı. Yetkiliye yıldız vererek puanlayabilirsin; geri bildirimin partner sürecimizi geliştirmemize yardımcı olur.',
-      block: `## Talep Bilgileri\n**Talep:** #${pad(rating.partnerNumber)}`,
+      block: `### Talep Bilgileri\n**Talep:** #${pad(rating.partnerNumber)}`,
     },
   }[rating.category] ?? {
     title: 'Görüşmeni Değerlendir',
     sub: 'Yetkili alım görüşmen tamamlandı. Yetkiliye yıldız vererek puanlayabilirsin; başvurunun sonucundan bağımsız olarak vereceğin geri bildirim bizim için değerli.',
-    block: `## Görüşme Bilgileri\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
+    block: `### Görüşme Bilgileri\n**${rating.guildName} sunucusundaki yetkili alım görüşmen tamamlandı.**\n**Başvuru:** #${pad(rating.applicationNumber)}`,
   };
   const sub = rated ? 'Puanın ilgili yetkiliye iletildi. Geri bildirimin için teşekkür ederiz.' : dm.sub;
   return ratingSection(page({ title: dm.title, sub, accent: colors.primary, blocks: [dm.block] }), rating);
@@ -384,8 +384,8 @@ function reviewDm(rating, guildName) {
     accent: approved ? colors.success : colors.danger,
     blocks: [
       approved
-        ? `## Sonuç\nDeğerlendirme sicilinden kaldırıldı.\n${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
-        : `## Sonuç\nDeğerlendirme sicilinde kalmaya devam ediyor.\n${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
+        ? `### Sonuç\nDeğerlendirme sicilinden kaldırıldı.\n${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> onayladı.`
+        : `### Sonuç\nDeğerlendirme sicilinde kalmaya devam ediyor.\n${refText(rating)} için yaptığın itirazı <@${rating.reviewedBy}> reddetti.`,
       `-# ${guildName} - <t:${unix(rating.reviewedAt)}:F>`,
     ],
   });

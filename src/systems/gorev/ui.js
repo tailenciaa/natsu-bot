@@ -80,7 +80,7 @@ function demetSection(demet) {
   else if (demet.alinabilir) b.setLabel('Demeti Al').setStyle(ButtonStyle.Success);
   else b.setLabel(`${demet.kalan} görev kaldı`).setStyle(ButtonStyle.Secondary).setDisabled(true);
   return new SectionBuilder()
-    .addTextDisplayComponents(core.text(`## Günün Demeti\nBugünün üç görevinin de ödülünü topladığında açılır.\n${odulCebi(config.DEMET)}`))
+    .addTextDisplayComponents(core.text(`### Günün Demeti\nBugünün üç görevinin de ödülünü topladığında açılır.\n${odulCebi(config.DEMET)}`))
     .setButtonAccessory(b);
 }
 
@@ -100,7 +100,7 @@ function yolSatiri(satir, index) {
 
 // Cüzdan şeridi: her sekmenin altında aynı satır durur, üye ödülün nereye gittiğini görür
 const cüzdan = ({ balance, anahtar }) =>
-  `## Cüzdanın\n${core.pills([['Bakiye', `${number(balance)} coin`], ['Anahtar', `${anahtar} adet · ${config.KUTU.anahtar} adedi 1 kutu`]])}`;
+  `### Cüzdanın\n${core.pills([['Bakiye', `${number(balance)} coin`], ['Anahtar', `${anahtar} adet · ${config.KUTU.anahtar} adedi 1 kutu`]])}`;
 
 // Panelin iskeleti: başlık ve açıklama, istenirse hemen altında geri bildirim satırı, bloklar, satırlar, cüzdan ve sekmeler
 function kabuk({ tab, title, sub, blocks = [], sections = [], rows, feedback, balance, anahtar, at }) {

@@ -41,12 +41,12 @@ function weeklyAnnounce(guild, results, roleId) {
     thumbnail: guild?.iconURL({ size: 256 }),
     blocks: [
       winner
-        ? `## Kazanan\n${rows([
+        ? `### Kazanan\n${rows([
             ['Kişi', `<@${winner.userId}>`],
             ['Toplam Saygınlık', chip(winner.value)],
             ['Ödül', `${roleText} rolü`],
           ])}`
-        : '## Henüz Kazanan Yok\nGeçen hafta kimse saygınlık kazanmadı.',
+        : '### Henüz Kazanan Yok\nGeçen hafta kimse saygınlık kazanmadı.',
     ],
   });
 }
