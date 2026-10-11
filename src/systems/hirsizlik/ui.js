@@ -1,7 +1,7 @@
 // Suç Dünyası mesajları: /sokak ile açılan "Arka Sokaklar" sayfası, /çal ile atılan pusu kartları ve sonuç kartları.
 // Sayfa komutla açıldığı için kanalda kalıcı ve herkese açıktır; pusular da öyledir — kurban direnme düğmesini
-// bulsun, toplum olup biteni görsün. Yakalanma ve soygun sonuçları ayrı mesaj değildir: pusu kartı yerinde
-// sonuç kartına döner, kanal dolmaz.
+// bulsun, toplum olup biteni görsün. Sonuçlar ayrı mesaj değildir: pusu kartı yerinde sonuç kartına döner, kanal
+// dolmaz. Yalnızca bekçi tarafından zamanında fark edilmeyen (kurban hiç dokunmayan) girişimler yeni mesajla anılır.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const core = require('../../core/ui');
 const { coin, number } = require('../coin/ui');
@@ -14,33 +14,39 @@ const IDS = {
   kefalet: 'hirsizlik:kefalet',
 };
 
-// Bekleme ve tahliye süreleri dakika/saat olarak okunur
+// Süreler okunur yazılır: dakikadan kısası saniyeyle, saati geçense saatle anılır
 const sure = (ms) => {
-  const total = Math.max(0, Math.floor((ms ?? 0) / 60000));
-  const hours = Math.floor(total / 60);
-  return hours ? `${hours} sa ${total % 60} dk` : `${total} dk`;
+  const sn = Math.max(0, Math.floor((ms ?? 0) / 1000));
+  if (sn < 60) return `${sn} sn`;
+  const dk = Math.floor(sn / 60);
+  if (dk < 60) return `${dk} dk`;
+  return `${Math.floor(dk / 60)} sa ${dk % 60} dk`;
 };
 
 const yuzde = (v) => `${Math.round(v * 100)}%`;
 
+// Tek girişimde el konulabilecek en fazla tavan: kurbanın o anki bakiyesinin üst oranı, mutlak tavanla dizginlenir.
+// Bakiye açıklanmaz, yalnızca riskin üst sınırı söylenir — kimsenin cüzdanı kamuya dökülmez.
+const riskHesabi = (balance) => Math.min(config.uye.tavan, Math.round(balance * config.uye.oran.max));
+
 // ── Arka Sokaklar sayfası ─────────────────────────────────────────────────────
 // Cüzdan şeridi: üye sayfada gezinirken parasını ve hakkını aramasın.
-function cuzdan({ balance, kalan, bekleme, at }) {
-  const siradaki = bekleme > at ? core.rel(bekleme) : 'şu an hazır';
+function cuzdan(state) {
+  const siradaki = state.bekleme > state.at ? core.rel(state.bekleme) : 'şu an hazır';
   return `### Cüzdanın\n${core.pills([
-    ['Bakiye', `${number(balance)} coin`],
-    ['Günün Hakkı', `${kalan} girişim`],
+    ['Bakiye', `${number(state.balance)} coin`],
+    ['Günün Hakkı', `${state.kalan} girişim`],
     ['Sıradaki Girişim', siradaki],
   ])}`;
 }
 
 function hapisBlok(state) {
   if (!state.hapis) {
-    return `### Sokaktasın\nİçeride değilsin; **Oyun Salonu** ve suç dünyası açık. Bugün **${state.gunluk} / ${config.gunlukAdet}** girişim yaptın.`;
+    return `### Sokaktasın\nİçeride değilsin; **/oyun** ve **/çal** açık. Bugün **${state.gunluk} / ${config.gunlukAdet}** girişim yaptın.`;
   }
-  const bedel = state.kefalet;
-  return `### İçeridesin\n**${state.hapisTur === 'kasa' ? 'Kasaya zorlama' : 'Üye soyma'}** girişiminden yakalandın. Tahliye ${core.rel(state.hapis)} içinde olur; o ana kadar **/oyun** ve **/çal** kapalı.` +
-    `\nKefaleti ödersen hemen çıkarsın: ${coin(bedel)} doğrudan Devletin Kasasına yazar, geri verilmez.`;
+  return `### İçeridesin\n**${state.hapisTur === 'kasa' ? 'Kasaya zorlama' : 'Üye soyma'}** girişiminden yakalandın. ` +
+    `Tahliye ${core.rel(state.hapis)} içinde olur; o ana kadar Oyun Salonu, keşif ve yeni suç kapalı.\n` +
+    `Kefaleti ödersen hemen çıkarsın: ${coin(state.kefalet)} doğrudan Devletin Kasasına yazar, geri verilmez.`;
 }
 
 function kasaBlok(state) {
@@ -50,55 +56,59 @@ function kasaBlok(state) {
     ? `Sıradaki kasa soygunu ${core.rel(state.kasaBekleme)} içinde olur.`
     : bos
       ? `Kasa ${coin(config.kasa.enAz)} altında; para birikmeden kasa hedef olmaz.`
-      : `Kasa hedef olabilir: tek elde ${coin(config.kasa.tavan)} kadarı dağılır.`;
-  return `### Devletin Kasası\n${coin(state.kasa)} — yakalananların cezeleri ve kefaletler burada birikir; ` +
+      : `Kasa hedef olabilir: tek elde en fazla ${coin(config.kasa.tavan)} dağılır.`;
+  return `### Devletin Kasası\n${coin(state.kasa)} — yakalananların cezeleri ve ödenen kefaletler burada birikir; ` +
     `soyulduğunda da buradan dağılır, yani kasa coin üretmez. ${durum}`;
 }
 
 function sicilBlok(state) {
   return `### Sicilin\n${core.rows([
-    ['Girişim', `${number(state.girisim)} girişim`],
-    ['Başarı', `${number(state.basari)} girişim`],
-    ['Yakalanma', `${number(state.yakalanma)} girişim`],
-    ['Direnç', `${number(state.direnis)} kez direndin`],
+    ['Girişim', `${number(state.girisim)} kez`],
+    ['Başarı', `${number(state.basari)} kez`],
+    ['Yakalanma', `${number(state.yakalanma)} kez`],
+    ['Direnç', `${number(state.direnis)} kez`],
     ['Avladığın', coin(state.avladigi)],
     ['Kaybın', coin(state.kaybi)],
   ])}`;
 }
 
-// Son girişimler: toplum neyin olduğunu görsün ki hem kurbanlar tedbirli hem saldırganlar tedirgin olsun
+// Toplum kayıt defteri: üye olup biteni tek sayfada görsün ki hem kurbanlar tedbirli hem saldırganlar tedirgin olsun
+const kayitSatiri = (k) => `**${k.saldirganAd}** → ${k.hedefAd}: ${k.sonuc}${k.miktar ? ` (${coin(k.miktar)})` : ''}`;
+
 function sonKayitlar(sicil) {
   if (!sicil.length) return `-# Son kayıt yok.`;
-  return sicil
-    .map((k) => `${sicirLine(k)}`)
-    .join('\n');
+  return sicil.map((k) => kayitSatiri(k)).join('\n');
 }
 
-const sicirLine = (k) => `**${k.saldirganAd}** → ${k.hedefAd}: ${k.sonuc}${k.miktar ? ` (${coin(k.miktar)})` : ''}`;
-
-function kurallarBloki() {
+function kurallarBloku() {
   return `### Nasıl İşler?\n` +
-    `1. **/çal kullanici** ile bir üyeyi hedef alırsın; kurbanın ${sure(config.uye.pencere)} süresi var.\n` +
-    `2. Kurban **Diren** düğmesine basarsa büyük olasılıkla yakalanırsın: ceza kasaya, hapis sana.\n` +
-    `3. Kurban basmazsa ${yuzde(config.uye.oran.min)} ile ${yuzde(config.uye.oran.max)} arasında coin onun cebinden seninkine geçer.\n` +
-    `4. **/çal kasa** riski büyük oyun: kartı gören herkes müdahale edebilir, ilk basan polistir.\n` +
-    `5. İçerideyken salona giremez, yeni suç işleyemezsin; kefalet tek erken çıkış yolun.`;
+    `1. **/çal kullanici** ile bir üyeyi hedef alırsın; kurbanın **${sure(config.uye.pencere)}** direnme süresi doğar.\n` +
+    `2. Kurban **Diren** düğmesine basarsa yüksek olasılıkla yakalanırsın: ceza kasaya yatar, hapis sana.\n` +
+    `3. Kurban dokunmazsa bakiyesinin **${yuzde(config.uye.oran.min)}-${yuzde(config.uye.oran.max)}** arası el değiştirir.\n` +
+    `4. **/çal kasa** daha büyük oyun: kartı gören herkes müdahale edebilir, ilk basan polistir.\n` +
+    `5. Seviyen her iki tarafta da ağırlık taşır: yüksek seviye daha az yakalanır, daha çok yakalatır.`;
 }
 
 function panel(state) {
+  const blocks = [
+    hapisBlok(state),
+    kasaBlok(state),
+    sicilBlok(state),
+    `### Son Girişimler\n${sonKayitlar(state.sicil)}`,
+    kurallarBloku(),
+  ];
   const container = core.page({
     title: 'Arka Sokaklar',
     sub: 'Burada coin üretilmez, el değiştirir: üye soymak parayı kurbanın cebinden çıkarır, kasa soymak cezalardan ' +
-      'biriken kasayı dağıtır. Seviyen hem kepenk hem kelepçe: yüksek seviyeli üye daha az yakalanır, daha çok yakalatır.',
-    blocks: state.feedback ? [state.feedback, hapisBlok(state), kasaBlok(state), sicilBlok(state), `### Son Girişimler\n${sonKayitlar(state.sicil)}`, kurallarBloki()]
-      : [hapisBlok(state), kasaBlok(state), sicilBlok(state), `### Son Girişimler\n${sonKayitlar(state.sicil)}`, kurallarBloki()],
+      'biriken kasayı dağıtır. Botun mesajına bakmak işe yarar — direnmezsen kaybedersin.',
+    blocks: state.feedback ? [state.feedback, ...blocks] : blocks,
     accent: state.feedback ? core.colors.success : undefined,
   });
 
   if (state.hapis) {
     container.addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(IDS.kefalet).setLabel(`Kefalet Ver ${number(state.kefalet)}`).setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(IDS.kefalet).setLabel(`Kefalet ${number(state.kefalet)}`).setStyle(ButtonStyle.Success),
       ),
     );
   }
@@ -111,31 +121,64 @@ function panel(state) {
 }
 
 // ── Pusu kartları ─────────────────────────────────────────────────────────────
-// Üye soyma girişi: kart kurbanın düğmesini taşır. Kurbanın bakiyesi açıklanmaz; ne kadar risk altında olduğunu
-// yüzde ve tavan ile bilmek yeterli.
-function pusu({ saldirgan, hedef, sonAt, balance, at = Date.now() }) {
-  const risk = Math.min(config.uye.tavan, Math.round(balance * config.uye.oran.max));
+// Üye soyma girişi: kart kurbanın düğmesini taşır. Düğme girişim numarasıyla gider ki eski bir karttan basıldığında
+// kayıt bulunamasın ve ödül üremesin.
+function pusu({ saldirgan, hedef, girisimId, sonAt, risk }) {
   return core
     .page({
       title: 'Pusu',
-      sub: `<@${saldirgan.id}> **<@${hedef.id}>** adlı üyeyi soymaya kalkıştı. Kurban ${core.rel(sonAt)} içinde direnmezse ` +
-        `bakiyesinin ${yuzde(config.uye.oran.min)}-${yuzde(config.uye.oran.max)} arası el değiştirir.`,
+      sub: `<@${saldirgan.id}> adlı üye **<@${hedef.id}>** kişisini soymaya kalkıştı. Kurban ${core.rel(sonAt)} içinde ` +
+        `direnmezse bakiyesinin ${yuzde(config.uye.oran.min)} ile ${yuzde(config.uye.oran.max)} arası el değiştirir.`,
       blocks: [
-        `### Tarafar\n${core.rows([
+        `### Taraflar\n${core.rows([
           ['Saldırgan', `<@${saldirgan.id}>`],
           ['Kurban', `<@${hedef.id}>`],
-          ['En Fazla Kayıp', coin(risk)],
-          ['Direnme', core.rel(sonAt)],
+          ['Göz Açtırmaz', coin(risk)],
+          ['Direnme Süresi', core.rel(sonAt)],
         ])}`,
       ],
       accent: core.colors.danger,
-      at,
     })
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.diren}PLACEHOLDER`).setLabel('Diren').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(`${IDS.diren}${girisimId}`).setLabel('Diren').setStyle(ButtonStyle.Danger),
       ),
-    );
+    )
+    .addSeparatorComponents(core.divider())
+    .addTextDisplayComponents(core.text(core.stamp()));
 }
 
-module.exports = { IDS, sure, yuzde, panel, pusu };
+// Kasa girişi: muhbir herkes olabilir, ilk basan polistir
+function kasaPusu({ saldirgan, girisimId, sonAt, kasa }) {
+  return core
+    .page({
+      title: 'Kasaya Zorlama',
+      sub: `<@${saldirgan.id}> Devletin Kasasını soymaya kalkıştı. Kasada ${coin(kasa)} var; müdahale edilmezse ` +
+        `${sure(config.kasa.pencere)} içinde ${coin(Math.min(config.kasa.tavan, kasa))} dağılır.`,
+      blocks: [
+        `### Müdahale\n${core.rows([
+          ['Saldırgan', `<@${saldirgan.id}>`],
+          ['Kasa', coin(kasa)],
+          ['İkramiye', coin(config.kasa.ikramiye)],
+          ['Pencere', core.rel(sonAt)],
+        ])}`,
+        'İlk basan yakalar; yakalarsan ikramiye kasadan sana yatar, yakalamazsan soygun yine de boşa gider.',
+      ],
+      accent: core.colors.warning,
+    })
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.mudahale}${girisimId}`).setLabel('Müdahale Et').setStyle(ButtonStyle.Primary),
+      ),
+    )
+    .addSeparatorComponents(core.divider())
+    .addTextDisplayComponents(core.text(core.stamp()));
+}
+
+// Sonuç kartı: pusunun yerini alır ya da bekçi tarafından yeni mesaj olarak anılır. Kazanan tarafın rengi kartta
+// okunur: saldırgan kazandıysa danger, direnç ya da müdahale işe yaradıysa success.
+function sonuc({ title, sub, pairs, user, accent = 'success', at = Date.now(), note }) {
+  return core.receipt({ title, sub, pairs, note, user, accent, at });
+}
+
+module.exports = { IDS, sure, yuzde, riskHesabi, panel, pusu, kasaPusu, sonuc };
