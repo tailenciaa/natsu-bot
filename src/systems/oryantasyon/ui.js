@@ -221,7 +221,7 @@ function panel(app, applicantUser) {
   if (step.type === 'final') {
     container.addSeparatorComponents(divider()).addTextDisplayComponents(text(levelText(app))).addActionRowComponents(levelMenu(app));
     const note = missingRolesText(app);
-    if (note) container.addTextDisplayComponents(text(note));
+    if (note) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(note));
   }
 
   const nav = new ActionRowBuilder().addComponents(
