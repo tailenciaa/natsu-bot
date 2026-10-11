@@ -87,7 +87,7 @@ const özetle = (kazananlar) => `**Ödül eklendi: ${kazananlar.join(' · ')}.**
 // ── Görev ödülleri ────────────────────────────────────────────────────────────
 // Üç akış da (günlük, haftalık, yol) aynı denetimi yapar: görev bu dönemin listesinde mi, hedef gerçekten dolu mu,
 // ödül daha önce alınmadı mı. Soru birinde bile "hayır"sa hiçbir şey ödenmez ve neden hemen söylenir.
-function alinabilirMi(satir, m, etiket) {
+function alinabilirMi(satir, etiket) {
   if (!satir) return { ok: false, hata: `Bu ${etiket} şu an listede değil.`, ipucu: 'Paneli tazelemek için sekmenin düğmesine tekrar bas; görevler yenilendiğinde liste kendiliğinden değişir.' };
   if (satir.alindi) return { ok: false, hata: 'Bu görevin ödülünü zaten topladın.', ipucu: `${etiket} yenilenince aynı görev yeniden alınabilir olur.` };
   if (!satir.bitti) {
@@ -99,7 +99,7 @@ function alinabilirMi(satir, m, etiket) {
 async function gunlukAl(interaction, key) {
   const userId = interaction.user.id;
   const m = olcum.olcumler();
-  const kontrol = alinabilirMi(olcum.gunlukDurum(userId, m).find((s) => s.gorev.key === key), m, 'günlük görev');
+  const kontrol = alinabilirMi(olcum.gunlukDurum(userId, m).find((s) => s.gorev.key === key), 'günlük görev');
   if (!kontrol.ok) return replyError(interaction, kontrol.hata, kontrol.ipucu);
 
   store.gunlukAl(userId, key, m.gun);
@@ -115,7 +115,7 @@ async function gunlukAl(interaction, key) {
 async function haftalikAl(interaction, key) {
   const userId = interaction.user.id;
   const m = olcum.olcumler();
-  const kontrol = alinabilirMi(olcum.haftalikDurum(userId, m).find((s) => s.gorev.key === key), m, 'haftalık görev');
+  const kontrol = alinabilirMi(olcum.haftalikDurum(userId, m).find((s) => s.gorev.key === key), 'haftalık görev');
   if (!kontrol.ok) return replyError(interaction, kontrol.hata, kontrol.ipucu);
 
   store.haftalikAl(userId, key, m.hafta);
@@ -128,13 +128,16 @@ async function demetAl(interaction) {
   const userId = interaction.user.id;
   const m = olcum.olcumler();
   const demet = olcum.demetDurumu(userId, m);
-  if (demet.alindi) return replyError(interaction, 'Günün demedini bugün zaten açtın.', 'Görevler gece yenilenince yeni demet de hazır olur.');
+  if (demet.alindi) return replyError(interaction, 'Günün demetini bugün zaten açtın.', 'Görevler gece yenilenince yeni demet de hazır olur.');
   if (!demet.alinabilir) return replyError(interaction, 'Demet için önce üç görevin ödülünü topla.', `Alınmayı bekleyen ${demet.kalan} görev var.`);
 
   store.demetVer(userId, m.gun);
   const kazanc = ode(userId, config.DEMET, config.sezonAnahtari(m.at), 'günün demeti');
-  const seri = store.rec(userId).demetGunleri.length;
-  return guncelle(interaction, 'gunluk', `**Günün demeti açıldı: ${kazanc.join(' · ')}.** Bugüne kadar ${seri} demet açtın; seri görevi bu sayıyı haftalık göreve çevirir.`);
+  return guncelle(
+    interaction,
+    'gunluk',
+    `**Günün demeti açıldı: ${kazanc.join(' · ')}.** Yarın da üç görevi bitirirsen bir demet daha gelir; haftanın demetleri seri görevine sayılır.`,
+  );
 }
 
 // Keşif Yolu tek düğmeyle toplanır: birden fazla adım birden bitmiş olabilir (ör. yol yeni açıldı), üye tek tek
@@ -161,10 +164,17 @@ async function sezonAl(interaction, index) {
   const userId = interaction.user.id;
   const m = olcum.olcumler();
   const sezon = config.sezonAnahtari(m.at);
-  const kademe = olcum.sezonDurumu(userId, m).kademeler[Number(index)];
+  const durum = olcum.sezonDurumu(userId, m);
+  const kademe = durum.kademeler[Number(index)];
   if (!kademe) return replyError(interaction, 'Bu sezon eşiği bulunmuyor.', 'Sezon sekmesini yeniden açmayı dene.');
-  if (kademe.alindi) return replyError(interaction, 'Bu eşiğin ödülünü bu ay zaten aldın.', 'Eşikler her ay başında yeniden açılır.');
-  if (!kademe.alinabilir) return replyError(interaction, 'Sezon puanın bu eşik için yetmiyor.', `${kademe.ad} eşiği ${number(kademe.puan)} puan ister, sende ${number(kademe ? m : 0) ? number(olcum.sezonDurumu(userId, m).puan) : 0} var.`);
+  if (kademe.alindi) return replyError(interaction, 'Bu eşiğin ödülünü bu ay zaten aldın.', 'Eşikler her ayın başında yeniden açılır.');
+  if (!kademe.alinabilir) {
+    return replyError(
+      interaction,
+      'Sezon puanın bu eşik için yetmiyor.',
+      `${kademe.ad} eşiği ${number(kademe.puan)} puan ister, sende ${number(durum.puan)} var. Puanlar görev ödüllerinden birikir.`,
+    );
+  }
 
   store.sezonKademeAl(userId, sezon, kademe.index);
   const kazanc = ode(userId, kademe.odul, sezon, `sezon: ${kademe.ad}`);

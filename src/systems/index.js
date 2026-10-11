@@ -30,6 +30,7 @@ module.exports = [
   require('./siralama'),
   require('./seviye'),
   require('./coin'), // /gunluk ve coin bakiyesi: etkinliklerden biriken para, profil kozmetiğinde harcanır
+  require('./gorev'), // /gorev: günlük ve haftalık görevler, Keşif Yolu, kutu ve sezon ödülleri (coin ve profilyle bağlı)
   require('./aktif'),
   require('./saygi'),
   require('./vip'),
