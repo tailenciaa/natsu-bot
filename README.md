@@ -41,7 +41,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/yardim` | Komutları kategorilere göre gösterir | Herkes |
 | `/sicil [kullanici]` | Üyenin sicilini gösterir | Herkes kendisininkini, yetkililer herkesinkini |
 | `/seviye [kullanici]` | Mesaj ve ses seviyesini kartla gösterir | Herkes |
-| `/profil [kullanici]` | Profil kartı: rozetler, seviye, vitrin ve kozmetikler (altındaki butonlarla biyografi, renk, kapak, panel görünümü, tema ve mağaza düzenlenir) | Herkes |
+| `/profil [kullanici]` | Geniş profil panosu: kapakta kimlik, rozetler, mesaj/ses seviyeleri, on iki istatistik kutusu (mesaj, ses, yayın, saygınlık, seri, ziyaret, katılım, hesap, sicil, takviye, kozmetik, toplam kazanç), biyografi ve vitrin. Altındaki butonlarla biyografi, renk, kapak, panel görünümü, tema ve mağaza düzenlenir | Herkes |
 | `/gunluk` | Günlük coin ödülünü toplar, art arda günlerle seri bonusu büyür; kazanç kartı kanala düşer | Herkes |
 | `/bakiye` | Coin cüzdanı: bakiye, kazanç, harcanan, seri ve mağazadan alınanlar (butonlarla mağaza ve siparişler açılır) | Herkes |
 | `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
@@ -123,4 +123,6 @@ node -e "process.env.GUILD_ID='1'; require('./src/systems')"   # bot yükleniyor
 - Kalıcı oda: `src/systems/kalici-oda/config.js` — başvuru panelinin ve başvuruların düşeceği kanallar, inceleyen rol, ekip rolü, odaların açılacağı kategori ile üye/ses süresi gereksinimleri. Kanal ID'leri boşsa başvuru alınmaz, panel gönderilmez.
 - Muhabbet odası: `src/systems/muhabbet/config.js` — sıra panelinin düşeceği kanal, odaların açılacağı kategori, ekibin görebileceği rol; sıra bekleme süresi, oda kişi/süre limitleri, boş oda kapanması ve tekrar sıraya girme beklemesi ile panelde yazılı kurallar. Panel kanalı boşsa panel gönderilmez, kategori boşsa odalar kategori üstünde açılır.
 - Panel tarzı temadan gelir: `themes.js` içinde `glass: true` olan temalar buzlu cam panel, ötekiler düz opak panel çizer. Cam temalarda saydamlığı üye kartın altındaki **Görünüm** sayfasından ayarlar (`custom.glassOpacity`, 0-100); düz temada düğmeler pasif durur.
+- Profil kartının tüm verisi `src/systems/profil/view.js`'ten gelir: seviye, sıralama, coin, saygınlık, sicil, takviye, ziyaret, kozmetik ve hesap yaşı tek geçişte toplanır. Kart (`card.js`) yalnızca çizer, depodan veri çekmez; kapak önizlemesi de aynı katmanı kullanır. Yeni bir sistem veri ürettiğinde profile tek eklendiği yer burasıdır.
+- Kapak görselinin yerleşimi üyenin seçimidir (`custom.bannerFit`): **kapla** alanı doldurur ve kaydırma/yakınlaştırma işler, **sığdır** görselin tamamını arka plan efektinin üstüne gösterir ve kaydırma pasifleşir, **otomatik** dik fotoğraflarda sığdıra, geniş görsellerde kaplamaya düşer. Düzenleyicideki **Yerleşim** düğmesi üçü arasında döner.
 - Botun rolü, verdiği rollerin (otorol, seviye, takviye, VIP vb.) üstünde olmalıdır.
