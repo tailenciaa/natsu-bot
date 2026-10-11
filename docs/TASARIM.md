@@ -96,8 +96,9 @@ küçüğüdür: başlık, altında tek cümlelik özet, çizgiyle ayrılmış `
 
 - `user` verilirse başlığın sağında üyenin avatarı durur.
 - **Görünürlük:** kazanç ve harcama kartları **herkese açık** gönderilir (`respond(..., { ephemeral: false })`, `<@üye>`
-  `allowedMentions.users` içinde tutulur) ki üye kazandığını göstersin; kart ayarı, sıra ve başvuru özeti gibi kişisel
-  işlemler **sadece kullanana** kalır. Hata ve reddetmeler `alert` olarak kişiye özel kalır, kart haline getirilmez.
+  `allowedMentions.users` içinde tutulur) ki üye kazandığını göstersin; kart ayarı, kendi durumu ve başvuru özeti gibi
+  kişisel işlemler **sadece kullanana** kalır (tam liste §6'da; karşı üyenin de görmesi gereken muhabbet sıra kartları
+  bunun dışındadır). Hata ve reddetmeler `alert` olarak kişiye özel kalır, kart haline getirilmez.
 - Herkese açık kart 3. tekil şahısla yazılır (`<@üye> ... topladı`), kişiye özel kart üyeye hitap eder (`... topladın`)
   ve @etiket içermez.
 - Sayılar `chip` içinde durur; başlık cümlesinde geçen ürün adı satırlarda yinelenmez.
@@ -161,22 +162,28 @@ Sayısal özetlerde her satıra bir `**Etiket:** \`kutu\`` yığını kurulmaz: 
 
 ## 6. Cevap politikası
 
-**Kural: botun verdiği her cevap herkese açıktır.** Gizli (kişiye özel) mesaj yalnızca iki durumda kullanılır: hata/reddetme ve bu belgede açıkça sayılan istisnalar. Yeni bir akış yazarken gizli olması için bir sebep arılmaz; `respond` varsayılan olarak açık verir, gizlilik `{ ephemeral: true }` ile **elle** istenir.
+**Kural: görünürlüğü içeriğin kime hitap ettiği belirler.** Yeni bir akış yazılırken iki soru sorulur: (1) bu cevap bir hatayı ya da reddi mi bildiriyor → **gizli**; (2) bu cevap yalnızca o üyenin kendi bilgisi ya da kendi tercihi mi → **gizli**; ikisi de değilse, yani cevabı başkaları da gördüğünde anlam kazanıyor ya da topluluğa düşen bir kaydın kendisiyse → **herkese açık**. `respond` varsayılan olarak açık verir; gizlilik `{ ephemeral: true }` ile **elle** istenir ve akış slash komutuyaysa bayrak defer anında da gizli verilir.
+
+Ölçüt "kimin işine yarıyor", kimin komutu kullandığı değildir. Bir satın alma kartı herkese açıktır çünkü sunucuda ne harcandığı kozmetiğin vitrinidir; aynı üyenin "şu an aktif bir cezan yok" kartı gizlidir çünkü başkasının önünde kendi ceza kaydını okuması ne üyeye ne topluluğa bir şey kazandırır. Kuralın eski hali ("her cevap açıktır") bu ikinci grubu da kanala döktü ve profil/ceza/rol cevaplarında kalabalık üretti; Ekim 2026'da iki sorulu hâle getirildi.
 
 | Durum | Görünürlük |
 | --- | --- |
-| İşlem sonucu ve onay kartları (satın alma, giyme, vitrin, başvuru, sıra, yayın yetkisi, `/gunluk`, `/bakiye`, siparişler) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs |
-| Bilgi komutları (seviye, profil, sıralama, sicil, yardım menüsü) | Herkese açık; gezinme butonları yine `isMenuOwner` ile sadece komutu kullanana çalışır |
-| Paneller, duyurular, loglar, talep mesajları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
+| İşlem sonucu ve onay kartları (satın alma, giyme, saygı, VIP, seviye/çekiliş duyuruları, `/gunluk`) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs |
+| Liste ve sıralama tabloları, paneller, duyurular, loglar, talep/ortaklık kartları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
+| Bilgi komutları (seviye, profil, sıralama, yardım menüsü) | Herkese açık; gezinme butonları yine `isMenuOwner` ile sadece komutu kullanana çalışır |
+| **Kendi durum bilgisi:** `/cezalarım` süre-sebep-itiraz kartları, `/sicil` detayı, `yenihesap` kısıt durumu, `/bakiye` cüzdanı ve siparişleri, kural kabul onayı, etiket/rozet/vitrin/mağaza/kapak sayfaları | Sadece kullanana |
+| **Kendi tercihi:** yayın ve partner görme rolü al/bırak, takviye takma adı, özel rol, renk ve simge seçimi, `partner-durum` müsaitliği, yetki verme/almada "DM gidemedi" uyarısı | Sadece kullanana |
+| **Kendi süreci:** destek talebi açıldı cevabı, kalıcı oda ve yetkili alım başvurusu alındı cevabı, "başvurana DM gönderilemedi" uyarısı, oto partner/yenileme "incelemeye gönderildi / son bir adım" cevapları, değerlendirme yorumu ve itirazı gönderildi cevabı | Sadece kullanana; sürecin kanaldaki kartı, inceleme kaydı ve sonuç DM'i eskisi gibi açık/özel kalır |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana (`replyError`) |
-| Kişisel düzenleyiciler: profil kapak ve görünüm sayfaları | Sadece kullanana (kodda `GİZLİ İSTİSNA` diye işaretli) |
-| Çekilişte "zaten katıldın" tekrarı ve bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanala düşer |
+| Çekilişte "zaten katıldın" tekrarı ve bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanalda düşer |
 | `/sicil` yetkili komut kanalı dışında (üye kendi sicilini bakıyor) | Sadece kullanana; ceza kaydı kanalda görünmez |
 | Test ve önizleme (`/seviye test`, `/aktif test`, `/saygi test`, `/etiket test`) | Sadece kullanana, etiket yok; asıl duyuru kanala düşer |
+| Muhabbet odası eşleşme/sıra kartları, özel oda içi işlemler | Açık kalır (bilgi iki tarafa da ya da odadakilerin hepsine lazımdır; gizli kart karşı üyeye ulaşmaz) |
 | Modallar (formlar) | Discord gereği zaten sadece açana görünür |
 
-- Görünürlük **defer anında kilitlenir**: `deferReply({ flags: core.CV2 })` ile açılan bir akışın sonundaki `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Akışın yarısı gizli yarısı açık kalamaz; bu yüzden gizli bir akış baştan gizli ertelenir, açık akış baştan açık.
-- Herkese açık kartlarda "sen" dili kullanılmaz: kartı okuyan kişi işlemi yapan değildir. Kart `receipt` ise `user` alanı avatarı taşır, `<@id>` etiketi başlık cümlesinde geçer.
+- Görünürlük **defer anında kilitlenir**: `deferReply({ flags: core.CV2 })` ile açılan bir akışın sonundaki `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Akışın yarısı gizli yarısı açık kalamaz; bu yüzden gizli bir akış baştan `core.EPHEMERAL_CV2` ile ertelenir, açık akış baştan açık.
+- Tam tersi de geçerli: `deferReply({ flags: core.EPHEMERAL_CV2 })` ile açılan akışın **her** cevabı `{ ephemeral: true }` taşımak zorunda; bayraklar uyuşmazsa Discord son düzenlemeyi reddeder. Buton/menü cevapları `followUp` ile gittiği için görünürlükleri defer'den bağımsızdır.
+- Herkese açık kartlarda "sen" dili kullanılmaz: kartı okuyan kişi işlemi yapan değildir. Kart `receipt` ise `user` alanı avatarı taşır, `<@id>` etiketi başlık cümlesinde geçer. Gizli kart doğrudan "sen" diye hitap eder.
 
 ## 7. Komut politikası
 
