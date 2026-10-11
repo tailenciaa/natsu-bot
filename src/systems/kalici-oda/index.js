@@ -842,6 +842,7 @@ module.exports = {
     [Events.ClientReady]: handleReady,
     [Events.ChannelDelete]: handleChannelDelete,
   },
-  // Zamanlayıcının çağırdığı iki denetim; yerel duman testi için dışarı açık (çerçeve bu alanı okumaz)
-  denetim: { checkWeeklyActivity, checkMonthlyActivity },
+  // Zamanlayıcının çağırdığı denetimler; yerel duman testi ve önizleme case'leri için dışarı açık
+  // (çerçeve bu alanı okumaz). Paneldeki şart durumu da aynı activityStats'ten gelir, iki ayrı hesap olmasın.
+  denetim: { checkWeeklyActivity, checkMonthlyActivity, activityStats, weeklyVoiceSeconds, monthKey, nextReviewAt },
 };
