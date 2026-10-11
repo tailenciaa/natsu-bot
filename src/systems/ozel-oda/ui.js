@@ -155,8 +155,8 @@ function guidePanel() {
     [
       '### Oda Sahibi Neler Yapabilir?',
       '1. Odayı **kilitleyerek** yeni girişleri durdurur, **gizleyerek** kanal listesinden saklar.',
-      '2. Kişi limitini ve odanın adını değiştirir; kişi limiti **0** ise oda sınırsızdır.',
-      '3. Odadaki üyeleri **atar**, tekrar girmesini **engeller** ya da sahipliği **devreder**.',
+      '2. **Üye Ekle** ile seçtiği üyeler oda kilitliyken de girebilir; **Üye Çıkar** o izni geri alır.',
+      '3. Kişi limitini ve odanın adını değiştirir; odadakileri **atar**, **yasaklar** ya da sahipliği **devreder**.',
     ].join('\n'),
     [
       '### Bilmen Gerekenler',

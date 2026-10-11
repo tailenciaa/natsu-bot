@@ -1,12 +1,14 @@
 // Özel oda sistemi (VoiceMaster benzeri): ayarlı "Özel Oda Oluştur" ses kanalına katılan üyeye otomatik kendi ses
 // kanalı açılır ve içine alınır. Kanalın kendi metin sohbetine sadece oda sahibinin kullanabildiği bir kontrol
-// paneli düşer: kilitle/aç, gizle/göster, kişi limiti, isim değiştir, kullanıcı at, kullanıcı yasakla, sahipliği
-// devret. Yasaklanan kullanıcı odadan atılır ve o oda silinene kadar tekrar giremez (at sadece anlık çıkarır,
-// kalıcı engellemez). Odada kimse kalmayınca kanal kendiliğinden silinir. Oluştur kanalına her girişte yeni bir
-// oda açılır; sahibi eski odasından ayrılıp sahipliği devretmediyse eski oda, içindeki diğer üyeler çıkana kadar
-// kendi başına kalır. Trolleri önlemek için her panel işleminin kısa bir beklemesi vardır. Oda sahibine kendi
-// odasında ayrı izin verilir, böylece kilitleyince ya da gizleyince kendisi dışarıda kalmaz.
-const { ChannelType, Events } = require('discord.js');
+// paneli düşer: kilitle/aç, gizle/göster, kişi limiti, isim değiştir, üye ekle, üyenin izni kaldır, kullanıcı at,
+// kullanıcı yasakla, sahipliği devret. Oda kilitlendiğinde @everyone'ın girişi kapanır, ama panelde **eklenen**
+// üyelerin kendi izni olduğu için girmeye devam eder. Yasaklanan kullanıcı odadan atılır ve o oda silinene kadar
+// tekrar giremez (at sadece anlık çıkarır, kalıcı engellemez). Odada kimse kalmayınca kanal kendiliğinden silinir.
+// Oluştur kanalına her girişte yeni bir oda açılır; sahibi eski odasından ayrılıp sahipliği devretmediyse eski oda,
+// içindeki diğer üyeler çıkana kadar kendi başına kalır. Trolleri önlemek için her panel işleminin kısa bir
+// beklemesi vardır. Oda sahibine kendi odasında ayrı izin verilir, böylece kilitleyince ya da gizleyince kendisi
+// dışarıda kalmaz.
+const { ChannelType, Events, OverwriteType } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
 const { guildId } = require('../../core/config');
@@ -27,6 +29,8 @@ const COOLDOWN_MS = {
   [ui.IDS.kick]: 3000,
   [ui.IDS.ban]: 3000,
   [ui.IDS.transfer]: 3000,
+  [ui.IDS.add]: 3000,
+  [ui.IDS.drop]: 3000,
 };
 const cooldowns = new Map(); // `${channelId}:${action}` -> bir sonraki kullanılabileceği zaman
 
@@ -83,7 +87,7 @@ async function createRoom(member) {
     }
 
     await channel
-      .send({ components: [ui.controlPanel(room, channel)], flags: core.CV2, allowedMentions: { parse: [] } })
+      .send({ components: [ui.controlPanel(room, channel, {}, accessOf(channel, room))], flags: core.CV2, allowedMentions: { parse: [] } })
       .catch(() => {});
   } finally {
     creating.delete(member.id);
@@ -135,9 +139,24 @@ function ownerError(interaction, room) {
   return null;
 }
 
+// Odada ayrı izni olan üyeler kanalın izin listesinden okunur: Connect'i kapatılan yasaklı, diğerleri davetlidir.
+// Sahibin kendi izni sayılmaz. Kaynak Discord'un kendisi olduğu için ayrıca bir üye listesi tutulmaz.
+function accessOf(channel, room) {
+  const invited = [];
+  const banned = [];
+  for (const over of channel.permissionOverwrites.cache.values()) {
+    if (over.type !== OverwriteType.Member || over.id === room.ownerId) continue;
+    (over.deny.has('Connect') ? banned : invited).push(over.id);
+  }
+  return { invited, banned };
+}
+
 // Panel mesajını (izin değişikliğinin önbelleğe geç yansımasına takılmadan) yeni durumla yeniden çizer
 const redraw = (interaction, room, state) =>
-  interaction.editReply({ components: [ui.controlPanel(room, interaction.channel, state)], allowedMentions: { parse: [] } });
+  interaction.editReply({
+    components: [ui.controlPanel(room, interaction.channel, state, accessOf(interaction.channel, room))],
+    allowedMentions: { parse: [] },
+  });
 
 // Panelin butonundan açılan formlar mesajı günceller; 3 saniye dolmadan cevap verilir, yavaş işler sonra yapılır
 const acknowledge = (interaction) => (interaction.isFromMessage() ? interaction.deferUpdate() : interaction.deferReply({ flags: core.CV2 }));
@@ -233,7 +252,6 @@ async function handleRenameSubmit(interaction) {
 }
 
 async function handleKick(interaction) {
-  const room = store.getRoom(interaction.channelId);
   const err = ownerError(interaction, room);
   if (err) return replyError(interaction, err);
   const targetId = interaction.values[0];
