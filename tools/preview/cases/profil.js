@@ -287,7 +287,7 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [p.puanPage({ score: skorDolu, rank: 4, size: 214, top: puanListesi({ rank: 4, total: skorDolu.total, tier: skorDolu.tier.label }) })],
+        components: [p.puanPage({ score: skorDolu, rank: 6, size: 214, top: puanListesi({ rank: 6, total: skorDolu.total, tier: skorDolu.tier.label }) })],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -295,18 +295,11 @@ module.exports = ({ mock, ui, src }) => {
     {
       id: 'puan-sayfasi-baslangic',
       title: 'Profil puanı sayfası: yeni üye, henüz hiçbir şey yok',
-      where: 'Sunucuya yeni giren üyede "Puanım" butonu',
+      where: 'Sunucuya yeni giren üyede "Puanım" butonu; ilk 10un dışındaki üye kendi satırını listenin altında görür',
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
-        components: [
-          p.puanPage({
-            score: skor.scoreOf({ mesajLevel: 1, sesLevel: 0, voiceHours: 0, streamHours: 0, rep: 0, owned: 0, streak: 1, visits: 0, days: 3 }, 0),
-            rank: 180,
-            size: 214,
-            top: puanSirasi,
-          }),
-        ],
+        components: [p.puanPage({ score: skorYeni, rank: 180, size: 214, top: puanListesi({ rank: 180, total: skorYeni.total, tier: skorYeni.tier.label }) })],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
