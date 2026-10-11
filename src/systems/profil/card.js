@@ -28,7 +28,6 @@ const {
   drawBar,
 } = require('../../core/canvas');
 const { measureCtx } = require('../../core/card');
-const levelConfig = require('../seviye/config');
 const { levelFromXp } = require('../seviye/level');
 const { coverOf, drawCover } = require('./kapak');
 const { resolveTheme } = require('./themes');
@@ -712,28 +711,26 @@ function paletteOf(theme, custom) {
 
 // view: { custom, roleColor, mesajXp, sesXp, mesajRank, sesRank, coins, joinedAt, accountAt, messageCount,
 //         voiceSeconds, streamSeconds, rep, streak, visits, punishments: {active,total}, premiumSince,
-//         ownedCount, earnedCoins, badges: [rozet], featured: {label,value}|null, links: [metin], frame }
+//         ownedCount, earnedCoins, badges: [rozet], featured: {label,value}|null, links: [metin], frame,
+//         score: {total,max,tier,next,parts}, scoreRank, scoreSize }
 // user: ad/zamir/avatar için discord.js üye ya da kullanıcı nesnesi.
 async function buildProfileCard(user, view) {
   const custom = view.custom;
   const theme = resolveTheme(custom, view.roleColor);
   const { scheme, accent, c, p } = paletteOf(theme, custom);
 
-  // Yükseklik çizimden önce bilinmeli: rozet satırları ve ızgarasının satır sayısı kartı uzatır
+  // Yükseklik çizimden önce bilinmeli: rozet satırları kartı uzatır
   const probe = measureCtx();
   const rows = badgeRows(probe, view.badges ?? [], WIDTH - PAD * 2);
   const badgesH = rows.length ? rows.length * BADGE_ROW_H + (rows.length - 1) * BADGE_ROW_GAP : 0;
-  const tiles = statTiles(view);
-  const tileRows = Math.ceil(tiles.length / TILE_COLS);
-  const tilesH = tileRows * TILE_H + (tileRows - 1) * TILE_GAP;
 
-  let y = HEADER + 26;
+  let y = HEADER + HEADER_GAP;
+  const skorY = y;
+  y += SKOR_H + GAP;
+  const stripY = y;
+  y += STRIP_H + GAP;
   const badgesY = y;
   if (rows.length) y += badgesH + GAP;
-  const levelsY = y;
-  y += LEVEL_H + GAP;
-  const tilesY = y;
-  y += tilesH + GAP;
   const footY = y;
   const height = footY + FOOT_H + BOTTOM;
 
@@ -762,18 +759,9 @@ async function buildProfileCard(user, view) {
 
   if (rows.length) drawBadges(ctx, rows, badgesY);
 
-  // Mesaj ve ses seviye kutuları yan yana, kartın genişliği ikisini birden rahat alır
-  const cardW = (WIDTH - PAD * 2 - GAP) / 2;
-  levelCard(ctx, PAD, levelsY, cardW, LEVEL_H, 'Mesaj Seviyesi', view.mesajXp, c);
-  levelCard(ctx, PAD + cardW + GAP, levelsY, cardW, LEVEL_H, 'Ses Seviyesi', view.sesXp, c);
-
-  // İstatistik ızgarası: altı kutu bir satır, iki satır
-  const tileW = (WIDTH - PAD * 2 - TILE_GAP * (TILE_COLS - 1)) / TILE_COLS;
-  tiles.forEach((tile, i) => {
-    const col = i % TILE_COLS;
-    const row = Math.floor(i / TILE_COLS);
-    statTile(ctx, PAD + col * (tileW + TILE_GAP), tilesY + row * (TILE_H + TILE_GAP), tileW, tile, c);
-  });
+  // Gövde iki alan ve rozet şeridinden oluşur: puman bandı, sayı şeridi, rozetler, alt şerit
+  drawSkor(ctx, skorY, view, c);
+  drawStrip(ctx, stripY, view, c);
 
   drawFoot(ctx, footY, view, c);
 
