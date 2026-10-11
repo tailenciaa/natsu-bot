@@ -27,6 +27,8 @@ const IDS = {
   kick: 'oda-at', // oda-at:0 (menünün prefixli yönlendirilmesi için sabit ek)
   ban: 'oda-yasakla', // oda-yasakla:0
   transfer: 'oda-devret', // oda-devret:0
+  add: 'oda-uye-ekle', // oda-uye-ekle:0
+  drop: 'oda-izni-kaldir', // oda-izni-kaldir:0
 };
 
 const isLocked = (channel) => channel.permissionOverwrites.cache.get(channel.guild.roles.everyone.id)?.deny.has('Connect') ?? false;
@@ -35,16 +37,17 @@ const isHidden = (channel) => channel.permissionOverwrites.cache.get(channel.gui
 // Üye seçim menüsü: Discord kendi arama kutusunu gösterir, oda üyelerinin listelenmesine ya da 25 sınırına gerek kalmaz
 const userSelect = (customId, placeholder) => new UserSelectMenuBuilder().setCustomId(customId).setPlaceholder(placeholder);
 
-// Odanın kendi ses kanalı sohbetine gönderilen, sadece oda sahibinin kullanabildiği kontrol paneli.
-// state: { locked, hidden } verilirse kanalın önbelleğindeki izinler yerine bunlar gösterilir (izin değişikliği önbelleğe
-// gecikmeli yansıdığı için işlemden hemen sonra yeni durum açıkça verilir)
-function controlPanel(room, channel, state = {}) {
+// Oda kontrol paneli: oda sahibinin ses kanalının sohbetinde durur.
+// state: { locked, hidden } verilirse kanalın önbelleğindeki izinler yerine bunlar gösterilir (izin değişikliği
+// önbelleğe gecikmeli yansıdığı için işlemden hemen sonra yeni durum açıkça verilir).
+// access: { invited, banned } odada ayrı izni olan üyelerin ID listeleridir; panelde üye menülerinin üstünde gösterilir.
+function controlPanel(room, channel, state = {}, access = { invited: [], banned: [] }) {
   const locked = state.locked ?? isLocked(channel);
   const hidden = state.hidden ?? isHidden(channel);
 
-  return page({
+  const container = page({
     title: 'Oda Kontrol Paneli',
-    sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini bu panelden yönetebilir; odadaki üyeleri atabilir, yasaklayabilir ya da odanın sahipliğini başka birine devredebilirsin.',
+    sub: 'Odanın kilidini, görünürlüğünü, kişi limitini ve ismini buradan yönetirsin. Odayı kilitlesen bile **eklediğin üyeler** girebilir; üyeleri çıkarır, yasaklar ya da sahipliği devredersin. Bu paneli sadece **oda sahibi** kullanabilir.',
     accent: locked ? colors.danger : colors.primary,
     blocks: [
       rows([
@@ -52,10 +55,12 @@ function controlPanel(room, channel, state = {}) {
         ['Kişi Limiti', chip(channel.userLimit ? `${channel.userLimit} kişi` : 'Sınırsız')],
         ['Durum', pills([['Kilit', locked ? 'Kilitli' : 'Açık'], ['Görünürlük', hidden ? 'Gizli' : 'Görünür']])],
       ]),
-      'Bu paneli sadece **oda sahibi** kullanabilir.',
-      stamp(room.createdAt),
+      accessBlock(access),
     ],
-  })
+  });
+
+  // Ayar düğmeleri üstte, üye menüleri altta; her menünün üstünde ne yaptığı yazar
+  container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -68,11 +73,40 @@ function controlPanel(room, channel, state = {}) {
         new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
       ),
-    )
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.kick}:0`, 'Atılacak üyeyi seç')))
-    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.ban}:0`, 'Yasaklanacak üyeyi seç')))
-    .addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${IDS.transfer}:0`, 'Yeni sahibi seç')));
+    );
+
+  const label = (caption) => container.addTextDisplayComponents(text(caption));
+  const menu = (caption, id) => {
+    container.addSeparatorComponents(divider());
+    label(caption);
+    return container.addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${id}:0`, menuHint(id))));
+  };
+
+  menu('### Üye Ekle\nSeçtiğin üye odana katılabilir; oda kilitli ya da gizliyken de girebilir.', IDS.add);
+  menu('### Üye Çıkar\nSeçtiğin üyenin odadaki ayrı izni silinir, odadaysa dışarı alınır. Yasaklı bir üyeyi seçersen yasağı kalkar.', IDS.drop);
+  menu('### Odadan At\nSeçtiğin üye odadan çıkarılır, izni kalır; istediği an geri girebilir.', IDS.kick);
+  menu('### Yasakla\nSeçtiğin üye bu oda silinene kadar odana giremez.', IDS.ban);
+  menu('### Sahipliği Devret\nOda seçtiğin üyeye geçer, sen odada kalırsın.', IDS.transfer);
+
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(room.createdAt)));
+}
+
+// Menünün ne istediği placeholderda yazar; başlık ve açıklama üstündeki metindedir
+const menuHint = (id) =>
+  ({
+    [IDS.add]: 'Odaya eklenecek üyeyi seç',
+    [IDS.drop]: 'İzni kaldırılacak üyeyi seç',
+    [IDS.kick]: 'Atılacak üyeyi seç',
+    [IDS.ban]: 'Yasaklanacak üyeyi seç',
+    [IDS.transfer]: 'Yeni sahibi seç',
+  })[id];
+
+// Odada ayrı izni olan üyeler: davetliler girer, yasaklılar giremez. Liste yoksa menünün ne işe yaradığı yazılır.
+function accessBlock({ invited, banned }) {
+  const parts = [];
+  if (invited.length) parts.push(`**Davetli:** ${invited.map((id) => `<@${id}>`).join(' ')}`);
+  if (banned.length) parts.push(`**Yasaklı:** ${banned.map((id) => `<@${id}>`).join(' ')}`);
+  return `### Odadaki İzinler\n${parts.length ? parts.join('\n') : 'Davet ettiğin ya da yasakladığın üye yok. Oda kilitliyken içeri girebilmesi için birini **Üye Ekle**.'}`;
 }
 
 function limitModal(current) {
