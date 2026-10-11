@@ -299,8 +299,9 @@ async function announce(guild, container) {
   await channel?.send({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } }).catch(hata('Oda bildirimi gönderilemedi'));
 }
 
-// Sahibine teslim kartını gönderir, odayı duyurur ve loglar
+// Sahibine teslim kartını gönderir, oda sahibi rolünü verir, odayı duyurur ve loglar
 async function deliver(guild, room) {
+  await giveOwnerRole(guild, room.ownerId);
   const owner = await guild.client.users.fetch(room.ownerId).catch(() => null);
   await owner?.send({ components: [ui.readyCard(room)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
   await announce(guild, ui.openedNotice(room));
