@@ -97,9 +97,9 @@ function applyPanel() {
 function memberPicker() {
   const container = page({
     title: 'Başvuru · Üye Seçimi',
-    sub: `Odayı birlikte kullanacak üyeleri aşağıdaki menüden seç. Seninle birlikte en az ${config.minMembers} kişi, en fazla ${
+    sub: `Odayı birlikte kullanacak üyeleri menüden seç. Seninle birlikte en az ${config.minMembers} kişi, en fazla ${
       config.maxExtraMembers + 1
-    } kişi gerekir; kendinizi seçme, başvuran otomatik odada.`,
+    } kişi gerekir; kendini seçmene gerek yok, başvuran otomatik odada.`,
     blocks: [
       `**Nasıl İlerlenir**\n${[
         '1. Menüyü aç ve odada olacak herkesi **tek seferde** seç (yeni seçim öncekinin yerini alır).',
