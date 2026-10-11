@@ -65,9 +65,11 @@ const YOL = [
 
 // Kutu: anahtar yakılır, ödül weighted tablodan çekilir. `garanti` sayılı kutuda kozmetik düşer; böylece
 // "hep coin çıktı" hissi oluşmaz ve anahtar biriktirmenin sonu hep bir kart süsüdür.
+// `kozmetikYedek`: üyenin aldığı türden tüm kozmetikler zaten sahipliğindeyse ödül coin'e döner, kutu boşa yanmasın.
 const KUTU = {
   anahtar: 3,
   garanti: 5,
+  kozmetikYedek: 600,
   hazinede: [
     { agirlik: 40, tur: 'coin', aralik: [120, 400] },
     { agirlik: 22, tur: 'coin', aralik: [400, 900] },
