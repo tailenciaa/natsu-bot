@@ -34,8 +34,7 @@ function entry(color, title, lines, details) {
   return container;
 }
 
-// "Detaylı Bilgi" butonuna basınca sadece basana görünen cevap: olayın tam zamanı, ilgili kişi/kanal ID'leri ve ek ayrıntılar
-
+// "Detaylı Bilgi" butonuna basınca log alt başlığında açılan cevap: olayın tam zamanı, ilgili kişi/kanal ID'leri ve ek ayrıntılar
 function detail(meta, categoryLabel) {
   const at = Math.floor(meta.at / 1000);
   const body = (meta.details.length ? meta.details : meta.lines).join('\n');
@@ -87,7 +86,7 @@ function jumpLink(category, thread) {
         .addTextDisplayComponents(
           text(
             `## ${category.label}\n` +
-              '-# Seçtiğin log kategorisinin alt başlığı hazır; yanındaki butona basarak doğrudan o alt başlığa gidebilir ve ilgili olay kayıtlarını orada inceleyebilirsin.',
+              'Seçtiğin log kategorisinin alt başlığı hazır; yanındaki butona basarak doğrudan o alt başlığa gidebilir ve ilgili olay kayıtlarını orada inceleyebilirsin.',
           ),
         )
         .setButtonAccessory(
