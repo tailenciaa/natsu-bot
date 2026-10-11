@@ -43,7 +43,7 @@ module.exports = ({ mock, src }) => {
   const noMentions = { allowedMentions: { parse: [] } };
 
   // Kartın geçtiği değerlendirme kanalı mesajı: itiraz/yorum durumları aynı mesajda güncellenir
-  const kart = (o) => d.ratingNotice(kayit({ score: 4, comment: 'Sorunumu hızlıca çözdü, teşekkürler.', ...o }), yetkili);
+  const kart = (o) => d.ratingNotice(kayit({ ticketNumber: 8, score: 4, comment: 'Sorunumu hızlıca çözdü, teşekkürler.', ...o }), yetkili);
 
   // Şikayet kanalı: lider rolü etiketlenir, karar butonları sonuçlanana kadar durur
   const sikayet = (o) => d.ratingComplaint(kayit({
