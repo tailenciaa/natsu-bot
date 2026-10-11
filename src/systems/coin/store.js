@@ -1,5 +1,6 @@
 // Coin cüzdanları: kullanıcı ID'si -> { coins: harcanabilir bakiye, earned: hiç harcanmadan biriken toplam,
-// streak: art arda günlük ödül alınan gün sayısı, lastClaimDay/lastClaimAt: en son ödülün gün anahtarı ve anı }.
+// streak: art arda günlük ödül alınan gün sayısı, lastClaimDay/lastClaimAt: en son ödülün gün anahtarı ve anı,
+// wins: gün anahtarı -> o gün tavana sayılı olarak kazanılan coin }.
 // Kazançlar az sayıda ve kullanıcı etkinliğine bağlı olduğu için her değişiklikte doğrudan kaydedilir (debounce'a gerek yok).
 // Satın almalar (purchases) aynı dosyada durur: harcanan coin'in neye gittiği üyenin kendisine gösterilir.
 const { data, save } = require('../../core/db');
@@ -9,6 +10,8 @@ data.coins ??= {};
 data.purchases ??= {};
 
 const DAY = 24 * 60 * 60 * 1000;
+// Oyun tavanı gün anahtarıyla sayılır; karşılaştırma bugün ve dünü gördüğü için üç gün yeter, fazlası atılır
+const WIN_KEEP = 3;
 
 // Gün anahtarı ve gün başlangıcı İstanbul saatiyle (Türkiye kalıcı saat dilimi kullandığı için +03:00 sabit)
 const dayKey = (ms) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
@@ -66,6 +69,47 @@ module.exports = {
   // Üyenin siparişleri: en yeni başta
   purchasesOf(userId) {
     return [...(data.purchases[userId] ?? [])].reverse();
+  },
+
+  // ── Oyun ve eğlence tavanı ──────────────────────────────────────────────────
+  // Keşif ganimeti, eğlence karşılığı ve kasa soygunu tek sayaca yazılır: gün başına config.winCap kadar coin
+  // ödenir, fazlası ödenmez. Kumarhane bahsi sayaca girmez — orada üye kendi parasını risk eder, yeni coin doğmaz.
+  // Sayıç gün anahtarıyla tutulur, gece bekçisi yoktur; eski günler atılır.
+  winStatus(userId, at = Date.now()) {
+    const gun = dayKey(at);
+    const kazanilan = data.coins[userId]?.wins?.[gun] ?? 0;
+    return { gun, kazanilan, kalan: Math.max(0, config.winCap - kazanilan), tavan: config.winCap };
+  },
+
+  // Tavana kadar öder. Talep tavanı aşıyorsa yalnızca kalan kadarı yatar, kesen dönen kayıtta görünür ki
+  // ödeyen sistem üyeye "tavanın doldu" diyebilsin.
+  addWin(userId, amount, reason = 'oyun', at = Date.now()) {
+    const istenen = Math.max(0, Math.floor(amount));
+    const { gun, kazanilan, kalan } = this.winStatus(userId, at);
+    const odenen = Math.min(istenen, kalan);
+    if (!odenen) return { istenen, odenen: 0, kesilen: istenen, kalan: 0, balance: this.balance(userId) };
+
+    const w = wallet(userId);
+    w.coins += odenen;
+    w.earned += odenen;
+    const wins = { ...(w.wins ?? {}), [gun]: kazanilan + odenen };
+    w.wins = Object.fromEntries(Object.entries(wins).sort((a, b) => b[0].localeCompare(a[0])).slice(0, WIN_KEEP));
+    save();
+    console.log(`[coin] ${userId}: +${odenen} (${reason}), bakiye ${w.coins}`);
+    return { istenen, odenen, kesilen: istenen - odenen, kalan: Math.max(0, config.winCap - (kazanilan + odenen)), balance: w.coins };
+  },
+
+  // Üye→üye para taşıma (soygun, ödül bahsi): alan tarafın "kazanç" hanesine yazılmaz, böylece rozetler ve
+  // birikim sayacı çalıntı parayı kendi emeği saymaz. Bakiye yetmiyorsa hiçbir şey taşınmaz.
+  transfer(fromId, toId, amount, reason = 'el değiştirme') {
+    const miktar = Math.floor(amount);
+    const source = data.coins[fromId];
+    if (!(miktar > 0) || !source || source.coins < miktar) return false;
+    source.coins -= miktar;
+    wallet(toId).coins += miktar;
+    save();
+    console.log(`[coin] ${fromId} -> ${toId}: ${miktar} (${reason})`);
+    return true;
   },
 
   // Bugüne kadar harcanan toplam
