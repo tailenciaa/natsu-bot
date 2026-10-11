@@ -126,8 +126,9 @@ function glass(ctx, x, y, w, h, r, c, tint = '255,255,255') {
   ctx.stroke();
 }
 
-// Kutunun yatay ortalanmış yeri: "kapla" alanı tamamen doldurur, "sığdır" görselin tamamını tema efektinin
-// üstüne yerleştirir. Dönen değer: görsel çizildi mi (false ise tema efekti çizilmiş olur).
+// Kutunun yatay ortalanmış yeri: "kapla" alanı tamamen doldurur, "sığdır" görselin tamamını gösterirken kapağın
+// geri kalanını aynı fotoğrafın koyulaştırılmış hâliyle doldurur. Dönen değer: görsel çizildi mi
+// (false ise tema efekti çizilmiş olur).
 async function drawBanner(ctx, custom, theme, p) {
   let image;
   try {
@@ -156,25 +157,35 @@ async function drawBanner(ctx, custom, theme, p) {
     return true;
   }
 
-  // Sığdır: tüm görsel görünür; kalan yere üyenin arka plan efekti çizilir ve görsel gölgeyle üstüne konur
-  drawCover(ctx, coverOf(custom.cover).effect ?? theme.effect, { x: 0, y: 0, w: WIDTH, h: HEADER }, p);
+  // Sığdır: görselin tamamı görünür ama boşluk tema efektiyle dolmaz — kapağın geri kalanı aynı fotoğrafın
+  // alanı dolduran, koyulaştırılmış hâlidir. Görsel çerçeveli bir kutu gibi ortada durmaz, kapak baştan başa
+  // uzar; ortadaki net dilimin kenarları da fona doğru karartılarak iki katman birbirine karıştırılır.
+  const fw = image.width * coverScale;
+  const fh = image.height * coverScale;
+  ctx.drawImage(image, (WIDTH - fw) / 2, (HEADER - fh) / 2, fw, fh);
+  ctx.fillStyle = 'rgba(8,5,10,0.66)';
+  ctx.fillRect(0, 0, WIDTH, HEADER);
+
   const scale = Math.min(WIDTH / image.width, HEADER / image.height);
   const w = image.width * scale;
   const h = image.height * scale;
   const x = (WIDTH - w) / 2;
   const y = (HEADER - h) / 2;
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.6)';
-  ctx.shadowBlur = 46;
-  ctx.shadowOffsetY = 12;
-  ctx.fillStyle = '#0a0608';
-  roundRect(ctx, x - 7, y - 7, w + 14, h + 14, 26);
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  roundRect(ctx, x, y, w, h, 20);
-  ctx.clip();
   ctx.drawImage(image, x, y, w, h);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  const feather = Math.min(w / 2, 260);
+  const blend = ctx.createLinearGradient(x, 0, x + w, 0);
+  const dark = 'rgba(8,5,10,0.72)';
+  blend.addColorStop(0, dark);
+  blend.addColorStop(feather / w, 'rgba(8,5,10,0)');
+  blend.addColorStop(1 - feather / w, 'rgba(8,5,10,0)');
+  blend.addColorStop(1, dark);
+  ctx.fillStyle = blend;
+  ctx.fillRect(x, y, w, h);
   ctx.restore();
   return true;
 }
