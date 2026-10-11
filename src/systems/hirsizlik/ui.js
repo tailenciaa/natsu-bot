@@ -133,7 +133,7 @@ function pusu({ saldirgan, hedef, girisimId, sonAt, risk }) {
         `### Taraflar\n${core.rows([
           ['Saldırgan', `<@${saldirgan.id}>`],
           ['Kurban', `<@${hedef.id}>`],
-          ['Göz Açtırmaz', coin(risk)],
+          ['Tek Seferde Risk', coin(risk)],
           ['Direnme Süresi', core.rel(sonAt)],
         ])}`,
       ],
