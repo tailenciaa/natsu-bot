@@ -291,6 +291,8 @@ function roomPanel(room, status, roster = []) {
   // Üye menüleri önde, oda ayar düğmeleri sonda; zaman damgası kartın en altında durur
   memberMenus(container, roster);
   return container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('### Oda Ayarı\nİsmini ve kişi limitini buradan değiştirirsin.'))
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
