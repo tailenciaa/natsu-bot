@@ -27,8 +27,8 @@ async function handleTake(interaction) {
   });
   if (!added) return replyError(interaction, 'Rol verilemedi.', 'Lütfen bir yetkiliye bildir.');
 
-  // KİŞİYE ÖZEL: kendi yayın yetkisini aldı/bırakt onayı yalnızca butona basanı ilgilendirir
-  return respond(interaction, ui.granted({ user: interaction.user }));
+  // SABİT PANEL KURALI: panel kalıcı, butona herkes basıyor — onay sadece basana görünür ki kanal dolmasın
+  return respond(interaction, ui.granted({ user: interaction.user }), { ephemeral: true });
 }
 
 async function handleLeave(interaction) {

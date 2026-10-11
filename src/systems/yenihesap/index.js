@@ -92,10 +92,11 @@ function handleChannelCreate(channel) {
   return syncVisibilityFor(channel, config.roleId);
 }
 
-// Üyenin kendi kısıt durumu başkalarını ilgilendirmez: kart yalnızca butona basana görünür
+// SABİT PANEL KURALI: panel kanalda kalıcı, butona herkes basıyor. Kalıcı bir cevap alt alta birikir ve paneli
+// yukarı iter; üye kendi kısıt durumunu ayrıca gizli tutmak zorunda da değil — cevap sadece basana görünür.
 function handleSure(interaction) {
   const hasRestriction = Boolean(config.roleId && interaction.member?.roles.cache.has(config.roleId));
-  return respond(interaction, ui.sureView(interaction.user, hasRestriction));
+  return respond(interaction, ui.sureView(interaction.user, hasRestriction), { ephemeral: true });
 }
 
 module.exports = {

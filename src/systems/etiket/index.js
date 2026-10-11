@@ -67,7 +67,7 @@ async function handlePreview(interaction) {
     primaryGuild: { tag: hasTag(user) ? user.primaryGuild.tag : 'ÖRNEK' },
   };
   // GİZLİ İSTİSNA: önizleme; asıl teşekkür kanala düşer, örnek sadece komutu kullanana görünür
-  return respond(interaction, ui.thanks(previewUser));
+  return respond(interaction, ui.thanks(previewUser), { ephemeral: true });
 }
 
 // Açılışta tüm üyeleri önbelleğe alır (sonraki etiket değişikliklerinin olay olarak gelmesi için) ve rolleri eşitler

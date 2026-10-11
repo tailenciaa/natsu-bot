@@ -1,7 +1,8 @@
 // Cezalarım paneli: #cezalarım kanalındaki sabit panelden üyeler kendi aktif cezalarının süresini ve sebebini
 // öğrenebilir, haksız bulduğu bir cezaya destek talebi açarak itiraz edebilir. Panel diğer sistemlerdeki gibi
-// bot açılınca kendiliğinden gönderilir (core/panel.js). Üyenin kendi cezası yalnızca ona görünür: sonuç
-// kartları, itiraz seçici ve hata mesajları gizli gider.
+// bot açılınca kendiliğinden gönderilir (core/panel.js). Panel SABİTTİR ve herkes basar: bu yüzden üyenin kendi
+// cezasını gösteren her cevap (sonuç kartları, itiraz seçici, hatalar) gizli gider — kalıcı olsalar panelin
+// altı mesaj birikir ve panel kaybolur.
 const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError } = require('../../core/helpers');
@@ -39,16 +40,17 @@ async function sendPanel(client) {
 const activePunishmentsOf = (interaction) =>
   sicilStore.of(interaction.guildId, interaction.user.id).filter((p) => p.status === 'active');
 
-// Kartlar kanalda kalıcı ve herkese açık: ceza zaten verilirken kanalda duyurulmuştu, burada gizlenecek yeni bir bilgi yok
+// SABİT PANEL KURALI: panel kanalda kalıcı durur ve herkes aynı butona basar; bu panelin ürettiği her cevap
+// gizlidir, aksi hâlde mesajlar alt alta birikir ve panel kaybolur
 const GIZLI = { ephemeral: true };
 
-const handleSure = (interaction) => respond(interaction, ui.sureView(activePunishmentsOf(interaction)));
-const handleSebep = (interaction) => respond(interaction, ui.sebepView(activePunishmentsOf(interaction)));
+const handleSure = (interaction) => respond(interaction, ui.sureView(activePunishmentsOf(interaction)), GIZLI);
+const handleSebep = (interaction) => respond(interaction, ui.sebepView(activePunishmentsOf(interaction)), GIZLI);
 
 // "Cezaya İtiraz Et": aktif ceza yoksa uyarır, varsa seçme menüsünü gösterir
 function handleItiraz(interaction) {
   const active = activePunishmentsOf(interaction);
-  return respond(interaction, active.length ? ui.itirazPicker(active) : ui.itirazNoneView());
+  return respond(interaction, active.length ? ui.itirazPicker(active) : ui.itirazNoneView(), GIZLI);
 }
 
 // Seçme menüsü: seçilen ceza için itiraz sebebi formu açılır
