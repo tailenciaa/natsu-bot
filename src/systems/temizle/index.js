@@ -1,6 +1,6 @@
 // Mesaj temizleme: /sil <sayı> komutunu kullanılan kanalda en son mesajlardan o sayıda siler.
 // Discord toplu silmede 14 günden eski mesajları silemez ve tek seferde en fazla 100 mesaj siler.
-const { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { staffPermission } = require('../../core/config');
 const { respond, replyError } = require('../../core/helpers');
@@ -27,7 +27,7 @@ async function handleSil(interaction) {
   }
 
   const amount = interaction.options.getInteger('sayi', true);
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
 
   // true: 14 günden eski mesajlar sessizce atlanır
   const deleted = await channel.bulkDelete(amount, true).catch((err) => {
