@@ -306,4 +306,6 @@ module.exports = {
   slash: { gorev: handleCommand },
   prefixed: [[ui.IDS.prefix, handle]],
   events: { [Events.InteractionCreate]: observe },
+  // Cüzdan kartındaki Görevler düğmesi aynı paneli açar: paneli bir daha çizdirmek yerine tek kaynak okunur
+  panelFor,
 };
