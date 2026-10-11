@@ -172,6 +172,7 @@ module.exports = {
           "heading": "Oda sahibi olarak yapabileceklerin",
           "items": [
             "Odayı **kilitleyebilir** ya da **gizleyebilirsin**",
+            "**Üye ekleyebilir** ve eklediğin üye oda kilitliyken de girebilir",
             "**İsmini** ve **kişi limitini** değiştirebilirsin",
             "İstemediğin birini **atabilir** ya da **yasaklayabilirsin**",
             "Odanın **sahipliğini** başkasına devredebilirsin"
