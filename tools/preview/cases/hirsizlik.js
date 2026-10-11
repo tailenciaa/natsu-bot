@@ -12,7 +12,7 @@ module.exports = ({ mock, ui, src }) => {
   const coinStore = src('systems/coin/store');
   const seviyeStore = src('systems/seviye/store');
   const seviyeConfig = src('systems/seviye/config');
-  const { number, coin } = src('systems/coin/ui');
+  const { coin } = src('systems/coin/ui');
 
   const noMentions = { allowedMentions: { parse: [] } };
 
@@ -281,7 +281,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: kasada soymalık para yok',
       'Kasa yeni boşaltılmışken /çal kasa denemesinde',
       'Kasa soyulacak kadar dolu değil.',
-      `Kasada en az ${number(config.kasa.enAz)} gerekir; ceza ve kefalet gelirleriyle dolar.`,
+      `Kasada en az ${coin(config.kasa.enAz)} gerekir; ceza ve kefalet gelirleriyle dolar.`,
     ),
     hataCase(
       'hata-acik-pusu',
@@ -295,7 +295,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: kefaleti karşılayacak coin yok',
       'İçerideki perişan üyenin Kefalet Ver düğmesinde',
       'Kefaleti karşılayacak coinin yok.',
-      `Bedel ${number(garibanDurum.kefalet)}; cüzdanında ${number(coinStore.balance(gariban.uid))} coin var. Tahliye ${ui.rel(garibanDurum.hapis)} içinde kendiliğinden gelir.`,
+      `Bedel ${coin(garibanDurum.kefalet)}; cüzdanında ${coin(coinStore.balance(gariban.uid))} var. Tahliye ${ui.rel(garibanDurum.hapis)} içinde kendiliğinden gelir.`,
     ),
   ];
 
