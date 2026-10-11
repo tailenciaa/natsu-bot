@@ -21,8 +21,17 @@ module.exports = ({ mock, ui, src }) => {
   ];
   const noMentions = { allowedMentions: { parse: [] } };
   const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
-  // Kart genişliği card.js'teki WIDTH ile aynı; yükseklik rozet satırına göre değişir (1014 / 956)
+  // Kart genişliği card.js'teki WIDTH ile aynı; yükseklik rozet satırına göre değişir (1044 / 990 / 928)
   const card = (name, height, label) => mock.pngFile(name, { width: 1800, height, label });
+  // Puan sayfası: gerçek hesap skoru skor.js'ten gelir, ölçümler elle verilir ki dolu/boş durum görünsün
+  const skor = src('systems/profil/skor');
+  const skorOlcum = { mesajLevel: 42, sesLevel: 28, voiceHours: 310, streamHours: 46, rep: 61, owned: 5, streak: 9, visits: 118, days: 430 };
+  const puanSirasi = [
+    { rank: 1, name: 'zeynep', total: 968, tier: 'Destan' },
+    { rank: 2, name: 'ahmet', total: 880, tier: 'Efsane' },
+    { rank: 3, name: 'Mehmet', total: 663, tier: 'Saygın', you: true },
+    { rank: 4, name: 'elif', total: 640, tier: 'Saygın' },
+  ];
 
   // Mağaza satırları: index.js'teki shopRows aynı biçimde üretilir, burada statik veriyle denenir
   const shopRows = (items) =>
@@ -43,7 +52,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, herkese açık; kontrolleri sadece sahibi kullanır',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 1014, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, 'gece')], files: [card('profil.png', 1044, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-sahibi-temasiz',
@@ -51,7 +60,7 @@ module.exports = ({ mock, ui, src }) => {
       where: '/profil komutu, ilk açılış ya da Sıfırla sonrası',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 1014, 'Profil kartı')], ...noMentions }),
+      build: () => ({ components: [p.profile('profil.png', true, null)], files: [card('profil.png', 1044, 'Profil kartı')], ...noMentions }),
     },
     {
       id: 'profil-baskasi',
@@ -101,7 +110,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.kapakPage('kapak.png', { bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'banner', cover: 'yok' })],
-        files: [card('kapak.png', 400, 'Kapak önizlemesi')],
+        files: [card('kapak.png', 380, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -114,7 +123,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/ornek.png', bannerZoom: 1.8, bannerX: 0.4, bannerY: -0.2, bannerFit: 'banner', cover: 'cam' })],
-        files: [card('kapak.png', 400, 'Kapak önizlemesi')],
+        files: [card('kapak.png', 380, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -127,7 +136,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.kapakPage('kapak.png', { banner: 'https://i.imgur.com/dik-foto.png', bannerZoom: 1, bannerX: 0, bannerY: 0, bannerFit: 'sigdir', cover: 'aurora' })],
-        files: [card('kapak.png', 400, 'Kapak önizlemesi')],
+        files: [card('kapak.png', 380, 'Kapak önizlemesi')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -140,7 +149,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.gorunumPage('profil.png', { themeLabel: THEMES.nebula.label, glass: true, opacity: 30 })],
-        files: [card('profil.png', 1014, 'Profil kartı')],
+        files: [card('profil.png', 1044, 'Profil kartı')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
@@ -153,7 +162,7 @@ module.exports = ({ mock, ui, src }) => {
       kind: 'message',
       build: () => ({
         components: [p.gorunumPage('profil.png', { themeLabel: THEMES.sakura.label, glass: false, opacity: 50 })],
-        files: [card('profil.png', 1014, 'Profil kartı')],
+        files: [card('profil.png', 1044, 'Profil kartı')],
         flags: ui.EPHEMERAL_CV2,
         ...noMentions,
       }),
