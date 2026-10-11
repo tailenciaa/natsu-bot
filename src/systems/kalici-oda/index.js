@@ -25,6 +25,32 @@ const DAY = 24 * 60 * 60 * 1000;
 const CHECK_INTERVAL = 15 * 60 * 1000;
 const submitting = new Set();
 
+// Başvurunun üye seçimi ile formu iki adımdır: Discord modallerinde menü olmadığı için üyeler formdan önce seçilir.
+// Menüden seçilenler burada bekletilir; bot yeniden başlarsa taslak düşer ve başvuru baştan başlatılır.
+const DRAFT_TTL = 30 * 60 * 1000;
+const drafts = new Map(); // `${sunucu}:${üye}` -> { members: [üye ID], at }
+
+function getDraft(key) {
+  const draft = drafts.get(key);
+  if (!draft) return null;
+  if (Date.now() - draft.at > DRAFT_TTL) {
+    drafts.delete(key);
+    return null;
+  }
+  return draft;
+}
+
+// Menünün seçtikleri taslağa eklenir (menü her seçimde sadece kendi satırlarını döndürür, bu yüzden birikir);
+// başvuranın kendisi sayılmaz, sınır aşılırsa kesilir
+function mergeDraft(key, ownerId, picked) {
+  const draft = getDraft(key) ?? { members: [], at: Date.now() };
+  for (const id of picked) if (id !== ownerId && !draft.members.includes(id)) draft.members.push(id);
+  draft.members = draft.members.slice(0, config.maxExtraMembers);
+  draft.at = Date.now();
+  drafts.set(key, draft);
+  return draft;
+}
+
 // Panel işlemlerine art arda basıp oda yönetimini kilitlemeyi engelleyen kısa beklemeler
 const COOLDOWN_MS = {
   [ui.IDS.rename]: 15000,
@@ -54,6 +80,12 @@ const hata = (what) => (err) => {
   console.error(`[kalıcı-oda] ${what}:`, err.message);
   return null;
 };
+
+// Oda erişiminin kuralı: kanal herkesin gözünde açık, ama bağlanmak ve sohbeti okumak yalnız odadakilerin işi.
+// Kanal açılırken allow/deny listesi, sonradan düzenlenirken { izin: true/false } gerekir; asFlags ikisini kurar.
+const GUEST = { allow: ['ViewChannel'], deny: ['Connect', 'SendMessages', 'ReadMessageHistory'] };
+const MEMBER = { allow: ['ViewChannel', 'Connect', 'SendMessages', 'ReadMessageHistory'], deny: [] };
+const asFlags = ({ allow, deny }) => Object.fromEntries([...allow.map((p) => [p, true]), ...deny.map((p) => [p, false])]);
 
 // Oda sahibi rolü: odası olan üyede durur, odası kapanınca ya da sahipliği devredince geri alınır. Komut sahipliğe
 // baktığı için rol bir şekilde verilemezse oda yönetimi yine çalışır; rol, üyeliğin sunucudaki gözüdür.
@@ -117,24 +149,54 @@ function applyError(interaction) {
   return null;
 }
 
-// Form cevabındaki üyeler: <@id> / <@!id> etiketleri ya da çıplak üye ID'leri; başvuranın kendisi sayılmaz
-function parseMembers(raw, ownerId) {
-  const ids = new Set();
-  for (const match of raw.matchAll(/<@!?(\d+)>|\b(\d{17,20})\b/g)) if (match[1] ?? match[2]) ids.add(match[1] ?? match[2]);
-  ids.delete(ownerId);
-  return [...ids];
-}
-
 // Odayı kullanacakların son 7 gündeki toplam sesi (saniye); sıralama sisteminin ses istatistiklerinden okunur
 function weeklyVoiceSeconds(ids) {
   const totals = siralama.totals('voice', 7);
   return ids.reduce((sum, id) => sum + (totals.get(id) ?? 0), 0);
 }
 
-// Paneldeki "Başvuru Yap": form açılır, öncesinde yavaş iş yapılmaz
+const draftKey = (interaction) => `${interaction.guildId}:${interaction.user.id}`;
+
+// Paneldeki "Başvuru Yap": önce üyelerin seçildiği adım açılır. Buton kalıcı panelde olduğu için cevabı birikir;
+// bu yüzden adım gizli açılır ve her seçim aynı mesajı yerinde günceller.
 async function handleApplyButton(interaction) {
   const error = applyError(interaction);
   if (error) return replyError(interaction, ...error);
+  const draft = getDraft(draftKey(interaction)) ?? { members: [], at: Date.now() };
+  drafts.set(draftKey(interaction), draft);
+  return respond(interaction, ui.memberPicker(draft.members), { ephemeral: true });
+}
+
+// Üye seçme menüsü: seçtikler taslağa yazılır ve kart yerinde yenilenir
+async function handleMemberPick(interaction) {
+  const draft = mergeDraft(draftKey(interaction), interaction.user.id, interaction.values);
+  await interaction.deferUpdate();
+  return interaction
+    .editReply({ components: [ui.memberPicker(draft.members)], allowedMentions: { parse: [] } })
+    .catch(hata('Üye seçimi kartı güncellenemedi'));
+}
+
+// "Seçimi Sil": taslak boşanır, menü baştan doldurulabilir
+async function handleMemberReset(interaction) {
+  drafts.set(draftKey(interaction), { members: [], at: Date.now() });
+  await interaction.deferUpdate();
+  return interaction
+    .editReply({ components: [ui.memberPicker([])], allowedMentions: { parse: [] } })
+    .catch(hata('Üye seçimi kartı temizlenemedi'));
+}
+
+// "Formu Aç": üye sayısı yeterliyse oda adı ve amacın sorulduğu form açılır
+async function handleOpenForm(interaction) {
+  const error = applyError(interaction);
+  if (error) return replyError(interaction, ...error);
+  const members = getDraft(draftKey(interaction))?.members ?? [];
+  if (members.length + 1 < config.minMembers) {
+    return replyError(
+      interaction,
+      `Odayı en az ${config.minMembers} kişinin kullanması gerekiyor.`,
+      `Menüden ${config.minMembers - 1} üye seç, sonra **Formu Aç**'a bas. Seçtiğin üye sayısı kartta yazıyor.`,
+    );
+  }
   return interaction.showModal(ui.applicationModal());
 }
 
@@ -146,16 +208,13 @@ async function handleApplySubmit(interaction) {
   const roomName = answer('ad').replace(/\s+/g, ' ').slice(0, 30);
   if (roomName.length < 2) return replyError(interaction, 'Oda adı çok kısa.', 'En az iki karakterlik bir ad yaz.');
 
-  const members = parseMembers(answer('kisiler'), interaction.user.id);
+  const members = getDraft(draftKey(interaction))?.members ?? [];
   if (members.length + 1 < config.minMembers) {
     return replyError(
       interaction,
       `Odayı en az ${config.minMembers} kişinin kullanması gerekiyor.`,
-      'Üyeleri **Odada kimler olacak** alanına etiketleyerek yaz.',
+      'Üye seçimi yenilenmiş görünüyor; **Başvuru Yap** ile üyeleri tekrar seç.',
     );
-  }
-  if (members.length > config.maxExtraMembers) {
-    return replyError(interaction, `En fazla ${config.maxExtraMembers} üye yazabilirsin.`, 'Fazla etiketleri silip tekrar gönder.');
   }
   const purpose = answer('amac');
   if (purpose.length < 15) return replyError(interaction, 'Amaç alanı çok kısa.', 'Odanın ne için kullanılacağını bir cümleyle yaz.');
