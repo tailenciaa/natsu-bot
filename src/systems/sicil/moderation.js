@@ -3,7 +3,6 @@
 // Jail'deyken sunucudan çıkıp giren üyeye jail rolü tekrar verilir.
 const { PermissionFlagsBits } = require('discord.js');
 const core = require('../../core/ui');
-const { data, save } = require('../../core/db');
 const yetkiConfig = require('../yetki/config');
 const config = require('./config');
 const store = require('./store');
