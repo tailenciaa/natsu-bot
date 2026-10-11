@@ -14,17 +14,17 @@ function blocks() {
   const early = perkLines.filter((p) => p.level <= 25).map((p) => p.line).join('\n');
   const late = perkLines.filter((p) => p.level > 25).map((p) => p.line).join('\n');
   return [
-    '**Sesli Kanallar**\n' +
+    '## Sesli Kanallar\n' +
       `Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin. Sana ait bir oda için <#${c.createRoom}> kanalına gir, odanı nasıl yöneteceğin <#${c.roomGuide}> kanalında anlatılıyor. **Kalıcı odalar** için <#${c.permanentRooms}> kanalına bakabilirsin.`,
-    '**Ses Seviyesi**\n' +
+    '## Ses Seviyesi\n' +
       `Sesli kanalda vakit geçirdikçe seviye atlarsın ve bu seviye mesaj seviyenden **ayrı birikir**. Her **5 seviyede** yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
-    `**Ses Rolleri**\n${early}`,
-    `**Üst Seviye Ses Rolleri**\n${late}`,
-    '**Yayın**\n' +
+    `## Ses Rolleri\n${early}`,
+    `## Üst Seviye Ses Rolleri\n${late}`,
+    '## Yayın\n' +
       `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından **yayın yetkisini** alabilirsin, **15. seviye** ses rolü de yayın hakkı verir.`,
-    '**Haftanın Ses Aktifleri**\n' +
+    '## Haftanın Ses Aktifleri\n' +
       `Her pazartesi geçen haftanın **en çok seste kalan üyesi** <#${c.weekly}> kanalında ilan edilir ve <@&${config.roles.weeklyVoice}> rolünü alır.`,
-    '**Sesli Kanal Kuralları**\n' +
+    '## Sesli Kanal Kuralları\n' +
       '**Troll** dahil rahatsızlık veren her davranış ve **küfür** yasaktır.\n' +
       '**Bas açıp bağırmak**, mikrofonla ortamı domine etmek yasaktır.\n' +
       'Müzik botlarını ve ses panelini **troll amaçlı** kullanmak yasaktır.\n' +

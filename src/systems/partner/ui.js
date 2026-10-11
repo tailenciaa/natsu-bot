@@ -88,7 +88,7 @@ function startPrompt(authorId) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '**Oto Partner Nasıl Çalışır?**\n' +
+        '## Oto Partner Nasıl Çalışır?\n' +
           "**Sunucu ID'ni** ve **partner metnini** gönderirsin.\n" +
           'Yetkili onaylayınca metnin **otomatik paylaşılır**.',
       ),
@@ -98,7 +98,7 @@ function startPrompt(authorId) {
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.start}:${authorId}`).setLabel('Oto Partner Yap').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`${IDS.start}:${authorId}`).setLabel('Oto Partner Yap').setStyle(ButtonStyle.Primary),
       ),
     );
 }
@@ -119,8 +119,8 @@ function startPromptSuccess(alreadyAccepted = false) {
     .addTextDisplayComponents(
       text(
         alreadyAccepted
-          ? '**Sıradaki Adım**\nYetkililerin **kararını bekle**.'
-          : '**Sıradaki Adım**\nSana gelen DM\'deki **Şartları Kabul Et** butonuna bas.',
+          ? '## Sıradaki Adım\nYetkililerin **kararını bekle**.'
+          : '## Sıradaki Adım\nSana gelen DM\'deki **Şartları Kabul Et** butonuna bas.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -172,7 +172,7 @@ function termsDm(acceptCustomId) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        '**Şartlar**\n' +
+        '## Şartlar\n' +
           '1. Reklam metni **Discord kurallarına** aykırı içerik barındıramaz.\n' +
           '2. Sunucular karşılıklı olarak **aynı gün içinde** birbirini paylaşır.\n' +
           '3. Onaylanan reklam metni **değiştirilemez**; değişiklik için yeni talep açılması gerekir.\n' +

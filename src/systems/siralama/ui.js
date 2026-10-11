@@ -112,7 +112,7 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`**${TYPES[type]} (${periodLabel(period, days)})**`), text(listBlock));
+    .addTextDisplayComponents(text(`## ${TYPES[type]}`), text(listBlock));
 
   const nav = (target, slot) => `${IDS.navigate}:${state(type, period, days, roleId)}:${target}:${slot}`;
   container

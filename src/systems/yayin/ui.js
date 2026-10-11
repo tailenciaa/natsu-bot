@@ -10,7 +10,7 @@ const IDS = {
 };
 
 const RULES =
-  '**Yayın Kuralları**\n' +
+  '## Yayın Kuralları\n' +
   '**+18, kan, şiddet** ve rahatsız edici içerik yayınlamak yasaktır.\n' +
   'Ekranında kendi ya da başkalarının **kişisel bilgilerini** göstermemeye dikkat et.\n' +
   'Yayında da **sunucu kuralları** geçerlidir, uymayanın yetkisi alınır.';
@@ -38,7 +38,7 @@ function panel() {
 function granted({ user }) {
   return receipt({
     title: 'Yayın Yetkisi Verildi',
-    sub: `<@${user.id}> panelden **Yetki Al** düğmesiyle yayın yetkisini aldı. Bu yetkiyle sesli kanallarda **ekran paylaşımı** ve **canlı yayın** açabilir.`,
+    sub: `<@${user.id}> paneldeki **Yayın Yetkisi Al** düğmesiyle yayın yetkisini aldı. Bu yetkiyle sesli kanallarda **ekran paylaşımı** ve **canlı yayın** açabilir.`,
     user,
     pairs: [['Rol', `<@&${config.role}>`]],
   });
