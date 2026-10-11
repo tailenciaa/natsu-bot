@@ -40,15 +40,11 @@ function getDraft(key) {
   return draft;
 }
 
-// Menünün seçtikleri taslağa eklenir (menü her seçimde sadece kendi satırlarını döndürür, bu yüzden birikir);
-// başvuranın kendisi sayılmaz, sınır aşılırsa kesilir
-function mergeDraft(key, ownerId, picked) {
-  const draft = getDraft(key) ?? { members: [], at: Date.now() };
-  for (const id of picked) if (id !== ownerId && !draft.members.includes(id)) draft.members.push(id);
-  draft.members = draft.members.slice(0, config.maxExtraMembers);
-  draft.at = Date.now();
-  drafts.set(key, draft);
-  return draft;
+// Menüde bırakılan liste neyse taslak odur: başvuranın kendisi sayılmaz, sınır aşılırsa kesilir
+function setDraft(key, ownerId, picked) {
+  const members = [...new Set(picked)].filter((id) => id !== ownerId).slice(0, config.maxExtraMembers);
+  drafts.set(key, { members, at: Date.now() });
+  return members;
 }
 
 // Panel işlemlerine art arda basıp oda yönetimini kilitlemeyi engelleyen kısa beklemeler
