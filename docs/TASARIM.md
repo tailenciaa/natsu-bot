@@ -167,9 +167,14 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 
 ## 6. Cevap politikası
 
-**Kural: görünürlüğü içeriğin kime hitap ettiği belirler.** Yeni bir akış yazılırken iki soru sorulur: (1) bu cevap bir hatayı ya da reddi mi bildiriyor → **gizli**; (2) bu cevap yalnızca o üyenin kendi bilgisi ya da kendi tercihi mi → **gizli**; ikisi de değilse, yani cevabı başkaları da gördüğünde anlam kazanıyor ya da topluluğa düşen bir kaydın kendisiyse → **herkese açık**. `respond` varsayılan olarak açık verir; gizlilik `{ ephemeral: true }` ile **elle** istenir ve akış slash komutuyaysa bayrak defer anında da gizli verilir.
+**Kural: görünürlüğü iki test belirler; ikisi de içeriğe değil, mesajın kanalda ne yapacağına bakılır.**
 
-Ölçüt "kimin işine yarıyor", kimin komutu kullandığı değildir. Bir satın alma kartı herkese açıktır çünkü sunucuda ne harcandığı kozmetiğin vitrinidir; aynı üyenin "şu an aktif bir cezan yok" kartı gizlidir çünkü başkasının önünde kendi ceza kaydını okuması ne üyeye ne topluluğa bir şey kazandırır. Kuralın eski hali ("her cevap açıktır") bu ikinci grubu da kanala döktü ve profil/ceza/rol cevaplarında kalabalık üretti; Ekim 2026'da iki sorulu hâle getirildi.
+1. **Birikme testi → GİZLİ.** Cevap, kanalda **kalıcı duran bir panelin** butonundan ya da menüsünden çıkıyorsa ve o kontrole her üye dokunabiliyorsa sadece basana görünür. Kalıcı gönderilirse aynı kart alt alta birikir ve panel yukarı kaybolur: `cezalarim` panelinin süre/sebep/itiraz kartları, `yenihesap` kısıt kartı, yayın/etiket/partner görme rolü onayları, çekilişe katılım cevabı, destek ve kalıcı oda başvurusu cevabı, log panelinin kategori bağlantısı ve log detayı, oryantasyon devir seçicisi, muhabbet sıra ve eşleşme kartları (karşı üye kartı zaten DM'den alır). Aynı gerekçeyle tek satırlık hata, ret, doğrulama, test/önizleme ve onay uyarıları da gizlidir.
+2. **Sayfa/kayıt testi → KALICI ve HERKESE AÇIK.** Cevap komutla açılan bir **sayfa** ya da çok adımlı bir akışsa, ya da topluluğa düşen bir **kayıtsa** kanalda kalır: profil kartı ile rozet, vitrin, mağaza, kapak, görünüm ve **Puanım** sayfaları, `/bakiye` cüzdanı, `/gorev` paneli, `/seviye`, `/siralama`, `/yardim`, listeler ve tablolar, satın alma/giyme/`/gunluk`/kutu açılışı/çekiliş sonucu/seviye atlama/haftalık duyuru kartları. Bunlar yenilemede kaybolmamalıdır; "üyenin kendi durumu" tek başına gizleme sebebi değildir.
+
+İki testi birden geçiren mesaj **açıktır**. Kalıcı panel ayrımı sayfa ayrımını yenilmez: panelde kurcalamanın çıktısı geçicidir, üyenin kendi açtığı sayfayı ise yeniden görebilmesi gerekir. Sayfaların kendi düğmeleri mümkün olduğunca `interaction.update` ile aynı mesajı yerinde yeniler, böylece açık olsalar bile mesaj birikmez. Tek istisna `/sicil`dir: yetkili komut kanalı dışında kişiye özel kalır, çünkü ceza kaydı herkesin önüne yazılmaz.
+
+`respond` varsayılan olarak açık verir; gizlilik `{ ephemeral: true }` ile **elle** istenir ve akış slash komutuyaysa bayrak defer anında da gizli verilir. Kuralın ilk hali ("her cevap açıktır") panel cevaplarını kanala döktü ve paneli kaybedecek kadar kalabalık üretti; ikinci hali ("üyenin kendi durumu gizlidir") komutla açılan sayfaları da gizledi ve üye sayfasını yenileyince kaybetti. Ekim 2026'da iki testli son hâline geldi.
 
 | Durum | Görünürlük |
 | --- | --- |

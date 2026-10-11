@@ -426,7 +426,7 @@ function vitrinSaved({ user, bad = [] }) {
 // ── Puan sayfası ──────────────────────────────────────────────────────────────
 // Kartın manşetindeki sayının dökümü: kaç puan, hangi bölümden ne kadar, bir üst rütbe için ne kaldığı ve
 // sunucunun en yüksek puanlı ilk on üyesi.
-// GİZLİ İSTİSNA: üyenin kendi durum bilgisi; herkesin önünde puan dökümü yazışmasına gerek yok.
+// Karttan açılan bir SAYFA olduğu için kalıcı ve herkese açıktır; ilk 10 listesi zaten toplumsal bir bilgidir.
 function puanPage({ score, rank, size, top, you }) {
   const hedef = score.next
     ? `Bir üst rütbe **${score.next.label}** için **${number(score.next.remaining)}** puan daha gerekiyor.`

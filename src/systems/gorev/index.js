@@ -5,7 +5,8 @@
 // İlerleme hiçbir yerde ayrıca sayılmaz: mesaj ve ses sayıları sıralama kaydından, saygınlık saygi kaydından,
 // günlük ödül ve siparişler coin defterinden, kozmetikler profil kaydından okunur (olcum.js). Yalnızca ödülün
 // alındığı, anahtar sayacı, kutu istatistiği ve sezon puanı burada tutulur.
-// Panel üyenin kendi ilerlemesini gösterdiği için gizlidir; kutu açılışı herkese açık duyurulur (satın alma gibi).
+// Panel komutla açılan bir SAYFA olduğu için kanalda kalıcı ve herkese açıktır; sekmeler aynı mesajı yerinde
+// yeniler, mesaj birikmez. Kutu açılışı ayrı ve herkese açık duyurulur (satın alma gibi).
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { respond, replyError, isMenuOwner, menuOwnerError } = require('../../core/helpers');

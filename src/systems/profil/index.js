@@ -435,7 +435,7 @@ async function handleSettings(interaction) {
     case 'magaza': {
       const page = shopMessage(interaction, arg ?? 'cerceve', arg2);
       // Sekme değişimi ve cüzdandan açılış (düğme sekme taşıdığı için) yazıldığı mesajı yerinde yeniler;
-      // profil kartındaki düğme sekme taşımadığı için mağaza ilk açılışta kişiye özel ayrı mesaj olur
+      // profil kartındaki düğme sekme taşımadığı için mağaza ilk açılışta ayrı ve kalıcı mesaj olur
       return arg
         ? interaction.update({ components: [page], attachments: [], allowedMentions: { parse: [] } })
         : respond(interaction, page);

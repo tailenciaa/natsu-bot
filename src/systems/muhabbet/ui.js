@@ -83,7 +83,7 @@ function queuedCard({ user, position, waiting, again }) {
   });
 }
 
-// Sıradan çıkma kartı: sıra üyenin kendi işlemi ama sonuç kanalda herkese açık görünür
+// Sıradan çıkma kartı: sabit panelin buton cevabıdır, sadece basana görünür (kanal dolmasın)
 function leftQueue({ user }) {
   return receipt({
     title: 'Sıradan Çıktı',
