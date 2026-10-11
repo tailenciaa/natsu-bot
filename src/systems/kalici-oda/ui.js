@@ -70,7 +70,7 @@ function applyPanel() {
             ['Odayı Koruma Şartı', chip(`${config.activity.weeklyHours} saat / hafta · ${config.activity.monthlyHours} saat / ay`)],
             ['Onayı Veren', 'Yalnızca yöneticiler'],
           ]),
-          `-# Ses şartı, odayı kullanacakların birlikte geçirdiği toplam süredir; başvuruda hesaplanır, oda açık kaldıkça her hafta yeniden ölçülür.`,
+          'Ses şartı, odayı kullanacakların birlikte geçirdiği toplam süredir; başvuruda hesaplanır, oda açık kaldıkça her hafta yeniden ölçülür.',
         ].join('\n'),
       ),
     );
@@ -220,8 +220,8 @@ function activityBlock(status) {
     targets,
     measured,
     status
-      ? `-# Ay sonunda hedefler tutmazsa oda silinir. Sıradaki kontrol: <t:${unix(status.reviewAt)}:D>.`
-      : '-# Ay sonunda bu hedefler kontrol edilir; karşılamayan oda silinir.',
+      ? `-# Ay sonu kontrolü <t:${unix(status.reviewAt)}:D>; hedefler tutmazsa oda şart yetersizliğinden silinir.`
+      : 'Bu hedefler ay sonunda kontrol edilir; karşılamayan oda silinir.',
   ]
     .filter(Boolean)
     .join('\n');
