@@ -120,8 +120,11 @@ module.exports = ({ mock, ui, src }) => {
 
   // ── Duyuru kartları ────────────────────────────────────────────────────────
   const efsaneviUye = uye({ ad: 'Ece', seviye: 37, coin: 7100, kazanilan: 200 });
+  store.kesifKaydet(efsaneviUye.uid, 'bahce', mock.ago(45 * mock.MIN));
+  store.kesifKaydet(efsaneviUye.uid, 'bahce', mock.ago(25 * mock.MIN));
   const efsanevi = coinStore.addWin(efsaneviUye.uid, 1300, 'keşif');
   const efsaneviSatir = p.ganimetSatiri({ tur: 'coin', miktar: efsanevi.odenen, kesilen: efsanevi.kesilen, nitelik: 'efsanevi' });
+  const efsaneviGezi = store.kesifSayilari(efsaneviUye.uid).gun + 1;
 
   return [
     panelCase(kesifYeni, 'kesif-yeni', 'Keşif sekmesi: yeni üye, tek bölge açık, gezisi hazır', '/oyun komutunun açtığı sayfa'),
@@ -145,7 +148,7 @@ module.exports = ({ mock, ui, src }) => {
             user: efsaneviUye.user,
             title: 'Efsanevi Ganimet',
             sub: `<@${efsaneviUye.uid}> Ay Işığı Bahçesi yolunda efsanevi ganimet buldu: ${efsaneviSatir}`,
-            pairs: [['Bölge', 'Ay Işığı Bahçesi'], ['Bugünkü Gezi', `3 / ${config.kesif.gunlukAdet}`]],
+            pairs: [['Bölge', 'Ay Işığı Bahçesi'], ['Bugünkü Gezi', `${efsaneviGezi} / ${config.kesif.gunlukAdet}`]],
             accent: 'danger',
           }),
         ],
@@ -164,7 +167,7 @@ module.exports = ({ mock, ui, src }) => {
           p.bigWin({
             user: ali.user,
             title: 'Kumarhanede Büyük El',
-            sub: `<@${ali.uid}> rulette ${config.rulet.renkler.kirmizi.ad} oynadı, ${config.rulet.renkler.siyah.ad} geldi. ${number(1000)} coin kazandı.`,
+            sub: `<@${ali.uid}> rulette ${config.rulet.renkler.kirmizi.ad} oynadı, çark ${config.rulet.renkler.kirmizi.ad} cepinde durdu: ${number(1000)} coin.`,
             pairs: [
               ['Bahis', `${number(500)} coin`],
               ['Geri Dönen', number(1000)],
