@@ -22,19 +22,19 @@ module.exports = {
     voiceStaff: '1554239999619375274',
   },
 
-  // Ses seviyesi rollerinin ayrıcalıkları: seviye -> açıklama (roller seviye/config.js'ten gelir)
+  // Ses seviyesi rollerinin ayrıcalıkları: seviye -> kazandırdığı tek cümle (panelde `seviye · cümle` satırı olur)
   perks: {
-    5: 'Sesli kanallarda diğer üyelerden **ayrı renkte** görünürsün.',
+    5: 'Sesli kanallarda **ayrı renkte** görünürsün.',
     10: '**Ses panelini** (soundboard) kullanabilirsin.',
     15: 'Sesli kanallarda **yayın açıp ekran paylaşabilirsin**.',
     20: 'Etkinliklerde **oyun başkanı** olma şansı kazanırsın.',
-    25: 'Sesli kanallarda **harici ses efektlerini** kullanabilirsin.',
+    25: '**Harici ses efektlerini** kullanabilirsin.',
     30: '**Günün sorusu** ve **sohbet bildirimi** konularını seçebilirsin.',
     40: 'Kazuki toplantılarına **misafir** olarak katılabilirsin.',
     50: 'Özel odanda **ekstra yönetim hakları** kazanırsın.',
-    60: 'Sunucuya **1 ses efekti** ekletme hakkı kazanırsın (destek talebiyle).',
+    60: 'Sunucuya **1 ses efekti** ekletme hakkı kazanırsın (taleple).',
     70: 'Çekiliş ve etkinliklerde **önceliklisin**.',
-    80: 'Kendine özel bir **rol** açtırabilirsin (destek talebiyle).',
+    80: 'Kendine özel bir **rol** açtırabilirsin (taleple).',
     90: '**Ses yetkilisi** adaylığı için değerlendirilirsin.',
     100: 'Ses seviyesinin **zirvesi**, sunucunun en aktif seslilerinden birisin.',
   },

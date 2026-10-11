@@ -1,36 +1,56 @@
-// Sesli bilgi paneli: sesli kanallar, özel oda, ses seviyesi ve rolleri, yayın, haftanın aktifleri ve sesli kanal kuralları
+// Sesli bilgi paneli: odalar, ses seviyesi ve rollerin kazandırdıkları, yayın, haftanın aktifleri ve sesli kanal kuralları
 const { MediaGalleryBuilder, MediaGalleryItemBuilder } = require('discord.js');
-const { divider, page, text } = require('../../core/ui');
+const { divider, page, text, chip } = require('../../core/ui');
 const { botName } = require('../../core/config');
-const seviye = require('../seviye/config');
 const config = require('./config');
 
 const TITLE = `${botName} Sesli Kanallar`;
 
+// Rol listesi: Discord'da 13 rolün etiketini yan yana yazmak pembe bir duvar oluşturuyor ve okunmuyor.
+// Rolün kendisi üye listesinde zaten göründüğü için satırda yalnızca gereken seviye rozeti ve kazandırdığı yazılır.
+const perkLine = (level) => `${chip(level)} · ${config.perks[level]}`;
+
 function blocks() {
   const c = config.channels;
-  // Ses rolleri iki blokta: ilk yarısı (5-25) ve sonrası (30-100)
-  const perkLines = Object.entries(config.perks).map(([level, perk]) => ({ level: Number(level), line: `<@&${seviye.roles.ses[level]}>: ${perk}` }));
-  const early = perkLines.filter((p) => p.level <= 25).map((p) => p.line).join('\n');
-  const late = perkLines.filter((p) => p.level > 25).map((p) => p.line).join('\n');
+  const levels = Object.keys(config.perks).map(Number);
+  const early = levels.filter((level) => level <= 25);
+  const late = levels.filter((level) => level > 25);
   return [
-    '### Sesli Kanallar\n' +
-      `Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin. Sana ait bir oda için <#${c.createRoom}> kanalına gir, odanı nasıl yöneteceğin <#${c.roomGuide}> kanalında anlatılıyor. **Kalıcı odalar** için <#${c.permanentRooms}> kanalına bakabilirsin.`,
-    '### Ses Seviyesi\n' +
-      `Sesli kanalda vakit geçirdikçe seviye atlarsın ve bu seviye mesaj seviyenden **ayrı birikir**. Her **5 seviyede** yeni bir ses rolü kazanırsın, seviyeni \`/seviye\` ya da \`/profil\` ile görebilirsin.`,
-    `### Ses Rolleri\n${early}`,
-    `### Üst Seviye Ses Rolleri\n${late}`,
-    '### Yayın\n' +
-      `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından **yayın yetkisini** alabilirsin, **15. seviye** ses rolü de yayın hakkı verir.`,
-    '### Haftanın Ses Aktifleri\n' +
+    [
+      '### Odalar',
+      'Sesli Kanallar kategorisindeki odalara istediğin zaman girebilirsin.',
+      `**Kendi odan:** <#${c.createRoom}> kanalına gir, sana ait bir oda açılır.`,
+      `**Oda rehberi:** <#${c.roomGuide}> odanı yönetmeyi ve üye eklemeyi anlatır.`,
+      `**Kalıcı odalar:** <#${c.permanentRooms}> başvuruyla açılan, sürekli duran odalardır.`,
+    ].join('\n'),
+    [
+      '### Ses Seviyesi',
+      'Sesli kanalda vakit geçirdikçe seviye atlarsın ve bu seviye mesaj seviyenden **ayrı birikir**.',
+      '**Seviyeni gör:** `/seviye` ya da `/profil`',
+    ].join('\n'),
+    ['### Ses Rolleri', 'Her **5 seviyede** bir ses rolü kazanırsın; sayı, o rol için gereken ses seviyesidir.', ...early.map(perkLine)].join('\n'),
+    ['### İleri Seviye Rolleri', ...late.map(perkLine)].join('\n'),
+    [
+      '### Yayın',
+      `Ekran paylaşımı ve canlı yayın için <#${c.stream}> kanalından **yayın yetkisi** alabilirsin.`,
+      '**15. seviye** ses rolü de yayın hakkı verir.',
+    ].join('\n'),
+    [
+      '### Haftanın Ses Aktifleri',
       `Her pazartesi geçen haftanın **en çok seste kalan üyesi** <#${c.weekly}> kanalında ilan edilir ve <@&${config.roles.weeklyVoice}> rolünü alır.`,
-    '### Sesli Kanal Kuralları\n' +
-      '**Troll** dahil rahatsızlık veren her davranış ve **küfür** yasaktır.\n' +
-      '**Bas açıp bağırmak**, mikrofonla ortamı domine etmek yasaktır.\n' +
-      'Müzik botlarını ve ses panelini **troll amaçlı** kullanmak yasaktır.\n' +
-      'Özel odalarda **kuralları çiğneyen isimler** kullanmak ve **sürekli gir-çık** yapmak yasaktır.\n' +
-      'Yayında gösterdiğin her şeyde de **bu kurallar geçerlidir**.\n' +
-      `Sorun yaşarsan <#${c.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.`,
+    ].join('\n'),
+    [
+      '### Sesli Kanal Kuralları',
+      '1. **Troll** dahil rahatsızlık veren her davranış ve **küfür** yasaktır.',
+      '2. **Bas açıp bağırmak** ve mikrofonla ortamı domine etmek yasaktır.',
+      '3. Müzik botlarını ve ses panelini **troll amaçlı** kullanmak yasaktır.',
+      '4. Özel odalarda **kuralları çiğneyen isimler** kullanmak ve **sürekli gir-çık** yapmak yasaktır.',
+      '5. Yayında gösterdiğin her şeyde de **bu kurallar geçerlidir**.',
+    ].join('\n'),
+    [
+      '### Sorun Yaşarsan',
+      `<#${c.support}> kanalından destek talebi açabilir ya da <@&${config.roles.voiceStaff}> ekibine ulaşabilirsin.`,
+    ].join('\n'),
   ];
 }
 
