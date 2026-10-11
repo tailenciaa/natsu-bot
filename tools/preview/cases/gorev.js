@@ -84,7 +84,7 @@ module.exports = ({ mock, ui, src }) => {
 
   // Demet senaryosu: senaryoda gerçekten bitmiş üç günlük görev (22 mesaj, 22 dk yayın, günlük ödül alındı).
   // Yarım kalan görev "alınmış" gösterilemez; panel canlıda olcum.durum'un bitti demediğini asla almaz.
-  const ucbitemis = [gunluk('mesaj-20', true), gunluk('yayin-20', true), gunluk('gunluk-odul', true)];
+  const ucBitmis = [gunluk('mesaj-20', true), gunluk('yayin-20', true), gunluk('gunluk-odul', true)];
 
   return [
     panelCase(
@@ -96,21 +96,14 @@ module.exports = ({ mock, ui, src }) => {
     ),
     panelCase(
       'gunluk',
-      {
-        gunluk: [gunluk('mesaj-20', true), gunluk('ses-30', true), gunluk('yayin-20', true)],
-        demet: demet([gunluk('mesaj-20', true), gunluk('ses-30', true), gunluk('yayin-20', true)]),
-      },
+      { gunluk: ucBitmis, demet: demet(ucBitmis) },
       'gunluk-demet-hazir',
       'Günlük sekmesi: üç ödül de toplandı, demet alınabilir',
       'Günün üçüncü görevi alındığında panel',
     ),
     panelCase(
       'gunluk',
-      {
-        gunluk: [gunluk('mesaj-20', true), gunluk('ses-30', true), gunluk('yayin-20', true)],
-        demet: demet([gunluk('mesaj-20', true), gunluk('ses-30', true), gunluk('yayin-20', true)], true),
-        feedback: '**Günün demeti açıldı: 120 coin · 1 anahtar · 3 sezon puanı.** Yarın da üç görevi bitirirsen bir demet daha gelir; haftanın demetleri seri görevine sayılır.',
-      },
+      { gunluk: ucBitmis, demet: demet(ucBitmis, true), feedback: '**Günün demeti açıldı: 120 coin · 1 anahtar · 3 sezon puanı.** Yarın da üç görevi bitirirsen bir demet daha gelir; haftanın demetleri seri görevine sayılır.' },
       'gunluk-demet-alindi',
       'Günlük sekmesi: demet açıldı, üstte kazanç satırı duruyor',
       'Demet Al düğmesine basıldıktan sonra aynı panel',
