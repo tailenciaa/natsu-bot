@@ -92,9 +92,10 @@ function handleChannelCreate(channel) {
   return syncVisibilityFor(channel, config.roleId);
 }
 
+// Üyenin kendi kısıt durumu başkalarını ilgilendirmez: kart yalnızca butona basana görünür
 function handleSure(interaction) {
   const hasRestriction = Boolean(config.roleId && interaction.member?.roles.cache.has(config.roleId));
-  return respond(interaction, ui.sureView(interaction.user, hasRestriction));
+  return respond(interaction, ui.sureView(interaction.user, hasRestriction), { ephemeral: true });
 }
 
 module.exports = {

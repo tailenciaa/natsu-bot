@@ -64,9 +64,10 @@ const walletView = (interaction) =>
 
 const ordersView = (interaction, page = 0) => ui.orders({ user: interaction.user, items: store.purchasesOf(interaction.user.id), page });
 
-// /bakiye: cüzdan kartı herkese açık yazılır; mağaza ve siparişler kartın yerini alır, ayrı mesaj atmaz
+// /bakiye: cüzdan kartı yalnızca sahibine görünür — bakiye, seri ve siparişler kişisel bilgidir. Mağaza ve
+// siparişler kartın yerini alır, ayrı mesaj atmaz; bu yüzden onlar da aynı kişiye özel mesajda kalır.
 async function handleWallet(interaction) {
-  return respond(interaction, walletView(interaction));
+  return respond(interaction, walletView(interaction), { ephemeral: true });
 }
 
 // coin-siparis:<sayfa>: siparişler ayrı mesaj olmaz, cüzdan kartının yerini alır

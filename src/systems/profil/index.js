@@ -439,8 +439,8 @@ async function handleSettings(interaction) {
       return refresh(interaction);
     }
     case 'vitrin':
-      return respond(interaction, await vitrinMessage(interaction));
-    // Mağaza, rozet ve vitrin kartın üstüne ayrı mesaj olarak açılır: geri düğmesi o mesajı kaldırır,
+      return respond(interaction, await vitrinMessage(interaction), { ephemeral: true });
+    // Mağaza, rozet ve vitrin sayfaları kişiye özel ayrı mesaj olarak açılır: geri düğmesi o mesajı kaldırır,
     // profil kartı ve düzenleme düğmeleri olduğu gibi kalır
     case 'geri':
       return interaction.message.delete().catch((err) => console.error('[profil] Sayfa kapatılamadı:', err.message));
@@ -461,15 +461,15 @@ async function handleSettings(interaction) {
       // Sayfa açılırken görev rolleri de eşitlenir: hedef yeni aşıldıysa rol beklemeden verilsin
       if (member) await gorev.syncMember(member, m).catch((err) => console.error('[profil] Görev rolleri sayfa açılışında eşitlenemedi:', err.message));
       const ctx = rozet.contextOfMember(interaction.guild, member, interaction.user.id, m);
-      return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length));
+      return respond(interaction, ui.rozetPage(rozet.progress(ctx), rozet.earned(ctx).length), { ephemeral: true });
     }
     case 'magaza': {
       const page = shopMessage(interaction, arg ?? 'cerceve', arg2);
       // Sekme değişimi ve cüzdandan açılış (düğme sekme taşıdığı için) yazıldığı mesajı yerinde yeniler;
-      // profil kartındaki düğme sekme taşımadığı için mağaza ilk açılışta kanalda herkese açık ayrı mesaj olur
+      // profil kartındaki düğme sekme taşımadığı için mağaza ilk açılışta kişiye özel ayrı mesaj olur
       return arg
         ? interaction.update({ components: [page], attachments: [], allowedMentions: { parse: [] } })
-        : respond(interaction, page);
+        : respond(interaction, page, { ephemeral: true });
     }
     case 'al':
       return buy(interaction, arg, arg2, arg3);
@@ -492,7 +492,7 @@ async function handleSettings(interaction) {
       });
       store.set(interaction.user.id, { pronoun, links });
       await interaction.deferUpdate();
-      await respond(interaction, ui.vitrinSaved({ user: interaction.user, bad }), { followUp: true });
+      await respond(interaction, ui.vitrinSaved({ user: interaction.user, bad }), { followUp: true, ephemeral: true });
       return refreshLiveCard(interaction);
     }
     case 'renk-form': {

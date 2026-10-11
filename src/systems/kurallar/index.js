@@ -36,7 +36,7 @@ async function handleAccept(interaction) {
     save();
   }
   await interaction.update({ components: [container], allowedMentions: { parse: [] } });
-  await respond(interaction, core.alert('Kuralları kabul ettin.', 'Teşekkürler, sunucuda iyi eğlenceler.', 'success'));
+  await respond(interaction, core.alert('Kuralları kabul ettin.', 'Teşekkürler, sunucuda iyi eğlenceler.', 'success'), { ephemeral: true });
 
   logSystem
     .write(interaction.client, 'bot', {
