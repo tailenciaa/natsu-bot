@@ -30,7 +30,7 @@ const commands = [
       s
         .setName('uye')
         .setDescription('Bir üyeyi soymaya kalkışırsın; kurbanın direnme süresi doğar.')
-        .addUserOption((o) => o.setName('kullanici').setDescription('Hedef üye').setRequired(true)),
+        .addUserOption((o) => o.setName('kullanici').setDescription('Hedef üye.').setRequired(true)),
     )
     .addSubcommand((s) => s.setName('kasa').setDescription('Devletin Kasasını soymaya kalkışırsın; herkes müdahale edebilir.')),
 ];
@@ -450,7 +450,7 @@ module.exports = {
   commands,
   help: {
     category: ['oyun', 'Oyun ve Şans'],
-    member: ['sokak', 'çal'],
+    member: ['sokak', 'çal uye', 'çal kasa'],
     access: { sokak: 'Herkes', 'çal uye': 'Herkes', 'çal kasa': 'Herkes' },
   },
   slash: { sokak: handleSokak, 'çal': handleCal },
