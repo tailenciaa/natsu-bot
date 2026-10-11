@@ -395,17 +395,24 @@ async function setAccess(guild, room, targetId, allow) {
   }
 }
 
-// Üye menülerinin ortak ön kontrolü: oda, sahip, hız sınırı. Hata varsa { error } ya da { wait }, değilse { room } döner
+// Üye menülerinin ortak ön kontrolü: oda, hız sınırı ve guard. Hata varsa { noRoom }, { error } ya da { wait },
+// değilse { room } döner
 function memberAction(interaction, action, guard) {
   const room = roomOf(interaction);
-  const error = ownerError(interaction, room);
-  if (error) return { error };
+  if (!room) return { noRoom: true };
   const blocked = guard(room);
   if (blocked) return { error: blocked };
   const wait = takeCooldown(room.id, action);
   if (wait) return { wait };
   return { room };
 }
+
+// Üç menü işleminde de aynı sırayla kontrol edilir: önce panelin sahibi, sonra üye, sonra bekleme
+const memberGuardFail = (interaction, step, hint) => {
+  if (step.noRoom) return noRoomError(interaction);
+  if (step.error) return replyError(interaction, step.error, hint);
+  return slowDown(interaction, step.wait);
+};
 
 async function handleAddMember(interaction) {
   const targetId = interaction.values[0];
@@ -421,8 +428,7 @@ async function handleAddMember(interaction) {
             ? `Odaya en fazla ${config.maxExtraMembers} üye ekleyebilirsin.`
             : null,
   );
-  if (step.error) return replyError(interaction, step.error, 'Üye listesini kontrol edip tekrar dene.');
-  if (step.wait) return slowDown(interaction, step.wait);
+  if (step.noRoom || step.error || step.wait) return memberGuardFail(interaction, step, 'Üye listesini kontrol edip tekrar dene.');
 
   await interaction.deferUpdate();
   const member = await interaction.guild.members.fetch(targetId).catch(() => null);
@@ -440,8 +446,7 @@ async function handleRemoveMember(interaction) {
     ui.IDS.remove,
     (room) => (room.ownerId === targetId ? 'Sahipliği devretmeden kendin odadan çıkaramazsın.' : room.members.includes(targetId) ? null : 'Bu üye odanın üyelerinden değil.'),
   );
-  if (step.error) return replyError(interaction, step.error, 'Üye listesini kontrol edip tekrar dene.');
-  if (step.wait) return slowDown(interaction, step.wait);
+  if (step.noRoom || step.error || step.wait) return memberGuardFail(interaction, step, 'Üye listesini kontrol edip tekrar dene.');
 
   await interaction.deferUpdate();
   await setAccess(interaction.guild, step.room, targetId, false);
@@ -458,8 +463,7 @@ async function handleTransfer(interaction) {
     ui.IDS.transfer,
     (room) => (targetId === room.ownerId ? 'Oda zaten senin.' : room.members.includes(targetId) ? null : 'Sahipliği sadece odanda bulunan bir üyeye devredebilirsin.'),
   );
-  if (step.error) return replyError(interaction, step.error, 'Önce üyeyi odaya ekle.');
-  if (step.wait) return slowDown(interaction, step.wait);
+  if (step.noRoom || step.error || step.wait) return memberGuardFail(interaction, step, 'Önce üyeyi odaya ekle.');
 
   await interaction.deferUpdate();
   const member = await interaction.guild.members.fetch(targetId).catch(() => null);
@@ -467,25 +471,26 @@ async function handleTransfer(interaction) {
 
   // Eski sahip sıradan üye olarak odada kalır, yeni sahibin erişimi ayrıcalıklı hale gelir
   await setAccess(interaction.guild, step.room, targetId, true);
+  const previousOwnerId = step.room.ownerId;
   const updated = store.updateRoom(step.room.id, {
     ownerId: targetId,
-    members: [...step.room.members.filter((id) => id !== targetId), step.room.ownerId],
+    members: [...step.room.members.filter((id) => id !== targetId), previousOwnerId],
   });
+  await takeOwnerRole(interaction.guild, previousOwnerId);
+  await giveOwnerRole(interaction.guild, targetId);
   return redraw(interaction, updated);
 }
 
 async function handleLimitButton(interaction) {
   const room = roomOf(interaction);
-  const error = ownerError(interaction, room);
-  if (error) return replyError(interaction, error);
+  if (!room) return noRoomError(interaction);
   const channel = await interaction.guild.channels.fetch(room.voiceChannelId).catch(() => null);
   return interaction.showModal(ui.limitModal(channel?.userLimit ?? room.limit));
 }
 
 async function handleLimitSubmit(interaction) {
   const room = roomOf(interaction);
-  const error = ownerError(interaction, room);
-  if (error) return replyError(interaction, error);
+  if (!room) return noRoomError(interaction);
 
   const raw = interaction.fields.getTextInputValue(ui.IDS.limitInput).trim();
   const limit = /^\d{1,2}$/.test(raw) ? Number(raw) : -1;
@@ -495,7 +500,7 @@ async function handleLimitSubmit(interaction) {
 
   await interaction.deferUpdate();
   const channel = await interaction.guild.channels.fetch(room.voiceChannelId).catch(() => null);
-  if (!channel) return replyError(interaction, 'Odanın ses kanalı bulunamadı.', 'Oda kapatılmış olabilir; bir yetkiliye haber ver.');
+  if (!channel) return replyError(interaction, 'Odanın ses kanalı bulunamadı.', 'Oda kapatılmış olabilir; bir yöneticiye haber ver.');
   const changed = await channel.setUserLimit(limit).then(() => true, hata('Kişi limiti değiştirilemedi'));
   if (!changed) return replyError(interaction, 'Kişi limiti değiştirilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
   const updated = store.updateRoom(room.id, { limit });
@@ -504,15 +509,13 @@ async function handleLimitSubmit(interaction) {
 
 async function handleRenameButton(interaction) {
   const room = roomOf(interaction);
-  const error = ownerError(interaction, room);
-  if (error) return replyError(interaction, error);
+  if (!room) return noRoomError(interaction);
   return interaction.showModal(ui.renameModal(room.name));
 }
 
 async function handleRenameSubmit(interaction) {
   const room = roomOf(interaction);
-  const error = ownerError(interaction, room);
-  if (error) return replyError(interaction, error);
+  if (!room) return noRoomError(interaction);
 
   const name = interaction.fields.getTextInputValue(ui.IDS.renameInput).trim().replace(/\s+/g, ' ').slice(0, 30);
   if (name.length < 2) return replyError(interaction, 'Oda ismi çok kısa.', 'En az iki karakterlik bir isim yaz.');
@@ -530,6 +533,17 @@ async function handleRenameSubmit(interaction) {
 
   const updated = store.updateRoom(room.id, { name });
   return redraw(interaction, updated);
+}
+
+// /kalici-oda odam: üyenin kendi odasının panelini komutun kullanıldığı kanalda açar.
+// Komutla açılan sayfa kalıcı ve herkese açıktır; panel bir odanın ayarıdır, gizli tutulacak kişi kaydı değildir.
+async function handleMyRoom(interaction) {
+  const room = store.roomsOwned(interaction.guildId, interaction.user.id)[0];
+  if (!room) {
+    return replyError(interaction, 'Senin bir kalıcı odan yok.', 'Başvuru panelinden oda isteyebilirsin; odası olan üye bu komutla panelini açar.');
+  }
+  await interaction.deferReply({ flags: core.CV2 });
+  return respond(interaction, ui.roomPanel(room, statusOf(room)));
 }
 
 // ── Yetkili komutları ──────────────────────────────────────────────────────────
