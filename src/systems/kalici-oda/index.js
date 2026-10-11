@@ -1,11 +1,13 @@
-// Kalıcı oda sistemi: üye başvuru panelinden form doldurur, başvurular inceleme kanalına düşer, kararı yalnızca
-// yöneticiler verir. Onaylanan başvuruda odanın kategorisi, ses ve yazı kanalları açılır; erişim yalnızca odayı
-// kullanacak kişilere verilir, @everyone kanalı göremez. Sahibine teslim kartı DM olarak gider, odası olan üye
-// oda sahibi rolünü alır ve oda ayarlarını **/kalici-oda odam** komutuyla yönetir (isim, kişi limiti, üye ekle/çıkar,
-// sahiplik devri) — panel artık odanın yazı kanalına düşmez. Oda kalıcıdır ama ay sonu şartına bağlıdır: odadakilerin
-// ses süresi her hafta ölçülüp odaya yazılır, hedefin altındaki hafta sahibine hatırlatılır ve ay başında geçen ay
-// şartı karşılamayan oda "şart yetersizliği" ile kapatılır. Açılış ve kapanış duyuru kanalında herkese açık kart olarak
-// görünür, sahibi ayrılmış odayı yönetici bir üyeye devreder. Kanallar elle silinirse oda kaydı ve rolü temizlenir.
+// Kalıcı oda sistemi: üye başvuru panelinden başvurusunu açar, odasını kullanacak üyeleri üye seçme menüsünden seçer,
+// sonra formu doldurur; başvurular inceleme kanalına düşer ve kararı yalnızca yöneticiler verir. Onaylanan oda
+// config.categoryId kategorisinin içine tek bir ses kanalı olarak açılır — ayrı yazı kanalı yoktur, odanın yazısı
+// ses kanalının kendi sohbetidir. Herkes odayı kanal listesinde görür ama bağlanamaz ve sohbetini okuyamaz; bu
+// erişim yalnızca odadakilerdedir. Sahibine teslim kartı DM olarak gider, odası olan üye oda sahibi rolünü alır ve
+// oda ayarlarını **/kalici-oda odam** komutuyla yönetir (isim, kişi limiti, üye ekle/çıkar, sahiplik devri) — panel
+// odanın kanalına düşmez. Oda kalıcıdır ama ay sonu şartına bağlıdır: odadakilerin ses süresi her hafta ölçülüp
+// odaya yazılır, hedefin altındaki hafta sahibine hatırlatılır ve ay başında geçen ay şartı karşılamayan oda
+// "şart yetersizliği" ile kapatılır. Açılış ve kapanış duyuru kanalında herkese açık kart olarak görünür, sahibi
+// ayrılmış odayı yönetici bir üyeye devreder. Odanın ses kanalı elle silinirse oda kaydı ve sahip rolü temizlenir.
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');

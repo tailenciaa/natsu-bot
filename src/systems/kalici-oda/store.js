@@ -87,11 +87,10 @@ module.exports = {
     return this.roomsOf(guildId).filter((r) => r.ownerId === userId);
   },
 
-  // Odanın kategorisi, ses ya da yazı kanalıyla gelen her olay burada odayı bulur
+  // Odayı bulan kanal: odanın ses kanalı. Ayrı yazı kanalı yeni odalarda yok; eski kayıtlarda kalan yazı kanalı
+  // elle silinirse oda kapanmaz, odanın kendisi (ses kanalı) silinirse kapanır.
   roomOfChannel(channelId) {
-    return Object.values(data.permanentRooms).find(
-      (r) => r.categoryId === channelId || r.voiceChannelId === channelId || r.textChannelId === channelId,
-    ) ?? null;
+    return Object.values(data.permanentRooms).find((r) => r.voiceChannelId === channelId) ?? null;
   },
 
   updateRoom(id, patch) {
