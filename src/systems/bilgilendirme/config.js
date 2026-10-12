@@ -334,3 +334,314 @@ const anaPanel = {
     }
   ],
 };
+
+// Ekonomi paneli: coin sisteminin bütün kapılarını tek tek anlatan, ayrı kanala giden panel. Sayılar sistem
+// config'lerinden alındığı için bir ödül değişirse buradaki metin de yenilenmeli.
+const ekonomiPanel = {
+  key: 'ekonomi',
+  name: 'Ekonomi Paneli',
+  title: 'Ekonomi',
+  intro: 'Coin nasıl kazanılır, nerede harcanır ve seni ne bekliyor: botun para sisteminin **bütün kapıları** bu kanalda.',
+  channel: '1558968836420665615',
+  sections: [
+    {
+      title: 'Coin Nedir?',
+      sub: 'Coin, Kazuki\'nin kendi parası: kazanmak için sunucuda vakit geçirmen, harcamak için üç raftan birini seçmen gerekiyor. Bu kanalda o kapıların hepsi tek tek anlatılıyor.',
+      blocks: [
+        {
+          text: 'Coin **mesaj sayısıyla ya da spamle üretilmez**; günlük ödülden, görevlerden, oyunlardan ve etkinliklerden gelir. Yani cüzdanı dolu üye gerçekten burada vakit geçirmiş üyedir.'
+        },
+        {
+          heading: 'Üç kapı',
+          items: [
+            '**`/gorev`** — bugün için üç görev çekilir, üçünü de bitirince günün demeti açılır. Nereden başlayacağını bilmiyorsan buradan başla.',
+            '**`/gunluk`** — günde bir kez yazdığın komut; coinini verir ve arka arkaya geldikçe serini uzatır.',
+            '**`/bakiye`** — cüzdanın. Bakiyen, kazancın ve harcaman bu kartta; kazanma ve harcama kapılarının butonları da kartın yanında durur.'
+          ]
+        },
+        {
+          heading: 'Ne kadar kazanılır',
+          text: 'Sadece günlük ödül ve görevlerle günde **350-500 coin** birikir. Oyunlar, keşif gezileri ve şakalaşma bunu büyütür; ama o kanallardan gelen kazanç **günde 1200 coin** ile sınırlı.'
+        },
+        {
+          note: 'Hiçbir şey satın almak istemesen bile coin, **`/siralama`** içindeki coin listesinde yerini belirler.'
+        }
+      ]
+    },
+    {
+      title: 'Günlük Ödül ve Seri',
+      sub: '**`/gunluk`** tek satırlık bir komut: günde bir kez yazıyorsun, arka arkaya yazdıkça ödülün katlanıyor. Bir gün kaçırırsan seri başa döner.',
+      blocks: [
+        {
+          heading: 'Ödül nasıl hesaplanır',
+          items: [
+            'Taban **40 coin**.',
+            'Seri bonusu: arka arkaya geçen her gün için **+12 coin**, en fazla **+72 coin**.',
+            'Seviye bonusu: ulaştığın en yüksek seviye başına **+3 coin**, en fazla **+180 coin**.'
+          ]
+        },
+        {
+          heading: 'En fazla ne kadar',
+          text: 'Taban ve iki bonus toplanınca tek günde **292 coin**\'e kadar çıkabilir. Sunucuda büyüdükçe rakam kendiliğinden yükselir.'
+        },
+        {
+          heading: 'Gün ne zaman döner',
+          text: 'Gün **İstanbul saatiyle 00:00\'da** yenilenir; gece yarısından sonra tekrar basabilirsin.'
+        },
+        {
+          heading: 'Seri neden değerli',
+          items: [
+            'Her seri günü **profil puanına +5 puan** olarak yazılır.',
+            'Bir gün kaçırırsan seri **1\'e düşer**, ama kaybettiğin coin geri istenmez.'
+          ],
+          note: 'Günlük ödül, **`/gorev`** panosundaki görevlerden birinin de ölçümü: ikisini aynı anda yapmış olursun.'
+        }
+      ]
+    },
+    {
+      title: 'Görevler ve Günün Demeti',
+      sub: 'Her gün havuzdan **üç görev** çekilir ve gece yarısı yenilenir. Üçünün de ödülünü alınca günün demeti açılır; haftalık görevler her pazartesi değişir.',
+      blocks: [
+        {
+          heading: 'Günlük görevlerden örnekler',
+          items: [
+            '**20 mesaj** yaz → **70 coin** · **60 mesaj** → **140 coin**',
+            '**30 dakika seste** kal → **90 coin** · **1,5 saat seste** kal → **180 coin**',
+            '**20 dakika ekran paylaş** → **120 coin**',
+            '**Günlük ödülünü topla** → **50 coin** · **birine saygınlık ver** → **60 coin**',
+            '**Salonda 3 el oyna** → **110 coin** · **3 geziye çık** → **100 coin**',
+            '**Arka Sokaklarda pusu kur** → **110 coin** · **3 şaka kartı at** → **90 coin**'
+          ]
+        },
+        {
+          heading: 'Günün demeti',
+          text: 'Günlük görevlerin ödülünü de topladıktan sonra **Demeti Al** butonu aktifleşir ve **120 coin + 1 anahtar + 3 sezon puanı** verir.'
+        },
+        {
+          heading: 'Haftalık görevler',
+          text: '**3 ağır görev**, her pazartesi yenilenir. Ödül **250-500 coin**, üstüne **1 anahtar**; dört günün demetini birleştiren görevde **2 anahtar**. Anahtar asıl buradan düşer.'
+        },
+        {
+          heading: 'Keşif Yolu',
+          text: 'Botun sistemlerini sırayla gezdiren **18 adımlık**, tek seferlik yol. Her adım **80-250 coin**, bazılarında üstüne **1 anahtar**; son adım profil puanını **360** yapan **Sevilen** rütbesi ve karşılığında **600 coin + 3 anahtar + rozet** var.',
+          note: 'Görev kaydı tutulmaz: ilerleme, mesaj ve ses sayıları gibi zaten sistemlerde duran veriden okunur. Yani bot kurulmadan önce attığın mesajlar da sayılır.'
+        }
+      ]
+    },
+    {
+      title: 'Anahtar, Kutu ve Sezon',
+      sub: 'Anahtarlar görevlerden, demetten ve Keşif Yolu\'ndan birikir; üçü bir kutu açar. Görevlerin ikinci ölçüsü olan sezon puanı ise ay boyunca yükselir.',
+      blocks: [
+        {
+          heading: 'Kutu nasıl açılır',
+          items: [
+            '**3 anahtar = 1 kutu**.',
+            '**`/gorev`** panosundaki **Kutu** sekmesinde **Kutu Aç** tek, **3 Kutu Aç** dokuz anahtar harcar.'
+          ]
+        },
+        {
+          heading: 'Kutudan ne çıkar',
+          items: [
+            '**120-400 coin** → **%40**',
+            '**400-900 coin** → **%22**',
+            '**1 anahtar** → **%15**',
+            '**Profil çerçevesi** → **%13**',
+            '**Sergi rozeti** → **%7**',
+            '**Profil teması** → **%3**'
+          ]
+        },
+        {
+          heading: 'Sezon eşikleri',
+          items: [
+            '**40 puan** → **400 coin**',
+            '**90 puan** → **5 anahtar**',
+            '**150 puan** → **1200 coin**',
+            '**220 puan** → **10 anahtar**',
+            '**300 puan** → profil çerçevesi'
+          ],
+          note: 'Her eşik **ayda bir kez** alınır ve sezon **her ayın başında sıfırlanır**. Hangi eşikte olduğunu **`/gorev`** panosunun **Sezon** sekmesi gösterir. Her **5 kutuda bir kozmetik garanti**; sıradaki kozmetik zaten sendeyse kutu **600 coin** verir, anahtar boşa yanmaz.'
+        }
+      ]
+    },
+    {
+      title: 'Oyun Salonu',
+      sub: '**`/oyun`** üç masayı açar: **rulet**, **şans merdiveni** ve **keşif gezileri**. Bahis butonlardan seçilir; rulet ve merdiven uzun vadede coin yakar, keşif ücretsizdir.',
+      blocks: [
+        {
+          heading: 'Bahis seçenekleri',
+          text: '**50 / 100 / 250 / 500 / 1000 coin**.'
+        },
+        {
+          heading: 'Rulet',
+          items: [
+            '**Kırmızı** ya da **siyah**: tutma olasılığı **%47**, kazanç **2 katı**.',
+            '**Yeşil**: olasılık **%7**, kazanç **14 katı**.',
+            '15 cepten 7\'si kırmızı, 7\'i siyah, 1\'i yeşil; masa hep kârlıdır.'
+          ]
+        },
+        {
+          heading: 'Şans Merdiveni',
+          items: [
+            '**8 basamak**; her basamakta **tırman** ya da **çek** butonuna basarsın.',
+            'Düşme olasılığı ilk basamakta **%15**, son basamakta **%78**.',
+            'Kazanç, çıkılan basamakların çarpanlarının bahsinle çarpımı; tepede **182 katı**na kadar çıkar.',
+            'Yarım kalan tırmanış **30 dakika** sonra düşer.'
+          ]
+        },
+        {
+          heading: 'Keşif gezileri',
+          items: [
+            '**Ücretsiz**: günde **8 gezi**, geziler arası **20 dakika**.',
+            '**Kıyı Kasabası** herkese açık → **25-80 coin**, anahtar, çerçeve.',
+            '**Fısıltı Ormanı** (seviye **8**), **Kırık Mağara** (seviye **20**), **Ay Işığı Bahçesi** (seviye **35**): bölge büyüdükçe yağma **900-1600 coin**\'e, rozet, tema ve kapaklara çıkar.',
+            'Bir gezide **500 coin** ve üstü kazanırsan kazanç kanalda duyurulur.'
+          ],
+          note: 'Kumarhane kazançları günlük tavana sayılmaz, keşif ganimeti sayılır.'
+        }
+      ]
+    },
+    {
+      title: 'Arka Sokaklar',
+      sub: '**`/sokak`** suç tarafının sayfası: üye soymak, Devletin Kasasını zorlamak, cezaevi ve kefalet. Kazancı yüksek, riski de öyle.',
+      blocks: [
+        {
+          heading: 'Üye soymak',
+          items: [
+            'Suç işlemek için **seviye 5** gerekir; **seviye 3** altındaki üyeler soyulamaz.',
+            'Günde **4 girişim** hakkın var, kendi girişimlerin arası **30 dakika**, aynı kişiye yeniden **3 saat** sonra.',
+            '**`/çal`** ile bir üyeyi soymaya kalkışırsın; kurban **90 saniye** içinde direnmezse cüzdanının **%5-%20**\'si (tek elde en fazla **500 coin**) el değiştirir.',
+            'Hedefin cüzdanında en az **150 coin** olmalı.'
+          ]
+        },
+        {
+          heading: 'Kurban direnirse',
+          text: 'Yakalanma olasılığı **%60**\'tan başlar, müdahale edenle arandaki seviye farkı başına **%2** oynar (**%35-%90** arasında). Yakalanırsan **150 coin** ceza ve **20 dakika** cezaevi; kefalet **350 coin**. İkisi de Devletin Kasasına yazar.'
+        },
+        {
+          heading: 'Kasayı soymak',
+          items: [
+            'Kasa için **seviye 12** gerekir ve kasada en az **200 coin** olmalı.',
+            '**`/çal kasa`** → alınan **%10-%25** (tek elde en fazla **800 coin**), bir kasadan sonra **2 saat** yeni kasa girişimi yok.',
+            '**60 saniye** içinde senden başka biri müdahale ederse yakalanırsın; kurtaran ilk kişiye **100 coin** ikramiye düşer.',
+            'Kasa yakalama cezası: **400 coin**, **60 saat** cezaevi, kefalet **900 coin**.'
+          ]
+        },
+        {
+          note: 'Kasa **1500 coin** ile kurulur ve sadece ödenen ceza ve kefaletlerle büyür. Bir kez soyulan ya da direnen üye **6 saat** dokunulmaz olur.'
+        }
+      ]
+    },
+    {
+      title: 'Şakalaşma',
+      sub: '**`/öp`**, **`/tokat`** ve **`/şakalaş`**: muhataba şaka kartı atarsın, kart kanala düşer. Karşılık gelirse **iki taraf da** coin alır.',
+      blocks: [
+        {
+          heading: 'Nasıl çalışır',
+          items: [
+            '**`/öp`** ya da **`/tokat`** ile bir üyeye kart atarsın; kart kanalda görünür.',
+            'Muhatabın **3 dakika** içinde karşılık butonuna basarsa ödül ikinize de yatar: **öp 10-40 coin**, **tokat 5-45 coin**.',
+            'Karşılık gelmezse kart boşta kalır, kimse coin kaybetmez.'
+          ]
+        },
+        {
+          heading: 'Sınırlar',
+          items: [
+            'Günde **12 kart**, aynı kişiyle aranda **10 dakika** bekleme.',
+            'Karşılık ödülleri günlük **1200 coin** tavanına sayılır.'
+          ]
+        },
+        {
+          heading: 'Şakalaş sayfası',
+          text: '**`/şakalaş`** sana uzanan kartları süreleriyle toplar, kendi şaka sayılarını ve kuralları gösterir; **`/bakiye`** cüzdanındaki **Şakalaş** butonu da aynı sayfayı açar.'
+        }
+      ]
+    },
+    {
+      title: 'Nereye Harcanır',
+      sub: 'Coin üç rafta harcanır: **profil mağazası**, **butik** ve **evlilik**. Üçüne de **`/bakiye`** cüzdanının yanındaki butonlardan girilir.',
+      blocks: [
+        {
+          heading: 'Mağaza (profil süsleri)',
+          items: [
+            '**Çerçeveler**: Bronz **1200** · Gümüş **2600** · Altın **4800** · Neon **7200 coin**',
+            '**Profil temaları**: **2500-7800 coin**',
+            '**Kapak arka planları**: **1800-4800 coin**',
+            '**Sergi rozetleri**: **1500-6400 coin**'
+          ]
+        },
+        {
+          heading: 'Butik',
+          items: [
+            '**Ek saygınlık hakkı** → günde bir hak daha: **1500 coin**',
+            '**Evlilik yüzüğü** → teklif için: **4000 coin**',
+            '**Renkli rol** → sunucuda adın renkli yazılır: **9000-15000 coin**, kalıcı'
+          ]
+        },
+        {
+          heading: 'Evlilik',
+          items: [
+            'Yüzüğü butikten alır, **`/evlilik teklif`** ile uzanırsın; muhatap kabul ederse yüzük **o anda** yanar.',
+            'Evli kalırsanız **her 7 günde bir ikinize de 400 coin** yıl dönümü ödülü yatar.',
+            'Boşanma bedeli **1200 coin**, doğrudan Devletin Kasasına yazar.'
+          ]
+        },
+        {
+          heading: 'Siparişlerim',
+          text: '**`/bakiye`** yanındaki **Siparişlerim** defteri aldığın her şeyi fiyatıyla gösterir: kozmetikler kalıcı, saygınlık hakkı ve yüzük tükenen.',
+          note: 'Harcanan coin profil puanından **düşmez**; sahip olduğun her kozmetik puana **+10** olarak yazılır.'
+        }
+      ]
+    },
+    {
+      title: 'Tavan, Sıralama ve Profil Puanı',
+      sub: 'Kazanmanın bir sınırı, emeğin de bir görünürlüğü var: günlük tavan, coin sıralaması ve profil puanı.',
+      blocks: [
+        {
+          heading: 'Günlük tavan',
+          text: 'Keşif ganimeti, şakalaşma ödülü, kasa soygunu ve kasa ikramiyesi **günde 1200 coin** ile sınırlı. Kumarhane kazançları ve üye→üye para transferi tavana sayılmaz; soyulan coin, başkasının tavanını yakmaz.'
+        },
+        {
+          heading: 'Sıralamalar',
+          items: [
+            '**`/siralama`** içindeki **coin** listesi **anlık cüzdan bakiyeni** ölçer; harcadıkça listede düşersin.',
+            '**VIP** listesi rolü en erken alan üyeyi başa yazar.'
+          ]
+        },
+        {
+          heading: 'Profil puanı',
+          items: [
+            'Alınan her görev **+2 puan** (görevlerden en fazla **120**).',
+            'Sahip olunan her kozmetik **+10 puan** (en fazla **130**).',
+            'Her seri günü **+5 puan** (en fazla **70**).',
+            'Puan **1000**\'de tavan; **Sevilen** rütbesi **360**, en üst rütbe **Destan 930**.'
+          ]
+        },
+        {
+          note: 'Cüzdanındaki coinin kendisi puana yazılmaz; harcayan olduğu yerde cezalandırılmaz.'
+        }
+      ]
+    },
+    {
+      title: 'Nereden Başlamalı',
+      sub: 'Beş adım, hepsi bir-iki dakika. Sırayla yaparsan botun bütün kapıları bir kez açılmış olur ve ertesi gün ne yapacağını bilirsin.',
+      blocks: [
+        {
+          items: [
+            '`1.` **`/gunluk`** yaz, ilk coinlerini topla.',
+            '`2.` **`/gorev`** yaz, bugünün üç görevine bak ve **Keşif Yolu** sekmesinden yürümeye başla.',
+            '`3.` **`/bakiye`** yaz; cüzdanın açılır, yanındaki **Görevler · Oyun Salonu · Arka Sokaklar · Şakalaş** ve **Mağaza · Butik · Siparişlerim** butonları bütün kapıları gösterir.',
+            '`4.` **`/oyun`** ile ilk gezine çık ya da en düşük bahisle bir el çevir.',
+            '`5.` **`/seviye`** ve **`/siralama`** ile nerede olduğunu gör.'
+          ],
+          plain: true
+        },
+        {
+          heading: 'Takılırsan',
+          text: 'Görev satırları neyi ölçtüğünü yazıyor. Yine de takılırsan <#1538535372588326973> kanalından **Talep Oluştur** butonuyla destek alabilirsin; komutların tam listesi <#1538536351119446127> kanalında **`/yardim`** içinde.'
+        }
+      ]
+    }
+  ],
+};
+
+module.exports = { panels: [anaPanel, ekonomiPanel] };

@@ -1,9 +1,8 @@
-// Bilgilendirme paneli: her bölüm ayrı bir mesaj (container). Düzen kurallar paneliyle aynı: başlık, çizgiyle ayrılan
-// bloklar. İlk mesajın en üstünde panel başlığı ve görsel bulunur.
+// Bilgilendirme panelleri: her bölüm ayrı bir mesaj (container). Düzen kurallar paneliyle aynı: başlık, çizgiyle ayrılan
+// bloklar. İlk mesajın en üstünde panel başlığı, girişi ve varsa görsel bulunur.
 const { ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder } = require('discord.js');
 const { text, divider } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
-const config = require('./config');
 
 const TITLE = `${botName} Bilgilendirme`;
 
