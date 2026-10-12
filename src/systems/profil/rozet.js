@@ -12,6 +12,11 @@ const seviyeStore = require('../seviye/store');
 const { levelFromXp } = require('../seviye/level');
 const vipStore = require('../vip/store');
 const gorevStore = require('../gorev/store');
+const sucStore = require('../hirsizlik/store');
+const oyunStore = require('../oyun/store');
+const eglenceStore = require('../eglence/store');
+const butikStore = require('../butik/store');
+const evlilikStore = require('../evlilik/store');
 const profileStore = require('./store');
 
 const DAY = 24 * 60 * 60 * 1000;
