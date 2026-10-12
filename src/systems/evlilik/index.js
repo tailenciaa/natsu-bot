@@ -4,7 +4,10 @@
 // Yıl dönümü ödülü tek coin girişidir ve çiftin birlikte geçirdiği her yedi günde bir, iki tarafa birden ödenir.
 // Zamanlama kuralı: teklif kartı kanalda bekler; muhatap config'in verdiği pencerede düğmeye basmazsa bekçi
 // kartı yerinde kapatır. Bekçi bot açılırken bir kez, sonra sabit aralıkla çalışır.
-const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
+// Rol düzeni: çiftin rolünü bot kabul anında yaratır; ad, renk ve simge teklifi götüren üye tarafından seçilir,
+// muhatap kabul ederken kartta neyi kabul ettiğini görür. Rol boşanmada silinir. Yaratılamazsa evlilik yine
+// kaydedilir ve gerekçe evlilik kartına yazılır.
+const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isMenuOwner, menuOwnerError, stillMember } = require('../../core/helpers');
