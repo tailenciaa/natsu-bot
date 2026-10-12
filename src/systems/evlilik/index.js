@@ -50,7 +50,7 @@ const commands = [
             .addChoices(...config.rol.renkler.map((r) => ({ name: r.ad, value: r.key }))),
         )
         .addStringOption((o) =>
-          o.setName('simge').setDescription('Rol adının başına konan emoji. Boş bırakırsan yüzük konur.'),
+          o.setName('simge').setDescription('Çift rolünüzün simgesi (emoji). Boş bırakırsan yüzük simgesi konur.'),
         ),
     )
     .addSubcommand((s) => s.setName('liste').setDescription('Sunucudaki evli çiftleri ve birlikte geçirdikleri günü listeler.'))
