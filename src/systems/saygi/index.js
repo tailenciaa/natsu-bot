@@ -224,6 +224,8 @@ function handleReady(client) {
 
 module.exports = {
   name: 'saygi',
+  give,
+  rejection,
   commands,
   help: {
     category: ['siralama', 'Sıralama'],

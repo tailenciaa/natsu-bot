@@ -16,6 +16,7 @@ const IDS = {
   rate: 'puan', // puan:<id>:<puan>
   rateModal: 'puan-form', // puan-form:<id>:<puan>
   rateComment: 'puan-yorum',
+  rep: 'puan-saygi', // puan-saygi:<id>
   report: 'puan-bildir', // puan-bildir:<id>
   reportModal: 'puan-bildir-form', // puan-bildir-form:<id>
   reportReason: 'puan-bildir-sebep',
@@ -67,20 +68,42 @@ const CATEGORIES = {
 const categoryOf = (rating) => CATEGORIES[rating.category] ?? CATEGORIES.destek;
 const refText = (rating) => categoryOf(rating).ref(rating);
 
+// Saygınlık satırı: değerlendirilen yetkiliye +1 saygınlık verir. Bir kez kullanılır, sonra kilitlenir;
+// saygınlığın kendisi saygi sisteminin kurallarına tabidir (günde bir kez, Butik hakkı).
+function repRow(rating) {
+  const given = Boolean(rating.repAt);
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`${IDS.rep}:${rating.id}`)
+      .setStyle(given ? ButtonStyle.Secondary : ButtonStyle.Success)
+      .setLabel(given ? 'Saygınlık Verildi' : 'Saygınlık Ver')
+      .setDisabled(given),
+  );
+}
+
 // DM'deki puanlama bölümü (destek talebinin kapanış DM'inin ya da görüşme / oryantasyon sonrası DM'in altına eklenir),
-// puan verilince teşekkür haline gelir
+// puan verilince teşekkür haline gelir. Yıldızların yanında yetkiliye saygınlık verilebilen bir buton da durur.
 function ratingSection(container, rating) {
   container.addSeparatorComponents(divider());
   if (rating.score) {
     // Puan verilince DM yeşile döner
-    return container.setAccentColor(colors.success).addTextDisplayComponents(
-      text(`**Geri bildirimin için teşekkürler!**\n**${rating.staffName}** yetkilisine ${stars(rating.score)} verdin.`),
-    );
+    return container
+      .setAccentColor(colors.success)
+      .addTextDisplayComponents(
+        text(
+          `**Geri bildirimin için teşekkürler!**\n**${rating.staffName}** yetkilisine ${stars(rating.score)} verdin.` +
+            (rating.repAt ? '\nYetkiliye bir saygınlık da sen bıraktın.' : ''),
+        ),
+      )
+      .addActionRowComponents(repRow(rating));
   }
   const category = categoryOf(rating);
   return container
     .addTextDisplayComponents(
-      text(`**${category.handled(rating.staffName)}**\n${category.question} Yıldızlardan birini seçerek puan verebilirsin.`),
+      text(
+        `**${category.handled(rating.staffName)}**\n${category.question} Yıldızlardan birini seçerek puan verebilirsin.` +
+          (rating.repAt ? '' : ' Yetkiliden memnun kaldıysan saygınlık butonuyla ona bir saygınlık da bırakabilirsin.'),
+      ),
     )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
@@ -91,7 +114,8 @@ function ratingSection(container, rating) {
             .setLabel('⭐'.repeat(score)),
         ),
       ),
-    );
+    )
+    .addActionRowComponents(repRow(rating));
 }
 
 // Üye DM'de puana basınca açılan yorum formu
