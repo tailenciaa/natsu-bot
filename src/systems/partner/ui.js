@@ -34,6 +34,7 @@ const IDS = {
   trustedPage: 'partner-guven-sayfa', // partner-guven-sayfa:<sayfa>:<buton yeri>
   trustedPanelPage: 'partner-guven-panel-sayfa', // partner-guven-panel-sayfa:<sayfa>:<buton yeri>
   deletePost: 'partner-sil', // partner-sil:<talep>
+  cancel: 'partner-iptal', // partner-iptal:<talep>
   trustedSelect: 'partner-guven-sec',
   trustedAction: 'partner-guven-y', // partner-guven-y:<kayıt>:<teklif|kaldir>
   contactAdd: 'partner-yetkili-ekle', // partner-yetkili-ekle:<kayıt>
@@ -329,7 +330,9 @@ function postCard(request, trusted, banned, stats = {}) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('### İşlemler\nÜye için tek düğme **Sunucuya Katıl**; diğerleri partner yetkililerine ve liderine açıktır.'));
+    .addTextDisplayComponents(
+      text('### İşlemler\nÜye için tek düğme **Sunucuya Katıl**. **Partneri İptal Et** ve **Yasaklıya Al** yalnızca partner liderine, **Partneri Sil** ise kaydı yapan yetkiliye (ve lidere) açıktır.'),
+    );
 
   // Elle atılan ve Discord daveti içermeyen ilanda katılma düğmesi olmaz; davetin ilanın metninde araman gerekir
   if (url) {
@@ -350,11 +353,17 @@ function postCard(request, trusted, banned, stats = {}) {
     )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
+        // İptal: partnerlik biter, sunucunun tüm paylaşım mesajları kaldırılır (sadece lider kullanabilir)
+        new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger),
         // Yasaklıysa aynı yerdeki buton yasağı kaldırır (sadece lider kullanabilir)
         new ButtonBuilder()
           .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
           .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
           .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger),
+      ),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
       ),
     );
@@ -410,6 +419,25 @@ const serverBannedDm = (reason) =>
     'Sunucun Yasaklı',
     'Sunucun partner sisteminden yasaklandığı için **talebin kabul edilmedi**. Yasak kaldırılana kadar bizimle partner olamazsın.',
     [],
+    reason,
+  );
+
+// Partnerliği sona eren sunucunun kayıtlı yetkililerine giden DM. kind: 'iptal' (partnerlik biter) | 'yasak'
+// (sunucu ya da yetkili partner sisteminden yasaklanır). removed: paylaşım kanalından silinen mesaj sayısı.
+const partnerRevokedDm = (serverId, { kind, by, removed, reason = null }) =>
+  noticeCard(
+    kind === 'yasak' ? 'Sunucun Partner Sisteminden Yasaklandı' : 'Partnerliğin İptal Edildi',
+    kind === 'yasak'
+      ? 'Sunucun partner sisteminden **yasaklandı**, paylaşım kanalındaki tüm ilanların kaldırıldı. Yasak kaldırılana kadar bizimle yeniden partner olamazsın.'
+      : 'Partnerliğimiz **iptal edildi**, paylaşım kanalındaki tüm ilanların kaldırıldı ve sunucun güvenilir partner listesinden çıkarıldı. İsterseniz yeni bir taleple tekrar başvurabilirsiniz.',
+    [
+      '### İşlem Bilgileri',
+      rows([
+        ['Sunucu ID', chip(serverId ?? 'belirtilmedi')],
+        ['İşlemi yapan', `<@${by}>`],
+        ['Kaldırılan paylaşım', chip(`${removed} mesaj`)],
+      ]),
+    ],
     reason,
   );
 
@@ -911,6 +939,7 @@ module.exports = {
   requesterResult,
   serverBannedLog,
   serverBannedDm,
+  partnerRevokedDm,
   renewalCancelledLog,
   trustedAddModal,
   contactModal,
