@@ -156,7 +156,7 @@ function requestModalWithMessageId(messageId) {
         ),
       new LabelBuilder()
         .setLabel('Partner Metni')
-        .setDescription('Sunucunun partner metni, paylaşım kanalına bu haliyle gider.')
+        .setDescription('Paylaşım kanalına bu haliyle gider; metnindeki davet bağlantısı butona dönüşür.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.adText)
@@ -438,7 +438,7 @@ function trustedList(entries, page = 0) {
     .addTextDisplayComponents(
       head(
         'Güvenilir Partnerler',
-        '**Sürekli partner olduğumuz güvenilir sunucuların listesi.** Menüden bir sunucu seçerek ekleme tarihini, partner yetkililerini, metnini ve yapabileceğin işlemleri görebilirsin.',
+        '**Sürekli partner olduğumuz güvenilir sunucuların listesi.** Menüden bir sunucu seçerek ekleme tarihini, partner yetkililerini, metnini, **davet bağlantısını** ve yapabileceğin işlemleri görebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -869,7 +869,7 @@ function panelOfferModal(trustedId) {
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('Partner Metni')
-        .setDescription('Sunucunun partner metni, onaylanınca paylaşım kanalına bu haliyle gider.')
+        .setDescription('Onaylanınca bu haliyle paylaşılır; metnindeki davet bağlantısı butona dönüşür.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.adText)
