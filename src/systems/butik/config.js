@@ -15,6 +15,7 @@ module.exports = {
     price: 1500,
     note: 'Bekleme süren dolmadan bir üyeye daha saygınlık verir',
     adetAdi: 'hak',
+    kullanim: 'saygınlık verirken',
   },
   yuzuk: {
     key: 'yuzuk',
@@ -23,6 +24,7 @@ module.exports = {
     price: 4000,
     note: '/evlilik ile teklif götürürken harcanır',
     adetAdi: 'yüzük',
+    kullanim: 'evlilik teklifinde',
   },
 
   // Kalıcı renkler: bir kez alınır, rol olduğu için üye sunucudan düştüğünde kendiliğinden geri verilir
