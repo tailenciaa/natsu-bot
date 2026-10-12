@@ -78,6 +78,7 @@ function applyPanel() {
     title: 'Kalıcı Oda Sistemi',
     sub: 'Sunucuda sana ait kalıcı bir ses odası olsun istiyorsan **Başvuru Yap** ile odanı kullanacakları seç, sonra formu doldur. Onay yetkisi sadece yöneticilerde.',
     button: { id: IDS.apply, label: 'Başvuru Yap' },
+    image: config.banner,
   });
 
   return container

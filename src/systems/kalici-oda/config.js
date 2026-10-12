@@ -12,6 +12,10 @@ module.exports = {
     notifications: '1538941133684482129',
   },
 
+  // Başvuru panelinin görseli. Kalıcı kopyası assets/banners/kalcodatai.jpg altında durur; dosya adı bağlantıdaki adla
+  // aynı olduğu sürece bot indirmeye hiç gerek duymaz, süresi dolan imza derdi olmaz (core/banner.js).
+  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1559160909249646612/kalcodatai.jpg',
+
   roles: {
     // Başvuruları inceleyen rol. Boş bırakılırsa (null) Onayla ve Reddet yalnızca yönetici yetkisi olanlar çalışır;
     // başvuruları sadece yöneticiler onaylasın istiyorsa null kalmalı.

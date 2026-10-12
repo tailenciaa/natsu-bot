@@ -67,7 +67,11 @@ module.exports = ({ mock, src }) => {
 
   const where = 'Kalıcı oda başvuru kanalı';
   const noMentions = { allowedMentions: { parse: [] } };
-  const message = (container) => ({ components: [container], ...noMentions });
+  // Panellerde Discord CDN afişi üretimde yerel eke döner (core/banner.js + core/panel.js syncPanel);
+  // önizleme de aynı kapıdan geçsin ki attachment:// adı ile gönderilen dosya hep birbirini tutsun.
+  const bannerFiles = (container) =>
+    src('core/banner').attachmentsFor([...JSON.stringify(container.toJSON()).matchAll(/attachment:\/\/([^"]+)/g)].map((m) => m[1]));
+  const message = (container) => ({ components: [container], files: bannerFiles(container), ...noMentions });
 
   // Eski bir oda kaydı: ayrı yazı kanalı ve limitsiz oda. textChannelId artık hiçbir kartta gösterilmez.
   const second = room({
