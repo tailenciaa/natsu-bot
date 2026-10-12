@@ -309,9 +309,12 @@ async function kabul(interaction, no) {
   const acilan = await ciftRolu(interaction.guild, t.rol, `Evlilik: ${t.oneren} + ${t.hedef}`);
   const rolId = acilan.ok ? acilan.role.id : null;
   store.evlendir(t.oneren, t.hedef, at, rolId);
+  // Rol açıldı ama giydirilemediyse (botun rol sırası geride kalmışsa) evlilik yerinde durur; eksik kartta yazar
+  let uyari = acilan.ok ? null : acilan.sebep;
   if (rolId) {
-    await rolVer(interaction.guild, t.oneren, rolId, 'Evlilik');
-    await rolVer(interaction.guild, t.hedef, rolId, 'Evlilik');
+    const a = await rolVer(interaction.guild, t.oneren, rolId, 'Evlilik');
+    const b = await rolVer(interaction.guild, t.hedef, rolId, 'Evlilik');
+    if (!a || !b) uyari = 'Rol açıldı ama ikinizden birine giydirilemedi; botun rolü diğer rollerin üstünde durmuyor.';
   }
 
   return interaction.update({
