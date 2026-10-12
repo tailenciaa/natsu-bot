@@ -189,9 +189,9 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 
 | Durum | Görünürlük |
 | --- | --- |
-| İşlem sonucu ve onay kartları (satın alma, giyme, saygı, VIP, seviye/çekiliş duyuruları, `/gunluk`, **kutu açılışı**) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs |
+| İşlem sonucu ve onay kartları (satın alma, giyme, saygı, VIP, seviye/çekiliş duyuruları, `/gunluk`, **kutu açılışı**, **evlilik teklifi ve sonucu**, boşanma, yıl dönümü) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs. Teklifin yerini alan sonuç kartı aynı mesajı günceller, kanal dolmaz |
 | Liste ve sıralama tabloları, paneller, duyurular, loglar, talep/ortaklık inceleme kartları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
-| **Sayfalar:** `/profil` kartı ve rozet/vitrin/mağaza/kapak/görünüm/**Puanım** sayfaları, `/bakiye` cüzdanı ve **Butik** rafı, `/gorev` paneli, `/seviye`, `/siralama`, `/yardim` | Kalıcı ve herkese açık; sekmeler ve düzenleme düğmeleri `update` ile aynı mesajı yerinde yeniler |
+| **Sayfalar:** `/profil` kartı ve rozet/vitrin/mağaza/kapak/görünüm/**Puanım** sayfaları, `/bakiye` cüzdanı ve **Butik** rafı, `/evlilik durum` ve `liste`, `/gorev` paneli, `/seviye`, `/siralama`, `/yardim` | Kalıcı ve herkese açık; sekmeler ve düzenleme düğmeleri `update` ile aynı mesajı yerinde yeniler |
 | **Kalıcı panel cevapları:** `cezalarim` süre/sebep/itiraz kartları, `yenihesap` kısıt kartı, `sicil` ceza detayı, yayın/etiket/partner görme rolü onayları, çekilişe katılım, destek ve kalıcı oda başvurusu cevabı, log paneli bağlantısı ve detayı, oryantasyon devir seçicisi | Sadece basana (`{ ephemeral: true }`) — kalıcı olsalar panelin altı dolar ve panel kaybolur |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana (`replyError`) |
 | `/sicil` yetkili komut kanalı dışında (üye kendi sicilini bakıyor) | Sadece kullanana; ceza kaydı kanalda görünmez |
