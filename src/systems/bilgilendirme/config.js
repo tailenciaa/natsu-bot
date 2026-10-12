@@ -367,61 +367,24 @@ const ekonomiPanel = {
       ]
     },
     {
-      title: 'Günlük Ödül ve Seri',
-      sub: '**`/gunluk`** tek satırlık bir komut: günde bir kez yazıyorsun, arka arkaya yazdıkça ödülün katlanıyor. Bir gün kaçırırsan seri başa döner.',
+      title: 'Her Gün İki Dakika',
+      sub: '**`/gunluk`** serini büyütür, **`/gorev`** bugünün üç görevini bitirince demetini açar. İkisi birlikte iki dakika sürer; gün **İstanbul saatiyle 00:00\'da** yenilenir.',
       blocks: [
         {
-          heading: 'Ödül nasıl hesaplanır',
+          heading: 'Günlük ödül',
           items: [
-            'Taban **40 coin**.',
-            'Seri bonusu: arka arkaya geçen her gün için **+12 coin**, en fazla **+72 coin**.',
-            'Seviye bonusu: ulaştığın en yüksek seviye başına **+3 coin**, en fazla **+180 coin**.'
+            'Taban **40 coin**; arka arkaya her seri günü **+12** (en fazla **+72**), ulaştığın her seviye **+3** (en fazla **+180**) → tek günde en fazla **292 coin**.',
+            'Bir gün kaçırırsan seri **1\'e** düşer ama kaybettiğin coin geri istenmez. Her seri günü profil puanına **+5** yazılır.'
           ]
         },
         {
-          heading: 'En fazla ne kadar',
-          text: 'Taban ve iki bonus toplanınca tek günde **292 coin**\'e kadar çıkabilir. Sunucuda büyüdükçe rakam kendiliğinden yükselir.'
-        },
-        {
-          heading: 'Gün ne zaman döner',
-          text: 'Gün **İstanbul saatiyle 00:00\'da** yenilenir; gece yarısından sonra tekrar basabilirsin.'
-        },
-        {
-          heading: 'Seri neden değerli',
+          heading: 'Üç görev ve demet',
           items: [
-            'Her seri günü **profil puanına +5 puan** olarak yazılır.',
-            'Bir gün kaçırırsan seri **1\'e düşer**, ama kaybettiğin coin geri istenmez.'
+            'Havuzdan çekilen görevler örneğin **20 mesaj** (70 coin), **30 dakika seste** (90 coin), **günlük ödülünü topla** (50 coin), **birine saygınlık ver** (60 coin), **3 gezi** (100 coin) ya da **3 şaka kartı** (90 coin).',
+            'Üçünün ödülünü de alınca **Demeti Al** butonu aktifleşir: **120 coin + 1 anahtar + 3 sezon puanı**.',
+            'Haftalık görevler her pazartesi değişir: **3 ağır görev**, **250-500 coin** ve üstüne **1 anahtar**.',
+            '**Keşif Yolu** ise tek seferlik, **18 adımlık** tur: botun sistemlerini sırayla gezdirir, her adım **80-250 coin**, sonunda **600 coin + 3 anahtar** ve **Sevilen** rütbesi.'
           ],
-          note: 'Günlük ödül, **`/gorev`** panosundaki görevlerden birinin de ölçümü: ikisini aynı anda yapmış olursun.'
-        }
-      ]
-    },
-    {
-      title: 'Görevler ve Günün Demeti',
-      sub: 'Her gün havuzdan **üç görev** çekilir ve gece yarısı yenilenir. Üçünün de ödülünü alınca günün demeti açılır; haftalık görevler her pazartesi değişir.',
-      blocks: [
-        {
-          heading: 'Günlük görevlerden örnekler',
-          items: [
-            '**20 mesaj** yaz → **70 coin** · **60 mesaj** → **140 coin**',
-            '**30 dakika seste** kal → **90 coin** · **1,5 saat seste** kal → **180 coin**',
-            '**20 dakika ekran paylaş** → **120 coin**',
-            '**Günlük ödülünü topla** → **50 coin** · **birine saygınlık ver** → **60 coin**',
-            '**Salonda 3 el oyna** → **110 coin** · **3 geziye çık** → **100 coin**',
-            '**Arka Sokaklarda pusu kur** → **110 coin** · **3 şaka kartı at** → **90 coin**'
-          ]
-        },
-        {
-          heading: 'Günün demeti',
-          text: 'Günlük görevlerin ödülünü de topladıktan sonra **Demeti Al** butonu aktifleşir ve **120 coin + 1 anahtar + 3 sezon puanı** verir.'
-        },
-        {
-          heading: 'Haftalık görevler',
-          text: '**3 ağır görev**, her pazartesi yenilenir. Ödül **250-500 coin**, üstüne **1 anahtar**; dört günün demetini birleştiren görevde **2 anahtar**. Anahtar asıl buradan düşer.'
-        },
-        {
-          heading: 'Keşif Yolu',
-          text: 'Botun sistemlerini sırayla gezdiren **18 adımlık**, tek seferlik yol. Her adım **80-250 coin**, bazılarında üstüne **1 anahtar**; son adım profil puanını **360** yapan **Sevilen** rütbesi ve karşılığında **600 coin + 3 anahtar + rozet** var.',
           note: 'Görev kaydı tutulmaz: ilerleme, mesaj ve ses sayıları gibi zaten sistemlerde duran veriden okunur. Yani bot kurulmadan önce attığın mesajlar da sayılır.'
         }
       ]
