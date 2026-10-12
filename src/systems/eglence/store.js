@@ -40,6 +40,14 @@ const ikiliAnahtari = (a, b) => [a, b].sort().join(':');
 
 const kart = (no) => e.kartlar[no] ?? null;
 
+// Bu üyeye uzanan açık kartlar: şakalaşma sayfası bunları listeler ki kimse düğmesini kanalda aramasın.
+// Süresi geçmişler de burada durur — sayfa "karşılık bekleniyor" ile "artık geç kaldın" farkını gösterir.
+function acikKartlar(userId) {
+  return Object.values(e.kartlar)
+    .filter((k) => k.hedef === userId)
+    .sort((a, b) => a.sonAt - b.sonAt);
+}
+
 // Atılan kart kayda geçer: düğme bu numaradan hangi ikilinin şakasını çözdüğünü bulur
 function kartKaydet({ no, eylem, saldirgan, hedef, sonAt }, at = Date.now()) {
   yaz(() => {
@@ -115,6 +123,7 @@ module.exports = {
   rec,
   ikiliAnahtari,
   kart,
+  acikKartlar,
   kartKaydet,
   kartKapat,
   kartTemizle,
