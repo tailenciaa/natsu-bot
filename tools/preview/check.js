@@ -202,8 +202,30 @@ if (!filter.length) {
   if (cats.size > 25) add('komut', '(genel)', 'HATA', 'help', 'yardim-kategori-25', '', `${cats.size} yardım kategorisi var (kategori menüsü en çok 25 seçenek alır)`);
 }
 
+// ── (c2) görev ölçüm eşleşmesi ────────────────────────────────────────────────
+// olcum.js'te deger() bilinmeyen anahtarı sessizce 0 döndürerek yutuyor: yanlış yazılmış bir `olcum` adı görevi
+// hiçbir üyenin dolduramayacağı bir satıra çevirir ve panelde hiçbir yerde hata görünmez. Adlar burada karşılaştırılır.
+const gorevConfig = fromRoot('src', 'systems', 'gorev', 'config');
+const { OLCUMLER } = fromRoot('src', 'systems', 'gorev', 'olcum');
+const tumGorevler = [...gorevConfig.GUNLUK_HAVUZU, ...gorevConfig.HAFTALIK_HAVUZU, ...gorevConfig.YOL];
+const izlenenEylemler = new Set([...Object.values(gorevConfig.IZLENEN.komut), ...Object.values(gorevConfig.IZLENEN.buton)]);
+
+for (const [liste, katman] of [[gorevConfig.GUNLUK_HAVUZU, 'günlük'], [gorevConfig.HAFTALIK_HAVUZU, 'haftalık'], [gorevConfig.YOL, 'yol']]) {
+  for (const gorev of liste) {
+    const where = `${katman}/${gorev.key}`;
+    if (!OLCUMLER[gorev.olcum]) add('gorev', 'gorev', 'HATA', where, 'olcum-yok', 'olcum', `"${gorev.olcum}" OLCUMLER'de yok: satır hiç ilerlemez`);
+    // goruldu: adı YOL'da bir adımın kilidini açar; IZLENEN'de karşılığı yoksa o bayrağı hiçbir etkileşim yazmaz
+    const iz = /^goruldu:(.+)$/.exec(gorev.olcum);
+    if (iz && !izlenenEylemler.has(iz[1])) add('gorev', 'gorev', 'HATA', where, 'olcum-izlenmiyor', 'olcum', `"${gorev.olcum}" IZLENEN'de yok: kimse o eylemi yapsa da bayrak yazılmaz`);
+  }
+}
+for (const eylem of izlenenEylemler) {
+  if (!OLCUMLER[`goruldu:${eylem}`]) add('gorev', 'gorev', 'HATA', `IZLENEN/${eylem}`, 'izlenen-olcum-yok', '', `IZLENEN'deki "${eylem}" eyleminin OLCUMLER karşılığı (goruldu:${eylem}) yok`);
+  if (!tumGorevler.some((g) => g.olcum === `goruldu:${eylem}`)) add('gorev', 'gorev', 'UYARI', `IZLENEN/${eylem}`, 'izlenen-fazla', '', `"${eylem}" izleniyor ama hiçbir görev satırı bu ölçümü okumuyor`);
+}
+
 // ── Çıktı ────────────────────────────────────────────────────────────────────
-const SECTIONS = { lint: 'MESAJ LİNT', handler: 'HANDLER KAPSAMI', komut: 'KOMUT DENETİMİ' };
+const SECTIONS = { lint: 'MESAJ LİNT', handler: 'HANDLER KAPSAMI', komut: 'KOMUT DENETİMİ', gorev: 'GÖREV ÖLÇÜMLERİ' };
 const shown = findings.filter((f) => f.level === 'HATA' || verbose);
 for (const section of Object.keys(SECTIONS)) {
   const rows = shown.filter((f) => f.section === section);
