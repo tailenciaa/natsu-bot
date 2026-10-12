@@ -1,5 +1,5 @@
 // Haftanın aktifleri duyurusu: ses, mesaj ve yayın kategorilerinde ilk 5'i gösteren liste, sıralama panelinin düzeninde
-const { page } = require('../../core/ui');
+const { page, receipt } = require('../../core/ui');
 
 const number = (n) => n.toLocaleString('tr-TR');
 
@@ -37,4 +37,24 @@ function weeklyAnnounce(guild, results) {
   });
 }
 
-module.exports = { weeklyAnnounce };
+// /haftalik komutunun cevabı: iki haftalık duyurunun (aktif + saygınlık) sonucu tek işlem kartında
+function weeklyRunCard({ target, aktif, saygi, user }) {
+  const tamam = aktif.ok && saygi.ok;
+  return receipt({
+    title: 'Haftalık Duyuru',
+    sub: tamam
+      ? `**${target}** haftasının birincileri ilgili kanallara gönderildi.`
+      : `**${target}** haftasında en az bir duyuru gönderilemedi; nedeni aşağıda yazıyor.`,
+    pairs: [
+      ['Haftanın Aktifleri', `${aktif.durum} — ${aktif.not}`],
+      ['Haftanın En Saygını', `${saygi.durum} — ${saygi.not}`],
+    ],
+    note: aktif.pay
+      ? 'Coin ödülleri bu çalıştırmada yatırıldı. Aynı haftayı ikinci kez çalıştırırsan ödüller tekrar yatmaz.'
+      : 'Bu çalıştırmada coin ödülü yatırılmadı: ya bu hafta zaten duyuruldu ya da süren haftanın önizlemesini açtın.',
+    user,
+    accent: tamam ? 'success' : 'warning',
+  });
+}
+
+module.exports = { weeklyAnnounce, weeklyRunCard };
