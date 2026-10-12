@@ -121,7 +121,8 @@ function sayilarBloku(state) {
 function gunBloku(state) {
   const siradaki = state.kalan > 0 ? `Bugün **${state.gunluk} / ${config.gunlukKart}** kart açtın, **${state.kalan}** hakkın var.` : `Bugünkü **${config.gunlukKart}** kartın bitti; gece sıfırlanır.`;
   return `### Bugün\n${siradaki} Aynı üyeyle arka arkaya kart açılamaz: iki kart arasında **${dk(config.ikiliAralik)}** beklenir.\n` +
-    `Karşılık ödülü günlük oyun kazancı tavanına sayılır; tavan dolarsa kart yine sonuçlanır ama para cebine girmez.`;
+    `Karşılık ödülü günlük oyun kazancı tavanına sayılır; tavan dolarsa kart yine sonuçlanır ama para cebine girmez.\n` +
+    `Paranın diğer yolları: **/oyun** kumarhanesi, **/sokak** suç dünyası ve **/gorev** görevleri — hepsi /bakiye cüzdanından da açılıyor.`;
 }
 
 function kurallarBloku() {
