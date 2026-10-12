@@ -1,6 +1,7 @@
 // Haftanın aktifleri: mesaj, ses ve yayın (ekran paylaşımı) süresi haftalık olarak ayrı ayrı sayılır. Her hafta
 // pazartesi, geçen haftanın üç kategorisinin de birincisi #haftalık kanalına duyurulur ve kategorisine özel rol
-// verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi verilir.
+// verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi
+// verilir. /haftalik pazartesiyi beklemeden aynı duyuruyu hemen yaptırır; her deneme konsola tek satır yazılır.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -117,46 +118,68 @@ async function passRole(guild, kind, winnerId) {
   store.setHolder(kind, given ? winnerId : null);
 }
 
-// Duyuruyu gönderir ve rolleri devreder; duyuru atıldıysa (ya da duyurulacak kayıt yoksa) true, tekrar denenmesi gerekiyorsa false döner
-async function announceWeek(guild, target) {
+// Duyuruyu gönderir ve rolleri devreder. Döner: { ok, durum, not } — ok, haftanın "duyuruldu" sayılması gerektiğini
+// (gönderildi ya da duyurulacak kayıt hiç yok) taşır; durum ve not kullanıcının göreceği sonuçtur.
+// pay=false coin ödüllerini yatırmaz: aynı hafta ikinci kez çalıştırıldığında ödeme tekrarlanmaz.
+async function announceWeek(guild, target, pay = true) {
   const results = {};
-  for (const kind of ['ses', 'mesaj', 'yayin']) results[kind] = topUsers(guild, store.totals(kind, target));
-  const winnerIds = ['ses', 'mesaj', 'yayin'].map((kind) => results[kind][0]?.userId).filter(Boolean);
+  for (const kind of KINDS) results[kind] = topUsers(guild, store.totals(kind, target));
+  const winnerIds = KINDS.map((kind) => results[kind][0]?.userId).filter(Boolean);
 
-  for (const kind of ['ses', 'mesaj', 'yayin']) await passRole(guild, kind, results[kind][0]?.userId ?? null);
-  if (!winnerIds.length) return true; // hiç kayıt yoksa boş duyuru atılmaz
+  for (const kind of KINDS) await passRole(guild, kind, results[kind][0]?.userId ?? null);
+  if (!winnerIds.length) return { ok: true, durum: 'kayıt yok', not: `${target} haftasında mesaj, ses ve yayın için hiç kayıt birikmemiş.` };
 
   const channel = await fetchTextChannel(guild, config.channel);
-  if (!channel) {
-    console.error('[aktif] Haftalık duyuru kanalı bulunamadı.');
-    return false;
+  if (!channel) return { ok: false, durum: 'kanal yok', not: `Duyuru kanalı (ID ${config.channel}) bulunamadı; bot kanalı göremiyor ya da kanal silinmiş olabilir.` };
+
+  try {
+    await channel.send({ components: [ui.weeklyAnnounce(guild, results)], flags: core.CV2, allowedMentions: { users: winnerIds } });
+  } catch (err) {
+    return { ok: false, durum: 'gönderilemedi', not: `Kanala gönderilemedi: ${err.message}` };
   }
-  return channel.send({ components: [ui.weeklyAnnounce(guild, results)], flags: core.CV2, allowedMentions: { users: winnerIds } }).then(
-    () => {
-      // Coin ödülleri duyuru gerçekten gönderildikten sonra verilir: duyuru tekrar denenirse aynı hafta iki kez ödenmez
-      for (const kind of ['ses', 'mesaj', 'yayin']) {
-        results[kind].slice(0, coinConfig.awards.weekly.length).forEach((entry, index) =>
-          coin.add(entry.userId, coinConfig.awards.weekly[index], `haftanın ${kind} ${index + 1}.si`),
-        );
-      }
-      return true;
-    },
-    (err) => {
-      console.error('[aktif] Haftalık duyuru gönderilemedi:', err.message);
-      return false;
-    },
-  );
+
+  // Coin ödülleri duyuru gerçekten gönderildikten sonra verilir: duyuru tekrar denenirse aynı hafta iki kez ödenmez
+  if (pay) {
+    for (const kind of KINDS) {
+      results[kind].slice(0, coinConfig.awards.weekly.length).forEach((entry, index) =>
+        coin.add(entry.userId, coinConfig.awards.weekly[index], `haftanın ${kind} ${index + 1}.si`),
+      );
+    }
+  }
+  const kayit = KINDS.map((kind) => `${kind}: ${results[kind].length}`).join(' · ');
+  return { ok: true, durum: 'gönderildi', not: `${target} · ${kayit} · ${pay ? 'ödüller yattı' : 'bu çalıştırmada ödül yatırılmadı'}` };
+}
+
+// Hedef haftanın duyurusunu yapar ve sonucu loglar. Ödül ve "bu hafta duyuruldu" kaydı YALNIZCA geçen haftanın
+// ilk çalıştırmasında devreye girer: geçen haftanın tekrarı ödülü iki kez yatırmaz, bu haftanın önizlemesi
+// pazartesi yapılacak asıl duyuruyu tüketmez.
+async function runWeekly(guild, target) {
+  const gecenHafta = previousWeekKey(Date.now());
+  const pay = target === gecenHafta && store.lastRun() !== target;
+  const sonuc = await announceWeek(guild, target, pay).catch((err) => ({ ok: false, durum: 'hata', not: err.message }));
+  if (pay && sonuc.ok) store.setLastRun(target);
+  console.log(`[aktif] Haftalık duyuru (${target}) ${sonuc.durum} — ${sonuc.not}`);
+  return { ...sonuc, pay };
 }
 
 // Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar
 async function checkWeeklyAnnounce(guild) {
   const target = previousWeekKey(Date.now());
   if (store.lastRun() === target) return;
-  const done = await announceWeek(guild, target).catch((err) => {
-    console.error('[aktif] Haftalık duyuru hatası:', err.message);
-    return false;
-  });
-  if (done) store.setLastRun(target);
+  await runWeekly(guild, target);
+}
+
+// /haftalik: pazartesiyi beklemeden duyuruyu hemen gönderir; aktif ve saygınlık birincileri tek kartta özetlenir
+async function handleWeekly(interaction) {
+  if (!isStaff(interaction)) return replyError(interaction, 'Bu komutu sadece yöneticiler kullanabilir.');
+
+  await interaction.deferReply();
+  const secim = interaction.options.getString('hafta') ?? 'gecen';
+  const target = secim === 'bu' ? weekKey(Date.now()) : previousWeekKey(Date.now());
+
+  const aktif = await runWeekly(interaction.guild, target);
+  const saygiSonuc = await saygi.runWeekly(interaction.guild, target);
+  await respond(interaction, ui.weeklyRunCard({ target, aktif, saygi: saygiSonuc, user: interaction.user }));
 }
 
 function handleReady(client) {
@@ -174,7 +197,10 @@ function handleReady(client) {
 
 module.exports = {
   name: 'aktif',
-  // Komutu yok: ölçüm otomatik yapılır, sonucu haftalık duyuru kartı ve /siralama gösterir
+  runWeekly,
+  commands,
+  help: { category: ['siralama', 'Sıralama'], access: { haftalik: 'Yöneticiler' } },
+  slash: { haftalik: handleWeekly },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.VoiceStateUpdate]: handleVoiceUpdate,
