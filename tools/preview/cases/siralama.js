@@ -77,6 +77,42 @@ module.exports = ({ mock, src }) => {
       kind: 'message',
       build: () => ({ components: [aktif.weeklyAnnounce(guild, { ses: top(2, (i) => 7200 - i * 900), mesaj: top(1, () => 120), yayin: [] })], ...pub }),
     },
+    {
+      id: 'haftalik-komut',
+      title: '/haftalık komutu: iki duyuru da gönderildi',
+      where: 'Yetkili komutunun cevabı, komutun kullanıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({
+        components: [
+          aktif.weeklyRunCard({
+            target: '2026-10-05',
+            aktif: { ok: true, durum: 'gönderildi', not: '2026-10-05 · ses: 5 · mesaj: 5 · yayın: 3 · ödüller yattı', pay: true },
+            saygi: { ok: true, durum: 'gönderildi', not: '2026-10-05 · birinci 9 saygınlıkla kazandı' },
+            user: users[0],
+          }),
+        ],
+        ...pub,
+      }),
+    },
+    {
+      id: 'haftalik-komut-hata',
+      title: '/haftalık komutu: bir duyuru takıldı',
+      where: 'Yetkili komutunun cevabı, komutun kullanıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({
+        components: [
+          aktif.weeklyRunCard({
+            target: '2026-10-05',
+            aktif: { ok: false, durum: 'gönderilemedi', not: 'Kanala gönderilemedi: Missing Permissions', pay: false },
+            saygi: { ok: true, durum: 'kayıt yok', not: '2026-10-05 haftasında kimse saygınlık kazanmamış.' },
+            user: users[1],
+          }),
+        ],
+        ...pub,
+      }),
+    },
     { id: 'saygi-verildi', title: 'Saygınlık verildi', where: '/saygi-ver ya da +rep', visibility: 'public', kind: 'message', build: () => ({ components: [saygi.given(users[0].id, users[1].id, 7)], ...pub }) },
     {
       id: 'saygi-kayit',
