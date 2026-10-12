@@ -1,6 +1,7 @@
 // Profil kartı: üyenin profili tek geniş bir görselde toplanır (PNG, Buffer döner). Kapağın içinde avatar, ad,
-// unvan ve sıralama/coin etiketleri; gövdede tek büyük **puan bandı** (profil puanı, rütbe ilerlemesi ve puanın
-// hangi bölümlerden geldiği), sekiz sütunluk çıplak sayı şeridi, rozet şeridi ve biyografi + vitrin şeridi çizilir.
+// unvan, sıralama/coin etiketleri ve evliyse kalp simgeli eş bandı; gövdede tek büyük **puan bandı** (profil
+// puanı, rütbe ilerlemesi ve puanın hangi bölümlerden geldiği), çıplak sayı şeridi, rozet şeridi ve biyografi +
+// vitrin şeridi çizilir.
 // Kutu kalabalığı bilinçli olarak kaldırıldı: eskiden on dört panel üst üste bindiği için her şey iç içe
 // görünüyordu. Şimdi gövdede yalnızca iki panel (puan bandı ve alt şerit) var; sayılar panel kutusu olmadan,
 // bol boşlukla çiziliyor. Coin ve kozmetik temalar ayrı panel değil, kapaktaki etiket ve puan bandındaki hücre.
@@ -595,9 +596,11 @@ function shortDuration(seconds) {
 
 // Sayı şeridi: kutusuz sütunlar. Eskiden on iki kutuluk bir ızgaraydı; aynı bilgilerin en çok bakılanları şimdi
 // panel çizgisi olmadan, bol boşlukla tek satırda duruyor. Geri kalan ayrıntı puan sayfasında.
+// Suç, salon ve şakalaşma sütunları üyede o sistemin kaydı varsa doğar: kart, botun hangi köşesini kullandığını
+// gösteren bir vitrin olduğu için boş sayaç çizilmez.
 function stripItems(view) {
   const sicil = view.punishments;
-  return [
+  const items = [
     { label: 'Mesaj Seviyesi', value: String(levelFromXp(view.mesajXp ?? 0)) },
     { label: 'Ses Seviyesi', value: String(levelFromXp(view.sesXp ?? 0)) },
     { label: 'Mesaj', value: number(view.messageCount ?? 0) },
@@ -607,6 +610,10 @@ function stripItems(view) {
     { label: 'Sicil', value: sicil ? (sicil.active ? `${sicil.active} aktif` : 'Temiz') : '-' },
     { label: 'Sunucuda', value: view.joinedAt ? age(view.joinedAt) : '-' },
   ];
+  if (view.soygun) items.push({ label: 'Soygun', value: number(view.soygun) });
+  if (view.kesif) items.push({ label: 'Keşif', value: number(view.kesif) });
+  if (view.sakalas) items.push({ label: 'Şakalaş', value: number(view.sakalas) });
+  return items;
 }
 
 function drawStrip(ctx, y, view, c) {
