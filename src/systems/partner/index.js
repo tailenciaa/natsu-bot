@@ -92,6 +92,9 @@ async function handleRequestChannel(message) {
 
 // ── Paylaşım kanalı: her mesaj silinip bot tarafından yeniden, ilan + yetkili kartı olarak paylaşılır ──────
 
+// Kartın altındaki sayılar: kayda tıklandığı anda yeniden sayılır, saklanmaz
+const statsOf = (request) => store.partnerStats(request.guildId, request.id);
+
 // Partner ilanı iki mesaj olur. Üstte düz mesaj: Discord davet bağlantısının önizlemesini ve ekleri ancak düz
 // mesajda gösteriyor, üye ilanı kartın içinde dümdüz metin olarak kalıyordu. Altta CV2 kart: kaydın durumu,
 // partner sayıları (bugün/hafta/ay) ve butonlar. Kartın ID'si butondan bulunur; ilanın ID'si kayda yazılır ki
@@ -406,16 +409,9 @@ async function handleReviewDecision(interaction) {
       : null;
     if (renewedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
     const postsChannel = await fetchTextChannel(interaction.guild, config.channels.posts);
-    const posted = await postsChannel
-      ?.send({
-        components: [ui.postCard(updated, renewedEntry, store.isBanned(request.requesterId))],
-        flags: core.CV2,
-        allowedMentions: { parse: [] },
-      })
-      .catch((err) => {
-        console.error('[partner] Onaylanan talep paylaşılamadı:', err.message);
-        return null;
-      });
+    const { card: posted } = postsChannel
+      ? await publishPost(postsChannel, updated, renewedEntry, store.isBanned(request.requesterId))
+      : {};
     if (!posted) {
       await interaction.followUp({
         components: [core.alert('Paylaşım kanalına gönderilemedi.', 'Talep onaylandı olarak kaydedildi; kanal izinlerini kontrol edip metni elle paylaşabilirsin.', 'warning')],
