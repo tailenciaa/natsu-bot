@@ -6,5 +6,5 @@ module.exports = {
   channel: '1538943369089126553',
   // Panelin görseli. Kalıcı kopyası assets/banners/partnergormetai.jpg altında durur; dosya adı bağlantıdaki adla
   // aynı olduğu sürece bot indirmeye hiç gerek duymaz, süresi dolan imza derdi olmaz (core/banner.js).
-  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1559155548631334932/partnergormetai.jpg',
+  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1559156891668586567/partnergormetai.jpg',
 };
