@@ -597,7 +597,8 @@ function shortDuration(seconds) {
 // Sayı şeridi: kutusuz sütunlar. Eskiden on iki kutuluk bir ızgaraydı; aynı bilgilerin en çok bakılanları şimdi
 // panel çizgisi olmadan, bol boşlukla tek satırda duruyor. Geri kalan ayrıntı puan sayfasında.
 // Suç, salon ve şakalaşma sütunları üyede o sistemin kaydı varsa doğar: kart, botun hangi köşesini kullandığını
-// gösteren bir vitrin olduğu için boş sayaç çizilmez.
+// gösteren bir vitrin olduğu için boş sayaç çizilmez. Yayın da aynı kurala uyar; hiç ekran paylaşmamış üyede
+// "-" sütunu şeridi kalabalıklaştırır, yerini dolu sayıların okunurluğuna bırakır.
 function stripItems(view) {
   const sicil = view.punishments;
   const items = [
@@ -609,8 +610,6 @@ function stripItems(view) {
     { label: 'Sicil', value: sicil ? (sicil.active ? `${sicil.active} aktif` : 'Temiz') : '-' },
     { label: 'Sunucuda', value: view.joinedAt ? age(view.joinedAt) : '-' },
   ];
-  // Yayın, suç, keşif ve şakalaşma sütunları yalnızca kayıt varsa doğar: kart botun hangi köşesinin kullanıldığını
-  // gösteren bir vitrin olduğu için boş sayaç çizilmez, çizilirse şerit okunmaz hale gelir.
   if (view.streamSeconds >= 60) items.splice(4, 0, { label: 'Yayın', value: shortDuration(view.streamSeconds) });
   if (view.soygun) items.push({ label: 'Soygun', value: number(view.soygun) });
   if (view.kesif) items.push({ label: 'Keşif', value: number(view.kesif) });
@@ -630,8 +629,17 @@ function drawStrip(ctx, y, view, c) {
       ctx.fill();
     }
     ctx.fillStyle = c.muted;
-    ctx.font = font(700, 16);
-    ctx.fillText(fitText(ctx, item.label.toLocaleUpperCase('tr-TR'), colW - 40), x, y + 32);
+    // Sütun daraldığında etiket önce küçülür, en son kırpılır: on bir sütunluk şeritte "MESAJ SEVİYESİ"
+    // on altı puntoya sığmaz, kırpılmaktansa okunur bir puntoya çekmek daha iyi.
+    const etiket = item.label.toLocaleUpperCase('tr-TR');
+    let punto = 16;
+    while (punto > 12) {
+      ctx.font = font(700, punto);
+      if (ctx.measureText(etiket).width <= colW - 40) break;
+      punto -= 1;
+    }
+    ctx.font = font(700, punto);
+    ctx.fillText(fitText(ctx, etiket, colW - 40), x, y + 32);
     ctx.fillStyle = '#ffffff';
     ctx.font = font(700, 36);
     ctx.fillText(fitText(ctx, item.value, colW - 40), x, y + 76);
