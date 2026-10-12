@@ -256,7 +256,7 @@ function durumPaneli(state) {
       state.evlilik ? evlilikBloku(state) : `### Bekârsın\n${core.chip('evli değilsin')}`,
       bekleyenBloku(state),
       state.evlilik ? null : sartBloku(state),
-      kurallarBloku(state),
+      kurallarBloku(),
     ].filter(Boolean),
   });
 
@@ -271,7 +271,7 @@ function durumPaneli(state) {
     butonlar.push(new ButtonBuilder().setCustomId(`${IDS.iptal}${state.giden.no}`).setLabel('Tekliften Vazgeç').setStyle(ButtonStyle.Secondary));
   }
   butonlar.push(
-    new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik · Yüzük Al').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId(IDS.list).setLabel('Çiftler Listesi').setStyle(ButtonStyle.Secondary),
   );
 
@@ -306,7 +306,7 @@ function listePaneli(state) {
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.durum).setLabel('Kendi Hâlim').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik · Yüzük Al').setStyle(ButtonStyle.Secondary),
       ),
     )
     .addSeparatorComponents(core.divider())

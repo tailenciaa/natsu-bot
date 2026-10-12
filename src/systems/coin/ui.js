@@ -50,7 +50,9 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
     title: 'Coin Cüzdanım',
     sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece**, **saygınlık** ve **görevlerden** birikir; ' +
       '**keşif**, **eğlence**, **suç** ve **kumarhane** de coin verir ama günlük tavanı vardır. Harcama yerleri ' +
-      'profil mağazası, **butik** ve **kumarhane**dir; kumarhanede masa uzun vadede daima kazanır.',
+      'üçe ayrılır: **Mağaza** kartının çerçeve, tema, kapak ve rozetlerini; **Butik** evlilik yüzüğü ile ek ' +
+      'saygınlık hakkını ve adını renklendiren rolü; **kumarhane** masaya koyduğun bahsi satar — kumarhanede ' +
+      'masa uzun vadede daima kazanır.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
       `### Cüzdan Bilgileri\n**Mevcut Bakiye:** ${coin(balance)}\n${pills([
@@ -71,8 +73,8 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
     new ButtonBuilder().setCustomId(IDS.banter).setLabel('Şakalaş').setStyle(ButtonStyle.Secondary),
   );
   const harca = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza · Kart Süsleri').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik · Yüzük & Renk').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
   );
   return container

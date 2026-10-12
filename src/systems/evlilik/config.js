@@ -80,10 +80,11 @@ module.exports = {
   // Kartların altındaki tek cümlelik notlar
   notlar: {
     yuzuk: 'Yüzük Butikte satılır ve kabul anında yakılır: /bakiye > Butik.',
+    rol: 'Kabul edince bot bu rolü açıp ikinize giydirir; ad, renk ve simge teklifte seçilir.',
     ret: 'Geri çevrilen teklif yüzük kaybettirmez; aynı kişiye yeniden teklif için kısa bir bekleme var.',
     sure: 'Karşılık gelmeyen teklif kendiliğinden kapanır, yüzük elde kalır.',
     gecersiz: 'Yüzük yanmadığı için hiçbir şey kaydedilmedi; raftan yeniden alıp teklif edebilirsin.',
     evli: 'Çift rolünüz ikinize de giydirildi; sunucudan düşüp dönersen bot rolü geri verir, boşanınca rol silinir.',
-    bosanma: 'Boşanma bedeli Devletin Kasasına yazar; bir gün bir soyguncuya dağılır.',
+    bosanma: 'Boşanma bedeli Devletin Kasasına yazar; bir gün bir soyguncuya dağılır. Ortak çift rolünüz de silinir.',
   },
 };
