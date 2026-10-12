@@ -484,7 +484,7 @@ const ekonomiPanel = {
         {
           heading: 'Siparişlerim ve profil puanı',
           text: '**`/bakiye`** yanındaki **Siparişlerim** defteri aldığın her şeyi fiyatıyla gösterir: kozmetikler kalıcı, saygınlık hakkı ve yüzük tükenen.',
-          note: 'Profil puanı coinle değil sahip olduklarınla büyür: her kozmetik **+10**, her görev **+2**, her seri günü **+5** (tavan **1000**). Harcadığın coin puandan **düşmez**; **`/siralama`** içindeki coin listesi anlık bakiyeni ölçer.'
+          note: 'Profil puanı coinle değil sahip olduklarınla büyür: her kozmetik **+10**, her görev **+2**, her seri günü **+5** (tavan **1000**). Harcadığın coin puandan **düşmez**, cüzdanındaki coin ise anlık bakiyendir.'
         }
       ]
     },
