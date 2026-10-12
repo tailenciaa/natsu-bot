@@ -2,10 +2,12 @@
 // işlenir. Değerlendirmeler kategorilere ayrılır: destek talebi kapanınca (destek), oryantasyon tamamlanınca
 // (oryantasyon) ve partner talebi sonuçlanınca (partner); eski görüşme (gorusme) kayıtları sicilde durur, yeni görüşme
 // değerlendirmesi istenmez. Değerlendirilen yetkili haksız bulduğu değerlendirmeye şikayet kanalından itiraz edebilir,
-// liderler onaylar / reddeder / görüşmeye çağırır.
+// liderler onaylar / reddeder / görüşmeye çağırır. Puanlamanın yanındaki butonla yetkiliye saygınlık da verilir:
+// saygınlığın kuralları ve kaydı saygi sisteminde tutulur.
 const core = require('../../core/ui');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const destekUi = require('../destek/ui');
+const saygi = require('../saygi/index');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -35,6 +37,7 @@ async function createPending(client, ticket) {
     ratedAt: null,
     channelId: null,
     messageId: null,
+    repAt: null,
     reportedAt: null,
     reportReason: null,
   });
@@ -63,6 +66,7 @@ async function requestForApplication(client, app, category, staffId) {
     ratedAt: null,
     channelId: null,
     messageId: null,
+    repAt: null,
     reportedAt: null,
     reportReason: null,
   });
@@ -93,6 +97,7 @@ async function requestForPartner(client, request, staffId) {
     ratedAt: null,
     channelId: null,
     messageId: null,
+    repAt: null,
     reportedAt: null,
     reportReason: null,
   });
