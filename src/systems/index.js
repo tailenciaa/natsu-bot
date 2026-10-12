@@ -11,7 +11,7 @@
 //   events   : { discordOlayı: işleyici }
 module.exports = [
   require('./kurallar'),
-  require('./bilgilendirme'), // #bilgilendirme paneli: sunucu hakkında bölümler halinde bilgi
+  require('./bilgilendirme'), // bilgilendirme panelleri: #bilgilendirme (sunucu) ve ekonomi rehberi, bölüm başına bir mesaj
   require('./destek'),
   require('./degerlendirme'),
   require('./basvuru'),

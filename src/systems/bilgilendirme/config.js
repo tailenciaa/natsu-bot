@@ -75,7 +75,7 @@ const anaPanel = {
             "**`/seviye`** — mesaj ve ses seviyeni, **`/siralama`** — mesaj, ses, yayın, saygınlık, coin ve VIP listelerinde sıranı gösterir.",
             "**`/saygi-ver`** — beğendiğin bir üyeye günde bir saygınlık verir; haftanın en saygın üyesi seçilir."
           ],
-          "note": "Nereden başlayacağını bilmiyorsan **`/gorev`** ile başla: Keşif Yolu botun bütün sistemlerini sırayla gezdiriyor."
+          "note": "Nereden başlayacağını bilmiyorsan **`/gorev`** ile başla: Keşif Yolu botun bütün sistemlerini sırayla gezdiriyor. Coin ve ekonomi sisteminin tamamı <#1558968836420665615> kanalında anlatılıyor."
         }
       ]
     },
@@ -254,6 +254,7 @@ const anaPanel = {
             "<#1538533642832318517>: Sunucu kuralları",
             "<#1538533720590516274>: Resmi duyurular",
             "<#1538533822940061706>: Sunucu hakkında bilgi (burası)",
+            "<#1558968836420665615>: Coin ve ekonomi sisteminin rehberi",
             "<#1538533903130828851>: Güncel çekilişler",
             "<#1538535372588326973>: Destek talebi",
             "<#1538535566172229672>: Cezalar ve bitiş süreleri"
