@@ -51,6 +51,10 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/çal kasa` | Devletin Kasasını zorlamak. Kasadaki para cezalarla birikir; herkes müdahale edebilir, ilk müdahale edene ikramiye düşer | Herkes (suç için ölçülen seviye gerekir) |
 | `/şakalaş` | Şakalaşma sayfası: sana uzanan ve karşılık bekleyen kartlar, senin şaka sayıların ve kuralların. Cüzdandaki **Şakalaş** düğmesi de aynı sayfayı açar | Herkes |
 | `/öp kullanici` ve `/tokat kullanici` | Muhataba şaka kartı atar; kart kanala düşer. Muhatap süre içinde karşılık düğmesine basarsa ödül **iki tarafa da** yatar (günlük oyun kazancı tavanına sayılır), basmazsa kart karşılıksız kalır | Herkes |
+| `/evlilik teklif kullanici` | Butikte aldığın **yüzükle** bir üyeye teklif götürürsün; teklif kartı kanala düşer, muhatap **Kabul Ediyorum** ya da **Geri Çevir**'e basar. Yüzük yalnızca kabul anında yanar — ret ve sessizlik yüzük kaybettirmez | Herkes (teklif için ölçülen seviye gerekir) |
+| `/evlilik durum` | Kendi evlilik hâlin: eşin, birlikte geçen gün, yıl dönümü ödülü, bekleyen teklifin ve teklif şartların. Sayfadaki düğmeler dönüm ödülünü toplar, tekliften vazgeçer ve boşanma bedelini öder | Herkes |
+| `/evlilik liste` | Sunucudaki evli çiftler ve birlikte geçirdikleri gün | Herkes |
+| `/evlilik bosan` | Eşinden boşanırsın; bedel Devletin Kasasına yazar ve iki tarafa da yeni teklif beklemesi konur | Evliler |
 | `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
 | `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
 | `/saygi-siralama` | Tüm zamanların saygınlık tablosu | Herkes |
@@ -85,7 +89,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
 | Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, her seviyede coin ve ana seviyede rol ödülü), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `butik` (cüzdandan açılan coin harcama rafı: ek saygınlık hakkı, evlilik yüzüğü ve özel renkli roller; kendi komutu yoktur, yalnızca butonla açılır), `gorev` (günlük ve haftalık görevler, Keşif Yolu, kutu, sezon puanı ve eşikleri), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
 | Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği tek ses kanalı odaları), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
-| Oyun ve şans | `oyun` (Oyun Salonu: rulet, merdiven, keşif), `hirsizlik` (Arka Sokaklar: üye soyma, kasa zorlama, direniş, hapis, kefalet ve Devletin Kasası), `eglence` (`/şakalaş` sayfası ile `/öp` ve `/tokat` şaka kartları; karşılık gelirse iki taraf da coin kazanır) |
+| Oyun ve şans | `oyun` (Oyun Salonu: rulet, merdiven, keşif), `hirsizlik` (Arka Sokaklar: üye soyma, kasa zorlama, direniş, hapis, kefalet ve Devletin Kasası), `eglence` (`/şakalaş` sayfası ile `/öp` ve `/tokat` şaka kartları; karşılık gelirse iki taraf da coin kazanır), `evlilik` (`/evlilik`: yüzükle teklif, kabul anında yanan yüzük, yıl dönümü ödülü ve kasaya yazılan boşanma bedeli) |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
 
