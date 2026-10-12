@@ -484,9 +484,9 @@ const ekonomiPanel = {
           ]
         },
         {
-          heading: 'Siparişlerim',
+          heading: 'Siparişlerim ve profil puanı',
           text: '**`/bakiye`** yanındaki **Siparişlerim** defteri aldığın her şeyi fiyatıyla gösterir: kozmetikler kalıcı, saygınlık hakkı ve yüzük tükenen.',
-          note: 'Harcanan coin profil puanından **düşmez**; sahip olduğun her kozmetik puana **+10** olarak yazılır.'
+          note: 'Profil puanı coinle değil sahip olduklarınla büyür: her kozmetik **+10**, her görev **+2**, her seri günü **+5** (tavan **1000**). Harcadığın coin puandan **düşmez**; **`/siralama`** içindeki coin listesi anlık bakiyeni ölçer.'
         }
       ]
     },
@@ -498,7 +498,7 @@ const ekonomiPanel = {
           items: [
             '`1.` **`/gunluk`** yaz, ilk coinlerini topla.',
             '`2.` **`/gorev`** yaz, bugünün üç görevine bak ve **Keşif Yolu** sekmesinden yürümeye başla.',
-            '`3.` **`/bakiye`** yaz; cüzdanın açılır, yanındaki **Görevler · Oyun Salonu · Arka Sokaklar · Şakalaş** ve **Mağaza · Butik · Siparişlerim** butonları bütün kapıları gösterir.',
+            '`3.` **`/bakiye`** yaz; cüzdanın açılır, yanındaki **Görevler · Oyun Salonu · Arka Sokaklar · Şakalaş** ve **Mağaza · Kart Süsü · Butik · Yüzük & Renk · Siparişlerim** butonları bütün kapıları gösterir.',
             '`4.` **`/oyun`** ile ilk gezine çık ya da en düşük bahisle bir el çevir.',
             '`5.` **`/seviye`** ve **`/siralama`** ile nerede olduğunu gör.'
           ],
