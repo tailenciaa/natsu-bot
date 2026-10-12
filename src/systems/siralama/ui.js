@@ -95,29 +95,27 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
   const lines = pageItems.map(({ userId, value }, i) => {
     const rank = start + i + 1;
     const size = current === 0 && rank <= 3 ? PODIUM[rank - 1] : '';
-    return `${size}${rank}. <@${userId}> » \`${formatValue(type, value)}\`${userId === viewerId ? ' **(Sen)**' : ''}`;
+    return `${size}${rank}. <@${userId}> » ${hucre(type, value)}${userId === viewerId ? ' **(Sen)**' : ''}`;
   });
   // Komutu kullanan bu sayfada yoksa sırası en altta gösterilir
   const viewerRank = ranking.findIndex((r) => r.userId === viewerId);
   if (viewerRank !== -1 && (viewerRank < start || viewerRank >= start + PAGE_SIZE)) {
-    lines.push(`${viewerRank + 1}. <@${viewerId}> » \`${formatValue(type, ranking[viewerRank].value)}\` **(Sen)**`);
+    lines.push(`${viewerRank + 1}. <@${viewerId}> » ${hucre(type, ranking[viewerRank].value)} **(Sen)**`);
   }
 
-  const listBlock = lines.length
-    ? lines.join('\n')
-    : `**Henüz kayıt yok.**\n${role ? 'Bu rolde bu dönemde sayılan üye yok.' : 'Bu dönemde sayılan bir mesaj, ses ya da yayın süresi yok.'}`;
+  const listBlock = lines.length ? lines.join('\n') : `**Henüz kayıt yok.**\n${role ? 'Bu rolde sıralanacak üye yok.' : BOS[type]}`;
 
   const container = pageLayout({
     title: 'Sıralama',
-    sub:
-      (role ? `<@&${role}> rolündeki üyeler listeleniyor; ` : 'Sunucudaki bütün üyeler listeleniyor; ') +
-      'mesaj sayısı, ses ve yayın (ekran paylaşımı) süresine göre sıralanır.',
+    sub: (role ? `<@&${role}> rolündeki üyeler listeleniyor; ` : 'Sunucudaki bütün üyeler listeleniyor; ') + ACIKLAMA[type],
     thumbnail: guild.iconURL({ size: 256 }),
   });
 
   // Sıra: dönem butonları, rol ve tür menüleri, liste başlığı + liste (başlıktan ayrı bir metin: listedeki küçük satırlar
   // otomatik "not" sayılıp çizgiyle ayrılmasın), sayfa bilgisi ve en altta sayfa butonları (her zaman görünür, tek
   // sayfada pasif)
+  const donemsiz = !DONEM.has(type);
+  const ozelSecili = !donemsiz && period === 'ozel';
   container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -126,12 +124,14 @@ function leaderboard({ guild, viewerId, type, period, days, roleId, page, rankin
           new ButtonBuilder()
             .setCustomId(`${IDS.navigate}:${state(type, key, 0, roleId)}:0:${key}`)
             .setLabel(PERIODS[key])
-            .setStyle(key === period ? ButtonStyle.Success : ButtonStyle.Secondary),
+            .setStyle(!donemsiz && key === period ? ButtonStyle.Success : ButtonStyle.Secondary)
+            .setDisabled(donemsiz),
         ),
         new ButtonBuilder()
           .setCustomId(`${IDS.custom}:${type}:${roleId}`)
-          .setLabel(period === 'ozel' ? periodLabel(period, days) : PERIODS.ozel)
-          .setStyle(period === 'ozel' ? ButtonStyle.Success : ButtonStyle.Secondary),
+          .setLabel(ozelSecili ? periodLabel(period, days) : PERIODS.ozel)
+          .setStyle(ozelSecili ? ButtonStyle.Success : ButtonStyle.Secondary)
+          .setDisabled(donemsiz),
       ),
       new ActionRowBuilder().addComponents(roleSelect),
       new ActionRowBuilder().addComponents(
@@ -170,4 +170,4 @@ function customModal(type, roleId) {
     );
 }
 
-module.exports = { IDS, TYPES, leaderboard, customModal };
+module.exports = { IDS, TYPES, DONEM, leaderboard, customModal };

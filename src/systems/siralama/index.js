@@ -1,16 +1,21 @@
 // Sıralama: üyelerin mesaj sayısı, ses süresi ve yayın (ekran paylaşımı) süresi sayılır, /siralama ile
-// sıralaması gösterilir. Sıralama rol ile filtrelenebilir, türü (mesaj / ses / yayın) ve dönemi (genel, haftalık,
-// son X gün) seçilebilir. Botlar ve AFK kanalı sayılmaz. Sayım bu sistem kurulduğundan itibaren başlar.
+// sıralaması gösterilir. Aynı menüde saygınlık, coin ve VIP türleri de vardır; üçü kendi sisteminin kaydından
+// okunur ve dönem saymaz. Sıralama rol ile filtrelenebilir, türü ve dönemi (genel, haftalık, son X gün)
+// seçilebilir. Botlar ve AFK kanalı sayılmaz. Sayım bu sistem kurulduğundan itibaren başlar.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const { guildId } = require('../../core/config');
 const { respond, replyError, isMenuOwner, stillMember } = require('../../core/helpers');
+const coinStore = require('../coin/store');
+const saygiStore = require('../saygi/store');
+const vipConfig = require('../vip/config');
+const vipStore = require('../vip/store');
 const store = require('./store');
 const ui = require('./ui');
 
 const commands = [
   new SlashCommandBuilder()
     .setName('siralama')
-    .setDescription('Sunucunun mesaj, ses ve yayın sıralamasını gösterir.')
+    .setDescription('Sunucunun mesaj, ses, yayın, saygınlık, coin ve VIP sıralamasını gösterir.')
     .setContexts(InteractionContextType.Guild),
 ];
 
@@ -80,19 +85,32 @@ function handleMessage(message) {
   store.add('messages', message.author.id, 1, message.createdTimestamp);
 }
 
-// Sıralama türünün store'daki karşılığı
+// Sıralama türünün store'daki karşılığı (yalnızca dönem sayan türler buradan okunur)
 const STAT_KIND = { mesaj: 'messages', ses: 'voice', yayin: 'stream' };
 
-// Sıralamayı hesaplar: türün dönemdeki toplamları (sunucudan ayrılanlar hariç), rol seçildiyse sadece o roldeki üyeler
-function ranking(guild, type, period, days, roleId) {
-  const totals = store.totals(STAT_KIND[type], period === 'genel' ? null : period === 'haftalik' ? 7 : days);
+// Türün değer haritası { userId: değer }. Saygınlık tüm zamanların toplamı, coin üyenin şu anki cüzdanı,
+// VIP ise rolü taşıyan üyelerin VIP olma anıdır (kayıt öncesi verilmişse 0).
+async function degerler(guild, type, period, days) {
+  if (type === 'saygi') return new Map(Object.entries(saygiStore.allTotals()).filter(([, v]) => v > 0));
+  if (type === 'coin') return new Map(Object.entries(coinStore.balances()));
+  if (type === 'vip') {
+    const role = await guild.roles.fetch(vipConfig.roleId).catch(() => null);
+    return new Map([...(role?.members.values() ?? [])].map((member) => [member.id, vipStore.grantedAt(member.id) ?? 0]));
+  }
+  return store.totals(STAT_KIND[type], period === 'genel' ? null : period === 'haftalik' ? 7 : days);
+}
+
+// Sıralamayı hesaplar: türün dönemdeki toplamları (sunucudan ayrılanlar hariç), rol seçildiyse sadece o roldeki üyeler.
+// VIP'te küçükbüyük sıralanır: rolü en erken alan listenin başındadır.
+async function ranking(guild, type, period, days, roleId) {
+  const totals = await degerler(guild, type, period, days);
   return [...totals]
     .filter(([userId]) => (roleId === '0' ? stillMember(guild, userId) : guild.members.cache.get(userId)?.roles.cache.has(roleId)))
     .map(([userId, value]) => ({ userId, value }))
-    .sort((a, b) => b.value - a.value);
+    .sort((a, b) => (type === 'vip' ? a.value - b.value || a.userId.localeCompare(b.userId) : b.value - a.value));
 }
 
-function view(interaction, type, period, days, roleId, page) {
+async function view(interaction, type, period, days, roleId, page) {
   const { guild } = interaction;
   return ui.leaderboard({
     guild,
@@ -102,7 +120,7 @@ function view(interaction, type, period, days, roleId, page) {
     days: Number(days) || 0,
     roleId,
     page: Number(page) || 0,
-    ranking: ranking(guild, type, period, Number(days) || 0, roleId),
+    ranking: await ranking(guild, type, period, Number(days) || 0, roleId),
   });
 }
 
@@ -111,28 +129,31 @@ const notOwner = (interaction) =>
 const show = (interaction, container) => interaction.update({ components: [container], allowedMentions: { parse: [] } });
 
 async function handleCommand(interaction) {
-  return respond(interaction, view(interaction, 'mesaj', 'genel', 0, '0', 0));
+  return respond(interaction, await view(interaction, 'mesaj', 'genel', 0, '0', 0));
 }
 
 // Dönem ve sayfa butonları: siralama:<tür>:<dönem>:<gün>:<rol>:<sayfa>:<buton yeri>
 async function handleNavigate(interaction) {
   if (!isMenuOwner(interaction)) return notOwner(interaction);
   const [, type, period, days, roleId, page] = interaction.customId.split(':');
-  return show(interaction, view(interaction, type, period, days, roleId, page));
+  return show(interaction, await view(interaction, type, period, days, roleId, page));
 }
 
 // Rol filtresi: siralama-rol:<tür>:<dönem>:<gün>; seçim kaldırılırsa tüm sunucu
 async function handleRole(interaction) {
   if (!isMenuOwner(interaction)) return notOwner(interaction);
   const [, type, period, days] = interaction.customId.split(':');
-  return show(interaction, view(interaction, type, period, days, interaction.values[0] ?? '0', 0));
+  return show(interaction, await view(interaction, type, period, days, interaction.values[0] ?? '0', 0));
 }
 
-// Sıralama türü: siralama-tur:<dönem>:<gün>:<rol>
+// Sıralama türü: siralama-tur:<dönem>:<gün>:<rol>. Dönem saymayan bir türe geçince dönem de sıfırlanır ki
+// üye geri döndüğünde düğmede "Son 30 Gün" yazmasın.
 async function handleType(interaction) {
   if (!isMenuOwner(interaction)) return notOwner(interaction);
   const [, period, days, roleId] = interaction.customId.split(':');
-  return show(interaction, view(interaction, interaction.values[0], period, days, roleId, 0));
+  const type = interaction.values[0];
+  const donem = ui.DONEM.has(type) ? period : 'genel';
+  return show(interaction, await view(interaction, type, donem, donem === period ? days : 0, roleId, 0));
 }
 
 // "Özel Süre" butonu ve formu
