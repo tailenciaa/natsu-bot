@@ -15,7 +15,7 @@ module.exports = ({ mock, ui, src }) => {
 
   // Mağazadan alınmış ürünler (coin/store'daki sipariş kayıtlarının biçimi); ad, tür ve fiyat gerçek katalogdan
   const urun = (tur, name, price, daysAgo) => ({ id: `${tur}-${name}-${daysAgo}`, userId: user.id, tur, name, price, at: mock.ago(daysAgo * mock.DAY) });
-  const purchases = [urun('tema', 'Elmas', 6000, 3), urun('kapak', 'Buzlu Cam', 3400, 11), urun('cerceve', 'Neon', 7200, 26)];
+  const purchases = [urun('tema', 'Elmas', 6000, 3), urun('rol', 'Kızıl', 9000, 6), urun('kapak', 'Buzlu Cam', 3400, 11), urun('cerceve', 'Neon', 7200, 26)];
   const manyPurchases = [
     ...purchases,
     urun('tema', 'Kor', 2500, 40),

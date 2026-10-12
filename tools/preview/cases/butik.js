@@ -49,14 +49,13 @@ module.exports = ({ mock, ui, src }) => {
 
   rolleriAyarla(false);
   const rafKapali = u.panel(butik.sayfaDurumu(yeni.id, yeni));
-  rolleriAyarla(false);
 
   return [
     caseOf('raf', 'Butik rafı: bakiye, elde duran haklar, satıştaki renkler ve işleyiş', '/bakiye cüzdanındaki Butik düğmesi', rafAcik),
     caseOf(
       'raf-rolsuz',
       'Butik rafı: renkler henüz hazırlanmamış, üyenin elinde de hiç hak yok',
-      'Cüzdanından butiği ilk kez açayan yeni üye',
+      'Cüzdanından butiği ilk kez açan yeni üye',
       rafKapali,
     ),
 
@@ -83,7 +82,7 @@ module.exports = ({ mock, ui, src }) => {
     ),
     hataCase(
       'hata-renk-yok',
-      'Renk satışta değil: config'e rol ID'si henüz yazılmamış',
+      'Renk satışta değil: rolün kimliği config dosyasına henüz yazılmamış',
       'Rafı açılmamış rengin eski düğmesine basınca',
       'Bu renk şu anda satışta değil.',
       'Rol sunucuda hazırlanınca raf kendini gösterir.',
