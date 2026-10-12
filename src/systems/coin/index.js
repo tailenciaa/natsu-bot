@@ -110,6 +110,14 @@ async function handleCrime(interaction) {
   return respond(interaction, hirsizlik.panelFor(interaction));
 }
 
+// coin-sakalas: cüzdandan Şakalaşma sayfasına geçiş. Sayfa üyenin karşılık bekleyen kartlarını da gösterdiği
+// için bu kapı önemlidir: kart kanalda kaybolur, sayfada durur.
+async function handleBanter(interaction) {
+  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
+  if (!interaction.guild) return replyError(interaction, 'Şakalaşma sunucuda çalışır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
+  return respond(interaction, eglence.panelFor(interaction));
+}
+
 module.exports = {
   name: 'coin',
   commands,
@@ -120,6 +128,12 @@ module.exports = {
   },
   slash: { gunluk: handleDaily, bakiye: handleWallet },
   // coin-bakiye butonu sabit bir kimlik taşır (sayfa taşımaz), bu yüzden önek değil doğrudan buton tablosunda
-  buttons: { [ui.IDS.wallet]: handleBack, [ui.IDS.quests]: handleQuests, [ui.IDS.arcade]: handleArcade, [ui.IDS.crime]: handleCrime },
+  buttons: {
+    [ui.IDS.wallet]: handleBack,
+    [ui.IDS.quests]: handleQuests,
+    [ui.IDS.arcade]: handleArcade,
+    [ui.IDS.crime]: handleCrime,
+    [ui.IDS.banter]: handleBanter,
+  },
   prefixed: [[ui.IDS.orders, handleOrders]],
 };
