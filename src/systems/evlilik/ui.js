@@ -155,8 +155,8 @@ function iptalKarti({ oneren, hedef, user, at = Date.now() }) {
   });
 }
 
-// Boşanma ilanı: bedel kasaya yazar, iki tarafın da rolü geri alınır
-function bosanmaKarti({ a, b, user, bedel, at = Date.now() }) {
+// Boşanma ilanı: bedel kasaya yazar, çiftin rolü de silinir
+function bosanmaKarti({ a, b, user, bedel, rolDurumu = null, at = Date.now() }) {
   return core.receipt({
     title: config.basliklar.bosanma,
     sub: `${çift(a, b)} yollarını ayırdı. Boşanma bedeli kasaya yazıldı.`,
@@ -166,6 +166,7 @@ function bosanmaKarti({ a, b, user, bedel, at = Date.now() }) {
       ['Eski Eş', mention(b)],
       ['Eski Eş', mention(a)],
       ['Bedel', coin(bedel)],
+      rolDurumu ? ['Çift Rolün', core.chip(rolDurumu)] : false,
       ['Yeni Teklif', core.rel(at + config.bosanma.bekleme)],
     ],
     note: config.notlar.bosanma,
@@ -193,10 +194,11 @@ function yilDonumuKarti({ a, b, odul, sayi, sonrakiAt, user, at = Date.now() }) 
 
 // ── Kişinin kendi hâl sayfası ─────────────────────────────────────────────────
 function evlilikBloku(state) {
-  const { es, at, gun, bonus } = state.evlilik;
+  const { es, at, gun, bonus, rol } = state.evlilik;
   const sonraki = bonus.hazir ? `${core.chip('hazır')}` : core.rel(bonus.sonrakiAt);
   return `### Evlisin\n${core.rows([
     ['Eşin', mention(es)],
+    ['Çift Rolün', rolSatiri({ rolId: rol, rolAdi: null }) ?? core.chip('rol açılamamış')],
     ['Başlangıç', core.rel(at)],
     ['Birlikte', `${number(gun)} gün`],
     ['Alınan Dönüm', bonus.sayi ? `${number(bonus.sayi)} kez` : 'henüz yok'],
@@ -233,17 +235,14 @@ function sartBloku(state) {
   return `### Teklif Şartları\n${core.rows(durumlar)}`;
 }
 
-function kurallarBloku(state) {
-  const roller = config.roles.evli
-    ? `5. Çiftin ikisine de **evli rolü** verilir; sunucudan düşüp dönersen bot rolü geri verir.`
-    : '5. Evli rolü sunucuda hazır olmadığı için şu an verilmiyor; evlilik yine kaydediliyor.';
+function kurallarBloku() {
   return `### Nasıl İşler?
 1. **${coin(butikConfig.yuzuk.price)}** karşılığında Butikten **yüzük** al: /bakiye > Butik.
 2. **/evlilik teklif kullanici:@üye** yaz; teklif kartı kanala düşer, ${Math.round(config.teklif.pencere / 3600000)} saat yanıt beklenir.
-3. Muhatap **Kabul Ediyorum** basarsa yüzüğün yakılır, ikiniz evli olarak kaydedilirsiniz. **Geri Çevir** ya da sessizlik yüzük kaybettirmez.
-4. Evliliğin her ${config.yilDonumu.gun} gününde bir **yıl dönümü ödülü** iki tarafa birden yatar: sayfadaki düğmeye kim basarsa bassın, para ikisinin de cebine geçer.
-${roller}
-6. Yollar ayrılırsa **${bosanEtiket}** düğmesiyle boşanırsın; eşin de aynı süre boyunca yeni teklif götüremez.`;
+3. Komuttaki **rol_adi**, **renk** ve **simge** alanlarıyla çift rolünüzü siz seçersin; hepsini boş bırakırsan adınız yan yana yazılır, yüzük simgesi ve ilk renk verilir. Seçtiğin rol teklif kartında görünür, yani muhatap neyi kabul ettiğini okur.
+4. Muhatap **Kabul Ediyorum** basarsa yüzüğün yakılır, ikiniz evli olarak kaydedilirsiniz ve **bot çift rolünüzü açıp ikinize giydirir**. **Geri Çevir** ya da sessizlik yüzük kaybettirmez.
+5. Evliliğin her ${config.yilDonumu.gun} gününde bir **yıl dönümü ödülü** iki tarafa birden yatar: sayfadaki düğmeye kim basarsa bassın, para ikisinin de cebine geçer.
+6. Sunucudan düşüp dönersen bot çift rolünü geri verir; **${bosanEtiket}** düğmesiyle boşanınca rol silinir ve eşin de senin de yeni teklifi aynı süre bekler.`;
 }
 
 function durumPaneli(state) {
