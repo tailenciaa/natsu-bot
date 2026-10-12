@@ -85,6 +85,9 @@ const inviteLabel = (url) => url.slice('https://'.length);
 // Standart başlık: büyük başlık ve iki satıra yayılan uzun normal yazılı açıklama (bütün mesajlar aynı genişlikte görünsün)
 const head = (title, sub) => text(`## ${title}\n${sub}`);
 
+// Kayıt kartında "Kaynak" satırında görünen talep türü
+const SOURCES = { oto: 'Oto partner talebi', manuel: 'Yetkili paylaşımı', teklif: 'Teklifte bulunma' };
+
 const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
 
@@ -274,73 +277,67 @@ function reviewCard(request, decided) {
     );
 }
 
-// Paylaşım kanalındaki standart partner kartı. Üyenin tek işi ilanı okuyup sunucuya girmek: metindeki Discord
-// daveti kartın en görünür yerine butona çevrilir, yetkilinin yönetim butonları en altta ayrı bir başlıkta durur.
-// trusted: zaten güvenilir listede mi, banned: gönderen yasaklı mı (ikisi de buton etiketi/durumu için) —
-// Güvenilir Listeye Al (ekleme) ve Yasaklıya Al/Partneri Sil (yönetim) ayrı satırlarda.
-// request.files: elle atılan mesajın ekleri ({ name, image }), kartla birlikte gösterilir
-function postCard(request, trusted, banned) {
+// İlanın kendisi DÜZ mesaj olarak paylaşılır: Discord, davet bağlantısının ve eklerin önizlemesini yalnızca düz
+// mesajda gösteriyor. Kartın içine girince bağlantı sıradan metne dönüp kayboluyordu, üye ilanı göremiyordu.
+function postContent(request) {
+  // Düz mesajın üst sınırı 2000 karakter; uzun ilan burada kırpılır, kayıttaki metin tam kalır
+  return shorten(sanitize(request.text), 1990);
+}
+
+// Paylaşım kanalındaki ikinci mesaj: kaydın durumu, sunucunun partner sayıları (bugün/hafta/ay) ve yetkilinin
+// işlemleri. Butonlar bu karttadır; ilanın kendisi üstteki düz mesajda durur.
+// trusted: güvenilir listedeki kayıt (null: değil), banned: gönderen yasaklı mı, stats: store.partnerStats()
+function postCard(request, trusted, banned, stats = {}) {
   const url = inviteUrl(request.text);
+  const period = (p) => `${p?.onay ?? 0} onay · ${p?.talep ?? 0} talep · ${p?.ret ?? 0} ret`;
+
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        'Partner Sunucusu',
-        url
-          ? 'Bu kart **partner sunucularımızdan birinin kendi tanıtımı**. İlgini çekerse **Sunucuya Katıl** butonuyla doğrudan o sunucuya girebilirsin; buton ilanın içindeki davet bağlantısını açar.'
-          : 'Bu kart **partner sunucularımızdan birinin kendi tanıtımı**. İlanın metninde bir **davet bağlantısı verilmedi**, o yüzden katılma bilgisini ilanın kendisinde araman gerekiyor.',
+        `Partner Kaydı #${request.number}`,
+        'Üstteki mesaj bu sunucunun **kendi ilanı**; okuyup girmen yeterli. Burada yalnızca kaydın durumu, **partner sayıları** ve yetkilinin işlemleri duruyor.',
       ),
     )
     .addSeparatorComponents(divider())
-    // Bir mesajdaki toplam metin 4000 karakteri geçemez; kayıtlı metin tam kalır, kartta çok uzunsa kırpılır
-    .addTextDisplayComponents(text(`### Tanıtım Metni\n${shorten(sanitize(request.text), 2800)}`));
-
-  const files = request.files ?? [];
-  const images = files.filter((f) => f.image);
-  if (images.length) {
-    container.addMediaGalleryComponents(
-      new MediaGalleryBuilder().addItems(images.slice(0, 10).map((f) => new MediaGalleryItemBuilder().setURL(`attachment://${f.name}`))),
-    );
-  }
-  for (const f of files.filter((file) => !file.image).slice(0, 5)) {
-    container.addFileComponents(new FileBuilder().setURL(`attachment://${f.name}`));
-  }
-
-  // Elle atılan ve Discord daveti içermeyen ilanda buton olmaz; üye davetin nerede olmadığını satırda görür
-  container
-    .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
         fields([
-          '### Sunucuya Katıl',
-          url ? field('Davet', chip(inviteLabel(url))) : field('Davet', chip('verilmedi')),
-          url
-            ? 'Butona basabilir ya da bağlantıyı kopyalayıp tarayıcıya yapıştırabilirsin.'
-            : 'İlanı veren sunucunun yetkilisinden davet bağlantısını isteyebilirsin.',
-        ]),
-      ),
-    );
-  if (url) {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
-    );
-  }
-
-  container
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        fields([
-          '### Paylaşım',
+          '### Bu Kayıt',
           rows([
-            ['Sunucu ID', request.serverId ? chip(request.serverId) : null],
+            ['Sunucu ID', request.serverId ? chip(request.serverId) : chip('belirtilmedi')],
             ['Paylaşan', `<@${request.requesterId}>`],
             ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`],
+            ['Kaynak', chip(SOURCES[request.source] ?? request.source ?? 'bilinmiyor')],
+            ['Güvenilir Liste', trusted ? chip(`Listede · ${trusted.contactIds?.length ?? 0} yetkili`) : chip('Listede değil')],
+            ['Davet', url ? chip(inviteLabel(url)) : chip('ilan metninde yok')],
           ]),
         ]),
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text('### Yetkili İşlemleri\nBu butonlar partner yetkilileri içindir, üye olarak yalnızca **Sunucuya Katıl** butonunu kullanırsın.'));
+    .addTextDisplayComponents(
+      text(
+        fields([
+          '### Partner Sayıları',
+          rows([
+            ['Bugün', chip(period(stats.gun))],
+            ['Bu Hafta', chip(period(stats.hafta))],
+            ['Bu Ay', chip(period(stats.ay))],
+            ['Toplam', chip(`${stats.toplam ?? 0} onaylı · ${stats.guvenilir ?? 0} güvenilir · ${stats.yasakli ?? 0} yasaklı`)],
+            ['Bu Kayıt', chip(stats.sira ? `${stats.sira}. onaylı partner` : 'ilk onaylı partner')],
+          ]),
+        ]),
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('### İşlemler\nÜye için tek düğme **Sunucuya Katıl**; diğerleri partner yetkililerine ve liderine açıktır.'));
+
+  // Elle atılan ve Discord daveti içermeyen ilanda katılma düğmesi olmaz; davetin ilanın metninde araman gerekir
+  if (url) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
+    );
+  }
 
   return container
     .addActionRowComponents(
