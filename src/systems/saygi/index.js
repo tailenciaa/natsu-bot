@@ -1,8 +1,8 @@
 // Saygınlık sistemi: üyeler birbirine günde bir kez +1 saygınlık verebilir (/saygi-ver ya da bir mesajda "+rep
-// @kullanıcı" yazarak), tüm zamanların toplam tablosu /saygi-siralama ile görülebilir. Her hafta pazartesi, geçen
-// haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve ayarlı rol verilir (önceki haftanın sahibinden
-// geri alınır).
-const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+// @kullanıcı" yazarak); tüm zamanların toplam tablosu /siralama menüsünün saygınlık türüdür. Her hafta pazartesi,
+// geçen haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve ayarlı rol verilir (önceki haftanın
+// sahibinden geri alınır).
+const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
 const { respond, replyError, fetchTextChannel, stillMember } = require('../../core/helpers');
@@ -20,15 +20,6 @@ const commands = [
     .setDescription('Bir üyeye +1 saygınlık verir, günde bir kez kullanılabilir.')
     .addUserOption((opt) => opt.setName('kullanici').setDescription('Saygınlık verilecek üyeyi seçer.').setRequired(true))
     .setContexts(InteractionContextType.Guild),
-  new SlashCommandBuilder()
-    .setName('saygi-siralama')
-    .setDescription('Tüm zamanların saygınlık tablosunu gösterir.')
-    .setContexts(InteractionContextType.Guild),
-  new SlashCommandBuilder()
-    .setName('saygi-onizleme')
-    .setDescription('Haftanın saygın üyesi duyurusunun önizlemesini sadece sana gösterir.')
-    .setContexts(InteractionContextType.Guild)
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ];
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
@@ -189,19 +180,6 @@ async function handleMessage(message) {
     .catch(() => {});
 }
 
-// /saygi-siralama: tüm zamanların toplam tablosu
-async function handleTable(interaction) {
-  const ranking = topUsers(interaction.guild, store.allTotals(), 15);
-  return respond(interaction, ui.table(interaction.guild, ranking));
-}
-
-// /saygi-onizleme: bu haftanın şu ana kadarki durumuna göre duyurunun örneğini sadece komutu kullanana gösterir
-async function handlePreview(interaction) {
-  const results = topUsers(interaction.guild, store.weekTotals(weekKey()));
-  // GİZLİ İSTİSNA: önizleme; asıl duyuru kanala düşer, örnek sadece komutu kullanana görünür
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results, config.roleId));
-}
-
 function handleReady(client) {
   const guild = client.guilds.cache.get(guildId);
   if (!guild) return;
@@ -214,10 +192,10 @@ module.exports = {
   commands,
   help: {
     category: ['siralama', 'Sıralama'],
-    member: ['saygi-ver', 'saygi-siralama'],
-    access: { 'saygi-ver': 'Herkes', 'saygi-siralama': 'Herkes', 'saygi-onizleme': 'Yöneticiler' },
+    member: ['saygi-ver'],
+    access: { 'saygi-ver': 'Herkes' },
   },
-  slash: { 'saygi-ver': handleGive, 'saygi-siralama': handleTable, 'saygi-onizleme': handlePreview },
+  slash: { 'saygi-ver': handleGive },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.MessageCreate]: handleMessage,

@@ -1,5 +1,5 @@
 // Saygınlık verileri: hafta anahtarı -> kullanıcı ID'si -> o hafta kazandığı saygınlık adedi (haftanın kazananını
-// bulmak için), ayrıca her kullanıcının tüm zamanlar toplamı (/saygi-siralama tablosu için). Verenlerin bekleme
+// bulmak için), ayrıca her kullanıcının tüm zamanlar toplamı (/siralama'nın saygınlık türü için). Verenlerin bekleme
 // süresi, haftanın rol sahibi ve son duyurulan hafta de burada tutulur.
 const { data, save } = require('../../core/db');
 

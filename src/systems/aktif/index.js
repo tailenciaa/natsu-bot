@@ -1,24 +1,16 @@
 // Haftanın aktifleri: mesaj, ses ve yayın (ekran paylaşımı) süresi haftalık olarak ayrı ayrı sayılır. Her hafta
 // pazartesi, geçen haftanın üç kategorisinin de birincisi #haftalık kanalına duyurulur ve kategorisine özel rol
 // verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi verilir.
-const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel, respond, stillMember } = require('../../core/helpers');
+const { fetchTextChannel, stillMember } = require('../../core/helpers');
 const coin = require('../coin/store');
 const coinConfig = require('../coin/config');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
 const { weekKey, previousWeekKey } = require('./week');
-
-const commands = [
-  new SlashCommandBuilder()
-    .setName('aktif-onizleme')
-    .setDescription('Haftanın aktifleri duyurusunun önizlemesini sadece sana gösterir.')
-    .setContexts(InteractionContextType.Guild)
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-];
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
 const TICK = 60 * 1000;
@@ -136,14 +128,6 @@ async function announceWeek(guild, target) {
       return false;
     },
   );
-}
-
-// /aktif-onizleme: bu haftanın şu ana kadarki durumuna göre duyurunun örneğini sadece komutu kullanana gösterir
-async function handlePreview(interaction) {
-  const results = {};
-  for (const kind of ['ses', 'mesaj', 'yayin']) results[kind] = topUsers(interaction.guild, store.totals(kind, weekKey()));
-  // GİZLİ İSTİSNA: önizleme; asıl duyuru kanala düşer, örnek sadece komutu kullanana görünür
-  return respond(interaction, ui.weeklyAnnounce(interaction.guild, results));
 }
 
 // Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar
