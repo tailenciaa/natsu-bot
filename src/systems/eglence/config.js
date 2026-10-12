@@ -22,6 +22,7 @@ module.exports = {
     op: {
       komut: 'öp',
       ad: 'öpücük',
+      aciklama: 'Bir üyeye öpücük gönderirsin; karşılık gelirse ikiniz de coin kazanır.',
       baslik: 'Öpücük Karşılık Bekliyor',
       kart: '{vuran}, {hedef} kişisine bir öpücük kondurdu.',
       karsilikEtiket: 'Öpücükle Karşılık Ver',
@@ -32,6 +33,7 @@ module.exports = {
     tokat: {
       komut: 'tokat',
       ad: 'tokat',
+      aciklama: 'Bir üyeye tokat atarsın; karşılık gelirse ikiniz de coin kazanır.',
       baslik: 'Tokat Karşılık Bekliyor',
       kart: '{vuran}, {hedef} kişisine bir tokat indirdi.',
       karsilikEtiket: 'Tokatla Karşılık Ver',

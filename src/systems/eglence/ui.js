@@ -25,13 +25,12 @@ function kart({ eylem, saldirgan, hedef, girisimNo, sonAt }) {
   return core
     .page({
       title: e.baslik,
-      sub: `${cumle(e.kart, saldirgan, hedef)} Karşılık gelmezse kart havada kalır; gelirse ${aralik(e.odul)} iki tarafa birden yatar.`,
+      sub: `${cumle(e.kart, saldirgan, hedef)} Karşılık gelmezse kart havada kalır, gelirse ödül iki tarafa birden yatar.`,
       blocks: [
         `### Taraflar\n${core.rows([
           ['Şakayı Yapan', `<@${saldirgan.id}>`],
           ['Muhap', `<@${hedef.id}>`],
           ['Karşılık Ödülü', aralik(e.odul)],
-          ['Son Düğme', core.chip(e.karsilikEtiket)],
           ['Süre', core.rel(sonAt)],
         ])}`,
         config.ipucu,
@@ -60,9 +59,9 @@ function karsilikSonuc({ eylem, saldirgan, hedef, odenenSaldirgan, odenenHedef, 
       ['Eylem', core.chip(e.ad)],
       ['Şakayı Yapan', `<@${saldirgan.id}>`],
       ['Muhap', `<@${hedef.id}>`],
-      ['Yatan Ödül', coin(odenenSaldirgan + odenenHedef)],
-      [`${saldirgan.username} Kazancı`, coin(odenenSaldirgan)],
-      [`${hedef.username} Kazancı`, coin(odenenHedef)],
+      ['Şakayı Yapana Yatan', coin(odenenSaldirgan)],
+      ['Muhaba Yatan', coin(odenenHedef)],
+      ['Karttan Çıkan', coin(odenenSaldirgan + odenenHedef)],
     ],
     note: kesinti ? config.tavanNotu : undefined,
     at,
