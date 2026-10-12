@@ -1,4 +1,4 @@
-// Log sistemi kanal ayarları. ID değiştirince botu yeniden başlatmak yeterli.
+// Log sistemi kanal ve görsel ayarları. ID değiştirince botu yeniden başlatmak yeterli.
 
 module.exports = {
   channels: {
@@ -7,4 +7,8 @@ module.exports = {
     // Log paneli (kategori seçim menüsü) bu kanala gönderilir
     panel: '1538944642685468702',
   },
+
+  // Panelin görseli. Kalıcı kopyası assets/banners/logpanelitai.jpg altında durur; dosya adı bağlantıdaki adla
+  // aynı olduğu sürece bot indirmeye hiç gerek duymaz, süresi dolan imza derdi olmaz (core/banner.js).
+  banner: 'https://cdn.discordapp.com/attachments/1538539811697332385/1559159004536639488/logpanelitai.jpg',
 };
