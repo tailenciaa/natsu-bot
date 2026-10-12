@@ -284,7 +284,9 @@ function postCard(request, trusted, banned) {
     .addTextDisplayComponents(
       head(
         'Partner Sunucusu',
-        'Bu kart **partner sunucularımızdan birinin kendi tanıtımı**. İlgini çekerse **Sunucuya Katıl** butonuyla doğrudan o sunucuya girebilirsin; buton ilanın içindeki davet bağlantısını açar.',
+        url
+          ? 'Bu kart **partner sunucularımızdan birinin kendi tanıtımı**. İlgini çekerse **Sunucuya Katıl** butonuyla doğrudan o sunucuya girebilirsin; buton ilanın içindeki davet bağlantısını açar.'
+          : 'Bu kart **partner sunucularımızdan birinin kendi tanıtımı**. İlanın metninde bir **davet bağlantısı verilmedi**, o yüzden katılma bilgisini ilanın kendisinde araman gerekiyor.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -309,10 +311,10 @@ function postCard(request, trusted, banned) {
       text(
         fields([
           '### Sunucuya Katıl',
-          url ? field('Davet', chip(inviteLabel(url))) : field('Davet', 'ilanın metninde verilmedi'),
+          url ? field('Davet', chip(inviteLabel(url))) : field('Davet', chip('verilmedi')),
           url
             ? 'Butona basabilir ya da bağlantıyı kopyalayıp tarayıcıya yapıştırabilirsin.'
-            : 'Bu ilanda davet bağlantısı yok; sunucuya girmek için ilanın metnindeki bilgiyi kullanabilirsin.',
+            : 'İlanı veren sunucunun yetkilisinden davet bağlantısını isteyebilirsin.',
         ]),
       ),
     );
