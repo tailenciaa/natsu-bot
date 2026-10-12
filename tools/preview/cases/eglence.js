@@ -113,7 +113,7 @@ module.exports = ({ mock, ui, src }) => {
     kartCase(
       'sonuc-karsilik',
       'Sonuç kartı: karşılık geldi, ödül iki tarafa da yattı',
-      'Muhap Karşılık Ver düğmesine bastığında kartın yerini alır',
+      'Muhatap karşılık düğmesine bastığında kartın yerini alır',
       u.karsilikSonuc({
         eylem: 'op',
         saldirgan: { id: kavgaci.uid },
@@ -126,7 +126,7 @@ module.exports = ({ mock, ui, src }) => {
     ),
     kartCase(
       'sonuc-kesinti',
-      'Sonuç kartı: karşılık geldi ama muhabın günlük tavanı doluydu, ödülü cebine girmedi',
+      'Sonuç kartı: karşılık geldi ama muhatabın günlük tavanı doluydu, ödülü cebine girmedi',
       'Tavanını doldurmuş üyenin karşılık kartında',
       u.karsilikSonuc({
         eylem: 'tokat',

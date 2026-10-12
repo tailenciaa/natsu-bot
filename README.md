@@ -79,6 +79,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 | Topluluk | `kurallar`, `bilgilendirme`, `otorol`, `etiket` (sunucu etiketi rolü), `partner` ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
 | Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, her seviyede coin ve ana seviyede rol ödülü), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `gorev` (günlük ve haftalık görevler, Keşif Yolu, kutu, sezon puanı ve eşikleri), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
 | Ses ve sunucu | `ses` (botun ses kanalında durması), `ozel-oda`, `kalici-oda` (başvuruyla açılan, sahibinin yönettiği tek ses kanalı odaları), `sesbilgi`, `cekilis`, `durum` (bot durumu), `yardim` |
+| Oyun ve şans | `oyun` (Oyun Salonu: rulet, merdiven, keşif), `hirsizlik` (Arka Sokaklar: üye soyma, kasa zorlama, direniş, hapis, kefalet ve Devletin Kasası), `eglence` (`/öp` ve `/tokat` şaka kartları; karşılık gelirse iki taraf da coin kazanır) |
 
 Her sistem klasöründe: `config.js` (kanal/rol ID'leri ve metinler), `index.js` (komutlar ve işleyiciler), `ui.js` (gönderdiği mesajlar), `store.js` (kayıtlar).
 
