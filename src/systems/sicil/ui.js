@@ -417,7 +417,7 @@ function commandResult(p) {
   const t = TYPES[p.type];
   return pageBlocks({
     title: `${t.label} Uygulandı`,
-    sub: 'Ceza uygulandı ve kullanıcının siciline işlendi. Kaydı /sicil komutuyla görebilir, ceza sürüyorsa numarasıyla /ceza-kaldir komutunu kullanarak kaldırabilirsin.',
+    sub: 'Ceza uygulandı ve üyenin siciline işlendi. Kaydı **/sicil** ile görebilir, ceza sürüyorsa kayıt kartındaki **Cezayı Kaldır** düğmesiyle ya da numarasıyla **/ceza-kaldir** komutuyla kaldırabilirsin.',
     accent: colors[p.type === 'uyari' ? 'warning' : 'danger'],
     blocks: [`### Ceza Bilgileri\n${infoRows(p)}`, `### Sebep\n${quote(p.reason)}`, stamp(p.createdAt)],
   });

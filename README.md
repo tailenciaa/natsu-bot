@@ -39,8 +39,8 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | Komut | Açıklama | Kimler |
 | --- | --- | --- |
 | `/yardim` | Komutları kategorilere göre gösterir | Herkes |
-| `/sicil [kullanici]` | Üyenin sicilini gösterir | Herkes kendisininkini, yetkililer herkesinkini |
-| `/seviye [kullanici]` | Mesaj ve ses seviyesini kartla gösterir | Herkes |
+| `/sicil [kullanici]` | Üyenin cezalarını, destek taleplerini ve değerlendirme kayıtlarını gösterir | Herkes kendisininkini, yetkililer herkesinkini |
+| `/seviye [kullanici]` | Mesaj ve ses aktivitesi seviyeni, tecrübeni ve sıradaki ödülleri kartla gösterir | Herkes |
 | `/profil [kullanici]` | Geniş profil panosu: kapakta kimlik (evliyse kalp etiketli **eş ve birlikte geçen gün** hapı), **profil puanı bandı** (puan, rütbe, bir üst rütbe hedefi, sunucu sırası ve puanın geldiği sekiz bölüm), sayı şeridi (mesaj/ses seviyesi, mesaj, ses süresi, ziyaret, sicil, sunucuda geçen süre; yayın, soygun, keşif ve şakalaşma sütunları yalnızca üyenin o sistemde kaydı varsa doğar), rozetler, biyografi ve vitrin. Altındaki butonlarla biyografi, renk, kapak, panel görünümü, tema, mağaza ve **Puanım** sayfası açılır | Herkes |
 | `/gunluk` | Günlük coin ödülünü toplar, art arda günlerle seri bonusu büyür; kazanç kartı kanala düşer | Herkes |
 | `/bakiye` | Coin cüzdanı: bakiye, kazanç, harcanan, seri ve mağazadan alınanlar. Altında iki satır buton var: ilk satır **Görevler**, **Oyun Salonu**, **Arka Sokaklar**, **Şakalaş** ile kazanma kapılarını, ikinci satır **Mağaza**, **Butik** ve **Siparişlerim** ile harcama kapılarını açar. **Butik** cüzdan kartının yerini alan coin harcama rafıdır: ek saygınlık hakkı, evlilik yüzüğü ve özel renkli roller | Herkes |
@@ -56,11 +56,10 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/evlilik liste` | Sunucudaki evli çiftler ve birlikte geçirdikleri gün | Herkes |
 | `/evlilik bosan` | Eşinden boşanırsın; bedel Devletin Kasasına yazar ve iki tarafa da yeni teklif beklemesi konur | Evliler |
 | `/siralama` | Tek menüden altı sıralama: mesaj, ses, yayın, saygınlık, coin ve VIP; rol ile filtrelenir, dönem yalnızca mesaj/ses/yayında seçilir | Herkes |
-| `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
-| `/saygi-siralama` | Tüm zamanların saygınlık tablosu | Herkes |
-| `/vip-ver kullanici` | Bir üyeye VIP rolünü verir | Yöneticiler |
+| `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verirsin (günde bir kez, mesaja `+rep @üye` yazarak da verilir); haftanın birincisi ödül rolünü alır, tüm zamanların tablosu `/siralama`'da | Herkes |
+| `/vip-ver kullanici` | Bir üyeye VIP rolünü kalıcı olarak verir; üye profilinde ve sıralamada VIP görünür | Yöneticiler |
 | `/guvenilir-partnerler` | Güvenilir partner sunucuların listesi | Herkes |
-| `/partner-musaitlik` | Teklif atamaları için partner müsaitliğini ayarlar | Partner yetkilileri |
+| `/partner-musaitlik` | Partner sunucu yetkilisiysen yeni tekliflere açık olup olmadığını ayarlarsın | Partner yetkilileri |
 | `/emoji-ekle emoji [isim]` | Başka sunucudaki emojiyi ekler | Emoji yönetme izni olanlar, takviye edenler (1 emoji) |
 | `/cikartma-ekle dosya isim etiket` | Görseli çıkartma olarak ekler | Emoji yönetme izni olanlar, takviye edenler (1 çıkartma) |
 | Mesaja sağ tık > **Emojileri Sunucuya Ekle** | Mesajdaki emojileri seçip ekler | Emoji yönetme izni olanlar |
@@ -71,9 +70,9 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/ceza-kaldir`, `/ceza-sil` | Cezayı numarasıyla kaldırır ya da sicilden siler | Yetkisi olanlar |
 | `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
 | `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
-| `/kalici-oda odam` | Kendi kalıcı odasının panelini açar: ismi, kişi limiti, üye ekleme-çıkarma ve sahiplik devri | Odası olan üyeler |
-| `/kalici-oda liste`, `kapat`, `devret` | Kalıcı odaları ve bekleyen başvuruları listeler, oda kapatır, sahibi ayrılmış odayı bir üyeye devreder (başvuru panelden yapılır: önce üye seçme menüsü, sonra form; ID yazılmaz. Yalnızca yöneticiler onaylar) | Yöneticiler |
-| `/log kur` | Log kurulum menüsünü açar | Yöneticiler |
+| `/kalici-oda` | Kendi kalıcı odasının kontrol panelini açar: ismi, kişi limiti, üye ekleme-çıkarma ve sahiplik devri | Odası olan üyeler |
+| Kalıcı oda panelindeki **Odaları Yönet** düğmesi | Yöneticiler için oda listesi: bir oda seçilince kartından sahibi devredilir ya da oda kapatılır (oda numarası yazılmaz). Başvuru onayı inceleme kanalındaki kartlarda; başvuru panelden yapılır: önce üye seçme menüsü, sonra form, ID yazılmaz | Yöneticiler |
+| `/log` | Log kurulum menüsünü açar: alt başlıkların durumunu gösterir, kurar ve sıfırlar | Yöneticiler |
 
 Ceza komutları (`/uyari`, `/mute`, `/unmute`, `/jail`, `/unjail`, `/ban`, `/unban`, `/ceza-kaldir`, `/ceza-sil`) ve `/yetki-ver` ile `/yetki-al` sadece yetkili komut kanalında çalışır.
 
