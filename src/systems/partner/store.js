@@ -1,5 +1,10 @@
 // Partner taleplerinin (oto ya da elle yapılan, hepsi kayıt altına alınır) ve güvenilir partner listesinin kaydı
 const { data, save, guildData } = require('../../core/db');
+const { weekKey } = require('../aktif/week');
+
+// Dönem sayıları İstanbul takvimine göre: gün 00:00'da, hafta pazartesi, ay ayın birinde sıfırlanır
+const dayKey = (ms) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
+const monthKey = (ms) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit' });
 
 const TERMS_WAIT = 24 * 60 * 60 * 1000; // şartları kabul etmesi beklenen talebin geçerlilik süresi
 
@@ -204,5 +209,32 @@ module.exports = {
     delete data.bannedServers[serverId];
     save();
     return true;
+  },
+
+  // Partner istatistikleri: paylaşım kartının altındaki bugün / bu hafta / bu ay sayıları. Bir talebin sonucu
+  // decidedAt ile (yoksa createdAt ile) sayılır; silinen gönderiler talep sayısına girmez.
+  partnerStats(guildId, requestId = null) {
+    const now = Date.now();
+    const requests = Object.values(data.partnerRequests).filter((r) => r.guildId === guildId);
+    const approved = requests
+      .filter((r) => r.status === 'approved')
+      .sort((a, b) => (a.decidedAt ?? a.createdAt) - (b.decidedAt ?? b.createdAt));
+    const decided = (r) => r.decidedAt ?? r.createdAt;
+    const period = (keyOf, key) => ({
+      onay: approved.filter((r) => keyOf(decided(r)) === key).length,
+      talep: requests.filter((r) => r.status !== 'silindi' && keyOf(r.createdAt) === key).length,
+      ret: requests.filter((r) => r.status === 'rejected' && keyOf(decided(r)) === key).length,
+    });
+
+    return {
+      gun: period(dayKey, dayKey(now)),
+      hafta: period(weekKey, weekKey(now)),
+      ay: period(monthKey, monthKey(now)),
+      toplam: approved.length,
+      guvenilir: Object.values(data.trustedPartners).filter((p) => p.guildId === guildId).length,
+      yasakli: Object.keys(data.partnerBans).length,
+      // Bu kayıt onaylanmış partnerler arasında kaçıncı; silinmiş/bulunamazsa null
+      sira: requestId ? approved.findIndex((r) => r.id === requestId) + 1 || null : null,
+    };
   },
 };
