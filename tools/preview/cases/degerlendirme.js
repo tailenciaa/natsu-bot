@@ -25,6 +25,7 @@ module.exports = ({ mock, src }) => {
     ratedAt: o.ratedAt ?? mock.ago(2 * mock.HOUR),
     channelId: o.channelId ?? null,
     messageId: o.messageId ?? null,
+    repAt: o.repAt ?? null,
     reportedAt: o.reportedAt ?? null,
     reportReason: o.reportReason ?? null,
     reportStatus: o.reportStatus ?? null,

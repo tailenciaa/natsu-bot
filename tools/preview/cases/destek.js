@@ -176,7 +176,7 @@ module.exports = ({ mock, ui, src }) => {
     {
       id: 'dm-kapandi',
       title: 'DM: talebin kapatıldı (puanlama bölümüyle)',
-      where: 'Talep sahibine DM, altında yetkiliyi puanlama butonları',
+      where: 'Talep sahibine DM, altında yetkiliyi puanlama butonları ve saygınlık butonu',
       visibility: 'dm',
       kind: 'message',
       build: () => ({ components: [d.closeDm(8, guild.name, { id: 'r1', score: 0, staffName: staff.displayName, category: 'destek' })] }),
@@ -188,6 +188,24 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'dm',
       kind: 'message',
       build: () => ({ components: [d.closeDm(8, guild.name, { id: 'r1', score: 5, staffName: staff.displayName, category: 'destek' })] }),
+    },
+    {
+      id: 'dm-kapandi-saygi',
+      title: 'DM: talebin kapatıldı (saygınlık verilmiş)',
+      where: 'Talep sahibine DM, saygınlık butonu kullanıldıktan sonra kilitlenir',
+      visibility: 'dm',
+      kind: 'message',
+      build: () => ({
+        components: [
+          d.closeDm(8, guild.name, {
+            id: 'r1',
+            score: 5,
+            repAt: mock.ago(30 * mock.MIN),
+            staffName: staff.displayName,
+            category: 'destek',
+          }),
+        ],
+      }),
     },
     {
       id: 'dm-kapandi-puansiz',
