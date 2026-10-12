@@ -30,7 +30,7 @@ const GUNLUK_HAVUZU = [
   { key: 'ses-90', ad: '1,5 saat seste kal', tarif: 'Bir sesli kanalda bugün toplam 1,5 saat geçirmiş ol.', hedef: 5400, birim: 'sure', olcum: 'sesGun', odul: { coin: 180, puan: 8 } },
   { key: 'yayin-20', ad: '20 dakika ekran paylaş', tarif: 'Seslide ekran paylaşımı aç ve bugün 20 dakika yayında kal.', hedef: 1200, birim: 'sure', olcum: 'yayinGun', odul: { coin: 120, puan: 6 } },
   { key: 'gunluk-odul', ad: 'Günlük ödülünü topla', tarif: '/gunluk yaz; coinlerin cebine girsin ve serin uzasın.', hedef: 1, birim: 'adet', olcum: 'gunlukBugun', odul: { coin: 50, puan: 3 } },
-  { key: 'rep-ver', ad: 'Birine saygınlık ver', tarif: 'Sohbette "+rep @üye" yaz ya da /saygi-ver kullan.', hedef: 1, birim: 'adet', olcum: 'repVerdiBugun', odul: { coin: 60, puan: 3 } },
+  { key: 'rep-ver', ad: 'Birine saygınlık ver', tarif: 'Sohbette "+rep @üye" yaz, /saygi-ver kullan ya da puanladığın değerlendirmenin altındaki saygınlık butonuna bas.', hedef: 1, birim: 'adet', olcum: 'repVerdiBugun', odul: { coin: 60, puan: 3 } },
   { key: 'oyun-3-el', ad: 'Salonda 3 el oyna', tarif: '/oyun ile bugün Rulet ya da Merdiven masasında 3 el çevir.', hedef: 3, birim: 'adet', olcum: 'oyunElGun', odul: { coin: 110, puan: 5 } },
   { key: 'gezi-3', ad: '3 geziye çık', tarif: '/oyun Keşif sekmesinden bugün 3 gezi yap. Ganimetin ne çıktığı önemli değil, gezinin kendisi sayılır.', hedef: 3, birim: 'adet', olcum: 'kesifGun', odul: { coin: 100, puan: 4 } },
   { key: 'sokak-1-girisim', ad: 'Arka Sokaklarda pusu kur', tarif: '/sokak ile bugün bir girişim başlat; hedefin bir üye ya da Devletin Kasası olabilir. Pusuyu sen kurduysan sonucu ne olursa olsun sayılır.', hedef: 1, birim: 'adet', olcum: 'sokakGun', odul: { coin: 110, puan: 5 } },

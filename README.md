@@ -56,7 +56,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/evlilik liste` | Sunucudaki evli çiftler ve birlikte geçirdikleri gün | Herkes |
 | `/evlilik bosan` | Eşinden boşanırsın; bedel Devletin Kasasına yazar ve iki tarafa da yeni teklif beklemesi konur | Evliler |
 | `/siralama` | Tek menüden altı sıralama: mesaj, ses, yayın, saygınlık, coin ve VIP; rol ile filtrelenir, dönem yalnızca mesaj/ses/yayında seçilir | Herkes |
-| `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verirsin (günde bir kez, mesaja `+rep @üye` yazarak da verilir); haftanın birincisi ödül rolünü alır, tüm zamanların tablosu `/siralama`'da | Herkes |
+| `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verirsin (günde bir kez, mesaja `+rep @üye` yazarak ya da puanladığın bir değerlendirmenin altındaki **Saygınlık Ver** butonuyla da verilir); her verme bot komutları kanalındaki herkese açık kayıtta görünür, haftanın birincisi ödül rolünü alır, tüm zamanların tablosu `/siralama`'da | Herkes |
 | `/vip-ver kullanici` | Bir üyeye VIP rolünü kalıcı olarak verir; üye profilinde ve sıralamada VIP görünür | Yöneticiler |
 | `/guvenilir-partnerler` | Güvenilir partner sunucuların listesi; menüden seçilen sunucunun tanıtım metni, kaydı ve **davet bağlantısı** açılır | Herkes |
 | `/partner-musaitlik` | Partner sunucu yetkilisiysen yeni tekliflere açık olup olmadığını ayarlarsın | Partner yetkilileri |
@@ -82,7 +82,7 @@ Her sistem `src/systems` altında kendi klasöründe durur ve birbirine karışm
 
 | Grup | Sistemler |
 | --- | --- |
-| Destek ve yetkili | `destek` (talep alt başlıkları), `degerlendirme` (memnuniyet puanı ve itiraz), `basvuru` (yetkili alımı), `oryantasyon` (onaylanan başvuranın son aşaması), `yetki` (elle yetki verme) |
+| Destek ve yetkili | `destek` (talep alt başlıkları), `degerlendirme` (memnuniyet puanı, saygınlık ve itiraz), `basvuru` (yetkili alımı), `oryantasyon` (onaylanan başvuranın son aşaması), `yetki` (elle yetki verme) |
 | Moderasyon | `sicil` (üye sicili ve hızlı ceza komutları), `cezalarim` (üyenin kendi cezaları ve itirazı), `temizle`, `yenihesap` (yeni hesap kısıtlaması), `log` (olay kayıtları) |
 | Topluluk | `kurallar`, `bilgilendirme` (iki panel: sunucu rehberi #bilgilendirme kanalında, coin ve ekonomi rehberi ayrı kanalda; bölüm başına bir mesaj), `otorol`, `etiket` (sunucu etiketi rolü), `partner` (oto partner talebi; onaylanan ilan paylaşım kanalına **Sunucuya Katıl** butonlu kartla düşer) ve `partnergorme`, `yayin` (yayın yetkisi), `boost` ve `emoji` (takviye avantajları, emoji/çıkartma ekleme) |
 | Seviye ve sıralama | `seviye` (mesaj ve ses XP'si, her seviyede coin ve ana seviyede rol ödülü), `coin` (günlük ödül, seri, cüzdan ve sipariş geçmişi), `butik` (cüzdandan açılan coin harcama rafı: ek saygınlık hakkı, evlilik yüzüğü ve özel renkli roller; kendi komutu yoktur, yalnızca butonla açılır), `gorev` (günlük ve haftalık görevler, Keşif Yolu, kutu, sezon puanı ve eşikleri), `profil` (kart, rozetler ve görevler, vitrin, kapak düzenleyici, kozmetik mağazası), `siralama`, `aktif` (haftanın aktifleri), `saygi`, `vip` |
