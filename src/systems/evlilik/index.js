@@ -339,9 +339,11 @@ async function tara(client) {
   }
 }
 
-function handleReady(client) {
+// İlk tarama açılışta bekletilir ki zamanlayıcı kurulmadan önce kapanacak kartlar bitsin ve bir hata olursa
+// olay dağıtıcısının yakalama kapısına düşsün (src/index.js).
+async function handleReady(client) {
   if (!client.guilds.cache.get(guildId)) return;
-  tara(client);
+  await tara(client);
   setInterval(() => tara(client), config.bekciAralik).unref();
 }
 
