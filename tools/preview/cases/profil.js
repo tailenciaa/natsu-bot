@@ -317,7 +317,7 @@ module.exports = ({ mock, ui, src }) => {
         butik.rolEkle(uye.id, src('systems/butik/config').roller[0].key);
         evlilik.evlendir(uye.id, esi.id, mock.ago(40 * mock.DAY));
         evlilik.bonusAl(uye.id);
-        const ctx = rozet.context({ guild: g, member: m, userId: uye.id, messageCount: 240, voiceSeconds: 4 * mock.HOUR, visits: 46 });
+        const ctx = rozet.context({ guild: g, member: m, userId: uye.id, messageCount: 240, voiceSeconds: 4 * 60 * 60, visits: 46 });
         const list = rozet.progress(ctx);
         const kazanilan = rozet.earned(ctx).length;
         // Evlilik kaydı çizimden sonra kaldırılır: evliliğin kendi listesi bu case'ten sahte çift devralmasın
