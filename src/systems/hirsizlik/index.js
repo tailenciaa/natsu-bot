@@ -77,7 +77,7 @@ function kapilar(userId, at = Date.now()) {
     return { ok: false, mesaj: 'İçeridesin, yeni suç işleyemezsin.', ipucu: `Tahliyen ${core.rel(durum.hapis)} içinde. Erken çıkmak için /sokak sayfasından kefalet ödeyebilirsin.` };
   }
   if (seviye < config.minSeviye) {
-    return { ok: false, mesaj: 'Suç dünyası senin seviyene kapalı.', ipucu: `Girişim için seviye ${config.minSeviye} gerekir, ölçülen seviyen ${seviye}.` };
+    return { ok: false, mesaj: 'Sokaklar sana henüz kapalı.', ipucu: `Bir girişim için seviye ${config.minSeviye} gerekir, senin seviyen ${seviye}. Şartlar /sokak sayfasında duruyor.` };
   }
   if (durum.kalan <= 0) {
     return { ok: false, mesaj: 'Bugünkü suç kotan doldu.', ipucu: `Günde ${config.gunlukAdet} girişim yapabilirsin; gece sıfırlanır. Kumarhane açık.` };
@@ -103,7 +103,7 @@ async function uyeSoy(interaction) {
 
   const hedefSeviye = seviyeOlcumu(hedef.id);
   if (hedefSeviye < config.korumaSeviye) {
-    return replyError(interaction, 'Bu üye henüz korunuyor.', `Suç dünyası için seviye ${config.korumaSeviye} gerekir; seçtiğin üyenin ölçülen seviyesi ${hedefSeviye}.`);
+    return replyError(interaction, 'Bu üye yeni, henüz soyulamaz.', `Kurbanın seviyesi en az ${config.korumaSeviye} olmalı. <@${hedef.id}> şu an ${hedefSeviye} seviyesinde; daha oturmuş bir üye seç.`);
   }
   const hdurum = store.durumOf(hedef.id);
   if (hdurum.hapis) return replyError(interaction, 'Kurban içeride.', 'Cezaevindeki üye soyulmaz; sokakta birini bul.');
@@ -139,7 +139,7 @@ async function kasaSoy(interaction) {
   if (!kap.ok) return replyError(interaction, kap.mesaj, kap.ipucu);
 
   if (kap.seviye < config.kasaMinSeviye) {
-    return replyError(interaction, 'Kasa senin seviyene kapalı.', `Kasaya zorlama için seviye ${config.kasaMinSeviye} gerekir, ölçülen seviyen ${kap.seviye}.`);
+    return replyError(interaction, 'Kasa sana henüz kapalı.', `Kasayı zorlamak için seviye ${config.kasaMinSeviye} gerekir, senin seviyen ${kap.seviye}. Üye soymak ${config.minSeviye}. seviyede açılır.`);
   }
   const durum = kap.durum;
   if (durum.kasa < config.kasa.enAz) {
