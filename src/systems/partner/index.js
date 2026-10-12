@@ -1001,7 +1001,7 @@ async function postRenewal(client, entry, contactId) {
   // Önce paylaşılır; kayıtlar ancak paylaşım başarılı olursa değişir, böylece başarısız denemede teklif yeniden denenebilir
   const postsChannel = await fetchTextChannel(guild, config.channels.posts);
   if (!postsChannel) return null;
-  const { card: message } = await publishPost(
+  const { ad, card: message } = await publishPost(
     postsChannel,
     request,
     { ...entry, addedAt: now, sourceRequestId: request.id },
@@ -1013,7 +1013,8 @@ async function postRenewal(client, entry, contactId) {
   store.updateTrusted(entry.id, { addedAt: now, sourceRequestId: request.id });
   await refreshTrustedPanel(client, entry.guildId);
 
-  return { message, channel: postsChannel };
+  // Karşı tarafa gönderilen bağlantı ilanın kendisine gitsin; kart yalnızca sayıları ve butonları taşıyor
+  return { message: ad ?? message, channel: postsChannel };
 }
 
 // Paylaşımdan sonra bizim tanıtım metnimiz karşı tarafa gider; karşı tarafın metninin paylaşıldığı mesaja giden bir buton da eklenir
