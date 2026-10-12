@@ -42,10 +42,11 @@ const kart = (no) => e.kartlar[no] ?? null;
 
 // Bu üyeye uzanan açık kartlar: şakalaşma sayfası bunları listeler ki kimse düğmesini kanalda aramasın.
 // Süresi geçmişler de burada durur — sayfa "karşılık bekleniyor" ile "artık geç kaldın" farkını gösterir.
-function acikKartlar(userId) {
+// Sıra öncelikli: basılabilecek kartlar en üstte, en erken süresi dolan onlar içinde önde olsun.
+function acikKartlar(userId, at = Date.now()) {
   return Object.values(e.kartlar)
     .filter((k) => k.hedef === userId)
-    .sort((a, b) => a.sonAt - b.sonAt);
+    .sort((a, b) => Number(a.sonAt <= at) - Number(b.sonAt <= at) || a.sonAt - b.sonAt);
 }
 
 // Atılan kart kayda geçer: düğme bu numaradan hangi ikilinin şakasını çözdüğünü bulur

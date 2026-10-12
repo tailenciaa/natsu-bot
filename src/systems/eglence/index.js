@@ -40,7 +40,7 @@ function sayfaDurumu(userId, user, at = Date.now()) {
     ...store.durumOf(userId, at),
     at,
     user,
-    kartlar: store.acikKartlar(userId).slice(0, config.sayfaKart),
+    kartlar: store.acikKartlar(userId, at).slice(0, config.sayfaKart),
   };
 }
 

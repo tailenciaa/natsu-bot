@@ -99,7 +99,41 @@ module.exports = ({ mock, ui, src }) => {
   }
   const kotaDurum = store.durumOf(hircin.uid);
 
+  // ── Şakalaşma sayfası ──────────────────────────────────────────────────────
+  // Sayfanın durumunu senaryo değil üretim kurar (eglence/index.sayfaDurumu): sana uzanan kartlar store'dan,
+  // üyenin sayıları durumOf'tan okunur. Burada yalnızca kimin kime ne attığı seçilir.
+  const vitrin = uye({ ad: 'Toprak' }); // iki kart atmış, ikisi de karşılık bulmuş; üstüne iki kart bekliyor
+  const ilk = uye({ ad: 'Zehra' }); // ilk kez açıyor: ne kartı var ne sayısı
+  const atisA = uye({ ad: 'Berk' });
+  const atisB = uye({ ad: 'Nil' });
+  const uzatanA = uye({ ad: 'Efe' });
+  const uzatanB = uye({ ad: 'Doğa' });
+
+  karsilikOdeme(kartAc(vitrin, atisA, 'tokat'), 20, 30);
+  karsilikOdeme(kartAc(vitrin, atisB, 'op'), 15, 25);
+  // Vitrin'e uzanan iki kart: biri penceresi açık, biri süresi geçmiş — sayfa ikisini ayrı söyler
+  kartAc(uzatanA, vitrin, 'op', Date.now() + config.pencere, 'oniz-sayfa-acik');
+  kartAc(uzatanB, vitrin, 'tokat', mock.ago(2 * mock.MIN), 'oniz-sayfa-gecmis');
+
   const cases = [
+    kartCase(
+      'sayfa',
+      'Şakalaşma sayfası: sana uzanan kartlar, senin sayıların, günün ve kurallar',
+      '/şakalaş komutu ya da cüzdan kartındaki Şakalaş düğmesi',
+      u.panel(eglence.sayfaDurumu(vitrin.uid, vitrin.user)),
+    ),
+    kartCase(
+      'sayfa-bos',
+      'Şakalaşma sayfası: ilk kez açan üye — üzerinde kart yok, anlatım yine yerinde',
+      '/şakalaş komutu, henüz hiç şakalaşmamış üyede',
+      u.panel(eglence.sayfaDurumu(ilk.uid, ilk.user)),
+    ),
+    kartCase(
+      'sayfa-kota',
+      'Şakalaşma sayfası: günün kartları bitmiş üye',
+      `/şakalaş komutu, kalan hakkı ${kotaDurum.kalan} olan üyede`,
+      u.panel(eglence.sayfaDurumu(hircin.uid, hircin.user)),
+    ),
     kartCase(
       'kart-op',
       'Şaka kartı: öpücük, karşılık düğmesi ve süre penceresi',

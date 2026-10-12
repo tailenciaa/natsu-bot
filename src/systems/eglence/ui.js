@@ -99,7 +99,11 @@ const kartSatiri = (k, at) => {
 };
 
 function karsilikBekleyenler(state) {
-  if (!state.kartlar.length) return 'Karşılık bekleyen kartın yok. Şakayı sen başlat: **/öp** ya da **/tokat**.';
+  if (!state.kartlar.length) {
+    return state.kalan > 0
+      ? 'Karşılık bekleyen kartın yok. Şakayı sen başlat: **/öp** ya da **/tokat**.'
+      : `Karşılık bekleyen kartın yok, bugünkü ${config.gunlukKart} kart hakkın da bitti. Haklar yarın sıfırlanır.`;
+  }
   return state.kartlar.map((k) => kartSatiri(k, state.at)).join('\n');
 }
 
