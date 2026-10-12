@@ -49,6 +49,8 @@ Ortak yardımcılar `src/core/ui.js` içindedir (`page`, `receipt`, `alert`, `no
 
 Başlık en çok 28, buton etiketi en çok 20 karakter. Paneller `core/panel.js` içindeki `syncPanel` ile gönderilir.
 
+Bölüm başına bir mesaj gönderen tek çok mesajlı panel `src/systems/bilgilendirme`dir: `config.panels` listesindeki her panelin kendi `key`, `channel`, `title`, `intro` ve `sections`ı vardır, mesaj ID'leri `data.panels[key]` altında tutulur. Yeni bir bilgi kanalı açılırken ayrı sistem yazılmaz, listeye yeni bir panel eklenir; ekonomi rehberi bu şekilde ikinci panel olarak durur.
+
 ### Sayfa / bilgi kartı: `page({ title, sub, thumbnail, blocks, accent })`
 
 ```
