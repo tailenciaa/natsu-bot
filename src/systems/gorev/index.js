@@ -1,10 +1,10 @@
 // Görevler: üyenin botla her gün temas hâlinde kalmasını sağlayan ilerleme katmanı. Tek panel (/gorev) beş sekme
-// taşır: bugünün üç görevi, haftanın üç ağır görevi, Keşif Yolu (botun sistemlerini sırayla gezdiren on iki adım),
+// taşır: bugünün üç görevi, haftanın üç ağır görevi, Keşif Yolu (botun sistemlerini sırayla gezdiren adımlar),
 // Kutu (anahtar yakma) ve Sezon (aylık puan eşikleri). Katmanlar birbirine bağlıdır: görevden gelen anahtar kutuyu
 // açar, kutudan çıkan kozmetik profil puanını büyütür, yolun son adımı profil puanını hedef gösterir.
 // İlerleme hiçbir yerde ayrıca sayılmaz: mesaj ve ses sayıları sıralama kaydından, saygınlık saygi kaydından,
-// günlük ödül ve siparişler coin defterinden, kozmetikler profil kaydından okunur (olcum.js). Yalnızca ödülün
-// alındığı, anahtar sayacı, kutu istatistiği ve sezon puanı burada tutulur.
+// günlük ödül ve siparişler coin defterinden, kozmetikler profil kaydından, salon eli oyun, şaka kartı eğlence
+// kaydından okunur (olcum.js). Yalnızca ödülün alındığı, anahtar sayacı, kutu istatistiği ve sezon puanı burada tutulur.
 // Panel komutla açılan bir SAYFA olduğu için kanalda kalıcı ve herkese açıktır; sekmeler aynı mesajı yerinde
 // yeniler, mesaj birikmez. Kutu açılışı ayrı ve herkese açık duyurulur (satın alma gibi).
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
@@ -279,8 +279,8 @@ async function handle(interaction) {
   }
 }
 
-// Keşif Yolu'nun iki adımı (kartını aç, çekilişe katıl) hiçbir sistemde iz bırakmaz: bunlar tek yerde,
-// etkileşim okunarak görülür. Gözlemci hiçbir cevaba karışmaz, bayrak zaten duruyorsa hiçbir şey yazmaz.
+// Keşif Yolu'nun bazı adımları (kartını aç, sokağa gir, çekilişe katıl) hiçbir sistemde iz bırakmaz: bunlar tek
+// yerde, etkileşim okunarak görülür. Gözlemci hiçbir cevaba karışmaz, bayrak zaten duruyorsa hiçbir şey yazmaz.
 async function observe(interaction) {
   const adımAdi = interaction.isChatInputCommand?.()
     ? config.IZLENEN.komut[interaction.commandName]

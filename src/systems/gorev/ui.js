@@ -84,7 +84,7 @@ function demetSection(demet) {
     .setButtonAccessory(b);
 }
 
-// Yol satırları tek metinde: on iki adım Section olarak çizilemez (bileşen sınırı), liste tek blokta durur.
+// Yol satırları tek metinde: bütün adımlar Section olarak çizilemez (bileşen sınırı), liste tek blokta durur.
 // Durumlar solda; sıradaki adım kalın yazılır ki üye ne yapacağını aramasın.
 function yolSatiri(satir, index) {
   const durum = satir.alindi
@@ -134,7 +134,7 @@ const BASLIK = {
   },
   yol: {
     title: 'Keşif Yolu',
-    sub: 'Botun sistemlerini sırayla gezdiren on iki adım. Bir adım bittiğinde ödülünü toplarsın, sıradaki adım kalın yazılır; son adımda büyük ödül ve kartına takılacak bir sergi rozeti var.',
+    sub: `Botun sistemlerini sırayla gezdiren ${config.YOL.length} adım: profil kartından Oyun Salonuna, Arka Sokaklardan şakalaşmaya kadar. Bir adım bittiğinde ödülünü toplarsın, sıradaki adım kalın yazılır; son adımda büyük ödül ve kartına takılacak bir sergi rozeti var.`,
   },
   kutu: {
     title: 'Kutu',
