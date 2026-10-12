@@ -221,7 +221,7 @@ function rejectModal(app) {
 function readyCard(room) {
   return page({
     title: 'Yeni Kalıcı Oda Açıldı!',
-    sub: 'Odan oluşturuldu ve sana teslim edildi. İsim, kişi limiti, üye ve devir işlemleri artık **/kalici-oda odam** komutunda; sohbet ise odanın ses kanalının içinde.',
+    sub: 'Odan oluşturuldu ve sana teslim edildi. İsim, kişi limiti, üye ve devir işlemleri artık **/kalici-oda** komutunda; sohbet ise odanın ses kanalının içinde.',
     accent: colors.success,
     blocks: [
       `### Oda\n${rows([
@@ -285,7 +285,7 @@ function activityBlock(status) {
     .join('\n');
 }
 
-// /kalici-oda odam ile açılan, sadece sahibinin kullanabildiği kontrol paneli.
+// /kalici-oda ile açılan, sadece sahibinin kullanabildiği kontrol paneli.
 // roster: odadaki üyelerin [{ id, name }] listesi; çıkar ve devret menüleri bu listeyle dolar.
 function roomPanel(room, status, roster = []) {
   const container = page({
@@ -413,8 +413,10 @@ function renameModal(current) {
     .addLabelComponents(new LabelBuilder().setLabel('Yeni isim').setDescription('Odanın ses kanalının adı değişir.').setTextInputComponent(input));
 }
 
-// /kalici-oda liste: yöneticilerin gördüğü oda dökümü
-function roomList(rooms, pendingCount) {
+// Paneldeki "Odaları Yönet" düğmesinden açılan sayfa: odalar tek tek numara yazılarak değil menüden seçilir.
+// owners: userId -> görünen ad (menü seçeneklerinde etiket çizilmez, o yüzden sahip adı metin olarak verilir)
+const ROOM_MENU_LIMIT = 25; // Discord bir seçim menüsünde en fazla 25 seçenek taşır
+function roomAdmin(rooms, owners = new Map(), pendingCount = 0) {
   const line = (room) =>
     [
       `**#${pad(room.no)} · ${room.name}**`,
@@ -422,15 +424,89 @@ function roomList(rooms, pendingCount) {
       `<#${room.voiceChannelId}>`,
     ].join('\n');
 
-  return page({
+  const container = page({
     title: 'Kalıcı Odalar',
-    sub: 'Sunucudaki tüm kalıcı odalar, sahipleri ve kanalları. Oda kapatmak için **/kalici-oda kapat**, sahibi ayrılmış bir odayı teslim etmek için **/kalici-oda devret**.',
+    sub: 'Aşağıdaki menüden bir oda seç; sahiplik devri ve kapatma o odanın kartından yapılır, oda numarası yazman gerekmez. Bekleyen başvurular inceleme kanalındaki kartlarda kararını bekler.',
+    accent: colors.warning,
     blocks: [
-      rooms.length ? rooms.map(line).join('\n\n') : '-# Henüz kalıcı oda yok.',
+      rooms.length ? rooms.map(line).join('\n\n') : '**Henüz kalıcı oda yok.**\nOnaylanan her başvuru burada listelenir.',
       pendingCount ? `### Bekleyen Başvuru\n${chip(`${pendingCount} adet`)}` : null,
-      stamp(),
     ],
   });
+  if (!rooms.length) return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp()));
+
+  return container
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`${IDS.pickRoom}:0`)
+          .setPlaceholder('Yönetilecek odayı seç')
+          .addOptions(
+            rooms.slice(0, ROOM_MENU_LIMIT).map((room) => ({
+              label: shorten(`#${pad(room.no)} · ${room.name}`, 100),
+              description: shorten(`${owners.get(room.ownerId) ?? 'Üye'} · ${room.members.length + 1} üye`, 100),
+              value: String(room.no),
+            })),
+          ),
+      ),
+    )
+    .addTextDisplayComponents(text(rooms.length > ROOM_MENU_LIMIT ? `-# İlk ${ROOM_MENU_LIMIT} oda listelenir.` : stamp()));
+}
+
+// Tek odanın yönetici kartı: sahiplik devri üye menüsüyle, kapatma formuyla birlikte tek yerde durur.
+// note: işlemden sonra kartın en üstüne yazılan tek cümlelik sonuç ("Oda devredildi" gibi)
+function roomAdminCard(room, status, note) {
+  const container = page({
+    title: `Kalıcı Oda · ${room.name}`,
+    sub: 'Odayı buradan kapatır ya da sahipliğini bir üyeye devredersin. İsim, kişi limiti ve üye işlemleri sahibinin kendi panelinde; bu kartı yalnızca yöneticiler açabilir.',
+    accent: colors.warning,
+    blocks: [
+      note ? `### Son İşlem\n${note}` : null,
+      `### Oda\n${rows([
+        ['Oda', roomTag(room)],
+        ['Sahip', `<@${room.ownerId}>`],
+        ['Kanal', `<#${room.voiceChannelId}>`],
+        ['Üye / Limit', usageLabel(room.members.length + 1, room.limit)],
+      ])}`,
+      activityBlock(status),
+      'Kapatma kanalları siler, sahip rolünü alır ve sahibine haberi gönderir; ay sonu şartı karşılanmazsa oda zaten kendi kendine kapanır.',
+    ],
+  });
+
+  return container
+    .addTextDisplayComponents(text('### Sahipliği Devret\nOda seçtiğin üyeye geçer; eski sahip sunucuda ise odada sıradan üye olarak kalır.'))
+    .addActionRowComponents(new ActionRowBuilder().addComponents(select(`${IDS.adminTransfer}:${room.no}`, 'Sahipliği devredeceğin üyeyi seç')))
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('### Odayı Kapat'))
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.close}:${room.no}`).setLabel('Odayı Kapat').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(IDS.back).setLabel('Oda Listesi').setStyle(ButtonStyle.Secondary),
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(stamp(room.createdAt)));
+}
+
+// Kapatma formu: sebep sahibine aynen yazılır, boş bırakılırsa genel haber gider
+function closeModal(room) {
+  return new ModalBuilder()
+    .setCustomId(`${IDS.closeForm}:${room.no}`)
+    .setTitle(`Kalıcı Odayı Kapat · #${pad(room.no)}`)
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel('Kapatma sebebi')
+        .setDescription('Oda sahibine aynen iletilir; boş bırakırsan "bir yönetici tarafından kapatıldı" yazılır.')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId(IDS.closeInput)
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder('Örn: Odayı kullanan üye kalmadı.')
+            .setMaxLength(300)
+            .setRequired(false),
+        ),
+    );
 }
 
 // Başvuru sahibinin kendi aldığını gördüğü özet: sonucu sadece başvuran görür, yöneticiler zaten kanaldaki kartı izliyor
@@ -495,7 +571,9 @@ module.exports = {
   inactivityCard,
   limitModal,
   renameModal,
-  roomList,
+  roomAdmin,
+  roomAdminCard,
+  closeModal,
   openedNotice,
   closedNotice,
 };
