@@ -3,22 +3,13 @@
 // sessizce (mesaj atmadan) rollere yansıtılır.
 // Discord etiket değişikliğini üye güncellemesiyle bildirir; bunu yakalamak için üyeler açılışta önbelleğe alınır.
 // Botun rolü verilecek rolün üstünde olmalı.
-const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
+const { Events } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel, respond } = require('../../core/helpers');
+const { fetchTextChannel } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
-
-const commands = [
-  new SlashCommandBuilder()
-    .setName('etiket-onizleme')
-    .setDescription('Sunucu etiketi teşekkür mesajının önizlemesini sadece sana gösterir.')
-    .addUserOption((o) => o.setName('kullanici').setDescription('Mesajda gösterilecek üyeyi seçer, boş bırakırsan kendin görünürsün.'))
-    .setContexts(InteractionContextType.Guild)
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
-];
 
 const HOUR = 60 * 60 * 1000;
 
@@ -56,18 +47,6 @@ async function announce(member) {
 
 async function handleChange(member) {
   if (await syncRole(member)) await announce(member);
-}
-
-// /etiket-onizleme: seçilen (ya da kullanan) üye gerçekten etiket takmasa da örnek teşekkür mesajını gösterir
-async function handlePreview(interaction) {
-  const user = interaction.options.getUser('kullanici') ?? interaction.user;
-  const previewUser = {
-    id: user.id,
-    displayAvatarURL: (opts) => user.displayAvatarURL(opts),
-    primaryGuild: { tag: hasTag(user) ? user.primaryGuild.tag : 'ÖRNEK' },
-  };
-  // GİZLİ İSTİSNA: önizleme; asıl teşekkür kanala düşer, örnek sadece komutu kullanana görünür
-  return respond(interaction, ui.thanks(previewUser), { ephemeral: true });
 }
 
 // Açılışta tüm üyeleri önbelleğe alır (sonraki etiket değişikliklerinin olay olarak gelmesi için) ve rolleri eşitler

@@ -156,9 +156,7 @@ function handleReady(client) {
 
 module.exports = {
   name: 'aktif',
-  commands,
-  help: { category: ['siralama', 'Sıralama'], access: { 'aktif-onizleme': 'Yöneticiler' }, },
-  slash: { 'aktif-onizleme': handlePreview },
+  // Komutu yok: ölçüm otomatik yapılır, sonucu haftalık duyuru kartı ve /siralama gösterir
   events: {
     [Events.ClientReady]: handleReady,
     [Events.VoiceStateUpdate]: handleVoiceUpdate,
