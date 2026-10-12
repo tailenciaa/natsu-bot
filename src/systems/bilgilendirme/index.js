@@ -1,5 +1,5 @@
-// Bilgilendirme paneli: bot açılınca #bilgilendirme kanalına bölümlerin her biri ayrı mesaj olarak kendiliğinden
-// gönderilir, metin config.js'te. Metin ya da görsel değişince eski mesajlar silinip hepsi yeniden gönderilir.
+// Bilgilendirme panelleri: bot açılınca config.js'teki her panel kendi kanalına, bölüm başına bir mesaj olarak
+// kendiliğinden gönderilir. Metin ya da görsel değişince eski mesajlar silinip hepsi yeniden gönderilir.
 // Tek mesajlık panellerden (core/panel.js) farkı: birden çok mesaj olduğu için mesaj ID'leri burada tutulur.
 const crypto = require('node:crypto');
 const { AttachmentBuilder, Events } = require('discord.js');
@@ -12,7 +12,6 @@ const logSystem = require('../log');
 const config = require('./config');
 const ui = require('./ui');
 
-const KEY = 'bilgilendirme';
 const UNKNOWN_MESSAGE = 10008;
 
 const exists = (channel, id) =>
@@ -24,15 +23,15 @@ const exists = (channel, id) =>
 // Mesajdaki attachment://dosya adlarını bulur (Discord CDN afişleri yerel kopyaya çevrilmiş olur, core/banner.js)
 const attachmentNames = (container) => [...JSON.stringify(container.toJSON()).matchAll(/attachment:\/\/([^"]+)"/g)].map((m) => m[1]);
 
-async function sendPanel(client) {
+async function sendPanel(client, panel) {
   const guild = client.guilds.cache.get(guildId);
-  const channel = await fetchTextChannel(guild, config.channel);
-  if (!channel) return console.error(`[panel] Bilgilendirme paneli gönderilemedi: kanal bulunamadı (${config.channel}).`);
+  const channel = await fetchTextChannel(guild, panel.channel);
+  if (!channel) return console.error(`[panel] ${panel.name} gönderilemedi: kanal bulunamadı (${panel.channel}).`);
 
   // Afiş bağlantılarının süresi dolduğu için önce yerel kopyaları hazırlanır, sonra mesajlar bu kopyalarla kurulur
-  const urls = ui.messages().flatMap((c) => [...JSON.stringify(c.toJSON()).matchAll(/"url":"(https:[^"]+)"/g)].map((m) => m[1]));
+  const containers = ui.messages(panel);
+  const urls = containers.flatMap((c) => [...JSON.stringify(c.toJSON()).matchAll(/"url":"(https:[^"]+)"/g)].map((m) => m[1]));
   await banner.ensure(client, urls);
-  const containers = ui.messages();
   const files = containers.map((c) => banner.attachmentsFor(attachmentNames(c)));
   // Özet, imzalı bağlantıların her yenilemede değişen kısmından etkilenmez
   const hash = crypto
@@ -41,7 +40,7 @@ async function sendPanel(client) {
     .update(files.flat().map((f) => crypto.createHash('sha1').update(f.buffer).digest('hex')).join(''))
     .digest('hex');
 
-  const saved = data.panels[KEY];
+  const saved = data.panels[panel.key];
   const upToDate =
     saved?.channelId === channel.id &&
     saved.hash === hash &&
@@ -73,30 +72,34 @@ async function sendPanel(client) {
 
   // Gönderim yarıda kalırsa gönderilenlerin ID'leri yine de kaydedilir (bir sonraki açılışta silinip baştan gönderilsin);
   // özet boş bırakılır ki panel tamamlanmış sayılmasın
-  data.panels[KEY] = { channelId: channel.id, messageIds, hash: failure ? '' : hash };
+  data.panels[panel.key] = { channelId: channel.id, messageIds, hash: failure ? '' : hash };
   save();
   if (failure) {
-    console.error(`[panel] Bilgilendirme paneli yarım kaldı (${messageIds.length}/${containers.length} mesaj): ${failure.message}`);
+    console.error(`[panel] ${panel.name} yarım kaldı (${messageIds.length}/${containers.length} mesaj): ${failure.message}`);
     return logSystem
       .write(client, 'bot', {
         color: 'danger',
-        title: 'Bilgilendirme Paneli Gönderilemedi',
+        title: `${panel.name} Gönderilemedi`,
         lines: [`**Kanal:** <#${channel.id}>`, `**Gönderilen:** ${messageIds.length}/${containers.length}`, `**Hata:** ${failure.message}`],
       })
       .catch(() => {});
   }
-  console.log(`[panel] Bilgilendirme paneli #${channel.name} kanalına gönderildi (${messageIds.length} mesaj).`);
+  console.log(`[panel] ${panel.name} #${channel.name} kanalına gönderildi (${messageIds.length} mesaj).`);
 
   logSystem
     .write(client, 'bot', {
       color: 'primary',
-      title: 'Bilgilendirme Paneli Güncellendi',
+      title: `${panel.name} Güncellendi`,
       lines: [`**Kanal:** <#${channel.id}>`, `**Mesaj sayısı:** ${messageIds.length}`],
     })
     .catch(() => {});
 }
 
+async function sendPanels(client) {
+  for (const panel of config.panels) await sendPanel(client, panel);
+}
+
 module.exports = {
   name: 'bilgilendirme',
-  events: { [Events.ClientReady]: sendPanel },
+  events: { [Events.ClientReady]: sendPanels },
 };
