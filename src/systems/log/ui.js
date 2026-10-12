@@ -101,7 +101,7 @@ function jumpLink(category, thread) {
 const button = (action, label, style, disabled = false) =>
   new ButtonBuilder().setCustomId(`${IDS.setup}:${action}`).setLabel(label).setStyle(style).setDisabled(disabled);
 
-// /log kur menüsü: kanallar, panelin ve her kategorinin alt başlığının durumu ve işlem butonları
+// /log menüsü: kanallar, panelin ve her kategorinin alt başlığının durumu ve işlem butonları
 // rows: [{ category, thread }] (thread yoksa o kategori kurulu değil), panelUrl: gönderilmiş panel mesajının bağlantısı
 function setupView({ mainId, panelId, rows, panelUrl, note }) {
   const ready = rows.filter((r) => r.thread).length;
