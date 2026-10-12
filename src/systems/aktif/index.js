@@ -1,16 +1,34 @@
 // Haftanın aktifleri: mesaj, ses ve yayın (ekran paylaşımı) süresi haftalık olarak ayrı ayrı sayılır. Her hafta
 // pazartesi, geçen haftanın üç kategorisinin de birincisi #haftalık kanalına duyurulur ve kategorisine özel rol
 // verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi verilir.
-const { Events } = require('discord.js');
+const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel, stillMember } = require('../../core/helpers');
+const { fetchTextChannel, stillMember, isStaff, respond, replyError } = require('../../core/helpers');
 const coin = require('../coin/store');
 const coinConfig = require('../coin/config');
+const saygi = require('../saygi');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
 const { weekKey, previousWeekKey } = require('./week');
+
+const KINDS = ['ses', 'mesaj', 'yayin'];
+
+const commands = [
+  new SlashCommandBuilder()
+    .setName('haftalik')
+    .setDescription('Geçen haftanın aktif ve saygınlık birincilerini pazartesiyi beklemeden hemen duyurur.')
+    .addStringOption((opt) =>
+      opt
+        .setName('hafta')
+        .setDescription('Hangi haftanın sonuçları duyurulacak?')
+        .addChoices(
+          { name: 'Geçen hafta (ödülleriyle)', value: 'gecen' },
+          { name: 'Bu hafta (sadece önizleme)', value: 'bu' },
+        ))
+    .setContexts(InteractionContextType.Guild),
+];
 
 const CHECK_INTERVAL = 15 * 60 * 1000;
 const TICK = 60 * 1000;
