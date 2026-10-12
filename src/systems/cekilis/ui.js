@@ -182,7 +182,8 @@ function joined(g) {
 }
 
 // Yönetim paneli (/cekilis liste): açık çekilişler tek kartta, her satırda çekiliş mesajına giden bağlantı var.
-// Yeni çekiliş butonu bu kanal için formu açar; bitirmek, iptal etmek ve yeniden çekmek numarayla komutla yapılır.
+// Yeni çekiliş düğmesi bu kanal için formu açar; bitirme, iptal ve yeniden çekme çekilişin kendi kartındaki
+// düğmelerden yapılır (onay adımıyla), istersen numarayla /cekilis komutları da durur.
 function managementPanel({ active, ended, channelId }) {
   const line = (g) =>
     [
@@ -192,7 +193,7 @@ function managementPanel({ active, ended, channelId }) {
     ].join('\n');
   const container = page({
     title: 'Çekiliş Yönetimi',
-    sub: 'Açık çekilişleri ve son sonuçlananları burada takip edebilirsin. Bir çekilişi süresini beklemeden bitirmek, iptal etmek ya da yeniden çekmek için **/cekilis** komutlarından birini, çekilişin numarasıyla kullan.',
+    sub: 'Açık çekilişleri ve son sonuçlananları burada takip edebilirsin. Bir çekilişi süresini beklemeden bitirmek, iptal etmek ya da yeniden çekmek için çekilişin kendi kartındaki düğmeleri kullan; istersen numarasıyla **/cekilis** komutları da çalışır.',
     blocks: [
       active.length ? active.map(line).join('\n\n') : '-# Şu an açık çekiliş yok.',
       ended.length

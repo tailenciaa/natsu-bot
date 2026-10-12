@@ -9,7 +9,7 @@ const ui = require('./ui');
 const commands = [
   new SlashCommandBuilder()
     .setName('vip-ver')
-    .setDescription('Bir üyeye VIP rolünü verir.')
+    .setDescription('Bir üyeye VIP rolünü kalıcı olarak verir; üye profilinde ve sıralamada VIP görünür.')
     .addUserOption((opt) => opt.setName('kullanici').setDescription('VIP rolü verilecek üyeyi seçer.').setRequired(true))
     .setDefaultMemberPermissions(config.staffRoles.length ? null : PermissionFlagsBits.Administrator)
     .setContexts(InteractionContextType.Guild),

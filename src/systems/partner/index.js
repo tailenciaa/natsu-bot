@@ -40,7 +40,7 @@ const commands = [
     .setContexts(InteractionContextType.Guild),
   new SlashCommandBuilder()
     .setName('partner-musaitlik')
-    .setDescription('Teklif atamaları için partner müsaitlik durumunu ayarlar.')
+    .setDescription('Partner sunucu yetkilisiysen yeni tekliflere açık olup olmadığını ayarlarsın.')
     .setContexts(InteractionContextType.Guild)
     .addStringOption((o) =>
       o
