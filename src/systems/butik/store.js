@@ -19,7 +19,7 @@ function ekle(key, userId, adet = 1) {
 }
 
 // Bir adet yakar; elde hiç yoksa false döner ve kayıt değişmez. Kullanan sistem (saygı, evlilik) bu sonuca
-// göre işlemini ya tamamlar ya da durur,因此 hak asla sessizce yok olmaz.
+// göre işlemini ya tamamlar ya da durur; hak ya da yüzük asla sessizce yok olmaz.
 function yak(key, userId) {
   const kalan = say(key, userId);
   if (kalan <= 0) return false;
@@ -44,7 +44,7 @@ function rolEkle(userId, key) {
 // ── Ürün bulguları ────────────────────────────────────────────────────────────
 const renk = (key) => config.roller.find((r) => r.key === key);
 
-// Satıştaki renkler: roleId'si doldurulmuşlar. Boş bırakılan renkDiscord'da hazır olmadığı için rafta durmaz.
+// Satıştaki renkler: roleId'si doldurulmuş olanlar. Boş bırakılan renk Discord'da hazır olmadığı için rafta durmaz.
 const satisdakiRenkler = () => config.roller.filter((r) => r.roleId);
 
 module.exports = {
