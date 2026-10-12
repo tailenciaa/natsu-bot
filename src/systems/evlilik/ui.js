@@ -5,7 +5,7 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const core = require('../../core/ui');
 const { coin, number } = require('../coin/ui');
-const butitConfig = require('../butik/config');
+const butikConfig = require('../butik/config');
 const config = require('./config');
 
 // evlilik:<adim> ve evlilik:<adim>:<veri>. Butik ve cüzdan kapıları coin/butik sisteminin sabit düğmeleri:
@@ -43,7 +43,7 @@ function teklif({ oneren, hedef, no, sonAt }) {
         core.rows([
           ['Teklif Eden', mention(oneren.id)],
           ['Muhatap', mention(hedef.id)],
-          ['Yüzük', core.chip(butitConfig.yuzuk.ad)],
+          ['Yüzük', core.chip(butikConfig.yuzuk.ad)],
           ['Yanıt Süresi', core.rel(sonAt)],
         ]),
         config.notlar.yuzuk,
@@ -152,7 +152,7 @@ function bosanmaKarti({ a, b, user, bedel, at = Date.now() }) {
 // Yıl dönümü ödülü kartı: iki tarafa birden yatan para tek kartta
 function yilDonumuKarti({ a, b, odul, sayi, sonrakiAt, user, at = Date.now() }) {
   return core.receipt({
-    title: `Yıl Dönümü Kutlandı`,
+    title: 'Yıl Dönümü Kutlandı',
     sub: `${çift(a, b)} bir dönümü daha geride bıraktı; ödül ikisinin de cebine yattı.`,
     user,
     accent: 'success',
@@ -196,7 +196,7 @@ function bekleyenBloku(state) {
 }
 
 function sartBloku(state) {
-  const yuzuk = state.yuzuk > 0 ? `Elinde ${core.chip(`${state.yuzuk} yüzük`)} var.` : `Yüzüğün yok; Butikte ${coin(butitConfig.yuzuk.price)} ve tek şart o.`;
+  const yuzuk = state.yuzuk > 0 ? `Elinde ${core.chip(`${state.yuzuk} yüzük`)} var.` : `Yüzüğün yok; Butikte ${coin(butikConfig.yuzuk.price)} ve tek şart o.`;
   const seviye = state.seviye >= config.teklif.minSeviye
     ? `Seviyen ${core.chip(state.seviye)}, kapı açılmış.`
     : `Teklif için seviye ${core.chip(config.teklif.minSeviye)} gerekir, ölçülen seviyen ${core.chip(state.seviye)}.`;
@@ -214,7 +214,7 @@ function kurallarBloku(state) {
     ? `5. Çiftin ikisine de **evli rolü** verilir; sunucudan düşüp dönersen bot rolü geri verir.`
     : '5. Evli rolü sunucuda hazır olmadığı için şu an verilmiyor; evlilik yine kaydediliyor.';
   return `### Nasıl İşler?
-1. **${coin(butitConfig.yuzuk.price)}** karşılığında Butikten **yüzük** al: /bakiye > Butik.
+1. **${coin(butikConfig.yuzuk.price)}** karşılığında Butikten **yüzük** al: /bakiye > Butik.
 2. **/evlilik teklif kullanici:@üye** yaz; teklif kartı kanala düşer, ${Math.round(config.teklif.pencere / 3600000)} saat yanıt beklenir.
 3. Muhatap **Kabul Ediyorum** basarsa yüzüğün yakılır, ikiniz evli olarak kaydedilirsiniz. **Geri Çevir** ya da sessizlik yüzük kaybettirmez.
 4. Evliliğin her ${config.yilDonumu.gun} gününde bir **yıl dönümü ödülü** iki tarafa birden yatar: sayfadaki düğmeye kim basarsa bassın, para ikisinin de cebine geçer.
@@ -269,7 +269,11 @@ function listePaneli(state) {
     sub: 'Sunucuda yüzükle bağlanan çiftler. İlk on sırada en yeni evlilikler duruyor.',
     blocks: [
       `### Çiftler\n${satirlar}`,
-      state.ciftler.length > config.listeGoster ? `-# ${number(state.ciftler.length)} çift var, listede ilk ${config.listeGoster} sırada.` : state.ciftler.length ? null : 'Teklifin yolu: Butikten yüzük al, sonra /evlilik teklif yaz.',
+      state.ciftler.length > config.listeGoster
+        ? `${number(state.ciftler.length)} çift var, listede ilk ${config.listeGoster} sırada.`
+        : state.ciftler.length
+          ? null
+          : 'Teklifin yolu: Butikten yüzük al, sonra /evlilik teklif yaz.',
     ].filter(Boolean),
   });
 
