@@ -7,8 +7,10 @@ module.exports = {
     // Oto partner isteklerinin onay/red için yetkililere düştüğü kanal
     review: '1538943678926557205',
     // Onaylanan partner metinlerinin bulunduğu kanal. Bu kanala düşen her mesaj (oto onaylı ya da elle atılmış,
-    // fark etmez) bot tarafından silinip kendi standart kartıyla yeniden paylaşılır; @everyone/@here hiçbir
-    // zaman gerçek bir bildirim göndermez (hem kanal izniyle hem bot her zaman mention'ları kapalı gönderir).
+    // fark etmez) bot tarafından silinip iki mesajla yeniden paylaşılır: üstte düz metin ilanı (Discord davet
+    // önizlemesini ve ekleri ancak düz mesajda gösterir), altta partner sayılarını ve butonları taşıyan CV2 kart.
+    // @everyone/@here hiçbir zaman gerçek bir bildirim göndermez (hem kanal izniyle hem bot her zaman mention'ları
+    // kapalı gönderir).
     posts: '1538943593665007696',
     // Güvenilir partnerler listesinin sürekli güncel tutulan panelinin bulunduğu kanal: sunucu ID'si, partner
     // yetkilisi (iletişim) ve eklenme tarihiyle; liste her değiştiğinde (ekleme/çıkarma) otomatik güncellenir

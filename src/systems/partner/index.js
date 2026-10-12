@@ -90,7 +90,7 @@ async function handleRequestChannel(message) {
     .catch(() => {});
 }
 
-// ── Paylaşım kanalı: her mesaj silinip bot tarafından yeniden, ilan + yetkili kartı olarak paylaşılır ──────
+// ── Paylaşım kanalı: her mesaj silinip bot tarafından yeniden, düz ilan + CV2 kart olarak paylaşılır ───────
 
 // Kartın altındaki sayılar: kayda tıklandığı anda yeniden sayılır, saklanmaz
 const statsOf = (request) => store.partnerStats(request.guildId, request);
@@ -1000,16 +1000,13 @@ async function postRenewal(client, entry, contactId) {
 
   // Önce paylaşılır; kayıtlar ancak paylaşım başarılı olursa değişir, böylece başarısız denemede teklif yeniden denenebilir
   const postsChannel = await fetchTextChannel(guild, config.channels.posts);
-  const message = await postsChannel
-    ?.send({
-      components: [ui.postCard(request, { ...entry, addedAt: now, sourceRequestId: request.id }, store.isBanned(contactId))],
-      flags: core.CV2,
-      allowedMentions: { parse: [] },
-    })
-    .catch((err) => {
-      console.error('[partner] Teklif sonrası paylaşılamadı:', err.message);
-      return null;
-    });
+  if (!postsChannel) return null;
+  const { card: message } = await publishPost(
+    postsChannel,
+    request,
+    { ...entry, addedAt: now, sourceRequestId: request.id },
+    store.isBanned(contactId),
+  );
   if (!message) return null;
 
   store.createRequest(request);
