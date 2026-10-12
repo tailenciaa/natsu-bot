@@ -380,12 +380,11 @@ const ekonomiPanel = {
         {
           heading: 'Üç görev ve demet',
           items: [
-            'Havuzdan çekilen görevler örneğin **20 mesaj** (70 coin), **30 dakika seste** (90 coin), **günlük ödülünü topla** (50 coin), **birine saygınlık ver** (60 coin), **3 gezi** (100 coin) ya da **3 şaka kartı** (90 coin).',
-            'Üçünün ödülünü de alınca **Demeti Al** butonu aktifleşir: **120 coin + 1 anahtar + 3 sezon puanı**.',
-            'Haftalık görevler her pazartesi değişir: **3 ağır görev**, **250-500 coin** ve üstüne **1 anahtar**.',
-            '**Keşif Yolu** ise tek seferlik, **18 adımlık** tur: botun sistemlerini sırayla gezdirir, her adım **80-250 coin**, sonunda **600 coin + 3 anahtar** ve **Sevilen** rütbesi.'
+            'Havuzdan çekilen görevler örneğin **20 mesaj** (70 coin), **30 dakika seste** (90 coin), **günlük ödülünü topla** (50 coin), **saygınlık ver** (60 coin), **3 gezi** (100 coin) ya da **3 şaka kartı** (90 coin).',
+            'Üçünün ödülünü de alınca **Demeti Al** butonu aktifleşir: **120 coin + 1 anahtar + 3 sezon puanı**. Haftalık görevler her pazartesi değişir: **250-500 coin** ve üstüne **1 anahtar**.',
+            '**Keşif Yolu** tek seferlik, **18 adımlık** tur: botun sistemlerini sırayla gezdirir, sonunda **600 coin + 3 anahtar** ve **Sevilen** rütbesi var.'
           ],
-          note: 'Görev kaydı tutulmaz: ilerleme, mesaj ve ses sayıları gibi zaten sistemlerde duran veriden okunur. Yani bot kurulmadan önce attığın mesajlar da sayılır.'
+          note: 'Görev kaydı tutulmaz: ilerleme mesaj ve ses sayıları gibi sistemlerde zaten duran veriden okunur, yani bot kurulmadan önce attığın mesajlar da sayılır.'
         }
       ]
     },
