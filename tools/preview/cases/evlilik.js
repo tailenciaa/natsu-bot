@@ -1,8 +1,8 @@
 // Evlilik (src/systems/evlilik): /evlilik durum sayfası, kanala düşen teklif kartı, kabul/ret/süre sonuç
 // kartları, çiftler listesi ve reddetmeler.
 // Sayfadaki hiçbir sayı elle kurulmaz: bakiye, elde duran yüzük, ölçülen seviye, hapis ve evlilik kaydı gerçek
-// store'lara yazılır, sonra sayfanın kendi okuma kapısından (index.durumOf / durumPaneli) geçirilir. Çift rolünün
-// görünmesi de gerçek config okumasıdır: roleId yazılırsa kartta ve kurallar satırında durur, boşsa kalkar.
+// store'lara yazılır, sonra sayfanın kendi okuma kapısından (index.durumOf / durumPaneli) geçirilir. Çift rolü de
+// gerçek kapıdan gelir: provası index.rolProvasi ile kurulur, ID'si evlilik kaydında durur.
 // Boş liste perdesi evlilikler kurulmadan ÖNCE çizilir; container'lar dosya yüklenirken hazırlandığı için sıra önemli.
 // db.init() çağrılmadığı için save() hiçbir yere dokunmaz.
 module.exports = ({ mock, ui, src }) => {
@@ -64,25 +64,39 @@ module.exports = ({ mock, ui, src }) => {
   const listeBos = evlilik.listePaneli(etki(yeni));
 
   // ── Kayıtlar: teklif, evlilikler ve bir boşanma gerçek yazım kapılarından geçer
+  // Çift rolünün provası index.rolProvasi'den kurulur: boş alanlar varsayılana düşer, simge ve ad orada birleşir
+  const prova = evlilik.rolProvasi({ ad: 'Ay Yıldızı', renk: 'mor', simge: '💜' }, giden.user, gelen.user);
+  const provaVarsayilan = evlilik.rolProvasi({}, zeynep.user, mert.user);
   store.teklifKaydet({
     oneren: giden.uid,
     hedef: gelen.uid,
     no: 'oniz1',
     sonAt: Date.now() + config.teklif.pencere,
     kanal: '1',
+    rol: prova,
   });
-  store.evlendir(zeynep.uid, mert.uid, mock.ago(8 * DAY));
+  // Evlendirirken rol ID'si gerçek kayıtta durur: boşanmada silinecek nişan oradan okunur
+  const ciftRolId = mock.id();
+  store.evlendir(zeynep.uid, mert.uid, mock.ago(8 * DAY), ciftRolId);
   store.evlendir(ayse.uid, can.uid, mock.ago(2 * HOUR));
   store.bosan(bosanan.uid, bosananinEsi.uid, mock.ago(DAY));
 
-  // ── Çift rolü config'i: önce ID'li perde, sonra ID'siz hâli ────────────────
-  const rolId = mock.id();
-  config.roles.evli = rolId;
-  const durumRolu = sayfa(zeynep);
-  const evlilikKartiRol = p.evlilikKarti({ oneren: giden.uid, hedef: gelen.uid, user: giden.user, roleId: rolId });
-  config.roles.evli = null;
-
-  const evlilikKarti = p.evlilikKarti({ oneren: giden.uid, hedef: gelen.uid, user: giden.user, roleId: null });
+  const evlilikKartiRol = p.evlilikKarti({
+    oneren: giden.uid,
+    hedef: gelen.uid,
+    user: giden.user,
+    rolId: ciftRolId,
+    rolAdi: prova.ad,
+  });
+  // Rol açılamamışsa sebep kartta yazar: evlilik kaydı yine de durur
+  const evlilikKarti = p.evlilikKarti({
+    oneren: giden.uid,
+    hedef: gelen.uid,
+    user: giden.user,
+    rolId: null,
+    rolAdi: prova.ad,
+    uyari: 'Botun "Rolleri Yönet" izni kapalı; bu bir sunucu ayarı, çiftin bir hatası yok.',
+  });
 
   return [
     // ── Kişinin kendi hâl sayfası ─────────────────────────────────────────────
@@ -112,15 +126,15 @@ module.exports = ({ mock, ui, src }) => {
     ),
     kartCase(
       'durum-evli-rol',
-      'Evlilik sayfası: evli üye, yıl dönümü ödülü hazır ve çift rolü verilmiş',
-      'Aynı sayfa, config\'de evli rolü ID\'si doluysa',
-      durumRolu,
+      'Evlilik sayfası: evli üye, yıl dönümü ödülü hazır ve çift rolü üzerinde',
+      'Aynı sayfa, kabulde rol açılabilmişse',
+      sayfa(zeynep),
     ),
     kartCase(
       'durum-evli',
-      'Evlilik sayfası: evli üye, rol sunucuda henüz hazır olmadığı için kural satırı da bunu söylüyor',
+      'Evlilik sayfası: evli üye ama çift rolü açılamamış - satır gerekçesini söylüyor',
       '/evlilik durum komutu',
-      sayfa(mert),
+      sayfa(can),
     ),
     kartCase(
       'durum-iceride',

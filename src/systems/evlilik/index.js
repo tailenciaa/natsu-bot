@@ -521,5 +521,6 @@ module.exports = {
   durumPaneli,
   durumOf,
   listePaneli,
+  rolProvasi,
   esOf: store.esOf,
 };

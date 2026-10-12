@@ -582,6 +582,7 @@ const ekonomiPanel = {
           heading: 'Evlilik',
           items: [
             'Yüzüğü butikten alır, **`/evlilik teklif`** ile uzanırsın; muhatap kabul ederse yüzük **o anda** yanar.',
+            'Teklif komutunun **rol_adi**, **renk** ve **simge** alanları çift rolünüzü kurar: kabul anında **bot bu rolü açıp ikinize giydirir**, boşanmada silinir.',
             'Evli kalırsanız **her 7 günde bir ikinize de 400 coin** yıl dönümü ödülü yatar.',
             'Boşanma bedeli **1200 coin**, doğrudan Devletin Kasasına yazar.'
           ]
