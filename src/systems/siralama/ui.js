@@ -38,12 +38,12 @@ const DONEM = new Set(['mesaj', 'ses', 'yayin']);
 const PERIODS = { genel: 'Genel', haftalik: 'Haftalık', ozel: 'Özel Süre' };
 // Başlığın altındaki tek satır, o türün neyi saydığını ve dönemin neden seçilemediğini söyler
 const ACIKLAMA = {
-  mesaj: 'mesaj sayına göre sıralanır; Genel, Haftalık ya da son X gün seçilebilir.',
-  ses: 'sesli kanallarda geçirdiğin süreye göre sıralanır; Genel, Haftalık ya da son X gün seçilebilir.',
-  yayin: 'ekran paylaşımında geçirdiğin süreye göre sıralanır; Genel, Haftalık ya da son X gün seçilebilir.',
-  saygi: 'toplam saygınlığına göre sıralanır; saygınlık hiç düşmediği için tek dönem vardır.',
-  coin: 'şu anki cüzdanına göre sıralanır; harcayan geri düştüğü için tek dönem vardır.',
-  vip: 'VIP rolünü alma sırasına göre listelenir; satırın sağındaki tarih VIP olunan gündür.',
+  mesaj: 'sıra mesaj sayına göre belirlenir. Genel, Haftalık ya da son X gün seçilebilir.',
+  ses: 'sıra sesli kanallarda geçen süreye göre belirlenir. Genel, Haftalık ya da son X gün seçilebilir.',
+  yayin: 'sıra ekran paylaşımında geçen süreye göre belirlenir. Genel, Haftalık ya da son X gün seçilebilir.',
+  saygi: 'sıra üyenin toplam saygınlığına göre belirlenir. Saygınlık hiç düşmediği için tek dönem vardır.',
+  coin: 'sıra üyenin şu anki cüzdanına göre belirlenir. Harcayan geri düştüğü için tek dönem vardır.',
+  vip: 'sıra VIP rolünü alma tarihine göre belirlenir. Satırın sağındaki tarih VIP olunan gündür.',
 };
 const BOS = {
   mesaj: 'Bu dönemde sayılan bir mesaj yok.',
