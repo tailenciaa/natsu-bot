@@ -275,6 +275,57 @@ module.exports = ({ mock, ui, src }) => {
       }),
     },
     {
+      id: 'rozet-ekonomi',
+      title: 'Rozet sayfası: suç, salon, şakalaşma, butik ve evlilik rozetleri',
+      where: 'Profilde Rozetler butonu; yeni katmanların hedefleri gerçek kayıtlardan okunur',
+      visibility: 'public',
+      kind: 'message',
+      build: () => {
+        // Sayılar elle kurulmaz: case bottaki yazar kapılarından geçer ki sayfa canlıda gerçekten okunan sayaçları
+        // göstersin. ID'ler bu case'e özeldir, diğer sayfaların kayıtları kirlenmez.
+        const suc = src('systems/hirsizlik/store');
+        const oyun = src('systems/oyun/store');
+        const oyunConfig = src('systems/oyun/config');
+        const eglence = src('systems/eglence/store');
+        const eglenceConfig = src('systems/eglence/config');
+        const butik = src('systems/butik/store');
+        const evlilik = src('systems/evlilik/store');
+        const uye = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
+        const esi = mock.user({ username: 'ayse', displayName: 'Ayşe' });
+        const arkadas = mock.user({ username: 'can', displayName: 'Can' });
+        const g = mock.guild({ ownerId: uye.id });
+        const m = mock.member(uye, { guild: g, joinedTimestamp: mock.ago(212 * mock.DAY), boosting: true });
+        // Suç dünyası: üçü hedefte kalan, beşi zamanında direnen, biri kasadan ikramiye alan üye
+        for (let i = 0; i < 3; i++) suc.basariKaydet(uye.id, 90);
+        for (let i = 0; i < 5; i++) suc.direnisKaydet(uye.id);
+        suc.ikramiyeKaydet(uye.id, 240);
+        // Keşif Yolu: yedi tur, Gezgin hedefin üçte birinde
+        for (let i = 0; i < 7; i++) oyun.kesifKaydet(uye.id, oyunConfig.kesif.bolgeler[0].key);
+        // Şakalaşma: kendi sekiz kartı karşılık bulmuş, başkasının on bir kartına karşılık vermiş.
+        // Her kart sonuçlandığı an kayıttan kalkar; sayfada bekleyen kart bırakılmaz.
+        const eylemler = Object.keys(eglenceConfig.eylemler);
+        const sonAt = Date.now() + 5 * mock.MIN;
+        for (let i = 0; i < 8; i++) {
+          const kart = eglence.kartKaydet({ no: `profil-k-own-${i}`, eylem: eylemler[i % eylemler.length], saldirgan: uye.id, hedef: esi.id, sonAt });
+          eglence.karsilikSonuclandir(kart, 20, 30);
+        }
+        for (let i = 0; i < 11; i++) {
+          const kart = eglence.kartKaydet({ no: `profil-k-vec-${i}`, eylem: eylemler[i % eylemler.length], saldirgan: arkadas.id, hedef: uye.id, sonAt });
+          eglence.karsilikSonuclandir(kart, 25, 45);
+        }
+        // Butik raftan bir renk almış; evlilik 40 günlük, yıl dönümü ödülü bir kez toplanmış
+        butik.rolEkle(uye.id, src('systems/butik/config').roller[0].key);
+        evlilik.evlendir(uye.id, esi.id, mock.ago(40 * mock.DAY));
+        evlilik.bonusAl(uye.id);
+        const ctx = rozet.context({ guild: g, member: m, userId: uye.id, messageCount: 240, voiceSeconds: 4 * mock.HOUR, visits: 46 });
+        const list = rozet.progress(ctx);
+        const kazanilan = rozet.earned(ctx).length;
+        // Evlilik kaydı çizimden sonra kaldırılır: evliliğin kendi listesi bu case'ten sahte çift devralmasın
+        evlilik.bosan(uye.id, esi.id);
+        return { components: [p.rozetPage(list, kazanilan)], flags: ui.CV2, ...noMentions };
+      },
+    },
+    {
       id: 'puan-sayfasi',
       title: 'Profil puanı sayfası: rütbe, hedef ve ilk 10',
       where: 'Profilde "Puanım" butonu',
