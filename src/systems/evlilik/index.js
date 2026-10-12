@@ -94,7 +94,7 @@ function teklifKapisi(userId, at = Date.now()) {
   }
   const seviye = seviyeOlcumu(userId);
   if (seviye < config.teklif.minSeviye) {
-    return { ok: false, mesaj: 'Teklif için seviyen düşük.', ipucu: `Giriş için seviye ${config.teklif.minSeviye} gerekir, ölçülen seviyen ${seviye}.` };
+    return { ok: false, mesaj: 'Teklif için seviyen düşük.', ipucu: `Teklif götürmek için seviye ${config.teklif.minSeviye} gerekir, senin seviyen ${seviye}.` };
   }
   if (store.teklifGiden(userId)) {
     return { ok: false, mesaj: 'Bekleyen bir teklifin zaten var.', ipucu: '/evlilik durum sayfasından vazgeçebilir ya da yanıtı bekleyebilirsin.' };

@@ -49,7 +49,7 @@ function hapisBlok(state) {
   }
   // Seviyesi sokağa henüz çıkmamış üye "açık" sanmasın: kapılar ölçülen seviyeye göre tek tek sayılır
   if (state.seviye < config.minSeviye) {
-    return `### Sokak sana kapalı\nÖlçülen seviyen **${state.seviye}**. Suç işleyebilmen için **${config.minSeviye}**, ` +
+    return `### Sokak sana kapalı\nSeviyen **${state.seviye}**. Suç işleyebilmen için **${config.minSeviye}**, ` +
       `Devletin Kasasını zorlaman için **${config.kasaMinSeviye}** seviye gerekir. Seviyen mesaj ve ses seviyenden ` +
       `büyük olanıdır; kasa ve sicil şimdiden izlenebilir, **/oyun** açık.`;
   }

@@ -215,7 +215,7 @@ function sartBloku(state) {
   const yuzuk = state.yuzuk > 0 ? `Elinde ${core.chip(`${state.yuzuk} yüzük`)} var.` : `Yüzüğün yok; Butikte ${coin(butikConfig.yuzuk.price)} ve tek şart o.`;
   const seviye = state.seviye >= config.teklif.minSeviye
     ? `Seviyen ${core.chip(state.seviye)}, kapı açılmış.`
-    : `Teklif için seviye ${core.chip(config.teklif.minSeviye)} gerekir, ölçülen seviyen ${core.chip(state.seviye)}.`;
+    : `Teklif için seviye ${core.chip(config.teklif.minSeviye)} gerekir, senin seviyen ${core.chip(state.seviye)}.`;
   const durumlar = [
     ['Yüzük', yuzuk],
     ['Seviye', seviye],

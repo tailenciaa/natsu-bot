@@ -109,7 +109,7 @@ async function kesif(interaction, bolgeKey) {
   if (hazir.sebep === 'bekleme') return replyError(interaction, 'Bekleme süren dolmadı.', `Sıradaki gezi ${core.rel(hazir.nextAt)} içinde hazır olur.`);
 
   const seviye = seviyeOlcumu(userId);
-  if (seviye < bolge.seviye) return replyError(interaction, 'Bu bölge senin seviyene açık değil.', `${bolge.ad} için seviye ${bolge.seviye} gerekir, senin ölçülen seviyen ${seviye}.`);
+  if (seviye < bolge.seviye) return replyError(interaction, 'Bu bölge senin seviyene açık değil.', `${bolge.ad} için seviye ${bolge.seviye} gerekir, senin seviyen ${seviye}.`);
 
   const sonuc = ganimetiTeslimEt(userId, masaDon(bolge));
   store.kesifKaydet(userId, bolge.key);
