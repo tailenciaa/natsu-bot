@@ -1,7 +1,8 @@
-// Saygınlık sistemi: üyeler birbirine günde bir kez +1 saygınlık verebilir (/saygi-ver ya da bir mesajda "+rep
-// @kullanıcı" yazarak); tüm zamanların toplam tablosu /siralama menüsünün saygınlık türüdür. Her hafta pazartesi,
-// geçen haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve ayarlı rol verilir (önceki haftanın
-// sahibinden geri alınır).
+// Saygınlık sistemi: üyeler birbirine günde bir kez +1 saygınlık verebilir (/saygi-ver, bir mesajda "+rep
+// @kullanıcı" yazarak ya da bir değerlendirmenin altındaki saygınlık butonuyla); tüm zamanların toplam tablosu
+// /siralama menüsünün saygınlık türüdür. Her verme ayarlı kayıt kanalında (bot komutları) herkese açık bir
+// kayıtla görünür. Her hafta pazartesi, geçen haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve
+// ayarlı rol verilir (önceki haftanın sahibinden geri alınır).
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -92,7 +93,8 @@ async function checkWeeklyAnnounce(guild) {
   if (done) store.setLastRun(target);
 }
 
-// Saygınlık verme kuralları: kendine/bota verilemez, günde bir kez kullanılabilir. Hem /saygi-ver hem "+rep" bunu kullanır.
+// Saygınlık verme kuralları: kendine/bota verilemez, günde bir kez verilir. Üç verme yolu da (/saygi-ver, "+rep",
+// değerlendirme butonu) bu fonksiyondan geçer.
 function evaluateGive(giverId, target) {
   if (target.id === giverId) return { ok: false, reason: 'self' };
   if (target.bot) return { ok: false, reason: 'bot' };
@@ -122,15 +124,53 @@ function cooldownHint(remaining) {
   );
 }
 
+// Ret sebebinin cümlesi ve ipucu: üç verme yolu da üyeye aynı sözlerle haber verir
+function rejection(result) {
+  const message =
+    result.reason === 'self'
+      ? 'Kendine saygınlık veremezsin.'
+      : result.reason === 'bot'
+        ? 'Botlara saygınlık veremezsin.'
+        : 'Zaten saygınlık verdin.';
+  return { message, hint: result.reason === 'cooldown' ? cooldownHint(result.remaining) : null };
+}
+
+// Her verme kayıt kanalında herkese açık bir kayıtla görünür. Verme zaten o kanaldaysa cevap mesajının kendisi
+// kayıt olduğu için ikinci mesaj atılmaz; kanal bulunamazsa verme yine geçerlidir (saygınlık çoktan eklendi).
+async function announceFeed(client, giverId, targetId, { newTotal, haktan }, source, fromChannelId) {
+  if (!config.feed || fromChannelId === config.feed) return;
+  const channel = await fetchTextChannel(client.guilds.cache.get(guildId), config.feed);
+  await channel
+    ?.send({
+      components: [ui.given(giverId, targetId, newTotal, haktan, source)],
+      flags: core.CV2,
+      allowedMentions: { users: [targetId] },
+    })
+    .catch((err) => console.error('[saygi] Saygınlık kaydı gönderilemedi:', err.message));
+}
+
+// Saygınlık vermenin tek kapısı: kuralı uygular, toplamı kaydeder, herkese açık kaydı yazar ve istenirse
+// saygınlığı alan kişiye DM atar. opts: fromChannelId vermenin yapıldığı kanal, source Kaynak satırı,
+// notifyDm alana bildirim gönderilsin mi (değerlendirme butonunda gerekir).
+async function give(client, giverId, target, { fromChannelId = null, source = null, notifyDm = false } = {}) {
+  const result = evaluateGive(giverId, target);
+  if (!result.ok) return result;
+
+  await announceFeed(client, giverId, target.id, result, source, fromChannelId);
+  if (notifyDm) {
+    await target.send({ components: [ui.givenDm(giverId, result.newTotal, source)], flags: core.CV2 }).catch(() => null);
+  }
+  return result;
+}
+
 // /saygi-ver: hedefe +1 saygınlık verir
 async function handleGive(interaction) {
   const target = interaction.options.getUser('kullanici', true);
-  const result = evaluateGive(interaction.user.id, target);
+  const result = await give(interaction.client, interaction.user.id, target, { fromChannelId: interaction.channelId });
 
   if (!result.ok) {
-    if (result.reason === 'self') return replyError(interaction, 'Kendine saygınlık veremezsin.');
-    if (result.reason === 'bot') return replyError(interaction, 'Botlara saygınlık veremezsin.');
-    return replyError(interaction, 'Zaten saygınlık verdin.', cooldownHint(result.remaining));
+    const { message, hint } = rejection(result);
+    return replyError(interaction, message, hint);
   }
 
   return respond(interaction, ui.given(interaction.user.id, target.id, result.newTotal, result.haktan), {
@@ -159,15 +199,10 @@ async function handleMessage(message) {
     return;
   }
 
-  const result = evaluateGive(message.author.id, target);
+  const result = await give(message.client, message.author.id, target, { fromChannelId: message.channelId });
   if (!result.ok) {
-    const text =
-      result.reason === 'self'
-        ? 'Kendine saygınlık veremezsin.'
-        : result.reason === 'bot'
-          ? 'Botlara saygınlık veremezsin.'
-          : 'Zaten saygınlık verdin.';
-    await replyBrief(core.alert(text, result.reason === 'cooldown' ? cooldownHint(result.remaining) : null, 'danger'));
+    const { message: text, hint } = rejection(result);
+    await replyBrief(core.alert(text, hint, 'danger'));
     return;
   }
 
