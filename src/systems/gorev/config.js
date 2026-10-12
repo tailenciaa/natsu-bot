@@ -1,7 +1,7 @@
 // Görevler: üyenin botla her gün temas hâlinde kalması için kurulu ilerleme katmanı. Dört katmanı var:
 //   Günlük   : havuzdan çekilen üç görev, gece 00:00'da yenilenir. Üçü birden bitirilince demet ödülü verilir.
 //   Haftalık : havuzdan çekilen üç ağır görev, pazartesi yenilenir. Anahtar asıl buradan düşer.
-//   Keşif Yolu: botun sistemlerini sırayla gezdiren, tek seferlik on iki adım. Her adım bir sonrakini çeker.
+//   Keşif Yolu: botun sistemlerini sırayla gezdiren, tek seferlik adımlar (sayı YOL'dan okunur). Her adım bir sonrakini çeker.
 //   Kutu      : anahtar harcanan ödül çekilişi; kozmetikler doğrudan mağazadaki sahipliğe geçer.
 // Sezon ise ayın birikimli yarışı: görevlerden puan toplanır, ay eşikleri geçilince tek seferlik ödül alınır.
 //
@@ -10,7 +10,7 @@
 // siparişler coin kaydında, kozmetik sahipliği profil kaydında, açılan talep destek kaydında). Böylece görevler
 // açılmadan önceki etkinlikler de sayılır, bir sayaç bozulsa bile ilerleme yeniden hesaplanır ve bu sistem başka
 // bir sistemin verisine yazmaz.
-// Yalnızca *ödüllerin alınması* ve Keşif Yolu'nun butonla görülen iki adımı kendi kaydında tutulur (store.js).
+// Yalnızca *ödüllerin alınması* ve Keşif Yolu'nun gözlemle görülen adımları kendi kaydında tutulur (store.js).
 const { weekKey } = require('../aktif/week');
 
 const dayKey = (ms = Date.now()) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' });
@@ -51,8 +51,9 @@ const HAFTALIK_HAVUZU = [
 const DEMET = { coin: 120, anahtar: 1, puan: 3 };
 
 // Keşif Yolu: botun sistemlerini gezdiren sıralı adımlar. Sıra bilinçli: kartını tanırsın, sonra yazı yazarsın,
-// sonra sese girersin, sonra desteği görürsün, sonra mağazayı görürsün. Her adım bir sonrakini tarif eder,
-// sonunda ücretsiz rozet var.
+// sonra sese girersin, sonra oyun/suç/eğlence tarafını görürsün, en son desteği ve mağazayı. Her adım bir sonrakini
+// tarif eder, sonunda ücretsiz rozet var. Yol kilitli ilerlediği için buraya yalnızca HERKESİN yapabildiği adım
+// girer: coin harcayan olur, seviye ya da yetki bekleyen olmaz.
 const YOL = [
   { key: 'gunluk-topla', ad: 'Günlük ödülünü topla', tarif: '/gunluk yaz ve ilk coinlerini al.', hedef: 1, olcum: 'gunlukHic', odul: { coin: 100, puan: 5 } },
   { key: 'kartini-gor', ad: 'Kendi profil kartını aç', tarif: '/profil yaz; kartını ve altındaki düzenleme düğmelerini gör.', hedef: 1, olcum: 'goruldu:kartini-gor', odul: { coin: 80, puan: 3 } },
@@ -104,10 +105,10 @@ const SEZON = {
   ],
 };
 
-// Keşif Yolu'ndaki iki adım hiçbir depoda tutulmaz (kartını açtın mı, çekilişe katıldın mı): bunlar tek yerde,
-// etkileşim izlenerek görülür. Yalnızca okur; hiçbir işleyiciye dokunmaz, cevap vermez.
+// Keşif Yolu'nun birkaç adımı hiçbir depoda tutulmaz (kartını açtın mı, sokağa girdin mi, çekilişe katıldın mı):
+// bunlar tek yerde, etkileşim izlenerek görülür. Yalnızca okur; hiçbir işleyiciye dokunmaz, cevap vermez.
 const IZLENEN = {
-  komut: { profil: 'kartini-gor' },
+  komut: { profil: 'kartini-gor', sokak: 'sokaga-cik' },
   buton: { 'cekilis-katil': 'cekilis-katil' },
 };
 

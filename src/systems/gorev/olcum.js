@@ -1,12 +1,14 @@
 // Görev ilerlemesinin okunduğu yer. Sayaç tutmaz: mesaj ve ses sayıları sıralama kaydından, saygınlık haftalık
 // tablosundan, günlük ödül ve siparişler coin kaydından, kozmetik/biyografi/renk profil kaydından, açılan destek
-// talebi destek kaydından, kutu ve seri bu sistemin kendi kaydından gelir. Burada üretilen sayılar ile panellerde
-// görünen sayılar aynı kaynaktır.
+// talebi destek kaydından, kumarhane eli oyun kaydından, şaka kartı eğlence kaydından, kutu ve seri bu sistemin
+// kendi kaydından gelir. Burada üretilen sayılar ile panellerde görünen sayılar aynı kaynaktır.
 const coinStore = require('../coin/store');
 const saygiStore = require('../saygi/store');
 const siralamaStore = require('../siralama/store');
 const profilStore = require('../profil/store');
 const destekStore = require('../destek/store');
+const oyunStore = require('../oyun/store');
+const eglenceStore = require('../eglence/store');
 const rozet = require('../profil/rozet');
 const skor = require('../profil/skor');
 const config = require('./config');
@@ -72,12 +74,18 @@ const OLCUMLER = {
   renkVar: (m, uid) => (profilStore.get(uid).color == null ? 0 : 1),
   bioVar: (m, uid) => (String(profilStore.get(uid).bio ?? '').trim() ? 1 : 0),
   kozmetikSahibi: (m, uid) => profilStore.ownedCount(uid),
+  // Oyun Salonu ve şakalaşma kendi depolarında sayacı zaten tutuyor; buradan okunur ki panelle görev satırı ayrışmasın
+  oyunEl: (m, uid) => oyunStore.kumarSayilari(uid).el,
+  oyunElGun: (m, uid) => oyunStore.kumarSayilari(uid).gun,
+  eglenceKart: (m, uid) => eglenceStore.durumOf(uid).atilanToplam,
+  eglenceKartGun: (m, uid) => eglenceStore.durumOf(uid).gunluk,
   sesToplam: (m, uid, ek) => ek?.sesToplam ?? 0,
   rozetSayisi: (m, uid, ek) => ek?.rozetSayisi ?? 0,
   puan: (m, uid, ek) => ek?.puan ?? 0,
   destekSayisi: (m, uid, ek) => ek?.destekSayisi ?? 0,
-  // İzlenen adımlar: hiçbir depoda izi olmayan iki eylem, etkileşim gözlemiyle görülür (index.js yazar)
+  // İzlenen adımlar: hiçbir depoda izi olmayan eylemler, etkileşim gözlemiyle görülür (index.js yazar)
   'goruldu:kartini-gor': (m, uid) => (store.goruldu(uid, 'kartini-gor') ? 1 : 0),
+  'goruldu:sokaga-cik': (m, uid) => (store.goruldu(uid, 'sokaga-cik') ? 1 : 0),
   'goruldu:cekilis-katil': (m, uid) => (store.goruldu(uid, 'cekilis-katil') ? 1 : 0),
 };
 
