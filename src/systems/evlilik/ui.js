@@ -19,7 +19,6 @@ const IDS = {
   kabul: 'evlilik:kabul:', // + teklif numarası — yalnızca muhatap basabilir
   ret: 'evlilik:ret:', // + teklif numarası — yalnızca muhatap basabilir
   iptal: 'evlilik:iptal:', // + teklif numarası — yalnızca teklifi götüren basabilir
-  cuzdan: 'coin-bakiye',
   butik: 'butik:magaza',
 };
 
