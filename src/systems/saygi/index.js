@@ -17,7 +17,7 @@ const { weekKey, previousWeekKey } = require('../aktif/week');
 const commands = [
   new SlashCommandBuilder()
     .setName('saygi-ver')
-    .setDescription('Bir üyeye +1 saygınlık verir, günde bir kez kullanılabilir.')
+    .setDescription('Bir üyeye +1 saygınlık verirsin; günde bir kez verilir, haftanın birincisi ödül rolünü alır.')
     .addUserOption((opt) => opt.setName('kullanici').setDescription('Saygınlık verilecek üyeyi seçer.').setRequired(true))
     .setContexts(InteractionContextType.Guild),
 ];

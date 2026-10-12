@@ -24,7 +24,7 @@ const ui = require('./ui');
 const commands = [
   new SlashCommandBuilder()
     .setName('sicil')
-    .setDescription('Bir üyenin sunucu sicilini gösterir.')
+    .setDescription('Bir üyenin cezalarını, destek taleplerini ve değerlendirme kayıtlarını gösterir.')
     .setContexts(InteractionContextType.Guild)
     .addUserOption((o) =>
       o.setName('kullanici').setDescription('Sicili görüntülenecek üyeyi seç; boş bırakırsan kendi sicilin açılır.'),

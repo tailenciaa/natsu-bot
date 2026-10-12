@@ -23,7 +23,7 @@ const rankingStore = require('../siralama/store');
 const commands = [
   new SlashCommandBuilder()
     .setName('seviye')
-    .setDescription('Mesaj ve ses seviyeni gösterir.')
+    .setDescription('Mesaj ve ses aktivitesi seviyeni, tecrübeni ve sıradaki ödülleri kartta gösterir.')
     .setContexts(InteractionContextType.Guild)
     .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesine bakılacak üyeyi seçer, boş bırakırsan kendi seviyen gösterilir.')),
 ];

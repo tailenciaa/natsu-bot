@@ -43,23 +43,23 @@ const liftCommand = (name, description, permission) =>
     .addStringOption(reasonOpt(false));
 
 const commands = [
-  punishCommand('uyari', 'Bir üyeye uyarı verir.', staffPermission, null),
-  punishCommand('mute', 'Bir üyeyi belirtilen süre boyunca susturur.', staffPermission, true),
-  liftCommand('unmute', 'Bir üyenin susturmasını kaldırır.', staffPermission),
-  punishCommand('jail', "Bir üyeyi jail'e atar.", staffPermission, false),
-  liftCommand('unjail', "Bir üyeyi jail'den çıkarır.", staffPermission),
-  punishCommand('ban', 'Bir üyeyi sunucudan yasaklar.', staffPermission, false),
-  liftCommand('unban', 'Bir üyenin yasağını kaldırır.', staffPermission),
+  punishCommand('uyari', 'Bir üyeye uyarı verir; kayıt siciline işlenir ve üye kartla bilgilendirilir.', staffPermission, null),
+  punishCommand('mute', 'Bir üyeyi seçtiğin süre boyunca susturur; süre bitince kendiliğinden açılır.', staffPermission, true),
+  liftCommand('unmute', 'Bir üyenin susturmasını süre dolmadan kaldırır.', staffPermission),
+  punishCommand('jail', 'Bir üyeyi jail rolüne alır; aldığı rolleri süre bitince geri verir.', staffPermission, false),
+  liftCommand('unjail', "Bir üyeyi jail'den çıkarır ve aldığı rolleri geri verir.", staffPermission),
+  punishCommand('ban', 'Bir üyeyi sunucudan yasaklar; süre verdiysen süre bitince kendiliğinden kalkar.', staffPermission, false),
+  liftCommand('unban', 'Bir üyenin sunucu yasağını kaldırır; üye tekrar katılabilir.', staffPermission),
   new SlashCommandBuilder()
     .setName('ceza-kaldir')
-    .setDescription('Numarasıyla, sürmekte olan bir cezayı kaldırır.')
+    .setDescription('Sicildeki ceza numarasıyla sürmekte olan cezayı kaldırır; sicil kaydı durur.')
     .setDefaultMemberPermissions(staffPermission)
     .setContexts(InteractionContextType.Guild)
     .addIntegerOption(numberOpt)
     .addStringOption(reasonOpt(false)),
   new SlashCommandBuilder()
     .setName('ceza-sil')
-    .setDescription('Numarasıyla bir ceza kaydını sicilden siler; sürüyorsa önce kaldırır.')
+    .setDescription('Ceza numarasıyla kaydı sicilden kalıcı olarak siler; sürüyorsa önce kaldırır.')
     .setDefaultMemberPermissions(staffPermission)
     .setContexts(InteractionContextType.Guild)
     .addIntegerOption(numberOpt)
