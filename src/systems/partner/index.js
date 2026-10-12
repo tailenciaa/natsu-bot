@@ -90,12 +90,44 @@ async function handleRequestChannel(message) {
     .catch(() => {});
 }
 
-// ── Paylaşım kanalı: her mesaj silinip bot tarafından yeniden, standart kartla paylaşılır ─────────────────────
+// ── Paylaşım kanalı: her mesaj silinip bot tarafından yeniden, ilan + yetkili kartı olarak paylaşılır ──────
+
+// Partner ilanı iki mesaj olur. Üstte düz mesaj: Discord davet bağlantısının önizlemesini ve ekleri ancak düz
+// mesajda gösteriyor, üye ilanı kartın içinde dümdüz metin olarak kalıyordu. Altta CV2 kart: kaydın durumu,
+// partner sayıları (bugün/hafta/ay) ve butonlar. Kartın ID'si butondan bulunur; ilanın ID'si kayda yazılır ki
+// "Partneri Sil" ikisini birden kaldırsın.
+async function publishPost(channel, request, trusted, banned, files = []) {
+  const ad = await channel
+    .send({ content: ui.postContent(request), files, allowedMentions: { parse: [] } })
+    .catch((err) => {
+      console.error('[partner] Partner ilanı paylaşılamadı:', err.message);
+      return null;
+    });
+  const card = await channel
+    .send({
+      components: [ui.postCard(request, trusted, banned, store.partnerStats(request.guildId, request.id))],
+      flags: core.CV2,
+      allowedMentions: { parse: [] },
+    })
+    .catch((err) => {
+      console.error('[partner] Partner kartı paylaşılamadı:', err.message);
+      return null;
+    });
+
+  // Kart tutmazsa ilanı ortada tek başına bırakma: butonsuz bir mesaj kalır, yetkili akışı yarım görünür
+  if (!card && ad) await ad.delete().catch(() => {});
+
+  request.adId = ad?.id ?? null;
+  request.postId = card?.id ?? null;
+  // Elle atılan ilanda kayıt henüz store'a yazılmamış olabilir: updateRequest yoksa sessizce geçer
+  store.updateRequest(request.id, { adId: request.adId, postId: request.postId });
+  return { ad, card };
+}
 
 async function handlePostsChannel(message) {
   if (message.author.bot) return;
   const text = message.content?.trim() ?? '';
-  // Ekler karta eklenir (Components V2'de ek bir bileşenle gösterilmedikçe görünmez); adları güvenli hale getirilir
+  // Ekler ilanın düz mesajına olduğu gibi taşınır (Discord görselleri mesajın altında gösterir); adları güvenli hale getirilir
   const attachments = [...message.attachments.values()].map((a, i) => ({
     url: a.url,
     name: `${i + 1}-${(a.name ?? 'dosya').replace(/[^A-Za-z0-9._-]/g, '_')}`,
@@ -118,21 +150,17 @@ async function handlePostsChannel(message) {
     decidedAt: Date.now(),
   };
 
-  // Önce kart gönderilir; gönderilemezse (izin, ağ, geçersiz bileşen) üyenin mesajı silinmez, metin kaybolmaz
-  const card = await message.channel
-    .send({
-      components: [ui.postCard(request, null, store.isBanned(message.author.id))],
-      files: attachments.map(({ url, name }) => ({ attachment: url, name })),
-      flags: core.CV2,
-      allowedMentions: { parse: [] },
-    })
-    .catch((err) => {
-      console.error('[partner] Elle atılan partner metni paylaşılamadı:', err.message);
-      return null;
-    });
-  if (!card) return;
-
+  // Kayıt önce açılır ki karttaki sıra numarası doğru olsun; paylaşım tutmazsa kayıt geri alınır, üyenin mesajı
+  // silinmez ve metin kaybolmaz
   store.createRequest(request);
+  const { card } = await publishPost(
+    message.channel,
+    request,
+    null,
+    store.isBanned(message.author.id),
+    attachments.map(({ url, name }) => ({ attachment: url, name })),
+  );
+  if (!card) return store.deleteRequest(request.id);
   await message.delete().catch(() => {});
 }
 
