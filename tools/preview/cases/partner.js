@@ -89,6 +89,8 @@ module.exports = ({ mock, src }) => {
     { id: 'form-yasak', title: 'Form: sunucuyu yasakla', where: 'İnceleme kartında Yasaklıya Al', visibility: 'ephemeral', kind: 'modal', build: () => ui.banServerModal('123456789012345678') },
     { id: 'yasak-kayit', title: 'Yasaklı kanalı: sunucu yasaklandı', where: 'Yasaklı partnerler kanalı', visibility: 'log', kind: 'message', build: () => ({ components: [ui.serverBannedLog('123456789012345678', 'Troll talep, kurallarımıza aykırı içerik.', staff.id)], ...noMentions }) },
     { id: 'yasak-dm', title: 'DM: sunucun yasaklı', where: 'Yasaklı sunucudan talep gelince', visibility: 'dm', kind: 'message', build: () => ({ components: [ui.serverBannedDm('Troll talep, kurallarımıza aykırı içerik.')] }) },
+    { id: 'iptal-dm', title: 'DM: partnerliğin iptal edildi', where: 'İptal edilen sunucunun yetkililerine', visibility: 'dm', kind: 'message', build: () => ({ components: [ui.partnerRevokedDm('123456789012345678', { kind: 'iptal', by: staff.id, removed: 4 })] }) },
+    { id: 'iptal-dm-yasak', title: 'DM: sunucun yasaklandı, ilanların silindi', where: 'Yasaklanan sunucunun yetkililerine', visibility: 'dm', kind: 'message', build: () => ({ components: [ui.partnerRevokedDm('123456789012345678', { kind: 'yasak', by: staff.id, removed: 6, reason: 'Birden fazla sahte partner talebi.' })] }) },
 
     // Paylaşım kanalı iki mesajdan oluşur: üstte düz ilan (davet önizlemesi ve ekler Discord'da burada görünür),
     // altta CV2 kart (kayıt bilgisi + partner sayıları + butonlar)

@@ -426,7 +426,7 @@ const serverBannedDm = (reason) =>
 // (sunucu ya da yetkili partner sisteminden yasaklanır). removed: paylaşım kanalından silinen mesaj sayısı.
 const partnerRevokedDm = (serverId, { kind, by, removed, reason = null }) =>
   noticeCard(
-    kind === 'yasak' ? 'Sunucun Partner Sisteminden Yasaklandı' : 'Partnerliğin İptal Edildi',
+    kind === 'yasak' ? 'Sunucun Yasaklandı' : 'Partnerliğin İptal Edildi',
     kind === 'yasak'
       ? 'Sunucun partner sisteminden **yasaklandı**, paylaşım kanalındaki tüm ilanların kaldırıldı. Yasak kaldırılana kadar bizimle yeniden partner olamazsın.'
       : 'Partnerliğimiz **iptal edildi**, paylaşım kanalındaki tüm ilanların kaldırıldı ve sunucun güvenilir partner listesinden çıkarıldı. İsterseniz yeni bir taleple tekrar başvurabilirsiniz.',
