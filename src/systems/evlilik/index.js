@@ -398,18 +398,20 @@ async function bosan(interaction) {
   hirsizlik.kasaEkle(bedel);
   const at = Date.now();
   const es = evlilik.es;
+  const rolId = evlilik.rol ?? null;
   store.bosan(interaction.user.id, es, at);
-  await rolAl(interaction.guild, interaction.user.id);
-  await rolAl(interaction.guild, es);
+  // Çift rolü iki kişinin ortak nişanıydı: evlilik bitince rol de sahipsiz kalmasın diye silinir
+  const silindi = await rolSil(interaction.guild, rolId);
 
   await sayfayiGoster(
     interaction,
     `Boşandın: ${coin(bedel)} kasaya yazıldı, yeni teklif ${core.rel(at + config.bosanma.bekleme)} içinde açılır.`,
   );
-  return respond(interaction, ui.bosanmaKarti({ a: interaction.user.id, b: es, user: interaction.user, bedel, at }), {
-    followUp: true,
-    allowedMentions: { users: [interaction.user.id, es] },
-  });
+  return respond(
+    interaction,
+    ui.bosanmaKarti({ a: interaction.user.id, b: es, user: interaction.user, bedel, at, rolDurumu: rolId ? (silindi ? 'silindi' : 'silinemedi') : null }),
+    { followUp: true, allowedMentions: { users: [interaction.user.id, es], roles: [] } },
+  );
 }
 
 // Boşanma düğmesi kişinin kendi sayfasında durur; başkasının sayfasında alım yapılamaz.
@@ -510,9 +512,11 @@ module.exports = {
   prefixed: [[ui.IDS.prefix, handle]],
   events: {
     [Events.ClientReady]: handleReady,
-    // Üye düşüp dönerse evli rolü de kaybolur: dönüşte bot satın alınan bağı yeniden giydirir
+    // Üye düşüp dönerse çift rolü de kaybolur: dönüşte bot kendi evliliğinin nişanını yeniden giydirir
     [Events.GuildMemberAdd]: (member) =>
-      member.guild.id === guildId && !member.user.bot && store.evliMi(member.id) ? rolVer(member.guild, member.id, 'Evlilik rolü geri verildi') : null,
+      member.guild.id === guildId && !member.user.bot
+        ? rolVer(member.guild, member.id, store.evlilikOf(member.id)?.rol, 'Çift rolü geri verildi')
+        : null,
   },
   durumPaneli,
   durumOf,

@@ -31,7 +31,12 @@ const çift = (a, b) => `${mention(a)} ile ${mention(b)}`;
 const bosanEtiket = `Boşan · ${number(config.bosanma.price)}`;
 
 // ── Teklif kartı ──────────────────────────────────────────────────────────────
-function teklif({ oneren, hedef, no, sonAt }) {
+// Çift rolünün karttaki görünümü: açılmışsa mention (adı ve rengi Discord'dan gelir), henüz açılamamışsa
+// teklifte seçilen ad düz yazılır — hiçbir kartta "rol yok" sessiz geçmez, nedeni okunur.
+const rolSatiri = ({ rolId, rolAdi }) => (rolId ? `<@&${rolId}>` : rolAdi ? core.chip(rolAdi) : null);
+
+function teklif({ oneren, hedef, no, sonAt, rol }) {
+  const renk = config.rol.renk(rol?.renk);
   return core
     .page({
       title: config.basliklar.teklif,
@@ -43,11 +48,13 @@ function teklif({ oneren, hedef, no, sonAt }) {
           ['Teklif Eden', mention(oneren.id)],
           ['Muhatap', mention(hedef.id)],
           ['Yüzük', core.chip(butikConfig.yuzuk.ad)],
+          rol ? ['Kabulde Açılacak Rol', `${rol.ad} · ${renk.ad}`] : false,
           ['Yanıt Süresi', core.rel(sonAt)],
         ]),
-        config.notlar.yuzuk,
+        `${config.notlar.yuzuk}\n${config.notlar.rol}`,
       ],
-      accent: core.colors.success,
+      // Kart çiftin seçtiği renkle çizilir: kabul eden eş hangi renk rolü giyeceğini provasında görür
+      accent: renk.hex,
     })
     .addSeparatorComponents(core.divider())
     .addActionRowComponents(
@@ -61,8 +68,9 @@ function teklif({ oneren, hedef, no, sonAt }) {
 }
 
 // ── Sonuç kartları ────────────────────────────────────────────────────────────
-// Kabul: evlilik ilanı. Bakiye yazılmaz, yakılan yüzük ve verilen rol yazılır.
-function evlilikKarti({ oneren, hedef, user, roleId, at = Date.now() }) {
+// Kabul: evlilik ilanı. Bakiye yazılmaz, yakılan yüzük ve açılan çift rolü yazılır. Rol açılamamışsa sebebi
+// kartta durur: üye de yönetici de log aramasın.
+function evlilikKarti({ oneren, hedef, user, rolId, rolAdi = null, uyari = null, at = Date.now() }) {
   return core.receipt({
     title: config.basliklar.evlilik,
     sub: `${çift(oneren, hedef)} evlendi. Yüzük kabul anında yakıldı; ikili artık sunucuda çift olarak duruyor.`,
@@ -73,9 +81,9 @@ function evlilikKarti({ oneren, hedef, user, roleId, at = Date.now() }) {
       ['Eş', mention(oneren)],
       ['Başlangıç', core.rel(at)],
       ['Yüzük', core.chip('yakıldı')],
-      roleId ? ['Evli rolü', `<@&${roleId}>`] : false,
+      ['Çift Rolün', rolSatiri({ rolId, rolAdi }) ?? core.chip('açılamadı')],
     ],
-    note: config.notlar.evli,
+    note: uyari ? `${uyari} ${config.notlar.evli}` : config.notlar.evli,
     at,
   });
 }
