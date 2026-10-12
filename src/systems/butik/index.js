@@ -1,6 +1,6 @@
 // Butik: cüzdan kartının yerini alan coin harcama rafı — ek saygınlık hakkı, evlilik yüzüğü ve özel renkli rol.
 // Kendi komutu yoktur: /bakiye cüzdanındaki Butik düğmesiyle açılır, alımlar düğmeyle yapılır. Böylece üyenin
-// Parasının iki kapısı (kazanmak ve harcamak) aynı kartta toplanır.
+// parayı kazanmakla harcamak arasındaki iki kapısı aynı kartta toplanır.
 // Ödeme düzeni: coin harcamaktır, kazanç değildir — burada para basılmaz, yalnızca el değiştirir. Bu yüzden
 // alımlar coinStore.spend ile düşülür ve coinStore.recordPurchase ile üyenin sipariş defterine yazılır.
 // Renk düzeni: bot rol yaratmaz, config.js'te ID'si yazılı hazır rolü verir. Rol verilemezse para alınmaz.
@@ -47,7 +47,7 @@ const bakiyeYetmez = (interaction, item) =>
 // Tükenen ürün alımı: para ancak ürün elde birikiyorsa düşer
 async function alTukenen(interaction, item) {
   const userId = interaction.user.id;
-  if (coinStore.balance(userId) < item.price) return yoksaCevap(interaction, item);
+  if (coinStore.balance(userId) < item.price) return bakiyeYetmez(interaction, item);
   if (!coinStore.spend(userId, item.price)) return replyError(interaction, 'Satın alma tamamlanamadı.', 'Birkaç saniye sonra tekrar dene.');
 
   const total = store.ekle(item.key, userId);
@@ -66,7 +66,7 @@ async function alRol(interaction, item) {
   if (!item || !item.roleId) return replyError(interaction, 'Bu renk şu anda satışta değil.', 'Rol sunucuda hazırlanınca raf kendini gösterir.');
   if (store.rolSahibi(userId, item.key)) return replyError(interaction, 'Bu renk zaten sende.', 'Sunucuda adın o rolün rengiyle yazılıyor.');
   if (!interaction.guild) return replyError(interaction, 'Renkler sunucuda kullanılır.', 'Düğmeyi bir sunucu içinde tekrar dene.');
-  if (coinStore.balance(userId) < item.price) return yoksaCevap(interaction, item);
+  if (coinStore.balance(userId) < item.price) return bakiyeYetmez(interaction, item);
 
   const member = await interaction.guild.members.fetch(userId).catch(() => null);
   if (!member) return replyError(interaction, 'Sunucu kaydın bulunamadı.', 'Bir yetkiliye haber ver.');

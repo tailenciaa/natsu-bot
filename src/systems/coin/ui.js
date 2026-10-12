@@ -12,6 +12,7 @@ const IDS = {
   arcade: 'coin-oyun', // cüzdandan Oyun Salonuna geçiş: sayfa ayrı mesaj olur, kendi sekmeleriyle açılır
   crime: 'coin-hirsizlik', // cüzdandan Arka Sokaklara geçiş: suç dünyası da ayrı mesaj olarak açılır
   banter: 'coin-sakalas', // cüzdandan Şakalaşma sayfasına geçiş: eğlence kartları da ayrı mesaj olarak açılır
+  butik: 'butik:magaza', // butik rafı cüzdandan açılır ve kartın yerini alır; düğme butik sisteminin önekiyle gelir
 };
 
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz

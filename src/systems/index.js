@@ -34,6 +34,7 @@ module.exports = [
   require('./oyun'), // /oyun: Oyun Salonu — keşif gezileri, rulet ve şans merdiveni (coin ekonomisinin oyun katmanı)
   require('./hirsizlik'), // /sokak ve /çal: Arka Sokaklar — üye soymak, Devletin Kasası, direnme ve hapis
   require('./eglence'), // /öp ve /tokat: şaka kartları — karşılık gelirse iki taraf da coin kazanır
+  require('./butik'), // Cüzdandan açılan coin rafı: ek saygınlık hakkı, evlilik yüzüğü ve özel renkli roller
   require('./aktif'),
   require('./saygi'),
   require('./vip'),

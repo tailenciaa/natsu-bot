@@ -35,11 +35,7 @@ module.exports = {
     { key: 'inci', tur: 'rol', ad: 'İnci', price: 15000, note: 'Sunucuda adın beyaz yazılır', roleId: null },
   ],
 
-  // Cüzdan kartındaki düğmenin etiketi ve raf başlıkları: metinler burada durur ki iki sistem aynı sözü versin
-  cuzdanEtiket: 'Butik',
+  // Rafların başlıkları: üye hangi rafın ne sattığını satırları okumadan anlasın
   hakRafBasligi: 'Haklar ve Yüzükler',
   rolRafBasligi: 'Özel Renkli Roller',
-
-  // Raf boşken (hiçbir rol ID'si dolmamışsa) okunan satır
-  rolRafNotu: 'Renkli roller sunucuda henüz hazır değil. Yetkililer rolleri açtığında raf kendiliğinden görünür.',
 };
