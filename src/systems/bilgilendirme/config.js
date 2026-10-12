@@ -343,7 +343,7 @@ const ekonomiPanel = {
   key: 'ekonomi',
   name: 'Ekonomi Paneli',
   title: 'Ekonomi',
-  intro: 'Coin nasıl kazanılır, nerede harcanır ve seni ne bekliyor: botun para sisteminin bütün kapıları bu kanalda, yedi kısa kartta anlatılıyor.',
+  intro: 'Coin nasıl kazanılır, nerede harcanır ve seni ne bekliyor: botun para sisteminin bütün kapıları bu kanalda, kısa kartlar hâlinde anlatılıyor.',
   channel: '1558968836420665615',
   sections: [
     {
