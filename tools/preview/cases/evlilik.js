@@ -152,22 +152,28 @@ module.exports = ({ mock, ui, src }) => {
     // ── Kanalda duran teklif kartı ────────────────────────────────────────────
     kartCase(
       'teklif',
-      'Teklif kartı: iki isim, yanıt süresi ve kabul/ret düğmeleri kanalda',
-      '/evlilik teklif kullanici:@ece sonrası kanalda',
-      p.teklif({ oneren: giden.user, hedef: gelen.user, no: 'oniz1', sonAt: Date.now() + config.teklif.pencere }),
+      'Teklif kartı: iki isim, kabulde açılacak çift rolü, yanıt süresi ve kabul/ret düğmeleri kanalda',
+      '/evlilik teklif kullanici:@ece rol_adi:Ay Yıldızı renk:mor simge:💜 sonrası kanalda',
+      p.teklif({ oneren: giden.user, hedef: gelen.user, no: 'oniz1', sonAt: Date.now() + config.teklif.pencere, rol: prova }),
+    ),
+    kartCase(
+      'teklif-varsayilan',
+      'Teklif kartı: hiçbir alan doldurulmamış, rol iki ismin yan yana yazılı hâliyle ve ilk renkle kurulur',
+      '/evlilik teklif kullanici:@mert yazıp başka hiçbir alan doldurmayan üyede',
+      p.teklif({ oneren: zeynep.user, hedef: mert.user, no: 'oniz2', sonAt: Date.now() + config.teklif.pencere, rol: provaVarsayilan }),
     ),
 
     // ── Sonuç kartları: teklif kartının yerini alırlar ────────────────────────
     kartCase(
       'sonuc-evlilik',
-      'Evlilik ilanı: yüzük kabul anında yakıldı, çift rolü yoksa satır hiç yazılmıyor',
+      'Evlilik ilanı: yüzük yakıldı ama çift rolü açılamadı - sebep kartın altında okunuyor',
       'Kabul Ediyorum düğmesiyle kartın yerini alır',
       evlilikKarti,
     ),
     kartCase(
       'sonuc-evlilik-rol',
-      'Evlilik ilanı: config\'de çift rolü hazır, kartta rolün etiketi de duruyor',
-      'Aynı kart, rol ID\'si doldurulmuş sunucuda',
+      'Evlilik ilanı: bot çift rolünü açtı, kartta rolün kendi adı ve rengi duruyor',
+      'Aynı kart, botun rol yaratma izni olan sunucuda',
       evlilikKartiRol,
     ),
     kartCase(
@@ -196,9 +202,9 @@ module.exports = ({ mock, ui, src }) => {
     ),
     kartCase(
       'sonuc-bosanma',
-      'Boşanma ilanı: bedel Devletin Kasasına yazıldı, iki tarafa bekleme kondu',
+      'Boşanma ilanı: bedel Devletin Kasasına yazıldı, ortak çift rolü silindi, iki tarafa bekleme kondu',
       'Boşan düğmesinden sonra sayfayı izleyen açık kart',
-      p.bosanmaKarti({ a: zeynep.uid, b: mert.uid, user: zeynep.user, bedel: config.bosanma.price }),
+      p.bosanmaKarti({ a: zeynep.uid, b: mert.uid, user: zeynep.user, bedel: config.bosanma.price, rolDurumu: 'silindi' }),
     ),
     kartCase(
       'sonuc-donum',
