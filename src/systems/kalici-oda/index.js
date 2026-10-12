@@ -3,11 +3,13 @@
 // config.categoryId kategorisinin içine tek bir ses kanalı olarak açılır — ayrı yazı kanalı yoktur, odanın yazısı
 // ses kanalının kendi sohbetidir. Herkes odayı kanal listesinde görür ama bağlanamaz ve sohbetini okuyamaz; bu
 // erişim yalnızca odadakilerdedir. Sahibine teslim kartı DM olarak gider, odası olan üye oda sahibi rolünü alır ve
-// oda ayarlarını **/kalici-oda odam** komutuyla yönetir (isim, kişi limiti, üye ekle/çıkar, sahiplik devri) — panel
-// odanın kanalına düşmez. Oda kalıcıdır ama ay sonu şartına bağlıdır: odadakilerin ses süresi her hafta ölçülüp
-// odaya yazılır, hedefin altındaki hafta sahibine hatırlatılır ve ay başında geçen ay şartı karşılamayan oda
-// "şart yetersizliği" ile kapatılır. Açılış ve kapanış duyuru kanalında herkese açık kart olarak görünür, sahibi
-// ayrılmış odayı yönetici bir üyeye devreder. Odanın ses kanalı elle silinirse oda kaydı ve sahip rolü temizlenir.
+// oda ayarlarını **/kalici-oda** komutuyla yönetir (isim, kişi limiti, üye ekle/çıkar, sahiplik devri) — panel
+// odanın kanalına düşmez. Yöneticinin oda işleri (listeleme, kapatma, devir) komut değil: başvuru panelindeki
+// **Odaları Yönet** düğmesinden açılan sayfada oda menüden seçilir, numara yazılmaz. Oda kalıcıdır ama ay sonu
+// şartına bağlıdır: odadakilerin ses süresi her hafta ölçülüp odaya yazılır, hedefin altındaki hafta sahibine
+// hatırlatılır ve ay başında geçen ay şartı karşılamayan oda "şart yetersizliği" ile kapatılır. Açılış ve kapanış
+// duyuru kanalında herkese açık kart olarak görünür, sahibi ayrılmış odayı yönetici bir üyeye devreder. Odanın ses
+// kanalı elle silinirse oda kaydı ve sahip rolü temizlenir.
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -99,29 +101,13 @@ async function takeOwnerRole(guild, userId) {
   await member.roles.remove(config.roles.owner, 'Kalıcı odası kapandı ya da devredildi').catch(hata('Oda sahibi rolü alınamadı'));
 }
 
-// Komut herkese açık tanımlanır: `odam` kendi odasını yöneten üyeye, diğer alt komutlar yöneticilere bakar.
-// Yetki kontrolü komut tanımında değil handleCommand içinde yapılır.
+// Komut tek bir işe iner: üyenin kendi odasının paneli. Yöneticinin oda işleri komut değil panel düğmesidir,
+// bu yüzden komutta alt komut katmanı yok. Yetki kontrolü komut tanımında değil handler içinde yapılır.
 const commands = [
   new SlashCommandBuilder()
     .setName('kalici-oda')
-    .setDescription('Kalıcı odanı yönetir ya da odaları ve başvuruları listeler.')
-    .setContexts(InteractionContextType.Guild)
-    .addSubcommand((s) => s.setName('odam').setDescription('Kendi kalıcı odanın kontrol panelini açar: isim, limit, üye ve devir işlemleri.'))
-    .addSubcommand((s) => s.setName('liste').setDescription('Sunucudaki tüm kalıcı odaları ve bekleyen başvuruları listeler.'))
-    .addSubcommand((s) =>
-      s
-        .setName('kapat')
-        .setDescription('Bir kalıcı odayı kapatır ve kanallarını siler.')
-        .addIntegerOption((o) => o.setName('no').setDescription('Oda numarasını girer.').setMinValue(1).setRequired(true))
-        .addStringOption((o) => o.setName('sebep').setDescription('Oda sahibine yazılacak kapatma sebebini girer.').setMaxLength(300)),
-    )
-    .addSubcommand((s) =>
-      s
-        .setName('devret')
-        .setDescription('Sahibi sunucudan ayrılmış bir odanın sahipliğini başka bir üyeye verir.')
-        .addIntegerOption((o) => o.setName('no').setDescription('Oda numarasını girer.').setMinValue(1).setRequired(true))
-        .addUserOption((o) => o.setName('kullanici').setDescription('Odanın yeni sahibini seçer.').setRequired(true)),
-    ),
+    .setDescription('Kendi kalıcı odanın kontrol panelini açar: isim, kişi limiti, üye ve devir işlemleri.')
+    .setContexts(InteractionContextType.Guild),
 ];
 
 // ── Başvuru ───────────────────────────────────────────────────────────────────
