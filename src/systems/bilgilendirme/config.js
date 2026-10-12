@@ -2,7 +2,15 @@
 // yenilenir. Her bölüm ayrı bir mesaj olarak gönderilir (bir mesaj en fazla 4000 karakter olabilir), kanal ve rol
 // etiketleri <#kanalID> / <@&rolID> şeklinde yazılır, Discord bunları ada çevirir.
 
-module.exports = {
+const anaPanel = {
+  // data.panels'teki anahtar: panelin mesaj ID'leri bu ad altında durur, `name` ise log satırında geçer
+  key: 'bilgilendirme',
+  name: 'Bilgilendirme Paneli',
+
+  // İlk mesajın başlığı (`${botName} <title>`) ve başlığın altındaki tek cümle
+  title: 'Bilgilendirme',
+  intro: 'Sunucumuz hakkında **bilmen gereken her şey** bu kanalda, sırayla oku.',
+
   // Panelin gönderileceği kanal (#bilgilendirme)
   channel: '1538533822940061706',
 
