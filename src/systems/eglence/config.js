@@ -1,7 +1,9 @@
 // Eğlence katmanının ayarları: hangi şakalar atılır, karşılık için ne kadar süre var, karşılık verene ne ödenir.
 // Ekonomi düzeni: buradan gelen coin günlük oyun kazancı tavanına sayılır (coin/store.js addWin), yani şaka
 // spam'i sonsuz para basamaz. Ritim düzeni ise çift aralığı ve günlük kart kotası: iki arkadaş birbirini
-// dakikada bir kart yağmuruna tutamasın, eğlence kanalı doldurmasın.
+// dakikada bir kart yağmuruna tutamasın, eğlence kanalı dolmasın.
+// Metinler {vuran} ve {hedef} yer tutucularıyla kurulur: her eylem kendi düşüncesini (için/karşılık) taşıdığı
+// için cümleyi kod tarafında kurmak yerine burada yazmak daha okunur kalır.
 module.exports = {
   // Gün anahtarı coin ve görev takvimiyle aynı takvimden gelir (İstanbul), gece 00:00'da döner
   dayKey: (ms = Date.now()) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'Europe/Istanbul' }),
@@ -15,30 +17,35 @@ module.exports = {
   // Bir üye günde en fazla bu kadar şaka kartı atabilir; karşılık ödülü ayrıca günlük tavana sayılır
   gunlukKart: 12,
 
-  // Eylemler: komut adı, kart cümleleri ve karşılık ödülü aralığı (tek kişiye, coin olarak)
+  // Eylemler: komut adı, kart cümlesi, düğme etiketi ve karşılık ödülü aralığı (tek kişiye, coin olarak)
   eylemler: {
     op: {
       komut: 'öp',
-      ad: 'Öpücük',
-      ozet: 'gözlerinden öptü',
+      ad: 'öpücük',
       baslik: 'Öpücük Karşılık Bekliyor',
+      kart: '{vuran}, {hedef} kişisine bir öpücük kondurdu.',
       karsilikEtiket: 'Öpücükle Karşılık Ver',
-      karsilikFiil: 'öpücükle karşılık verdi',
+      karsilik: '{hedef}, {vuran} kişisine öpücükle karşılık verdi.',
       odul: [10, 40],
       renk: 'success',
     },
     tokat: {
       komut: 'tokat',
-      ad: 'Tokat',
-      ozet: 'tokat attı',
+      ad: 'tokat',
       baslik: 'Tokat Karşılık Bekliyor',
+      kart: '{vuran}, {hedef} kişisine bir tokat indirdi.',
       karsilikEtiket: 'Tokatla Karşılık Ver',
-      karsilikFiil: 'tokatla karşılık verdi',
+      karsilik: '{hedef}, {vuran} kişisine tokatla karşılık verdi.',
       odul: [5, 45],
       renk: 'danger',
     },
   },
 
-  // Kartın altındaki küçük not: karşılığın iki tarafa da yattığı burada söylenir
-  ipucu: 'Karşılık veren düğmeye basar; ödül iki tarafa da yatar ve günlük oyun tavanına sayılır.',
+  // Kartın altındaki not: ödülün kime ve nasıl yattığı üye aramadan okusun
+  ipucu: 'Karşılık veren düğmeye basar; ödül iki tarafa da yatar ve günlük oyun kazancı tavanına sayılır.',
+
+  // Sonuç kartlarının başlıkları
+  sonucBaslik: 'Karşılık Geldi',
+  karsizBaslik: 'Karşılıksız Kaldı',
+  tavanNotu: 'Günlük oyun kazancı tavanı dolu olan tarafın ödülü cebine girmedi.',
 };
