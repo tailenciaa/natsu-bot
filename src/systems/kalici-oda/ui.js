@@ -1,7 +1,7 @@
 // Kalıcı oda sisteminin mesajları: kurallar ve gereksinimler paneli, başvurunun üye seçimi adımı ve formu,
 // yöneticinin karar verdiği başvuru kartı, sahibine giden teslim kartı, /kalici-oda komutuyla açılan oda kontrol
-// paneli, şart uyarı kartları, paneldeki düğmeden açılan yönetici oda sayfası ve duyuru kanalına düşen
-// açılış/kapanış kayıtları.
+// paneli (yöneticide oda yönetimi düğmesi de bu panelde durur), şart uyarı kartları, yönetici oda sayfası ve duyuru
+// kanalına düşen açılış/kapanış kayıtları.
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -34,7 +34,7 @@ const IDS = {
   add: 'kalici-oda-uye-ekle', // kalici-oda-uye-ekle:0 (menünün önekli yönlenmesi için sabit ek)
   remove: 'kalici-oda-uye-cikar', // kalici-oda-uye-cikar:0
   transfer: 'kalici-oda-devret', // kalici-oda-devret:0
-  manage: 'kalici-oda-yonet', // paneldeki yönetici düğmesi: oda yönetim sayfasını açar
+  manage: 'kalici-oda-yonet', // oda panelindeki yönetici düğmesi: oda yönetim sayfasını açar
   pickRoom: 'kalici-oda-yonet-oda', // kalici-oda-yonet-oda:0 (yönetilecek odayı seçme menüsü)
   adminTransfer: 'kalici-oda-yonet-devret', // kalici-oda-yonet-devret:<oda no> (yöneticinin sahiplik devri menüsü)
   close: 'kalici-oda-yonet-kapat', // kalici-oda-yonet-kapat:<oda no>
@@ -97,13 +97,6 @@ function applyPanel() {
           'Ses şartı, odayı kullanacakların birlikte geçirdiği toplam süredir; başvuruda hesaplanır, oda açık kaldıkça her hafta yeniden ölçülür.',
         ].join('\n'),
       ),
-    )
-    .addSeparatorComponents(divider())
-    // Yönetici tarafı: odalar tek tek numarayla değil bu düğmeden açılan sayfada seçilir. Düğme kalıcı panelde olduğu
-    // için herkese görünür, işlem yetkisi dışarıda denetlenir.
-    .addTextDisplayComponents(text('### Yöneticiler İçin\nOdaları bu düğmeden listeler, kapatır ya da sahibini değiştirirsin.'))
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.manage).setLabel('Odaları Yönet').setStyle(ButtonStyle.Secondary)),
     );
 }
 
@@ -287,7 +280,8 @@ function activityBlock(status) {
 
 // /kalici-oda ile açılan, sadece sahibinin kullanabildiği kontrol paneli.
 // roster: odadaki üyelerin [{ id, name }] listesi; çıkar ve devret menüleri bu listeyle dolar.
-function roomPanel(room, status, roster = []) {
+// canManage: paneli açan üye oda yönetimine de yetkiliyse oda listesinin kapısı bu panele eklenir.
+function roomPanel(room, status, roster = [], canManage = false) {
   const container = page({
     title: `Kalıcı Oda · ${room.name}`,
     sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin. Sohbet, ses kanalının kendi yazısıdır; bu paneli sadece oda sahibi kullanabilir.',
@@ -305,7 +299,7 @@ function roomPanel(room, status, roster = []) {
 
   // Üye menüleri önde, oda ayar düğmeleri sonda; zaman damgası kartın en altında durur
   memberMenus(container, roster);
-  return container
+  container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text('### Oda Ayarı\nİsmini ve kişi limitini buradan değiştirirsin.'))
     .addActionRowComponents(
@@ -313,9 +307,20 @@ function roomPanel(room, status, roster = []) {
         new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
       ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(stamp(room.createdAt)));
+    );
+
+  // Oda yönetimi başvuru panelinde değil: düğme sadece yetkili üyenin kendi oda panelinde belirir,
+  // böylece kalıcı bilgi panelinde herkese görünür bir yönetici kontrolü kalmaz.
+  if (canManage) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(text('### Yönetici Tarafı\nTüm odaları burada listeler, kapatır ya da sahibini değiştirirsin.'))
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.manage).setLabel('Odaları Yönet').setStyle(ButtonStyle.Secondary)),
+      );
+  }
+
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(room.createdAt)));
 }
 
 // Üye işlemleri: her menünün üstünde ne yaptığı yazar, çıkar ve devret menüleri odadaki üyelerle dolar.
@@ -413,7 +418,8 @@ function renameModal(current) {
     .addLabelComponents(new LabelBuilder().setLabel('Yeni isim').setDescription('Odanın ses kanalının adı değişir.').setTextInputComponent(input));
 }
 
-// Paneldeki "Odaları Yönet" düğmesinden açılan sayfa: odalar tek tek numara yazılarak değil menüden seçilir.
+// Yönetici oda sayfası: oda panelindeki **Odaları Yönet** düğmesinden ya da odası olmayan yöneticinin
+// /kalici-oda komutundan açılır. Odalar tek tek numara yazılarak değil menüden seçilir.
 // owners: userId -> görünen ad (menü seçeneklerinde etiket çizilmez, o yüzden sahip adı metin olarak verilir)
 const ROOM_MENU_LIMIT = 25; // Discord bir seçim menüsünde en fazla 25 seçenek taşır
 function roomAdmin(rooms, owners = new Map(), pendingCount = 0) {
