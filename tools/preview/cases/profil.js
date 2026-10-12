@@ -10,15 +10,9 @@ module.exports = ({ mock, ui, src }) => {
   const rozet = src('systems/profil/rozet');
   // index.js'teki SHOP_TABS ile aynı sekmeler
   const SHOP_TABS = { cerceve: 'Çerçeveler', tema: 'Temalar', kapak: 'Arka Planlar', rozet: 'Rozetler' };
-  // index.js'teki FEATURED listesiyle aynı içerik; kartta öne çıkan istatistik seçenekleri
-  const featuredOptions = [
-    { key: 'mesaj', label: 'Mesaj sıralaması', note: 'Tüm zamanların mesaj sıran' },
-    { key: 'ses', label: 'Ses sıralaması', note: 'Tüm zamanların ses sıran' },
-    { key: 'yayin', label: 'Yayın süresi', note: 'Toplam ekran paylaşımı' },
-    { key: 'saygi', label: 'Saygınlık', note: 'Toplam aldığın saygınlık' },
-    { key: 'seri', label: 'Giriş serisi', note: 'Art arda günlük ödül' },
-    { key: 'coin', label: 'Coin bakiyesi', note: 'Harcayabileceğin coin' },
-  ];
+  // Vitrin seçenekleri gerçek FEATURED listesinden okunur (profil/view.js): elle kopyalanan liste yeni sistemlerin
+  // seçeneklerini kaçırıyordu, böylece sayfa her zaman botta gerçekten durduğu gibi çizilir.
+  const featuredOptions = src('systems/profil/view').featuredOptions;
   const noMentions = { allowedMentions: { parse: [] } };
   const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
   // Kart genişliği card.js'teki WIDTH ile aynı; yükseklik rozet satırına göre değişir (1044 / 990 / 928)
