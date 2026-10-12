@@ -35,6 +35,7 @@ module.exports = [
   require('./hirsizlik'), // /sokak ve /çal: Arka Sokaklar — üye soymak, Devletin Kasası, direnme ve hapis
   require('./eglence'), // /öp ve /tokat: şaka kartları — karşılık gelirse iki taraf da coin kazanır
   require('./butik'), // Cüzdandan açılan coin rafı: ek saygınlık hakkı, evlilik yüzüğü ve özel renkli roller
+  require('./evlilik'), // Yüzükle kurulan iki kişilik bağ: teklif, kabul, yıl dönümü ödülü ve boşanma
   require('./aktif'),
   require('./saygi'),
   require('./vip'),

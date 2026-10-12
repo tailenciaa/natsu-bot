@@ -18,6 +18,8 @@
 //   profiles                       : profil özelleştirmesi: biyografi, unvan, renk/tema, kapak, vitrin, sahip olunan
 //                                    kozmetikler ve kartın bulunduğu mesaj (kullanıcı ID'si ile)
 //   coins                          : coin cüzdanları, bakiye / toplam kazanç / günlük giriş serisi (kullanıcı ID'si ile)
+//   butik                          : butekten alınan tükenen ürünler (elde kalan adet) ve kalıcı renkler (kullanıcı ID'si ile)
+//   evlilik                        : evli çiftler, bekleyen teklifler, geri çevirme/boşanma anları ve yıl dönümü sayacı
 //   gorev.users                    : görev ödülü alınmaları, anahtar sayacı, kutu istatistiği ve sezon puanı
 //                                    (kullanıcı ID'si ile; ilerlemenin kendisi burada tutulmaz, ilgili sistemlerden okunur)
 //   profileVisits                  : profil kartını başkalarının kaç kez gördüğü ve son görenler (kullanıcı ID'si ile)
