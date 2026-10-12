@@ -69,7 +69,7 @@ const anaPanel = {
             "**`/gorev`** — her gün üç kısa görev çekilir (mesaj yaz, seste kal, ekran paylaş, `/gunluk`, saygınlık ver); üçü birden bitince günün demeti açılır: coin, sezon puanı ve anahtar. Üç anahtardan bir kutu çıkar.",
             "**`/profil`** — seviyeni, rozetlerini ve profil puanını gösteren kartı çizer; puanın sunucudaki sıranı belirler.",
             "**`/gunluk`** — günde bir kez coin toplar; arka arkaya giriş yaptıkça seri büyür ve ödül artar.",
-            "**`/bakiye`** — cüzdanını açar. Aynı karttaki **Görevler**, **Oyun Salonu**, **Arka Sokaklar** ve **Şakalaş** butonları para kazanmanın yollarını, **Mağaza**, **Butik** ve **Siparişlerim** butonları para harcadığın yerleri açar.",
+            "**`/bakiye`** — cüzdanını açar. Aynı karttaki **Görevler**, **Oyun Salonu**, **Arka Sokaklar** ve **Şakalaş** butonları para kazanmanın yollarını, **Mağaza · Kart Süsü**, **Butik · Yüzük & Renk** ve **Siparişlerim** butonları para harcadığın yerleri açar.",
             "**Butik** — cüzdandan açılan coin rafı: bekleme süren dolmadan bir üyeye daha saygınlık veren ek hak, evlilik teklifinde harcanan yüzük ve sunucuda adını renkli yazan özel roller.",
             "**`/evlilik`** — butikten aldığın **yüzükle** bir üyeye teklif götürürsün; teklif kanala düşer, karşı taraf **Kabul Ediyorum** ya da **Geri Çevir**'e basar. Yüzük sadece kabul edildiğinde yanar. Evlendiğinizde bot ikinize ortak bir **çift rolü** açar; adını, rengini ve simgesini teklif ederken sen seçersin. Evli kalırsan her 7 günde bir ikinize de coin ödülü çıkar, boşanmak istersen bedeli Devletin Kasasına yazar. Evli çiftleri **`/evlilik liste`** ile görebilirsin.",
             "**`/seviye`** — mesaj ve ses seviyeni, **`/siralama`** — mesaj, ses, yayın, saygınlık, coin ve VIP listelerinde sıranı gösterir.",
@@ -571,7 +571,7 @@ const ekonomiPanel = {
           ]
         },
         {
-          heading: 'Butik',
+          heading: 'Butik (yüzük, ek hak, renkli rol)',
           items: [
             '**Ek saygınlık hakkı** → günde bir hak daha: **1500 coin**',
             '**Evlilik yüzüğü** → teklif için: **4000 coin**',
