@@ -414,23 +414,22 @@ const ekonomiPanel = {
           heading: 'Kumarhane: rulet ve merdiven',
           items: [
             '**Rulet**: kırmızı ya da siyah **%47** tutar, **2 katı** verir; yeşil **%7** tutar, **14 katı** verir. Masa hep kârlıdır.',
-            '**Şans Merdiveni**: **8 basamak**, her basamakta **tırman** ya da **çek**. Düşme olasılığı ilk basamakta **%15**, tepede **%78**; tırmanırsan kazanç tepede **182 katına** çıkar.',
-            'Bu masalardan gelen kazanç **günlük tavana sayılmaz** — tavan kumarhanede değil, keşif ve şakalaşmada işler.'
+            '**Şans Merdiveni**: **8 basamak**, her basamakta **tırman** ya da **çek**. Düşme olasılığı ilk basamakta **%15**, tepede **%78**; tepeden çekilirse kazanç **182 katına** çıkar.'
           ]
         },
         {
           heading: 'Keşif gezileri',
           items: [
-            '**Ücretsiz**: günde **8 gezi**, aralarında **20 dakika**. **Kıyı Kasabası** herkese açık ve **25-80 coin** ile anahtar, çerçeve bırakır.',
-            'Seviye **8**: Fısıltı Ormanı, **20**: Kırık Mağara, **35**: Ay Işığı Bahçesi. Bölge büyüdükçe yağma **900-1600 coin**\'e, rozet, tema ve kapaklara çıkar.',
-            'Bir gezide **500 coin** ve üstünü kazanırsan kazancın kanalda duyurulur. Keşif ganimeti **günlük tavana sayılır**.'
+            '**Ücretsiz**: günde **8 gezi**, aralarında **20 dakika**. **Kıyı Kasabası** herkese açık, **25-80 coin** ile anahtar ve çerçeve bırakır.',
+            'Seviye **8**: Fısıltı Ormanı, **20**: Kırık Mağara, **35**: Ay Işığı Bahçesi — bölge büyüdükçe yağma **900-1600 coin**\'e, rozet ve kozmetiğe çıkar.',
+            'Bir gezide **500 coin** ve üstünü kazanırsan kazancın kanalda duyurulur.'
           ]
         },
         {
           heading: 'Şakalaşma',
           items: [
             '**`/öp`** ve **`/tokat`** muhataba kanalda görünen şaka kartı atar; **3 dakika** içinde karşılık verilirsen ödül **ikinize de** yatar: öp **10-40 coin**, tokat **5-45 coin**.',
-            'Günde **12 kart**, aynı kişiyle aranda **10 dakika** bekleme. Karşılık gelmezse kart boşta kalır, kimse coin kaybetmez; sana uzanan kartları **`/şakalaş`** toplar.'
+            'Günde **12 kart**; karşılık gelmezse kart boşta kalır, kimse coin kaybetmez. Sana uzanan kartları **`/şakalaş`** toplar.'
           ]
         }
       ]
