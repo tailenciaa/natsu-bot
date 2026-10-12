@@ -36,7 +36,22 @@ const commands = [
       s
         .setName('teklif')
         .setDescription('Bir üyeye yüzükle evlilik teklifi götürürsün; kart kanala düşer.')
-        .addUserOption((o) => o.setName('kullanici').setDescription('Teklif götüreceğin üye.').setRequired(true)),
+        .addUserOption((o) => o.setName('kullanici').setDescription('Teklif götüreceğin üye.').setRequired(true))
+        .addStringOption((o) =>
+          o
+            .setName('rol_adi')
+            .setDescription('Çift rolünüzün adı. Boş bırakırsan ikinizin adı yan yana yazılır.')
+            .setMaxLength(32),
+        )
+        .addStringOption((o) =>
+          o
+            .setName('renk')
+            .setDescription('Çift rolünüzün rengi. Boş bırakırsan ilk renk verilir.')
+            .addChoices(...config.rol.renkler.map((r) => ({ name: r.ad, value: r.key }))),
+        )
+        .addStringOption((o) =>
+          o.setName('simge').setDescription('Rol adının başına konan emoji. Boş bırakırsan yüzük konur.'),
+        ),
     )
     .addSubcommand((s) => s.setName('liste').setDescription('Sunucudaki evli çiftleri ve birlikte geçirdikleri günü listeler.'))
     .addSubcommand((s) => s.setName('bosan').setDescription('Eşinden boşanırsın; bedel Devletin Kasasına yazar.')),
