@@ -8,8 +8,11 @@ module.exports = ({ mock, ui, src }) => {
   const olcum = src('systems/gorev/olcum');
   const p = src('systems/gorev/ui');
   const coinStore = src('systems/coin/store');
+  const oyunStore = src('systems/oyun/store');
+  const eglenceStore = src('systems/eglence/store');
   const noMentions = { allowedMentions: { parse: [] } };
   const user = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
+  const arkadas = mock.user({ username: 'ayse', displayName: 'Ayşe' });
   const uid = user.id;
 
   const m = olcum.olcumler();
@@ -32,6 +35,21 @@ module.exports = ({ mock, ui, src }) => {
   store.yolAl(uid, 'gunluk-topla');
   store.puanEkle(uid, sezon, 160);
   store.sezonKademeAl(uid, sezon, 0);
+
+  // Salon ve şakalaşma görevleri kendi depolarından sayılır: bugün iki el çevrildi (üç hedefinin yarısı),
+  // üç şaka kartı atıldı (hedefi doldu). Görev satırının ilerlemesi canlıyla aynı kapıdan, store okumasından gelir.
+  oyunStore.elKaydet(uid, { net: 40, odul: 90 });
+  oyunStore.elKaydet(uid, { net: -50, odul: 0 });
+  for (let i = 0; i < 3; i += 1) {
+    eglenceStore.kartKaydet({
+      no: `oniz-gorev-${i}`,
+      eylem: i % 2 ? 'tokat' : 'op',
+      saldirgan: uid,
+      hedef: arkadas.id,
+      sonAt: Date.now() + 3 * mock.MIN,
+    });
+    eglenceStore.kartKapat(`oniz-gorev-${i}`);
+  }
 
   // Panelin satırları: görev havuzdan seçilir, alındı bilgisi store'a yazılır ve olcum.durum hesaplar
   const gunluk = (key, alindi = false) => {
@@ -87,6 +105,9 @@ module.exports = ({ mock, ui, src }) => {
   // Yarım kalan görev "alınmış" gösterilemez; panel canlıda olcum.durum'un bitti demediğini asla almaz.
   const ucBitmis = [gunluk('mesaj-20', true), gunluk('yayin-20', true), gunluk('gunluk-odul', true)];
 
+  // Salon ve şaka görevlerinin satırları: biri yarım (2/3 el), biri bitmiş (3 kart), biri alınmış
+  const oyunSatiri = [gunluk('mesaj-20', true), gunluk('oyun-3-el'), gunluk('sakalas-3-kart')];
+
   return [
     panelCase(
       'gunluk',
@@ -108,6 +129,13 @@ module.exports = ({ mock, ui, src }) => {
       'gunluk-demet-alindi',
       'Günlük sekmesi: demet açıldı, üstte kazanç satırı duruyor',
       'Demet Al düğmesine basıldıktan sonra aynı panel',
+    ),
+    panelCase(
+      'gunluk',
+      { gunluk: oyunSatiri, demet: demet(oyunSatiri) },
+      'gunluk-salon',
+      'Günlük sekmesi: kumarhane eli ve şaka kartı görevleri (yarım ve bitmiş)',
+      '/gorev paneli, bugün iki el çevirip üç şaka kartı atmış üyede',
     ),
     panelCase(
       'haftalik',
