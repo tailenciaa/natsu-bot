@@ -106,6 +106,13 @@ async function requestForPartner(client, request, staffId) {
   return user?.send({ components: [ui.ratingRequestDm(rating)], flags: core.CV2 }).catch(() => null);
 }
 
+// Puanlama DM'inin kartı: destek kategorisinin puanlama bölümü destek sisteminin kapanış mesajının içinde durur,
+// diğer kategorilerin kendi DM'i var. Puan ve saygınlık verildikten sonra kart aynı yerden yeniden çizilir.
+const dmCard = (rating) =>
+  (rating.category ?? 'destek') === 'destek'
+    ? destekUi.closeDm(rating.ticketNumber, rating.guildName, rating)
+    : ui.ratingRequestDm(rating);
+
 // DM'deki puan butonu: yorum formunu açar
 async function handleRateButton(interaction) {
   const [, id, score] = interaction.customId.split(':');
@@ -135,11 +142,7 @@ async function handleRateSubmit(interaction) {
   });
 
   // DM'deki mesaj teşekkür haline gelir, yıldız butonları kalkar
-  const dm =
-    (rating.category ?? 'destek') === 'destek'
-      ? destekUi.closeDm(rating.ticketNumber, rating.guildName, rating)
-      : ui.ratingRequestDm(rating);
-  await interaction.update({ components: [dm] });
+  await interaction.update({ components: [dmCard(rating)] });
 
   // Kategorinin kendi kanalı ayarlıysa oraya, değilse ortak değerlendirme kanalına gider
   const guild = interaction.client.guilds.cache.get(rating.guildId);
@@ -160,6 +163,32 @@ async function handleRateSubmit(interaction) {
   // düşürüyoruz; yorum ve itiraz butonları DM'de de çalıştığı için yetkili hakkını yine kullanabilir.
   console.error('[degerlendirme] Değerlendirme kanalı kullanılamadı, kart yetkiliye DM ile gönderildi.');
   await staff?.send({ components: [ui.ratingNotice(rating, staff)], flags: core.CV2 }).catch(() => {});
+}
+
+// DM'deki "Saygınlık Ver" butonu: değerlendirilen yetkiliye +1 saygınlık. Saygınlığın kuralları, bekleme süresi ve
+// Butik hakkı saygi sisteminde; her verme oranın kayıt kanalında herkese açık duyurulur. Yetkiliye ayrıca DM gider.
+async function handleRepButton(interaction) {
+  const id = interaction.customId.slice(ui.IDS.rep.length + 1);
+  const rating = store.getRating(id);
+  if (!rating) return replyError(interaction, 'Bu değerlendirme artık geçerli değil.');
+  if (interaction.user.id !== rating.userId) return replyError(interaction, 'Bu değerlendirmeyi sadece kendisine gönderilen kişi yapabilir.');
+  if (rating.repAt) return replyError(interaction, 'Bu yetkiliye zaten saygınlık verdin.');
+
+  const target = await interaction.client.users.fetch(rating.staffId).catch(() => null);
+  if (!target) return replyError(interaction, 'Yetkiliye ulaşılamadı.', 'Birkaç dakika sonra yeniden dene.');
+
+  // Buton kilidi verme denenmeden önce verilir, iki kez basıldığında ikinci tıklama kilitli butonda takılır.
+  // Saygınlık verilemezse (bekleme süresi) kilit geri alınır; buton boşuna söner.
+  store.updateRating(id, { repAt: Date.now() });
+  const result = await saygi.give(interaction.client, interaction.user.id, target, { source: ui.refText(rating), notifyDm: true });
+  if (!result.ok) {
+    store.updateRating(id, { repAt: null });
+    const { message, hint } = saygi.rejection(result);
+    return replyError(interaction, message, hint);
+  }
+
+  // Kart, butonu "Saygınlık Verildi" halinde ve kilitli olarak yeniden çizilir
+  return interaction.update({ components: [dmCard(rating)] });
 }
 
 // Değerlendirme kanalındaki "Yorum Ekle" butonu: sadece değerlendirilen yetkili, bir kez kullanabilir
@@ -369,6 +398,7 @@ module.exports = {
   prefixed: [
     [ui.IDS.rate, handleRateButton],
     [ui.IDS.rateModal, handleRateSubmit],
+    [ui.IDS.rep, handleRepButton],
     [ui.IDS.reply, handleReplyButton],
     [ui.IDS.replyModal, handleReplySubmit],
     [ui.IDS.report, handleReportButton],
