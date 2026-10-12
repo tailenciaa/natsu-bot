@@ -7,8 +7,11 @@ Sadece geliştirme içindir; `src` altına hiçbir şey yazmaz. Çıktılar `too
 
 - `node tools/preview/build.js [sistem ...]` : `out/index.html` (tek dosya, tarayıcıda aç) ve `out/<sistem>.txt` üretir.
   Sayfada sol gezinti, lint rozetleri, masaüstü 520px / mobil 360px anahtarı ve "metin dökümü" bulunur.
-- `node tools/preview/check.js [sistem ...] [--verbose]` : lint, handler kapsamı, komut denetimi ve özet tablo.
+- `node tools/preview/check.js [sistem ...] [--verbose]` : lint, handler kapsamı, komut denetimi, görev ölçüm eşleşmesi ve özet tablo.
   Hata varsa çıkış kodu 1 olur; `--verbose` uyarıları da yazar.
+  Görev denetimi şunu korur: `gorev/config.js`'teki her `olcum` adı `olcum.js`'in `OLCUMLER` tablosunda olmalı
+  (yanlış ad sessizce 0 döndürdüğü için görev hiç ilerlemez), `goruldu:` ölçümleri ise `IZLENEN`'de duran bir
+  eyleme bağlı olmalı. Ters yönde de bakılır: izlenen bir eylemin ne `OLCUMLER` karşılığı ne de görev satırı yoksa uyarı.
 
 ## Dosyalar
 
