@@ -19,7 +19,7 @@ module.exports = {
     // Ekip rolü: girilirse her kalıcı odaya bu rolün erişimi de verilir, yani ekip üyeleri tüm odaları görür. null: kapalı.
     team: null,
     // Oda sahibi rolü: odası onaylanan üyeye verilir, odası kapatıldığında ya da sahipliği devredildiğinde geri alınır.
-    // Bu rol kuralın gözüdür; /kalici-oda odam komutu yine de sahipliğe bakar, yani rol verilemezse komut çalışmaya devam eder.
+    // Bu rol kuralın gözüdür; /kalici-oda komutu yine de sahipliğe bakar, yani rol verilemezse komut çalışmaya devam eder.
     owner: '1558768699530281055',
   },
 
@@ -57,7 +57,7 @@ module.exports = {
 
   // Panelde "Kurallar" başlığı altında gösterilen satırlar
   rules: [
-    'Oda **sana ait**: ismini, kişi limitini ve üyelerini **/kalici-oda odam** komutuyla kendin yönetirsin.',
+    'Oda **sana ait**: ismini, kişi limitini ve üyelerini **/kalici-oda** komutuyla kendin yönetirsin.',
     'Oda **kalıcıdır**: içinde kimse olmasa bile kapanmaz; ay sonu şartını karşılamayan oda ise silinir.',
     'Sunucu kuralları odada da geçerlidir; odada olanlardan **oda sahibi** sorumludur.',
   ],

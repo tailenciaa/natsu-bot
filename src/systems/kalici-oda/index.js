@@ -706,16 +706,6 @@ function startActivityChecks(client) {
   run();
 }
 
-// ── Yönetici komutları ─────────────────────────────────────────────────────────
-
-// /kalici-oda kapat ve devret için oda numarasından kayıt; bulunamazsa null
-function roomByNumber(interaction) {
-  const no = interaction.options.getInteger('no', true);
-  const room = store.roomsOf(interaction.guildId).find((r) => r.no === no);
-  if (!room) replyError(interaction, 'Bu numarada bir kalıcı oda bulunamadı.', 'Odaları **/kalici-oda liste** ile görebilirsin.');
-  return room ?? null;
-}
-
 // Odayı kapatır: kaydı ve sahip rolünü kaldırır, kalan kanalları siler, sahibine haber verir, duyurur ve loglar.
 // dm verilirse sahibine genel uyarı yerine o kart gider (ay sonu denetiminde rakamlı kart kullanılır).
 async function closeRoom(guild, room, reason, dm) {
@@ -748,62 +738,113 @@ async function closeRoom(guild, room, reason, dm) {
     .catch(() => {});
 }
 
-async function handleList(interaction) {
+// ── Yönetici oda sayfası ──────────────────────────────────────────────────────
+// Oda listeleme, kapatma ve devir komut değil başvuru panelindeki düğmenin açtığı sayfadır: yönetici oda numarası
+// yazmaz, odayı menüden seçer. Düğme kalıcı panelde herkese görünür, yetki her işlemde ayrıca denetlenir ve sayfa
+// gizli açılır (SABİT PANEL KURALI: kalıcı panelin buton cevabı kanalda birikmez).
+
+const manageError = (interaction) => {
+  if (isStaff(interaction, config.roles.reviewer)) return null;
+  return config.roles.reviewer
+    ? `Oda yönetimini yalnızca <@&${config.roles.reviewer}> rolündekiler ve yöneticiler kullanabilir.`
+    : 'Oda yönetimini yalnızca yöneticiler kullanabilir.'
+  ;
+};
+
+// Oda numarasından kayıt: menü seçenekleri ve düğme ID'leri odayı numarası üzerinden taşır
+function adminRoom(interaction, raw) {
+  const room = store.roomsOf(interaction.guildId).find((r) => r.no === Number(raw));
+  if (!room) replyError(interaction, 'Bu oda artık yok.', 'Oda kapatılmış olabilir; paneldeki **Odaları Yönet** düğmesiyle listeyi yeniden aç.');
+  return room ?? null;
+}
+
+// Menü seçeneklerinde sahip etiketi çizilmez (etiketler menülerde işlemez), o yüzden görünen adlar toplanır
+async function roomPage(interaction) {
   const rooms = store.roomsOf(interaction.guildId).sort((a, b) => a.no - b.no);
-  return respond(interaction, ui.roomList(rooms, store.pendingApplications(interaction.guildId).length));
+  const fetched = await interaction.guild.members.fetch({ user: rooms.map((r) => r.ownerId) }).catch(() => null);
+  const owners = new Map(rooms.map((r) => [r.ownerId, fetched?.get(r.ownerId)?.displayName ?? 'Üye']));
+  return ui.roomAdmin(rooms, owners, store.pendingApplications(interaction.guildId).length);
 }
 
-async function handleClose(interaction) {
-  const room = roomByNumber(interaction);
-  if (!room) return;
-  await interaction.deferReply({ flags: core.CV2 });
-  await closeRoom(interaction.guild, room, interaction.options.getString('sebep'));
-  return respond(interaction, core.alert(`Kalıcı oda #${core.pad(room.no)} kapatıldı.`, 'Kanallar silindi, sahibine haber verildi.', 'success'));
+async function handleManage(interaction) {
+  const error = manageError(interaction);
+  if (error) return replyError(interaction, error);
+  return respond(interaction, await roomPage(interaction), { ephemeral: true });
 }
 
-// Sahibi sunucudan ayrılmış odaları yönetici başka bir üyeye teslim eder
-async function handleAssign(interaction) {
-  const room = roomByNumber(interaction);
-  if (!room) return;
-  const target = interaction.options.getMember('kullanici');
-  if (!target) return replyError(interaction, 'Üye sunucuda değil.', 'Sunucudaki bir üyeyi seç.');
-  if (target.user.id === room.ownerId) return replyError(interaction, 'Oda zaten bu üyenin.');
-  if (target.user.bot) return replyError(interaction, 'Oda sahipliği bir bota verilemez.', 'Bir üye seç.');
+async function handleRoomList(interaction) {
+  const error = manageError(interaction);
+  if (error) return replyError(interaction, error);
+  return interaction.update({ components: [await roomPage(interaction)], allowedMentions: { parse: [] } });
+}
 
-  await interaction.deferReply({ flags: core.CV2 });
+async function handleRoomPick(interaction) {
+  const error = manageError(interaction);
+  if (error) return replyError(interaction, error);
+  const room = adminRoom(interaction, interaction.values[0]);
+  if (!room) return;
+  return interaction.update({ components: [ui.roomAdminCard(room, statusOf(room))], allowedMentions: { parse: [] } });
+}
+
+// Kapatma formu açılır; sebep sahibine aynen yazılır
+async function handleCloseButton(interaction) {
+  const error = manageError(interaction);
+  if (error) return replyError(interaction, error);
+  const room = adminRoom(interaction, interaction.customId.split(':')[1]);
+  if (!room) return;
+  return interaction.showModal(ui.closeModal(room));
+}
+
+// Form eski mesajı güncelleyemez: sonuç, gizli ve tek kullanımlık bir mesaj olarak açılır
+async function handleCloseSubmit(interaction) {
+  const error = manageError(interaction);
+  if (error) return replyError(interaction, error);
+  const room = adminRoom(interaction, interaction.customId.split(':')[1]);
+  if (!room) return;
+
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  await closeRoom(interaction.guild, room, interaction.fields.getTextInputValue(ui.IDS.closeInput)?.trim() || null);
+  return respond(interaction, core.alert(`Kalıcı oda #${core.pad(room.no)} kapatıldı.`, 'Kanallar silindi, sahibine haber verildi.', 'success'), { ephemeral: true });
+}
+
+// Sahiplik devri: üye menüden seçilir, seçim anında işlenir. Eski sahip sunucuda ise odada sıradan üye olarak kalır.
+async function handleAdminTransfer(interaction) {
+  const error = manageError(interaction);
+  if (error) return replyError(interaction, error);
+  const room = adminRoom(interaction, interaction.customId.split(':')[1]);
+  if (!room) return;
+  const targetId = interaction.values[0];
+  if (targetId === room.ownerId) return replyError(interaction, 'Oda zaten bu üyenin.');
+
+  await interaction.deferUpdate();
+  const target = await interaction.guild.members.fetch(targetId).catch(() => null);
+  if (!target || target.user.bot) return replyError(interaction, 'Üye bulunamadı.', 'Sunucuda olan bir üye seç.');
+
   const previousId = room.ownerId;
   const previous = await interaction.guild.members.fetch(previousId).catch(() => null);
-  await setAccess(interaction.guild, room, target.id, true);
-  // Eski sahip hâlâ sunucudaysa odada sıradan üye olarak kalmaya devam eder
+  await setAccess(interaction.guild, room, targetId, true);
   const updated = store.updateRoom(room.id, {
-    ownerId: target.id,
-    members: [...room.members.filter((id) => id !== target.id && id !== previousId), ...(previous ? [previousId] : [])].slice(0, config.maxExtraMembers),
+    ownerId: targetId,
+    members: [...room.members.filter((id) => id !== targetId && id !== previousId), ...(previous ? [previousId] : [])].slice(0, config.maxExtraMembers),
   });
-
   await takeOwnerRole(interaction.guild, previousId);
-  await giveOwnerRole(interaction.guild, target.id);
+  await giveOwnerRole(interaction.guild, targetId);
 
   const exOwner = await interaction.client.users.fetch(previousId).catch(() => null);
   await exOwner
-    ?.send({ components: [core.alert('Kalıcı odanın sahipliği devredildi.', `<@${target.id}> artık <#${updated.voiceChannelId}> odasının sahibi.`, 'warning')], flags: core.CV2, allowedMentions: { parse: [] } })
+    ?.send({
+      components: [core.alert('Kalıcı odanın sahipliği devredildi.', `<@${targetId}> artık <#${updated.voiceChannelId}> odasının sahibi.`, 'warning')],
+      flags: core.CV2,
+      allowedMentions: { parse: [] },
+    })
     .catch(() => {});
-  const newOwner = await interaction.client.users.fetch(target.id).catch(() => null);
-  await newOwner
-    ?.send({ components: [ui.readyCard(updated)], flags: core.CV2, allowedMentions: { parse: [] } })
-    .catch(() => {});
-  return respond(interaction, core.alert(`Oda #${core.pad(updated.no)} <@${target.id}> üyesine devredildi.`, 'Yeni sahibine odası ve **/kalici-oda odam** komutu bildirildi.', 'success'));
-}
+  const newOwner = await interaction.client.users.fetch(targetId).catch(() => null);
+  await newOwner?.send({ components: [ui.readyCard(updated)], flags: core.CV2, allowedMentions: { parse: [] } }).catch(() => {});
 
-// Komut herkese açık tanımlı: `odam` kendi odasını yöneten üyeye, diğer alt komutlar yalnızca yöneticilere çalışır
-async function handleCommand(interaction) {
-  const sub = interaction.options.getSubcommand();
-  if (sub === 'odam') return handleMyRoom(interaction);
-  if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-    return replyError(interaction, 'Bu alt komutu yalnızca yöneticiler kullanabilir.', 'Kendi odan için **/kalici-oda odam** komutunu kullan.');
-  }
-  if (sub === 'liste') return handleList(interaction);
-  if (sub === 'kapat') return handleClose(interaction);
-  return handleAssign(interaction);
+  return interaction.editReply({
+    components: [ui.roomAdminCard(updated, statusOf(updated), `**Sahiplik devredildi:** <@${targetId}> yeni sahip; odasına **/kalici-oda** ile erişiyor.`)],
+    allowedMentions: { parse: [] },
+  });
 }
 
 // ── Açılış ve kanal olayları ───────────────────────────────────────────────────
@@ -882,21 +923,18 @@ module.exports = {
   commands,
   help: {
     category: ['oda', 'Odalar'],
-    access: {
-      'kalici-oda odam': 'Oda sahipleri',
-      'kalici-oda liste': 'Yöneticiler',
-      'kalici-oda kapat': 'Yöneticiler',
-      'kalici-oda devret': 'Yöneticiler',
-    },
-    // `odam` herkesin kullanabildiği bir komut değil (yalnızca odası olan üye), bu yüzden üye yardım
+    access: { 'kalici-oda': 'Oda sahipleri' },
+    // Komut herkesin kullanabildiği bir komut değil (yalnızca odası olan üye), bu yüzden üye yardım
     // menüsünde listelenmez; üyeye komutu teslim kartı ve başvuru panelindeki kurallar söylüyor.
   },
-  slash: { 'kalici-oda': handleCommand },
+  slash: { 'kalici-oda': handleMyRoom },
   buttons: {
     [ui.IDS.apply]: handleApplyButton,
     [ui.IDS.openForm]: handleOpenForm,
     [ui.IDS.limit]: handleLimitButton,
     [ui.IDS.rename]: handleRenameButton,
+    [ui.IDS.manage]: handleManage,
+    [ui.IDS.back]: handleRoomList,
   },
   modals: {
     [ui.IDS.form]: handleApplySubmit,
@@ -910,6 +948,10 @@ module.exports = {
     [ui.IDS.add, handleAddMember],
     [ui.IDS.remove, handleRemoveMember],
     [ui.IDS.transfer, handleTransfer],
+    [ui.IDS.pickRoom, handleRoomPick],
+    [ui.IDS.adminTransfer, handleAdminTransfer],
+    [ui.IDS.close, handleCloseButton],
+    [ui.IDS.closeForm, handleCloseSubmit],
   ],
   events: {
     [Events.ClientReady]: handleReady,
