@@ -79,6 +79,22 @@ module.exports = ({ mock, src }) => {
     },
     { id: 'saygi-verildi', title: 'Saygınlık verildi', where: '/saygi-ver ya da +rep', visibility: 'public', kind: 'message', build: () => ({ components: [saygi.given(users[0].id, users[1].id, 7)], ...pub }) },
     {
+      id: 'saygi-kayit',
+      title: 'Saygınlık kaydı: değerlendirmeden verilmiş',
+      where: 'Her vermenin kaydı, bot komutları kanalı',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ components: [saygi.given(users[0].id, users[1].id, 7, false, 'Destek Talebi #0025')], ...pub }),
+    },
+    {
+      id: 'saygi-dm',
+      title: 'DM: sana saygınlık verildi',
+      where: 'Değerlendirmesinden saygınlık çıkan yetkiliye',
+      visibility: 'dm',
+      kind: 'message',
+      build: () => ({ components: [saygi.givenDm(users[0].id, 7, 'Destek Talebi #0025')], ...pub }),
+    },
+    {
       id: 'saygi-haftalik',
       title: 'Haftanın saygın üyesi duyurusu',
       where: 'Her pazartesi saygı kanalı',

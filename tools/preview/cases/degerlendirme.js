@@ -95,6 +95,24 @@ module.exports = ({ mock, src }) => {
       build: () => ({ components: [istek({ id: 'basvuru-3-oryantasyon', category: 'oryantasyon', applicationNumber: 3, score: 5 })], ...noMentions }),
     },
     {
+      id: 'puan-istegi-saygi-verilmis',
+      title: 'Puanlama DM\'i: saygınlık verildikten sonra',
+      where: 'Üye saygınlık butonuna basınca buton kilitlenir, yetkiliye DM ve kayıt kanalına duyuru gider',
+      visibility: 'dm',
+      kind: 'message',
+      build: () => ({
+        components: [
+          istek({
+            id: 'partner-5',
+            category: 'partner',
+            partnerNumber: 5,
+            repAt: mock.ago(10 * mock.MIN),
+          }),
+        ],
+        ...noMentions,
+      }),
+    },
+    {
       id: 'puan-formu',
       title: 'Puan ve yorum formu',
       where: 'DM\'deki yıldıza basınca açılır',
