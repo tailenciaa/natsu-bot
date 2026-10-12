@@ -77,7 +77,7 @@ function durumOf(userId, user, at = Date.now()) {
     hapista: hirsizlik.hapista(userId, at) || 0,
     bosanmaBekleme: bosanma ? bosanma + config.bosanma.bekleme : 0,
     evlilik: evlilik
-      ? { es: evlilik.es, at: evlilik.at, gun: store.birlikteGun(userId, at), bonus: store.bonusDurumu(userId, at) }
+      ? { es: evlilik.es, at: evlilik.at, rol: evlilik.rol ?? null, gun: store.birlikteGun(userId, at), bonus: store.bonusDurumu(userId, at) }
       : null,
     giden: store.teklifGiden(userId),
     gelen: store.teklifGelen(userId),
@@ -154,12 +154,17 @@ async function teklifEt(interaction) {
 
   const no = teklifNo();
   const sonAt = Date.now() + config.teklif.pencere;
-  store.teklifKaydet({ oneren: interaction.user.id, hedef: hedef.id, no, sonAt, kanal: interaction.channelId });
+  const prova = rolProvasi({
+    ad: interaction.options.getString('rol_adi'),
+    renk: interaction.options.getString('renk'),
+    simge: interaction.options.getString('simge'),
+  }, interaction.user, hedef);
+  store.teklifKaydet({ oneren: interaction.user.id, hedef: hedef.id, no, sonAt, kanal: interaction.channelId, rol: prova });
 
   await interaction.deferReply();
   const mesaj = await respond(
     interaction,
-    ui.teklif({ oneren: interaction.user, hedef, no, sonAt }),
+    ui.teklif({ oneren: interaction.user, hedef, no, sonAt, rol: prova }),
     { allowedMentions: { users: [interaction.user.id, hedef.id] } },
   );
   if (mesaj?.id) store.teklifMesaj(no, mesaj.id);
@@ -167,29 +172,88 @@ async function teklifEt(interaction) {
 }
 
 // ── Çift rolü ─────────────────────────────────────────────────────────────────
-// Rol config'de yazılı değilse hiç dokunulmaz. Rol verilemezse evlilik yine kaydedilir: rol görünür bir ekcedir,
-// bağın kendisi değil. Bot rol yaratmaz, ID Discord'da hazır rolünki olmalıdır.
-async function rolVer(guild, userId, aciklama) {
-  if (!config.roles.evli || !guild) return false;
+// Rolün kimliği teklif anında belirlenir, kabul anında yaratılır: muhatap hangi ad ve renkle evlendiğini
+// kabul düğmesine basmadan önce kartta okur. Rol verilemezse evlilik yine kaydedilir: rol görünür bir ekcedir,
+// bağın kendisi değil.
+
+// Kullanıcının yazdığı ad rol adı olur: mention ve komut karakterleri düşer, satır sonu boşluğa döner
+const temizAd = (girdi) =>
+  String(girdi ?? '')
+    .replace(/[<>@#`|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// Tek emoji kabul edilir (ten rengi, bayrak ve birleşik simgeler dahil); anlaşılamazsa varsayılan yüzük konur
+function tekSimge(girdi) {
+  const value = String(girdi ?? '').trim();
+  if (!value) return config.rol.varsayilanEmoji;
+  const [ilk] = new Intl.Segmenter('tr', { granularity: 'grapheme' }).segment(value);
+  const ok = ilk && /\p{Extended_Pictographic}|\p{Regional_Indicator}|[0-9#*]\uFE0F?\u20E3/u.test(ilk.segment);
+  return ok ? ilk.segment : config.rol.varsayilanEmoji;
+}
+
+// Teklifin rol provası: ad, renk anahtarı ve simgeden rolün adı kurulur. Kabul edilince bu kayıt yaratılır.
+function rolProvasi({ ad, renk, simge }, oneren, hedef) {
+  const isim = temizAd(ad) || `${temizAd(oneren.displayName ?? oneren.username)} & ${temizAd(hedef.displayName ?? hedef.username)}`;
+  return { ad: `${tekSimge(simge)} ${isim}`.slice(0, config.rol.maxUzunluk), renk: config.rol.renk(renk).key };
+}
+
+// Discord hata mesajından üyeye gösterilecek kısa gerekçe
+const rolSebep = (err) => {
+  const m = String(err?.message ?? '');
+  if (/maximum number of roles|role limit/i.test(m)) return 'sunucudaki rol sayısı sınırda, yer açılınca rol kendiliğinden açılmaz';
+  if (/missing permissions|50013/i.test(m)) return 'botun rol sırası diğer rollerin altında kalmış';
+  if (/invalid form|50035/i.test(m)) return 'rol adı Discord tarafından kabul edilmedi';
+  return 'bir adım tamamlanamadı';
+};
+
+// Kabul anında çiftin rolü açılır. İzin yoksa ya da yaratılamazsa evlilik yine de kaydedilir; sebep kartta yazar
+// ki üye de yönetici de ayrıca log aramasın.
+async function ciftRolu(guild, prova, aciklama) {
+  if (!guild) return { ok: false, sebep: 'Sunucu okunamadı, çift rolü açılamadı.' };
+  if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) {
+    return { ok: false, sebep: 'Botun "Rolleri Yönet" izni kapalı; bu bir sunucu ayarı, çiftin bir hatası yok.' };
+  }
+  try {
+    const role = await guild.roles.create({
+      name: prova?.ad ?? 'Evli Çift',
+      color: config.rol.renk(prova?.renk).hex,
+      permissions: [],
+      // Çiftin nişanı listelenmez, sıralarda tek başına bir bölüm açmaz: yalnızca iki kişinin üstünde durur
+      mentionable: false,
+      hoist: false,
+      reason: aciklama,
+    });
+    return { ok: true, role };
+  } catch (err) {
+    console.error('[evlilik] Çift rolü açılamadı:', err.message);
+    return { ok: false, sebep: `Çift rolü açılamadı (${rolSebep(err)}); evlilik yine kaydedildi.` };
+  }
+}
+
+async function rolVer(guild, userId, roleId, aciklama) {
+  if (!roleId || !guild) return false;
   const member = await guild.members.fetch(userId).catch(() => null);
   if (!member) return false;
-  return member.roles.add(config.roles.evli, aciklama).then(
+  return member.roles.add(roleId, aciklama).then(
     () => true,
     (err) => {
-      console.error('[evlilik] Evli rolü verilemedi:', err.message);
+      console.error('[evlilik] Çift rolü verilemedi:', err.message);
       return false;
     },
   );
 }
 
-async function rolAl(guild, userId) {
-  if (!config.roles.evli || !guild) return false;
-  const member = await guild.members.fetch(userId).catch(() => null);
-  if (!member) return false;
-  return member.roles.remove(config.roles.evli, 'Evlilik sona erdi').then(
+// Boşanma: rol çiftin ortak nişanıydı, iki kişiyle birlikte silinir. Kalan evlilik kaydı olmadığı için sahipsiz
+// rol birikmez; silinemeyen konsola yazılır.
+async function rolSil(guild, roleId) {
+  if (!roleId || !guild) return false;
+  const role = await guild.roles.fetch(roleId).catch(() => null);
+  if (!role) return false;
+  return role.delete('Evlilik sona erdi').then(
     () => true,
     (err) => {
-      console.error('[evlilik] Evli rolü geri alınamadı:', err.message);
+      console.error('[evlilik] Çift rolü silinemedi:', err.message);
       return false;
     },
   );
@@ -225,13 +289,29 @@ async function kabul(interaction, no) {
   }
 
   const at = Date.now();
-  store.evlendir(t.oneren, t.hedef, at);
-  await rolVer(interaction.guild, t.oneren, 'Evlilik');
-  await rolVer(interaction.guild, t.hedef, 'Evlilik');
+  // Rol önce açılır, sonra evlilik yazılır: böylece rol bir teknik adımsa ve takılırsa bağın kaydı hiç eksilmez
+  const acilan = await ciftRolu(interaction.guild, t.rol, `Evlilik: ${t.oneren} + ${t.hedef}`);
+  const rolId = acilan.ok ? acilan.role.id : null;
+  store.evlendir(t.oneren, t.hedef, at, rolId);
+  if (rolId) {
+    await rolVer(interaction.guild, t.oneren, rolId, 'Evlilik');
+    await rolVer(interaction.guild, t.hedef, rolId, 'Evlilik');
+  }
 
   return interaction.update({
-    components: [ui.evlilikKarti({ oneren: t.oneren, hedef: t.hedef, user: interaction.user, roleId: config.roles.evli, at })],
-    allowedMentions: { users: [t.oneren, t.hedef] },
+    components: [
+      ui.evlilikKarti({
+        oneren: t.oneren,
+        hedef: t.hedef,
+        user: interaction.user,
+        rolId,
+        rolAdi: t.rol?.ad ?? null,
+        uyari: acilan.ok ? null : acilan.sebep,
+        at,
+      }),
+    ],
+    // Rol mention'u display için: kart rolün adını ve rengini gösterir ama iki kişilik nişana ping gitmez
+    allowedMentions: { users: [t.oneren, t.hedef], roles: [] },
   });
 }
 
