@@ -12,7 +12,11 @@
 // tarafa bizim tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını
 // ayarlayabilir. Güvenilir listeye alınan partnerin yetkilileri DM'den bir Partner Paneli alır: müsaitlik
 // durumlarını seçer (meşgulken yetkililerimiz teklif göndermez) ve istedikleri zaman kendi tarafından partnerlik
-// teklifi gönderir; teklif oto partner talebiyle aynı yoldan inceleme kanalına düşer.
+// teklifi gönderir; teklif oto partner talebiyle aynı yoldan inceleme kanalına düşer. Karttaki yetkili işlemleri:
+// **Partneri Sil** yalnızca kaydı yapana (oto talebi onaylayan yetkili, elle paylaşan üye) ve lidere, **Partneri
+// İptal Et** ile **Yasaklıya Al** sadece lidere açıktır. İptal ve yasaklama sunucunun paylaşım kanalındaki tüm
+// mesajlarını siler, güvenilir listeden düşürür ve karşı sunucunun yetkililerine DM gider. Bu yetkili işlem
+// cevapları gizli mesajdır; kanalda kalıcı iz bırakmaz.
 const { Events, InteractionContextType, SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -810,7 +814,7 @@ async function handleTrustedAction(interaction) {
     store.removeTrusted(id);
     store.deleteRenewalOffer(id); // sürmekte olan yenileme teklifi de düşer
     await refreshTrustedPanel(interaction.client, interaction.guildId);
-    return respond(interaction, core.alert('Partner güvenilir listeden çıkarıldı.', null, 'danger'));
+    return respond(interaction, core.alert('Partner güvenilir listeden çıkarıldı.', null, 'danger'), { ephemeral: true });
   }
 
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
@@ -850,12 +854,12 @@ async function handleContactAddSubmit(interaction) {
     return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
   }
 
-  await interaction.deferReply({ flags: core.CV2 });
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const newContacts = contactIds.filter((contactId) => !entry.contactIds?.includes(contactId));
   const updated = store.updateTrusted(id, { contactIds });
   await refreshTrustedPanel(interaction.client, interaction.guildId);
   for (const contactId of newContacts) await sendPartnerPanel(interaction.client, contactId, updated);
-  return respond(interaction, core.alert('Partner yetkilisi kaydedildi.', null, 'success'));
+  return respond(interaction, core.alert('Partner yetkilisi kaydedildi.', null, 'success'), { ephemeral: true });
 }
 
 // Güvenilir kayıttaki tüm partner yetkililerini çıkarır; Teklifte Bulun artık kullanılamaz (iletişim kalmadığı için)
@@ -867,7 +871,7 @@ async function handleContactRemove(interaction) {
 
   store.updateTrusted(id, { contactIds: [] });
   await refreshTrustedPanel(interaction.client, interaction.guildId);
-  return respond(interaction, core.alert('Partner yetkilileri kaldırıldı.', null, 'danger'));
+  return respond(interaction, core.alert('Partner yetkilileri kaldırıldı.', null, 'danger'), { ephemeral: true });
 }
 
 // ── Teklifte bulunma (yenileme) akışı ───────────────────────────────────────────
