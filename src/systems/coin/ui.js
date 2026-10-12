@@ -18,8 +18,10 @@ const IDS = {
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz
 const ORDER_PAGE_SIZE = 6;
 
-// Satın alınan ürün hangi raftan geldiğiyle birlikte anılır; mağazadaki sekme adlarıyla aynı sözcükler kullanılır
-const TUR_LABEL = { cerceve: 'Çerçeve', tema: 'Tema', kapak: 'Arka Plan', rozet: 'Rozet' };
+// Satın alınan ürün hangi raftan geldiğiyle birlikte anılır; mağazadaki sekme adlarıyla aynı sözcükler kullanılır.
+// Butik alımlarında ürün adı zaten ne olduğunu söylüyor (Ek Saygınlık Hakkı, Evlilik Yüzüğü), yalnızca renk
+// satırda rafıyla anılır.
+const TUR_LABEL = { cerceve: 'Çerçeve', tema: 'Tema', kapak: 'Arka Plan', rozet: 'Rozet', rol: 'Renkli Rol' };
 
 const number = (value) => Number(value).toLocaleString('tr-TR');
 const coin = (value) => chip(`${number(value)} coin`);
@@ -70,6 +72,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
   );
   const harca = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
   );
   return container
