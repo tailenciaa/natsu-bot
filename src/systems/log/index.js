@@ -45,15 +45,14 @@ async function sendPanel(client) {
   return syncLogPanel(client);
 }
 
-// ── /log kur menüsü ──────────────────────────────────────────────────────────
+// ── /log kurulum menüsü ──────────────────────────────────────────────────────
 
 const commands = [
   new SlashCommandBuilder()
     .setName('log')
-    .setDescription('Log sistemini yönetir.')
+    .setDescription('Log kurulum menüsünü açar: alt başlıkların durumunu gösterir, kurar ve sıfırlar.')
     .setContexts(InteractionContextType.Guild)
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addSubcommand((s) => s.setName('kur').setDescription('Log kurulum menüsünü açar: durumu gösterir, kurar, sıfırlar.')),
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ];
 
 // Menünün gösterdiği güncel durum: her kategorinin alt başlığı var mı, panel mesajı yerinde mi
@@ -140,7 +139,7 @@ async function handleDetail(interaction) {
 module.exports = {
   name: 'log',
   commands,
-  help: { category: ['log', 'Log'], access: { 'log kur': 'Yöneticiler' }, },
+  help: { category: ['log', 'Log'], access: { log: 'Yöneticiler' }, },
   slash: { log: handleLog },
   // Diğer sistemlerin (ör. sicil) zengin detaylı moderasyon logu göndermesi için
   // type: ceza türü (ban, mute, jail, uyari); her tür kendi log alt başlığına gider

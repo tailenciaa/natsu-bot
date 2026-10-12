@@ -4,8 +4,7 @@
 // TEK KATMAN KURALI: menü kim açarsa açsın yalnızca HERKESİN kullanabildiği komutları gösterir; o liste her sistemin
 // index.js'indeki "help.member" alanıdır. Rol, izin ya da yöneticilik gerektiren hiçbir komut (sicil, ceza, yetki,
 // log, emoji ekleme...) menüde durmaz — yetkili bu komutları panellerden ve yetkili kanalından öğrenir, üyenin
-// işine olmayan komutu üye listesinde görmek karmaşa üretir. Yöneticiye özel seçenekler (ör. /seviye'nin "test"
-// seçeneği) üye listesindeki komutun yanında da gösterilmez: bu dosyadaki HIDDEN_OPTIONS listesi onlarındır.
+// işine olmayan komutu üye listesinde görmek karmaşa üretir.
 // "help.access" erişim denetimi ve komut denetimi için durmaya devam eder; komut açıklamaları ve seçenekleri
 // komut tanımlarından otomatik alınır.
 const { InteractionContextType, SlashCommandBuilder } = require('discord.js');
@@ -38,10 +37,6 @@ const CATEGORIES = [
   ['partner', 'Partner sunucular ve ortak etkinlikler'],
 ];
 
-// Üye listesindeki komutun yanında gösterilmeyen seçenekler: yöneticiye özel seçenekler (test/önizleme) komut
-// tanımlarından otomatik alındığı için burada düşürülür.
-const HIDDEN_OPTIONS = { seviye: ['test'] };
-
 // Komutları kategorilere göre toplar; komut adı tıklanabilir olur, zorunlu seçenekler düz, isteğe bağlılar
 // [köşeli] yazılır. Yalnızca sistemlerin "help.member" listelerindeki komutlar toplanır.
 function entriesByTab(guild) {
@@ -65,9 +60,7 @@ function entriesByTab(guild) {
         if (variant.path === SELF) continue;
         // menüye yalnızca sistemin "member" listesindeki komutlar girer
         if (!member.includes(variant.path)) continue;
-        const hidden = HIDDEN_OPTIONS[command.name] ?? [];
         const options = variant.options
-          .filter((o) => !hidden.includes(o.name))
           .map((o) => `\`${o.required ? o.name : `[${o.name}]`}\``)
           .join(' ');
         const usage = `${id ? `</${variant.path}:${id}>` : `\`/${variant.path}\``} ${options}`.trim();
