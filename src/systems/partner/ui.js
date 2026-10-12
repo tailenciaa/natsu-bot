@@ -294,7 +294,7 @@ function postCard(request, trusted, banned, stats = {}) {
     .addTextDisplayComponents(
       head(
         `Partner Kaydı #${request.number}`,
-        'Üstteki mesaj bu sunucunun **kendi ilanı**; okuyup girmen yeterli. Burada yalnızca kaydın durumu, **partner sayıları** ve yetkilinin işlemleri duruyor.',
+        'Bu sunucunun **kendi ilanı** kartla birlikte ayrı bir mesajda paylaşıldı: ilanı okuyup sunucuya girmen yeterli. Burada yalnızca kaydın durumu, **partner sayıları** ve yetkilinin işlemleri duruyor.',
       ),
     )
     .addSeparatorComponents(divider())
