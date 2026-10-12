@@ -5,8 +5,8 @@ const PODIUM = ['# ', '## ', '### '];
 const PAGE_SIZE = 15;
 
 // Verme bildirimi (herkese açık): kimin kime verdiği ve hedefin yeni toplamı satırlarda; böylece kanalda
-// okuyan da saygınlığın nasıl kazanıldığını görür
-function given(giverId, targetId, newTotal) {
+// okuyan da saygınlığın nasıl kazanıldığını görür. haktan: verme Butikte alınan ek hakla yapılmışsa altta okunur.
+function given(giverId, targetId, newTotal, haktan = false) {
   return receipt({
     title: 'Saygınlık Verildi',
     sub: `<@${giverId}> bir üyeye saygınlık verdi. Saygınlık **/saygi-ver** ile ya da mesajın içine **+rep @üye** yazarak verilir; haftanın birincisi ödül rolünü alır.`,
@@ -15,6 +15,7 @@ function given(giverId, targetId, newTotal) {
       ['Verilen', chip('+1 saygınlık')],
       ['Yeni Toplam', chip(`${newTotal} saygınlık`)],
     ],
+    note: haktan ? 'Bu verme Butikten alınan ek saygınlık hakkıyla yapıldı; bekleme süresi yeniden başladı.' : undefined,
   });
 }
 

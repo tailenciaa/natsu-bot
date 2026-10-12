@@ -8,6 +8,7 @@ const { guildId } = require('../../core/config');
 const { respond, replyError, fetchTextChannel, stillMember } = require('../../core/helpers');
 const coin = require('../coin/store');
 const coinConfig = require('../coin/config');
+const butik = require('../butik/store'); // ek saygınlık hakkı Butikte satılır; bekleme takıldığında oradan yanar
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
@@ -107,13 +108,16 @@ function evaluateGive(giverId, target) {
 
   const last = store.lastGiven(giverId);
   const remaining = config.cooldownHours * 60 * 60 * 1000 - (Date.now() - last);
-  if (remaining > 0) return { ok: false, reason: 'cooldown', remaining };
+  // Butik hakkı: bekleme dolmamışsa elde duran bir ek hak yanar ve verme açılır. Hak yalnızca beklemeye takıldığı
+  // anda harcanır, süresi zaten dolmuş bir vermede boşa gitmez.
+  const haktan = remaining > 0 && butik.hakYak(giverId);
+  if (remaining > 0 && !haktan) return { ok: false, reason: 'cooldown', remaining };
 
   store.add(target.id, weekKey());
   store.setLastGiven(giverId, Date.now());
   // Saygınlık veren de ödül alır: sosyal etkileşimi büyüten taraf teşvik edilsin
   coin.add(giverId, coinConfig.awards.repGiven, 'saygınlık verdi');
-  return { ok: true, newTotal: store.allTotals()[target.id] ?? 0 };
+  return { ok: true, newTotal: store.allTotals()[target.id] ?? 0, haktan };
 }
 
 // Kalan süre cümlede açık yazılır: "3 saat 5 dakika", tam saat ya da tam dakika olunca 0'lı kısım yazılmaz
@@ -121,7 +125,10 @@ function cooldownHint(remaining) {
   const total = Math.max(1, Math.ceil(remaining / 60000));
   const hours = Math.floor(total / 60);
   const minutes = total % 60;
-  return `Tekrar saygınlık verebilmek için ${[hours ? `${hours} saat` : '', minutes ? `${minutes} dakika` : ''].filter(Boolean).join(' ')} bekle.`;
+  return (
+    `Tekrar saygınlık verebilmek için ${[hours ? `${hours} saat` : '', minutes ? `${minutes} dakika` : ''].filter(Boolean).join(' ')} bekle.` +
+    ' Beklemeden bir kez daha vermek istersen Butikteki ek saygınlık hakkını al: /bakiye > Butik.'
+  );
 }
 
 // /saygi-ver: hedefe +1 saygınlık verir
@@ -135,7 +142,7 @@ async function handleGive(interaction) {
     return replyError(interaction, 'Zaten saygınlık verdin.', cooldownHint(result.remaining));
   }
 
-  return respond(interaction, ui.given(interaction.user.id, target.id, result.newTotal), {
+  return respond(interaction, ui.given(interaction.user.id, target.id, result.newTotal, result.haktan), {
     allowedMentions: { users: [target.id] },
   });
 }
@@ -175,7 +182,7 @@ async function handleMessage(message) {
 
   await message
     .reply({
-      components: [ui.given(message.author.id, target.id, result.newTotal)],
+      components: [ui.given(message.author.id, target.id, result.newTotal, result.haktan)],
       flags: core.CV2,
       allowedMentions: { users: [target.id] },
     })
