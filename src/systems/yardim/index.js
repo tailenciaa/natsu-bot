@@ -34,6 +34,7 @@ const CATEGORIES = [
   ['hesap', 'Kartını düzenle, her gün /gunluk ile coinini topla, /gorev ile görev bitir'],
   ['oyun', '/oyun ile kumarhane ve keşif, /sokak ile suç dünyası, /öp ve /tokat ile şakalaş'],
   ['siralama', 'Mesaj, ses, yayın, saygınlık, coin ve VIP listelerinde sunucudaki sıran'],
+  ['oda', 'Sana ait kalıcı ses odası: başvuru, isim, kişi limiti ve üyeler'],
   ['partner', 'Partner sunucular ve ortak etkinlikler'],
 ];
 

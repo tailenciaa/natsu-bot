@@ -70,7 +70,7 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/ceza-kaldir`, `/ceza-sil` | Cezayı numarasıyla kaldırır ya da sicilden siler | Yetkisi olanlar |
 | `/sil sayi` | Kanalda belirtilen sayıda mesajı siler | Mesajları Yönet yetkisi olanlar |
 | `/cekilis baslat`, `bitir`, `yeniden-cek`, `iptal`, `liste` | Çekilişleri yönetir | Yöneticiler |
-| `/kalici-oda` | Kendi kalıcı odasının kontrol panelini açar: ismi, kişi limiti, üye ekleme-çıkarma ve sahiplik devri | Odası olan üyeler |
+| `/kalici-oda` | Kendi kalıcı odasının kontrol panelini açar: ismi, kişi limiti, üye ekleme-çıkarma ve sahiplik devri. Odası olmayan üyeye başvuru kapısını gösterir, bu yüzden üye yardım menüsünde durur | Herkes; panel odası olana açılır |
 | Kalıcı oda panelindeki **Odaları Yönet** düğmesi | Yöneticiler için oda listesi: bir oda seçilince kartından sahibi devredilir ya da oda kapatılır (oda numarası yazılmaz). Başvuru onayı inceleme kanalındaki kartlarda; başvuru panelden yapılır: önce üye seçme menüsü, sonra form, ID yazılmaz | Yöneticiler |
 | `/log` | Log kurulum menüsünü açar: alt başlıkların durumunu gösterir, kurar ve sıfırlar | Yöneticiler |
 
