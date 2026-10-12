@@ -391,36 +391,18 @@ const ekonomiPanel = {
     },
     {
       title: 'Anahtar, Kutu ve Sezon',
-      sub: 'Anahtarlar görevlerden, demetten ve Keşif Yolu\'ndan birikir; üçü bir kutu açar. Görevlerin ikinci ölçüsü olan sezon puanı ise ay boyunca yükselir.',
+      sub: 'Anahtarlar görevlerden, demetten ve Keşif Yolu\'ndan birikir; **üçü bir kutu** açar. Görevlerin ikinci ölçüsü olan sezon puanı ise ay boyunca yükselir, ay başında sıfırlanır.',
       blocks: [
         {
-          heading: 'Kutu nasıl açılır',
-          items: [
-            '**3 anahtar = 1 kutu**.',
-            '**`/gorev`** panosundaki **Kutu** sekmesinde **Kutu Aç** tek, **3 Kutu Aç** dokuz anahtar harcar.'
-          ]
-        },
-        {
-          heading: 'Kutudan ne çıkar',
-          items: [
-            '**120-400 coin** → **%40**',
-            '**400-900 coin** → **%22**',
-            '**1 anahtar** → **%15**',
-            '**Profil çerçevesi** → **%13**',
-            '**Sergi rozeti** → **%7**',
-            '**Profil teması** → **%3**'
-          ]
+          heading: 'Kutu',
+          text: '**`/gorev`** panosundaki **Kutu** sekmesinde **Kutu Aç** üç, **3 Kutu Aç** dokuz anahtar harcar. Kutunun **%62\'si coin** (**120-900 coin**), kalanı anahtar, profil çerçevesi, tema veya sergi rozeti. Her **5 kutuda bir kozmetik garanti**; sıradaki kozmetik zaten sendeyse kutu **600 coin** verir, anahtar boşa yanmaz.'
         },
         {
           heading: 'Sezon eşikleri',
           items: [
-            '**40 puan** → **400 coin**',
-            '**90 puan** → **5 anahtar**',
-            '**150 puan** → **1200 coin**',
-            '**220 puan** → **10 anahtar**',
-            '**300 puan** → profil çerçevesi'
+            '**40 puan** → 400 coin · **90** → 5 anahtar · **150** → 1200 coin · **220** → 10 anahtar · **300** → profil çerçevesi'
           ],
-          note: 'Her eşik **ayda bir kez** alınır ve sezon **her ayın başında sıfırlanır**. Hangi eşikte olduğunu **`/gorev`** panosunun **Sezon** sekmesi gösterir. Her **5 kutuda bir kozmetik garanti**; sıradaki kozmetik zaten sendeyse kutu **600 coin** verir, anahtar boşa yanmaz.'
+          note: 'Her eşik **ayda bir kez** alınır; hangi eşikte olduğunu **`/gorev`** panosunun **Sezon** sekmesi gösterir.'
         }
       ]
     },
