@@ -49,6 +49,7 @@ module.exports = {
     evlilik: 'Evlilik İlan Edildi',
     ret: 'Teklif Geri Çevrildi',
     sure: 'Teklif Süresi Doldu',
+    gecersiz: 'Teklif Geçersiz',
     iptal: 'Teklif Geri Çekildi',
     bosanma: 'Boşanma Gerçekleşti',
     durum: 'Evlilik Halim',

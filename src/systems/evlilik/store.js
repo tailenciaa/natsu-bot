@@ -80,7 +80,7 @@ function teklifGelen(userId) {
 const teklifByNo = (no) => Object.values(k('teklifler')).find((t) => t.no === no) ?? null;
 
 function teklifKaydet({ oneren, hedef, no, sonAt, kanal }) {
-  k('teklifler')[oneren] = { hedef, no, at: Date.now(), sonAt, kanal, mesaj: null };
+  k('teklifler')[oneren] = { oneren, hedef, no, at: Date.now(), sonAt, kanal, mesaj: null };
   save();
   return k('teklifler')[oneren];
 }
