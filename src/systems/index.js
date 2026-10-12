@@ -33,6 +33,7 @@ module.exports = [
   require('./gorev'), // /gorev: günlük ve haftalık görevler, Keşif Yolu, kutu ve sezon ödülleri (coin ve profilyle bağlı)
   require('./oyun'), // /oyun: Oyun Salonu — keşif gezileri, rulet ve şans merdiveni (coin ekonomisinin oyun katmanı)
   require('./hirsizlik'), // /sokak ve /çal: Arka Sokaklar — üye soymak, Devletin Kasası, direnme ve hapis
+  require('./eglence'), // /öp ve /tokat: şaka kartları — karşılık gelirse iki taraf da coin kazanır
   require('./aktif'),
   require('./saygi'),
   require('./vip'),
