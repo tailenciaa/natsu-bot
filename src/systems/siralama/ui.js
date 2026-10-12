@@ -24,8 +24,35 @@ const IDS = {
 };
 
 const PAGE_SIZE = 15;
-const TYPES = { mesaj: 'Mesaj Sıralaması', ses: 'Ses Sıralaması', yayin: 'Yayın Sıralaması' };
+const TYPES = {
+  mesaj: 'Mesaj Sıralaması',
+  ses: 'Ses Sıralaması',
+  yayin: 'Yayın Sıralaması',
+  saygi: 'Saygınlık Sıralaması',
+  coin: 'Coin Sıralaması',
+  vip: 'VIP Sıralaması',
+};
+// Dönem yalnızca gün gün biriken türlerde anlamlıdır. Saygınlık bir daha düşmez, coin anlık cüzdandır, VIP bir
+// tarih sırasıdır: bunlarda Genel/Haftalık/Özel Süre düğmeleri görünür kalır ama pasifleşir.
+const DONEM = new Set(['mesaj', 'ses', 'yayin']);
 const PERIODS = { genel: 'Genel', haftalik: 'Haftalık', ozel: 'Özel Süre' };
+// Başlığın altındaki tek satır, o türün neyi saydığını ve dönemin neden seçilemediğini söyler
+const ACIKLAMA = {
+  mesaj: 'mesaj sayına göre sıralanır; Genel, Haftalık ya da son X gün seçilebilir.',
+  ses: 'sesli kanallarda geçirdiğin süreye göre sıralanır; Genel, Haftalık ya da son X gün seçilebilir.',
+  yayin: 'ekran paylaşımında geçirdiğin süreye göre sıralanır; Genel, Haftalık ya da son X gün seçilebilir.',
+  saygi: 'toplam saygınlığına göre sıralanır; saygınlık hiç düşmediği için tek dönem vardır.',
+  coin: 'şu anki cüzdanına göre sıralanır; harcayan geri düştüğü için tek dönem vardır.',
+  vip: 'VIP rolünü alma sırasına göre listelenir; satırın sağındaki tarih VIP olunan gündür.',
+};
+const BOS = {
+  mesaj: 'Bu dönemde sayılan bir mesaj yok.',
+  ses: 'Bu dönemde sayılan bir ses süresi yok.',
+  yayin: 'Bu dönemde sayılan bir yayın süresi yok.',
+  saygi: 'Sunucuda henüz saygınlık kazanmış üye yok.',
+  coin: 'Cüzdanında coin olan üye yok.',
+  vip: 'VIP rolünü taşıyan üye yok.',
+};
 // Sayfa 1'deki ilk üç sıra büyük yazılır
 const PODIUM = ['# ', '## ', '### '];
 
@@ -33,11 +60,17 @@ const number = (value) => value.toLocaleString('tr-TR');
 
 function formatValue(type, value) {
   if (type === 'mesaj') return `${number(value)} mesaj`;
+  if (type === 'saygi') return `${number(value)} saygınlık`;
+  if (type === 'coin') return `${number(value)} coin`;
   const hours = Math.floor(value / 3600);
   const minutes = Math.floor((value % 3600) / 60);
   if (!hours && !minutes) return 'Bir dakikadan az';
   return hours ? `${number(hours)} saat ${minutes} dk` : `${minutes} dk`;
 }
+
+// Satırın sağ hücresi: sayılar kod biçiminde yazılır; VIP'in değeri bir tarih olduğu için Discord damgası olur
+// ve kodun içine girerse okunmaz (damga işlenmez).
+const hucre = (type, value) => (type === 'vip' ? (value ? `<t:${Math.floor(value / 1000)}:D>` : 'kayıt öncesi') : `\`${formatValue(type, value)}\``);
 
 const periodLabel = (period, days) => (period === 'ozel' ? `Son ${days} Gün` : PERIODS[period]);
 
