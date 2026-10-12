@@ -696,7 +696,8 @@ function assignedOfferDm(entry, startedBy) {
 // Atanan yetkili kabul edince aynı DM mesajı bu haline güncellenir: metni görüp onaylar, düzenler ya da iptal eder
 // Onay/Düzenleme ve İptal ayrı işlemler olduğu için farklı satırlarda
 function renewalReviewDm(entry) {
-  return new ContainerBuilder()
+  const url = inviteUrl(entry.content);
+  const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         `Sunucu ${serverLabel(entry)}`,
@@ -704,7 +705,18 @@ function renewalReviewDm(entry) {
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
+    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`));
+
+  if (url) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(text(fields(['### Davet', field('Bağlantı', chip(inviteLabel(url))), 'Onaylamadan önce sunucuyu bu bağlantıdan görebilirsin.'])))
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
+      );
+  }
+
+  return container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
