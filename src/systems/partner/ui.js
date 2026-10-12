@@ -201,7 +201,10 @@ function termsDm(acceptCustomId) {
 }
 
 // Yetkili kanalına giden onay/red kartı. decided: { sonuc, by, banned } varsa butonlar yerine sonucu gösterir
+// Metindeki davet ayrı satırda ve buton olarak gösterilir: yetkili onaylamadan önce sunucuya bakabilsin,
+// karar sonrası kart da kayıt olarak okunur kalsın
 function reviewCard(request, decided) {
+  const url = inviteUrl(request.text);
   const container = new ContainerBuilder()
     .setAccentColor(decided ? (decided.sonuc === 'onayla' ? colors.success : colors.danger) : colors.warning)
     .addTextDisplayComponents(
@@ -228,6 +231,23 @@ function reviewCard(request, decided) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(inert(request.text), 1500))}`));
 
+  if (url) {
+    container
+      .addSeparatorComponents(divider())
+      .addTextDisplayComponents(
+        text(
+          fields([
+            '### Davet',
+            field('Bağlantı', chip(inviteLabel(url))),
+            decided ? 'Karar kaydı için bağlantı burada duruyor.' : 'Onaylamadan önce sunucuyu bu bağlantıdan görebilirsin.',
+          ]),
+        ),
+      )
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
+      );
+  }
+
   if (decided) {
     const verdict =
       decided.sonuc === 'onayla'
@@ -252,16 +272,42 @@ function reviewCard(request, decided) {
       ),
     );
 }
+    const verdict =
+      decided.sonuc === 'onayla'
+        ? `<@${decided.by}> talebi **onayladı**; metin paylaşım kanalına gönderildi.`
+        : decided.banned
+          ? `<@${decided.by}> talebi **reddetti** ve sunucuyu **yasaklı listesine** aldı.`
+          : `<@${decided.by}> talebi **reddetti**.`;
+    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Karar\n${verdict}`));
+  }
 
-// Paylaşım kanalındaki standart partner kartı. trusted: zaten güvenilir listede mi, banned: gönderen yasaklı mı
-// (ikisi de buton etiketi/durumu için) — Güvenilir Listeye Al (ekleme) ve Yasaklıya Al/Partneri Sil (yönetim)
-// ayrı satırlarda. request.files: elle atılan mesajın ekleri ({ name, image }), kartla birlikte gösterilir
+  return container
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:onayla`).setLabel('Onayla').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:reddet`).setLabel('Reddet').setStyle(ButtonStyle.Danger),
+      ),
+    )
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`${IDS.startBan}:${request.serverId}`).setLabel('Yasaklıya Al').setStyle(ButtonStyle.Danger),
+      ),
+    );
+}
+
+// Paylaşım kanalındaki standart partner kartı. Üyenin tek işi ilanı okuyup sunucuya girmek: metindeki Discord
+// daveti kartın en görünür yerine butona çevrilir, yetkilinin yönetim butonları en altta ayrı bir başlıkta durur.
+// trusted: zaten güvenilir listede mi, banned: gönderen yasaklı mı (ikisi de buton etiketi/durumu için) —
+// Güvenilir Listeye Al (ekleme) ve Yasaklıya Al/Partneri Sil (yönetim) ayrı satırlarda.
+// request.files: elle atılan mesajın ekleri ({ name, image }), kartla birlikte gösterilir
 function postCard(request, trusted, banned) {
+  const url = inviteUrl(request.text);
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        `Partner \`${serverLabel(request)}\``,
-        'Partner olduğumuz sunucunun tanıtım metni bu kartta yer alıyor; ilgini çekerse sunucuya katılabilirsin. Yetkililer karttaki butonlarla partneri **güvenilir listeye alabilir** ya da yönetebilir.',
+        'Partner Sunucusu',
+        'Bu kart **partner sunucularımızdan birinin kendi tanıtımı**. İlgini çekerse **Sunucuya Katıl** butonuyla doğrudan o sunucuya girebilirsin; buton ilanın içindeki davet bağlantısını açar.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -279,12 +325,44 @@ function postCard(request, trusted, banned) {
     container.addFileComponents(new FileBuilder().setURL(`attachment://${f.name}`));
   }
 
-  return container
+  // Elle atılan ve Discord daveti içermeyen ilanda buton olmaz; üye davetin nerede olmadığını satırda görür
+  container
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['### Paylaşım', rows([['Paylaşan', `<@${request.requesterId}>`], ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`]])])),
+      text(
+        fields([
+          '### Sunucuya Katıl',
+          url ? field('Davet', chip(inviteLabel(url))) : field('Davet', 'ilanın metninde verilmedi'),
+          url
+            ? 'Butona basabilir ya da bağlantıyı kopyalayıp tarayıcıya yapıştırabilirsin.'
+            : 'Bu ilanda davet bağlantısı yok; sunucuya girmek için ilanın metnindeki bilgiyi kullanabilirsin.',
+        ]),
+      ),
+    );
+  if (url) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
+    );
+  }
+
+  container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(
+      text(
+        fields([
+          '### Paylaşım',
+          rows([
+            ['Sunucu ID', request.serverId ? chip(request.serverId) : null],
+            ['Paylaşan', `<@${request.requesterId}>`],
+            ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`],
+          ]),
+        ]),
+      ),
     )
     .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('### Yetkili İşlemleri\nBu butonlar partner yetkilileri içindir, üye olarak yalnızca **Sunucuya Katıl** butonunu kullanırsın.'));
+
+  return container
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
