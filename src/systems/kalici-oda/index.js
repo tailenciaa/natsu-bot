@@ -108,7 +108,7 @@ async function takeOwnerRole(guild, userId) {
 const commands = [
   new SlashCommandBuilder()
     .setName('kalici-oda')
-    .setDescription('Kendi kalıcı odanın kontrol panelini açar: isim, kişi limiti, üye ve devir işlemleri.')
+    .setDescription('Kendi odasının panelini açar: isim, limit, üye, devir. Yöneticide oda yönetimi de buradan açılır.')
     .setContexts(InteractionContextType.Guild),
 ];
 
@@ -769,7 +769,7 @@ const manageError = (interaction) => {
 // Oda numarasından kayıt: menü seçenekleri ve düğme ID'leri odayı numarası üzerinden taşır
 function adminRoom(interaction, raw) {
   const room = store.roomsOf(interaction.guildId).find((r) => r.no === Number(raw));
-  if (!room) replyError(interaction, 'Bu oda artık yok.', 'Oda kapatılmış olabilir; paneldeki **Odaları Yönet** düğmesiyle listeyi yeniden aç.');
+  if (!room) replyError(interaction, 'Bu oda artık yok.', 'Oda kapatılmış olabilir; **/kalici-oda** ile listeyi yeniden aç.');
   return room ?? null;
 }
 
@@ -939,9 +939,9 @@ module.exports = {
   help: {
     category: ['oda', 'Odalar'],
     // Üye yardım menüsünde listelenir: odası olmayan da komutu çalıştırır ve başvuru kapısına yönlendirilir,
-    // böylece sistem yardım menüsünden keşfedilir. Panelin kendisi yalnızca oda sahibinde açılır.
+    // böylece sistem yardım menüsünden keşfedilir. Panel yalnızca oda sahibinde, oda listesi yalnızca yöneticide açılır.
     member: ['kalici-oda'],
-    access: { 'kalici-oda': 'Herkes; kontrol paneli odası olan için açılır' },
+    access: { 'kalici-oda': 'Herkes; oda paneli sahibine, oda yönetimi sayfası yöneticiye açılır' },
   },
   slash: { 'kalici-oda': handleMyRoom },
   buttons: {
