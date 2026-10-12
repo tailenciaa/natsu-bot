@@ -105,6 +105,7 @@ function context({ guild, member, userId, messageCount = 0, voiceSeconds = 0, st
     karsilik: sakalas.karsilikVerdi,
     renk: butikStore.rolleri(userId).length,
     evli: Boolean(es),
+    esId: es ?? null,
     evlilikGun: es ? evlilikStore.birlikteGun(userId) : 0,
     donum: evlilikStore.bonusDurumu(userId)?.sayi ?? 0,
   };

@@ -28,6 +28,9 @@ const FEATURED = [
   { key: 'saygi', label: 'Saygınlık', note: 'Toplam aldığın saygınlık', value: (v) => (v.rep ? `${v.rep} saygınlık` : null) },
   { key: 'seri', label: 'Giriş serisi', note: 'Art arda günlük ödül', value: (v) => (v.streak ? `${v.streak} günlük seri` : null) },
   { key: 'coin', label: 'Coin bakiyesi', note: 'Harcayabileceğin coin', value: (v) => `${number(v.balance)} coin` },
+  { key: 'soygun', label: 'Başarılı soygun', note: 'Suç dünyasında bitirdiğin girişim', value: (v) => (v.soygun ? `${v.soygun} soygun` : null) },
+  { key: 'sakalas', label: 'Şakalaşma', note: 'Attığın şakalaşma kartı', value: (v) => (v.sakalas ? `${v.sakalas} şakalaşma` : null) },
+  { key: 'evlilik', label: 'Evlilik', note: 'Eşinle geçen gün', value: (v) => (v.evlilikGun ? `${v.evlilikGun} gün birlikte` : null) },
 ];
 
 const featuredOptions = FEATURED.map(({ key, label, note }) => ({ key, label, note }));
@@ -60,6 +63,20 @@ async function profileView(guild, userId) {
     earnedCoins: coinStore.earned(userId),
   };
   const ctx = rozet.context({ guild, member, userId, messageCount, voiceSeconds, streamSeconds, visits: visits.count });
+  // Yeni ekonominin sayıları rozet bağlamından gelir (rozet.js): profil hiçbir sistemin deposunu ayrıca okumaz,
+  // kartla rozet sayfası ve puan aynı ölçümü paylaşır.
+  Object.assign(stats, {
+    soygun: ctx.soygun,
+    direnis: ctx.direnis,
+    kesif: ctx.kesif,
+    sakalas: ctx.sakalas,
+    renkler: ctx.renk,
+    evlilikGun: ctx.evlilikGun,
+    donum: ctx.donum,
+  });
+  // Eşin adı kartın kapağında çizilir: evlilik kaydı iki taraflıdır, ad Discord'dan çözülür. Sunucudan ayrılmış
+  // eşin adı ulaşılamazsa kart birlikte geçen günü ad olmadan söyler.
+  const esUye = ctx.esId ? await guild.members.fetch(ctx.esId).catch(() => null) : null;
   const kazanilan = rozet.earned(ctx);
   // Satın alınan sergi rozetleri başa yazılır: kartta iki satır yer olduğu için kazanılan rozetlerin arasında kaybolmasınlar
   const badges = [...kozmetik.badgesOf(custom.ownedBadges), ...kazanilan];
@@ -85,6 +102,8 @@ async function profileView(guild, userId) {
     visits: visits.count,
     coins: stats.balance,
     punishments: { total: cezalar.length, active: cezalar.filter((p) => p.status === 'active').length },
+    // Kartın kapağında kalp simgeli etiket olarak çizilir; evlilik yoksa alan null kalır ve etiket hiç doğmaz
+    evlilik: ctx.evli ? { es: esUye?.displayName ?? esUye?.user?.username ?? null, gun: ctx.evlilikGun } : null,
     ownedCount: store.ownedCount(userId),
     frame: kozmetik.frameOf(custom.frame),
     score,
