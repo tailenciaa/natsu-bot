@@ -47,6 +47,18 @@ module.exports = ({ mock, src }) => {
     );
   const long = 'Çok uzun bir partner metni. '.repeat(120);
 
+  // Kartın altındaki sayılar canlı sayılır (store.partnerStats); önizlemede gerçekçi bir anlık görüntü kullanılır
+  const stats = (o = {}) => ({
+    gun: { onay: 2, talep: 5, ret: 1 },
+    hafta: { onay: 9, talep: 21, ret: 4 },
+    ay: { onay: 27, talep: 63, ret: 11 },
+    toplam: 112,
+    guvenilir: 48,
+    yasakli: 6,
+    sira: 112,
+    ...o,
+  });
+
   // Güvenilir partnerler paneli kartı: index.js'teki (trustedPanelView) gibi çizilir ve mesajın ekine konur
   const panelKart = (id, title, entries, page = 0) => ({
     id,
@@ -78,12 +90,16 @@ module.exports = ({ mock, src }) => {
     { id: 'yasak-kayit', title: 'Yasaklı kanalı: sunucu yasaklandı', where: 'Yasaklı partnerler kanalı', visibility: 'log', kind: 'message', build: () => ({ components: [ui.serverBannedLog('123456789012345678', 'Troll talep, kurallarımıza aykırı içerik.', staff.id)], ...noMentions }) },
     { id: 'yasak-dm', title: 'DM: sunucun yasaklı', where: 'Yasaklı sunucudan talep gelince', visibility: 'dm', kind: 'message', build: () => ({ components: [ui.serverBannedDm('Troll talep, kurallarımıza aykırı içerik.')] }) },
 
-    { id: 'paylasim', title: 'Paylaşım kartı', where: 'Paylaşım kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved', decidedAt: Date.now() }), null, false)], ...noMentions }) },
-    { id: 'paylasim-guvenilir', title: 'Paylaşım kartı (güvenilir listede)', where: 'Paylaşım kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved' }), entry(), false)], ...noMentions }) },
-    { id: 'paylasim-yasakli', title: 'Paylaşım kartı (gönderen yasaklı)', where: 'Paylaşım kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved' }), null, true)], ...noMentions }) },
-    { id: 'paylasim-elle-ek', title: 'Paylaşım kartı (elle atılan, ekli)', where: 'Paylaşım kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ serverId: null, source: 'manuel', files: [{ name: '1-afis.png', image: true }, { name: '2-liste.txt', image: false }] }), null, false)], files: [mock.pngFile('1-afis.png'), mock.file('2-liste.txt', 'ornek')], ...noMentions }) },
-    { id: 'paylasim-davetsiz', title: 'Paylaşım kartı (davet bağlantısı yok)', where: 'Paylaşım kanalı, elle atılan link içermeyen metin', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved', serverId: null, source: 'manuel', text: 'Akşamları birlikte film izlediğimiz, sesli sohbeti hiç sönmeyen samimi bir topluluğuz. Ayrıntıları yetkilimizden alabilirsin.' }), null, false)], ...noMentions }) },
-    { id: 'paylasim-uzun', title: 'Paylaşım kartı (çok uzun metin)', where: 'Paylaşım kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ text: long.repeat(2), serverId: null }), null, false)], ...noMentions }) },
+    // Paylaşım kanalı iki mesajdan oluşur: üstte düz ilan (davet önizlemesi ve ekler Discord'da burada görünür),
+    // altta CV2 kart (kayıt bilgisi + partner sayıları + butonlar)
+    { id: 'ilan', title: 'Paylaşım: partner ilanı (düz mesaj)', where: 'Paylaşım kanalı, kartın üstü', visibility: 'public', kind: 'message', build: () => ({ content: ui.postContent(request({ status: 'approved', decidedAt: Date.now() })), ...noMentions }) },
+    { id: 'ilan-ek', title: 'Paylaşım: partner ilanı (elle atılan, ekli)', where: 'Paylaşım kanalı, kartın üstü', visibility: 'public', kind: 'message', build: () => ({ content: ui.postContent(request({ status: 'approved', source: 'manuel', serverId: null })), files: [mock.pngFile('1-afis.png'), mock.file('2-liste.txt', 'ornek')], ...noMentions }) },
+    { id: 'ilan-uzun', title: 'Paylaşım: partner ilanı (çok uzun metin)', where: 'Paylaşım kanalı, kartın üstü', visibility: 'public', kind: 'message', build: () => ({ content: ui.postContent(request({ status: 'approved', text: long.repeat(2) })), ...noMentions }) },
+    { id: 'paylasim', title: 'Paylaşım kartı', where: 'Paylaşım kanalı, ilanın altı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved', decidedAt: Date.now() }), null, false, stats())], ...noMentions }) },
+    { id: 'paylasim-guvenilir', title: 'Paylaşım kartı (güvenilir listede)', where: 'Paylaşım kanalı, ilanın altı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved' }), entry(), false, stats())], ...noMentions }) },
+    { id: 'paylasim-yasakli', title: 'Paylaşım kartı (gönderen yasaklı)', where: 'Paylaşım kanalı, ilanın altı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved' }), null, true, stats())], ...noMentions }) },
+    { id: 'paylasim-davetsiz', title: 'Paylaşım kartı (davet bağlantısı yok)', where: 'Paylaşım kanalı, elle atılan link içermeyen metin', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ status: 'approved', serverId: null, source: 'manuel', text: 'Akşamları birlikte film izlediğimiz, sesli sohbeti hiç sönmeyen samimi bir topluluğuz. Ayrıntıları yetkilimizden alabilirsin.' }), null, false, stats({ sira: null }))], ...noMentions }) },
+    { id: 'paylasim-ilk', title: 'Paylaşım kartı (sunucunun ilk partneri)', where: 'Paylaşım kanalı', visibility: 'public', kind: 'message', build: () => ({ components: [ui.postCard(request({ number: 1, status: 'approved' }), null, false, stats({ gun: { onay: 1, talep: 1, ret: 0 }, hafta: { onay: 1, talep: 1, ret: 0 }, ay: { onay: 1, talep: 1, ret: 0 }, toplam: 1, guvenilir: 1, yasakli: 0, sira: 1 }))], ...noMentions }) },
     { id: 'form-guvenilir-ekle', title: 'Form: güvenilir listeye al (elle paylaşım)', where: 'Paylaşım kartında Güvenilir Listeye Al', visibility: 'ephemeral', kind: 'modal', build: () => ui.trustedAddModal('1-7', '123456789') },
 
     { id: 'liste-bos', title: '/guvenilir-partnerler (boş)', where: 'Komut', visibility: 'public', kind: 'message', build: () => ({ components: [ui.trustedList([])], ...noMentions }) },
