@@ -86,7 +86,6 @@ module.exports = ({ mock, ui, src }) => {
     hedef: gelen.uid,
     user: giden.user,
     rolId: ciftRolId,
-    rolAdi: prova.ad,
   });
   // Rol açılamamışsa sebep kartta yazar: evlilik kaydı yine de durur
   const evlilikKarti = p.evlilikKarti({
@@ -94,7 +93,6 @@ module.exports = ({ mock, ui, src }) => {
     hedef: gelen.uid,
     user: giden.user,
     rolId: null,
-    rolAdi: prova.ad,
     uyari: 'Botun "Rolleri Yönet" izni kapalı; bu bir sunucu ayarı, çiftin bir hatası yok.',
   });
 
