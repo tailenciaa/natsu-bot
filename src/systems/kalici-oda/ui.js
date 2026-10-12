@@ -426,7 +426,7 @@ function roomAdmin(rooms, owners = new Map(), pendingCount = 0) {
 
   const container = page({
     title: 'Kalıcı Odalar',
-    sub: 'Aşağıdaki menüden bir oda seç; sahiplik devri ve kapatma o odanın kartından yapılır, oda numarası yazman gerekmez. Bekleyen başvurular inceleme kanalındaki kartlarda kararını bekler.',
+    sub: 'Bir oda seç; sahiplik devri ve kapatma o odanın kartından yapılır, oda numarası yazman gerekmez. Bekleyen başvurular inceleme kanalındaki kartlarda kararını bekler.',
     accent: colors.warning,
     blocks: [
       rooms.length ? rooms.map(line).join('\n\n') : '**Henüz kalıcı oda yok.**\nOnaylanan her başvuru burada listelenir.',

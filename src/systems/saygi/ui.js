@@ -1,8 +1,6 @@
-// Saygınlık mesajları: verme bildirimi, tüm zamanların tablosu ve haftalık kazanan duyurusu (ödül bölümüyle birlikte)
+// Saygınlık mesajları: verme bildirimi ve haftalık kazanan duyurusu (ödül bölümüyle birlikte).
+// Tüm zamanların tablosu burada değil /siralama'nın saygınlık türünde çizilir.
 const { receipt, rows, chip, page } = require('../../core/ui');
-
-const PODIUM = ['# ', '## ', '### '];
-const PAGE_SIZE = 15;
 
 // Verme bildirimi (herkese açık): kimin kime verdiği ve hedefin yeni toplamı satırlarda; böylece kanalda
 // okuyan da saygınlığın nasıl kazanıldığını görür. haktan: verme Butikte alınan ek hakla yapılmışsa altta okunur.
@@ -16,19 +14,6 @@ function given(giverId, targetId, newTotal, haktan = false) {
       ['Yeni Toplam', chip(`${newTotal} saygınlık`)],
     ],
     note: haktan ? 'Bu verme Butikten alınan ek saygınlık hakkıyla yapıldı; bekleme süresi yeniden başladı.' : undefined,
-  });
-}
-
-// ranking: [{ userId, value }] büyükten küçüğe sıralı, tüm zamanlar toplamı
-function table(guild, ranking) {
-  const lines = ranking
-    .slice(0, PAGE_SIZE)
-    .map(({ userId, value }, i) => `${i < 3 ? PODIUM[i] : ''}${i + 1}. <@${userId}> » \`${value} saygınlık\``);
-  return page({
-    title: 'Saygınlık Tablosu',
-    sub: 'Sunucuda bugüne kadar en çok saygınlık kazanan üyeleri tüm zamanların toplamına göre sıraladık; sen de `/saygi-ver` ile ya da mesajına `+rep @üye` yazarak +1 saygınlık verebilirsin.',
-    thumbnail: guild.iconURL({ size: 256 }),
-    blocks: [lines.length ? lines.join('\n') : '**Henüz kayıt yok.**\nİlk saygınlığı sen ver.'],
   });
 }
 
@@ -52,4 +37,4 @@ function weeklyAnnounce(guild, results, roleId) {
   });
 }
 
-module.exports = { given, table, weeklyAnnounce };
+module.exports = { given, weeklyAnnounce };
