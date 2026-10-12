@@ -406,7 +406,7 @@ async function handleDecision(interaction) {
 }
 
 // ── Oda kontrol paneli ─────────────────────────────────────────────────────────
-// Panel odanın kanalında değil, /kalici-oda odam komutunda durur. Oda bu yüzden kanaldan değil
+// Panel odanın kanalında değil, /kalici-oda komutunda durur. Oda bu yüzden kanaldan değil
 // paneli kullanan kişinin sahipliğinden bulunur: devredilen ya da kapanan odanın eski paneli işlem yapamaz.
 
 const roomOf = (interaction) => store.roomsOwned(interaction.guildId, interaction.user.id)[0] ?? null;
@@ -579,7 +579,7 @@ async function handleRenameSubmit(interaction) {
   return redraw(interaction, updated);
 }
 
-// /kalici-oda odam: üyenin kendi odasının panelini komutun kullanıldığı kanalda açar.
+// /kalici-oda: üyenin kendi odasının panelini komutun kullanıldığı kanalda açar.
 // Komutla açılan sayfa kalıcı ve herkese açıktır; panel bir odanın ayarıdır, gizli tutulacak kişi kaydı değildir.
 async function handleMyRoom(interaction) {
   const room = store.roomsOwned(interaction.guildId, interaction.user.id)[0];
