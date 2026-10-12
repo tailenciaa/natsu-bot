@@ -64,7 +64,7 @@ module.exports = {
             "**`/bakiye`** — cüzdanını açar. Aynı karttaki **Görevler**, **Oyun Salonu**, **Arka Sokaklar** ve **Şakalaş** butonları para kazanmanın yollarını, **Mağaza**, **Butik** ve **Siparişlerim** butonları para harcadığın yerleri açar.",
             "**Butik** — cüzdandan açılan coin rafı: bekleme süren dolmadan bir üyeye daha saygınlık veren ek hak, evlilik teklifinde harcanan yüzük ve sunucuda adını renkli yazan özel roller.",
             "**`/evlilik`** — butikten aldığın **yüzükle** bir üyeye teklif götürürsün; teklif kanala düşer, karşı taraf **Kabul Ediyorum** ya da **Geri Çevir**'e basar. Yüzük sadece kabul edildiğinde yanar. Evli kalırsan her 7 günde bir ikinize de coin ödülü çıkar, boşanmak istersen bedeli Devletin Kasasına yazar. Evli çiftleri **`/evlilik liste`** ile görebilirsin.",
-            "**`/seviye`** — mesaj ve ses seviyeni, **`/siralama`** — haftanın en aktiflerini gösterir.",
+            "**`/seviye`** — mesaj ve ses seviyeni, **`/siralama`** — mesaj, ses, yayın, saygınlık, coin ve VIP listelerinde sıranı gösterir.",
             "**`/saygi-ver`** — beğendiğin bir üyeye günde bir saygınlık verir; haftanın en saygın üyesi seçilir."
           ],
           "note": "Nereden başlayacağını bilmiyorsan **`/gorev`** ile başla: Keşif Yolu botun bütün sistemlerini sırayla gezdiriyor."
