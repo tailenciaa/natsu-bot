@@ -31,6 +31,8 @@ const GUNLUK_HAVUZU = [
   { key: 'yayin-20', ad: '20 dakika ekran paylaş', tarif: 'Seslide ekran paylaşımı aç ve bugün 20 dakika yayında kal.', hedef: 1200, birim: 'sure', olcum: 'yayinGun', odul: { coin: 120, puan: 6 } },
   { key: 'gunluk-odul', ad: 'Günlük ödülünü topla', tarif: '/gunluk yaz; coinlerin cebine girsin ve serin uzasın.', hedef: 1, birim: 'adet', olcum: 'gunlukBugun', odul: { coin: 50, puan: 3 } },
   { key: 'rep-ver', ad: 'Birine saygınlık ver', tarif: 'Sohbette "+rep @üye" yaz ya da /saygi-ver kullan.', hedef: 1, birim: 'adet', olcum: 'repVerdiBugun', odul: { coin: 60, puan: 3 } },
+  { key: 'oyun-3-el', ad: 'Salonda 3 el oyna', tarif: '/oyun ile bugün Rulet ya da Merdiven masasında 3 el çevir.', hedef: 3, birim: 'adet', olcum: 'oyunElGun', odul: { coin: 110, puan: 5 } },
+  { key: 'sakalas-3-kart', ad: '3 şaka kartı at', tarif: '/öp ya da /tokat kullanici:@üye ile bugün üç kart at; karşılık gelirse ikiniz de kazanır.', hedef: 3, birim: 'adet', olcum: 'eglenceKartGun', odul: { coin: 90, puan: 4 } },
 ];
 
 // Haftalık görev havuzu. Anahtar ödül bu katmanda: kutu üç anahtar ister, haftada ortalama dört anahtar düşer.
@@ -58,6 +60,9 @@ const YOL = [
   { key: 'bio-yaz', ad: 'Biyografi yaz', tarif: 'Biyografi düğmesine bas, iki cümle yaz; kartın boş kalmasın.', hedef: 1, olcum: 'bioVar', odul: { coin: 120, puan: 4 } },
   { key: 'rep-ver', ad: 'Birine saygınlık ver', tarif: 'Sohbette "+rep @üye" yaz. Saygınlık hem rozet hem puan getirir.', hedef: 1, olcum: 'repVerdiHic', odul: { coin: 150, anahtar: 1, puan: 5 } },
   { key: 'seste-kal', ad: 'Seslide 10 dakika geçir', tarif: 'Bir sesli kanala gir; 10 dakika kaldığında bu adım kendiliğinden dolar.', hedef: 600, birim: 'sure', olcum: 'sesToplam', odul: { coin: 150, anahtar: 1, puan: 5 } },
+  { key: 'oyun-ilk-el', ad: 'Salonda ilk elini çevir', tarif: '/oyun yaz ve Rulet ya da Merdivenden bir el oyna; en düşük bahis 50 coin.', hedef: 1, olcum: 'oyunEl', odul: { coin: 150, anahtar: 1, puan: 5 } },
+  { key: 'sokaga-cik', ad: 'Arka Sokakları gör', tarif: '/sokak yaz. Devletin Kasası, senin suç sicilin ve içerideysen kefalet hakkın o sayfada durur.', hedef: 1, olcum: 'goruldu:sokaga-cik', odul: { coin: 120, puan: 4 } },
+  { key: 'sakalas-baslat', ad: 'Bir üyeye şaka kartı at', tarif: '/öp ya da /tokat kullanici:@üye yaz; karşılık gelirse ödül iki tarafa da yatar.', hedef: 1, olcum: 'eglenceKart', odul: { coin: 120, puan: 4 } },
   { key: 'cekilis-katil', ad: 'Bir çekilişe katıl', tarif: 'Çekiliş duyurusundaki Katıl düğmesine bas; kazananlar otomatik çekilir.', hedef: 1, olcum: 'goruldu:cekilis-katil', odul: { coin: 120, puan: 4 } },
   { key: 'destek-ac', ad: 'Bir destek talebi aç', tarif: 'Destek kanalındaki Talep Oluştur düğmesinden bir talep aç. Yetkili talebini kapattığında hizmetini puanlaman istenir.', hedef: 1, olcum: 'destekSayisi', odul: { coin: 150, puan: 5 } },
   { key: 'rozet-kazan', ad: 'İlk rozetini kazan', tarif: 'Profilindeki Rozetler sayfası hangi rozete ne kadar yaklaştığını gösterir.', hedef: 1, olcum: 'rozetSayisi', odul: { coin: 200, anahtar: 1, puan: 6 } },
