@@ -460,7 +460,7 @@ const ekonomiPanel = {
     },
     {
       title: 'Nereye Harcanır',
-      sub: 'Coin üç rafta harcanır: **profil mağazası**, **butik** ve **evlilik**. Üçüne de **`/bakiye`** cüzdanının yanındaki butonlardan girilir.',
+      sub: 'Coin üç rafta harcanır: **Mağaza · Kart Süsü**, **Butik · Yüzük & Renk** ve **evlilik**. Üçüne de **`/bakiye`** cüzdanının yanındaki aynı adlı butonlardan girilir.',
       blocks: [
         {
           heading: 'Mağaza · Kart Süsü',
