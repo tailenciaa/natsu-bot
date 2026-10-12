@@ -7,16 +7,19 @@
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, isMenuOwner, menuOwnerError } = require('../../core/helpers');
+const { respond, replyError, isMenuOwner, menuOwnerError, stillMember } = require('../../core/helpers');
 const { coin } = require('../coin/ui');
 const coinStore = require('../coin/store');
 const butik = require('../butik/store');
+const butikConfig = require('../butik/config');
 const hirsizlik = require('../hirsizlik/store');
 const { levelFromXp } = require('../seviye/level');
 const seviyeStore = require('../seviye/store');
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
+
+const DAY = 24 * 60 * 60 * 1000;
 
 const commands = [
   new SlashCommandBuilder()
@@ -36,10 +39,7 @@ const commands = [
     .addSubcommand((s) => s.setName('bosan').setDescription('Eşinden boşanırsın; bedel Devletin Kasasına yazar.')),
 ];
 
-// Yüzük tek adım, tek sayı: evliliğin şartı config'de yazılı, kartlardan hiç eksik kalmasın
-const yuzukFiyati = () => coin(butik.yuzukSay ? require('../butik/config').yuzuk.price : 0);
-
-// Teklif numarası custom_id'de taşınır; kart çözüldüğünde kayıt da kalkar
+// Teklif numarası custom_id'de taşınır; kart sonuçlanınca kayıt da kalkar
 const teklifNo = () => `${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`;
 
 // Ölçülen seviye suç dünyasıyla aynı: mesaj ya ses, büyük olanı
@@ -49,6 +49,7 @@ const seviyeOlcumu = (userId) =>
 // Sayfanın okuduğu bütün durum. Dışa açılır ki önizleme ile düğmeler aynı kapıdan geçsin.
 function durumOf(userId, user, at = Date.now()) {
   const evlilik = store.evlilikOf(userId);
+  const bosanma = store.bosanmaAni(userId);
   return {
     user,
     at,
@@ -56,7 +57,7 @@ function durumOf(userId, user, at = Date.now()) {
     yuzuk: butik.yuzukSay(userId),
     seviye: seviyeOlcumu(userId),
     hapista: hirsizlik.hapista(userId, at) || 0,
-    bosanmaBekleme: store.bosanmaAni(userId) ? store.bosanmaAni(userId) + config.bosanma.bekleme : 0,
+    bosanmaBekleme: bosanma ? bosanma + config.bosanma.bekleme : 0,
     evlilik: evlilik
       ? { es: evlilik.es, at: evlilik.at, gun: store.birlikteGun(userId, at), bonus: store.bonusDurumu(userId, at) }
       : null,
@@ -66,16 +67,26 @@ function durumOf(userId, user, at = Date.now()) {
   };
 }
 
-const durumPaneli = (interaction, feedback) => {
-  const state = durumOf(interaction.user.id, interaction.user);
-  return ui.durumPaneli(feedback ? { ...state, feedback } : state);
-};
+const durumPaneli = (interaction, feedback) => ui.durumPaneli({ ...durumOf(interaction.user.id, interaction.user), feedback });
+
+// Çiftler listesi: sunucudan ayrılanların satırı gösterilmez, yoksa tablo boş isimlerle dolar
+function listePaneli(interaction, at = Date.now()) {
+  const guild = interaction.guild;
+  const ciftler = store.ciftler().filter((c) => !guild || (stillMember(guild, c.a) && stillMember(guild, c.b)));
+  return ui.listePaneli({ user: interaction.user, at, ciftler });
+}
+
+// Sayfanın iki yolu var: düğme sayfayı yerinde yeniler, komut ertelenmiş cevabı düzenler.
+async function sayfayiGoster(interaction, feedback) {
+  const payload = { components: [durumPaneli(interaction, feedback)], allowedMentions: { parse: [] } };
+  return interaction.isMessageComponent() ? interaction.update(payload) : interaction.editReply(payload);
+}
 
 // ── Kapılar ───────────────────────────────────────────────────────────────────
 // Sıra önemli: önce mevcut evlilik, sonra cezaevi ve seviye, en son yüzük ile bekleyen teklif.
 function teklifKapisi(userId, at = Date.now()) {
   if (store.evliMi(userId)) {
-    return { ok: false, mesaj: 'Zaten evlisin.', ipucu: 'Yeni bir teklif götüremezsin; /evlilik durum ile kendi hâline bakabilirsin.' };
+    return { ok: false, mesaj: 'Zaten evlisin.', ipucu: 'Yeni teklif götüremezsin; /evlilik durum ile kendi hâline bakabilirsin.' };
   }
   const hapis = hirsizlik.hapista(userId, at);
   if (hapis) {
@@ -93,7 +104,11 @@ function teklifKapisi(userId, at = Date.now()) {
     return { ok: false, mesaj: 'Boşandıktan sonra kısa bir süre teklif götüremezsin.', ipucu: `Sıradaki teklif ${core.rel(bosanma + config.bosanma.bekleme)} içinde açılır.` };
   }
   if (!butik.yuzukSay(userId)) {
-    return { ok: false, mesaj: 'Cüzdanında yüzük yok.', ipucu: `Evliliğin tek şartı yüzük: ${yuzukFiyati()}. Almak için /bakiye > Butik.` };
+    return {
+      ok: false,
+      mesaj: 'Cüzdanında yüzük yok.',
+      ipucu: `Evliliğin tek şartı yüzük: ${coin(butikConfig.yuzuk.price)}. Almak için /bakiye > Butik.`,
+    };
   }
   return { ok: true, seviye };
 }
@@ -109,11 +124,11 @@ async function teklifEt(interaction) {
   if (hedef.id === interaction.user.id) return replyError(interaction, 'Kendine teklif götüremezsin.', 'Bir başkasını seç.');
   if (store.evliMi(hedef.id)) return replyError(interaction, 'Bu üye zaten evli.', 'Sunucudaki çiftleri /evlilik liste ile görebilirsin.');
   if (store.teklifGelen(hedef.id)) {
-    return replyError(interaction, 'Bu üye zaten bir teklifin yanıtını bekliyor.', 'Teklifi o üye kendi sayfasından ya da kartından yanıtlar.');
+    return replyError(interaction, 'Bu üye zaten bir teklifin yanıtını bekliyor.', 'Yanıtı yalnızca o üye verir; kartı kanalda duruyor.');
   }
   const ret = store.retAni(interaction.user.id, hedef.id);
   if (ret && ret + config.teklif.retBekleme > Date.now()) {
-    return replyError(interaction, 'Bu üyeye kısa süre önce teklif götürmüştün.', `Yanıt verilmezse yeniden teklif ${core.rel(ret + config.teklif.retBekleme)} içinde açılır.`);
+    return replyError(interaction, 'Bu üyeye kısa süre önce teklif götürmüştün.', `Yeni teklif ${core.rel(ret + config.teklif.retBekleme)} içinde açılır.`);
   }
 
   const hedefUye = await interaction.guild.members.fetch(hedef.id).catch(() => null);
@@ -134,7 +149,8 @@ async function teklifEt(interaction) {
 }
 
 // ── Çift rolü ─────────────────────────────────────────────────────────────────
-// Rol config'de yazılı değilse hiç dokunulmaz; verilemezse evlilik yine kaydedilir, rol kosmektik bir ekcedir.
+// Rol config'de yazılı değilse hiç dokunulmaz. Rol verilemezse evlilik yine kaydedilir: rol görünür bir ekcedir,
+// bağın kendisi değil. Bot rol yaratmaz, ID Discord'da hazır rolünki olmalıdır.
 async function rolVer(guild, userId, aciklama) {
   if (!config.roles.evli || !guild) return false;
   const member = await guild.members.fetch(userId).catch(() => null);
@@ -168,14 +184,17 @@ async function kabul(interaction, no) {
   if (!t) return replyError(interaction, 'Bu teklif zaten sonuçlanmış.', '/evlilik durum ile kendi hâline bakabilirsin.');
   if (t.sonAt <= Date.now()) {
     store.teklifSil(t.oneren);
-    return interaction.update({ components: [ui.sureKarti(t)], allowedMentions: { parse: [] } });
+    return interaction.update({
+      components: [ui.sureKarti({ oneren: t.oneren, hedef: t.hedef })],
+      allowedMentions: { users: [t.oneren, t.hedef] },
+    });
   }
   if (interaction.user.id !== t.hedef) {
     return replyError(interaction, 'Bu teklif sana uzanmadı.', 'Kabul düğmesi yalnızca muhatabın içindir.');
   }
   if (store.evliMi(t.hedef) || store.evliMi(t.oneren)) {
     store.teklifSil(t.oneren);
-    return replyError(interaction, 'Taraflardan biri zaten evli.', 'Evlilik kaydı açılmadı.');
+    return replyError(interaction, 'Taraflardan biri zaten evli.', 'Evlilik kaydı açılmadı, yüzüğün cebinde duruyor.');
   }
 
   // Yüzük burada yakılır: kabul olmadan ödeme olmaz, reddedilen ya da süresi dolan teklif yüzük kaybettirmez
@@ -216,7 +235,7 @@ async function ret(interaction, no) {
 async function iptal(interaction, no) {
   if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
   const t = store.teklifByNo(no);
-  if (!t) return interaction.update({ components: [durumPaneli(interaction, 'Bekleyen teklifin zaten sonuçlanmıştı.')], allowedMentions: { parse: [] } });
+  if (!t) return sayfayiGoster(interaction, 'Bekleyen teklifin zaten sonuçlanmıştı.');
   if (t.oneren !== interaction.user.id) {
     return replyError(interaction, 'Bu teklif senin değil.', 'Kendi sayfan için /evlilik durum yaz.');
   }
@@ -225,13 +244,14 @@ async function iptal(interaction, no) {
   const kanal = await interaction.guild?.channels.fetch(t.kanal).catch(() => null);
   if (t.mesaj && kanal?.isTextBased?.()) {
     await kanal.messages
-      .edit(t.mesaj, { components: [ui.iptalKarti({ oneren: t.oneren, hedef: t.hedef })], flags: core.CV2, allowedMentions: { parse: [] } })
+      .edit(t.mesaj, {
+        components: [ui.iptalKarti({ oneren: t.oneren, hedef: t.hedef })],
+        flags: core.CV2,
+        allowedMentions: { parse: [] },
+      })
       .catch(() => null);
   }
-  return interaction.update({
-    components: [durumPaneli(interaction, `Teklifin geri çekildi; yüzüğün cebinde kaldı. ${ui.mention(t.hedef)} yanıtlamaz.`)],
-    allowedMentions: { users: [t.hedef] },
-  });
+  return sayfayiGoster(interaction, `Teklifin geri çekildi; ${ui.mention(t.hedef)} artık beklemiyor ve yüzüğün cebinde duruyor.`);
 }
 
 // ── Yıl dönümü ────────────────────────────────────────────────────────────────
@@ -249,7 +269,7 @@ async function yilDonumu(interaction) {
   coinStore.add(interaction.user.id, config.yilDonumu.odul, 'evlilik yıl dönümü');
   const sonrasi = store.bonusAl(interaction.user.id);
 
-  await interaction.update({ components: [durumPaneli(interaction)], allowedMentions: { parse: [] } });
+  await sayfayiGoster(interaction);
   return respond(
     interaction,
     ui.yilDonumuKarti({
@@ -257,7 +277,7 @@ async function yilDonumu(interaction) {
       b: evlilik.es,
       odul: config.yilDonumu.odul,
       sayi: sonrasi?.sayi ?? 1,
-      sonrakiAt: sonrasi?.sonrakiAt ?? Date.now() + config.yilDonumu.gun * 24 * 60 * 60 * 1000,
+      sonrakiAt: sonrasi?.sonrakiAt ?? Date.now() + config.yilDonumu.gun * DAY,
       user: interaction.user,
     }),
     { followUp: true, allowedMentions: { users: [interaction.user.id, evlilik.es] } },
@@ -266,8 +286,8 @@ async function yilDonumu(interaction) {
 
 // ── Boşanma ───────────────────────────────────────────────────────────────────
 // Bedeli ödeyen taraf başlar; bekleme iki tarafa da yazılır ki evlilik dönülüp dönülüp toplandığı bir oyun olmasın.
+// Komutun içinden de düğmesinden de aynı yola yürür: slash tarafı cevap ertelenmiş gelir, mesaj yerinde yenilenir.
 async function bosan(interaction) {
-  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
   const evlilik = store.evlilikOf(interaction.user.id);
   if (!evlilik) return replyError(interaction, 'Evli değilsin.', '/evlilik durum ile kendi hâline bakabilirsin.');
   const bedel = config.bosanma.price;
@@ -284,14 +304,20 @@ async function bosan(interaction) {
   await rolAl(interaction.guild, interaction.user.id);
   await rolAl(interaction.guild, es);
 
-  await interaction.update({
-    components: [durumPaneli(interaction, `Boşandın. Bedel ${coin(bedel)} olarak kasaya yazıldı; yeni teklif ${core.rel(at + config.bosanma.bekleme)} içinde açılır.`)],
-    allowedMentions: { users: [es] },
-  });
+  await sayfayiGoster(
+    interaction,
+    `Boşandın: ${coin(bedel)} kasaya yazıldı, yeni teklif ${core.rel(at + config.bosanma.bekleme)} içinde açılır.`,
+  );
   return respond(interaction, ui.bosanmaKarti({ a: interaction.user.id, b: es, user: interaction.user, bedel, at }), {
     followUp: true,
     allowedMentions: { users: [interaction.user.id, es] },
   });
+}
+
+// Boşanma düğmesi kişinin kendi sayfasında durur; başkasının sayfasında alım yapılamaz.
+async function bosanDugmesi(interaction) {
+  if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
+  return bosan(interaction);
 }
 
 // ── Bekçi ─────────────────────────────────────────────────────────────────────
@@ -320,13 +346,17 @@ function handleReady(client) {
 }
 
 // ── Etkileşim kapısı ──────────────────────────────────────────────────────────
+// Kabul ve Ret pusulası teklifi götürenin kartında durur, yani sayfa sahibiyle ilgisi yoktur: isMenuOwner bu iki
+// düğmeye işlemez, kapı kayıttaki taraflardır.
 async function handle(interaction) {
-  if (!interaction.guild) return replyError(interaction, 'Evlilik sunucuda yürür.', 'Komutu bir sunucu içinde tekrar dene.');
+  if (!interaction.guild) return replyError(interaction, 'Evlilik sunucuda yürür.', 'Düğmeyi bir sunucu içinde tekrar dene.');
 
   const [adim, ...kuyruk] = interaction.customId.slice(ui.IDS.prefix.length + 1).split(':');
   switch (adim) {
-    case 'durum':
+    case 'durum': {
+      if (!isMenuOwner(interaction)) return menuOwnerError(interaction);
       return interaction.update({ components: [durumPaneli(interaction)], allowedMentions: { parse: [] } });
+    }
     case 'list':
       return interaction.update({ components: [listePaneli(interaction)], allowedMentions: { parse: [] } });
     case 'kabul':
@@ -338,7 +368,7 @@ async function handle(interaction) {
     case 'bonus':
       return yilDonumu(interaction);
     case 'bosan':
-      return bosan(interaction);
+      return bosanDugmesi(interaction);
     default:
       return replyError(interaction, 'Bu düğme artık kullanılamıyor.', '/evlilik ile sayfayı yeniden aç.');
   }
@@ -350,42 +380,22 @@ async function handleDurum(interaction) {
   return respond(interaction, durumPaneli(interaction));
 }
 
-// Çiftler listesi: evlilik görünür olsun ki yüzüğün ne işe yaradığı herkesin gözüne sokulsun
-function listeDurumu(interaction, at = Date.now()) {
-  const guild = interaction.guild;
-  const ciftler = store.ciftler().filter((c) => guild ? true : true);
-  const ayik = guild
-    ? ciftler.filter((c) => guild.members.cache.has(c.a) || guild.members.cache.has(c.b))
-    : ciftler;
-  return { user: interaction.user, at, ciftler: ayik };
-}
-
-function listePaneliFrom(interaction) {
-  return ui.listePaneli(listeDurumu(interaction));
-}
-
 async function handleListe(interaction) {
   await interaction.deferReply();
-  return respond(interaction, listePaneliFrom(interaction));
+  return respond(interaction, listePaneli(interaction));
+}
+
+async function handleBosan(interaction) {
+  await interaction.deferReply();
+  return bosan(interaction);
 }
 
 async function handleEvlilik(interaction) {
   const alt = interaction.options.getSubcommand();
   if (alt === 'teklif') return teklifEt(interaction);
   if (alt === 'liste') return handleListe(interaction);
-  if (alt === 'bosan') return bosanKomutu(interaction);
+  if (alt === 'bosan') return handleBosan(interaction);
   return handleDurum(interaction);
-}
-
-// Boşanma komutun içinden de yürür: sayfadaki düğmeyle aynı iş, iki yol aynı sonucu versin
-async function bosanKomutu(interaction) {
-  const evlilik = store.evlilikOf(interaction.user.id);
-  if (!evlilik) return replyError(interaction, 'Evli değilsin.', '/evlilik durum ile kendi hâline bakabilirsin.');
-  return bosan(interaction);
-}
-
-async function liste(interaction) {
-  return interaction.update({ components: [listePaneliFrom(interaction)], allowedMentions: { parse: [] } });
 }
 
 module.exports = {
@@ -400,9 +410,12 @@ module.exports = {
   prefixed: [[ui.IDS.prefix, handle]],
   events: {
     [Events.ClientReady]: handleReady,
-    [Events.GuildMemberAdd]: (member) => (member.guild.id === guildId && !member.user.bot && store.evliMi(member.id) ? rolVer(member.guild, member.id, 'Butik evli rolü') : null),
+    // Üye düşüp dönerse evli rolü de kaybolur: dönüşte bot satın alınan bağı yeniden giydirir
+    [Events.GuildMemberAdd]: (member) =>
+      member.guild.id === guildId && !member.user.bot && store.evliMi(member.id) ? rolVer(member.guild, member.id, 'Evlilik rolü geri verildi') : null,
   },
   durumPaneli,
   durumOf,
+  listePaneli,
   esOf: store.esOf,
 };
