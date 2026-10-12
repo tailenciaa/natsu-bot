@@ -11,6 +11,7 @@ const IDS = {
   quests: 'coin-gorev', // cüzdandan görev paneline geçiş: panel ayrı mesaj olur, kendi sekmeleriyle açılır
   arcade: 'coin-oyun', // cüzdandan Oyun Salonuna geçiş: sayfa ayrı mesaj olur, kendi sekmeleriyle açılır
   crime: 'coin-hirsizlik', // cüzdandan Arka Sokaklara geçiş: suç dünyası da ayrı mesaj olarak açılır
+  banter: 'coin-sakalas', // cüzdandan Şakalaşma sayfasına geçiş: eğlence kartları da ayrı mesaj olarak açılır
 };
 
 // Bir sayfada bu kadar sipariş; başlık ve buton satırları bileşen sınırına yaklaştığı için liste uzun olamaz
@@ -45,8 +46,8 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
   const container = page({
     title: 'Coin Cüzdanım',
     sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece**, **saygınlık** ve **görevlerden** birikir; ' +
-      '**keşif** ve **eğlence** de coin verir ama günlük tavanı vardır. Harcama yerleri profil mağazası, **butik** ve ' +
-      '**kumarhane**dir; kumarhanede masa uzun vadede daima kazanır.',
+      '**keşif**, **eğlence**, **suç** ve **kumarhane** de coin verir ama günlük tavanı vardır. Harcama yerleri ' +
+      'profil mağazası, **butik** ve **kumarhane**dir; kumarhanede masa uzun vadede daima kazanır.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
       `### Cüzdan Bilgileri\n**Mevcut Bakiye:** ${coin(balance)}\n${pills([
@@ -55,17 +56,25 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
         streak > 0 && ['Seri', `${streak} gün`],
       ])}`,
       readyAt > now ? `Günlük ödülün ${rel(readyAt)} içinde hazır olacak.` : 'Günlük ödülün hazır: `/gunluk` ile toplayabilirsin.',
+      '### Parayı Değerlendir\nAltındaki ilk satır **kazanma** yollarını, ikinci satır **harcama ve geçmiş**ini açar: ' +
+        'hepsi aynı cüzdanın kapıları, hiçbirinde ayrı komut yazman gerekmez.',
     ],
   });
-  return container.addSeparatorComponents(divider()).addActionRowComponents(
-    new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(IDS.quests).setLabel('Görevler').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(IDS.arcade).setLabel('Oyun Salonu').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(IDS.crime).setLabel('Arka Sokaklar').setStyle(ButtonStyle.Secondary),
-    ),
+  // İki satır: kazanma yolları üstte, harcama ve siparişler altta. Beş düğme sınırına takılmamak için bölündü.
+  const kazan = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(IDS.quests).setLabel('Görevler').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.arcade).setLabel('Oyun Salonu').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.crime).setLabel('Arka Sokaklar').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.banter).setLabel('Şakalaş').setStyle(ButtonStyle.Secondary),
   );
+  const harca = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
+  );
+  return container
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(kazan)
+    .addActionRowComponents(harca);
 }
 
 // Sipariş satırı: ürün adı, hangi raftan geldiği, fiyatı ve ne zaman alındığı

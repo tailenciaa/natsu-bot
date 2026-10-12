@@ -10,6 +10,7 @@ const seviyeStore = require('../seviye/store');
 const gorev = require('../gorev'); // Görevler düğmesi aynı paneli açar; yalnızca store'a değil, panele de bağlı tek yön
 const oyun = require('../oyun'); // Oyun Salonu düğmesi de aynı düzeni izler: sayfanın çizim fonksiyonu dışa açılır
 const hirsizlik = require('../hirsizlik'); // Arka Sokaklar düğmesi suç dünyası sayfasını açar (para burada el değiştirir)
+const eglence = require('../eglence'); // Şakalaş düğmesi eğlence sayfasını açar: sana uzanan kartlar ve sayıların
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');

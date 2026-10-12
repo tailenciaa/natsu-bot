@@ -132,15 +132,26 @@ async function handle(interaction) {
   }
 }
 
+async function handleSayfa(interaction) {
+  await interaction.deferReply();
+  return respond(interaction, panelFor(interaction));
+}
+
 module.exports = {
   name: 'eglence',
   commands,
   help: {
     category: ['oyun', 'Oyun ve Şans'],
-    member: Object.values(config.eylemler).map((e) => e.komut),
-    access: Object.fromEntries(Object.values(config.eylemler).map((e) => [e.komut, 'Herkes'])),
+    member: [config.sayfaKomut, ...Object.values(config.eylemler).map((e) => e.komut)],
+    access: Object.fromEntries(
+      [config.sayfaKomut, ...Object.values(config.eylemler).map((e) => e.komut)].map((ad) => [ad, 'Herkes']),
+    ),
   },
-  slash: Object.fromEntries(Object.entries(config.eylemler).map(([anahtar, e]) => [e.komut, (interaction) => eylem(interaction, anahtar)])),
+  slash: Object.fromEntries([
+    [config.sayfaKomut, handleSayfa],
+    ...Object.entries(config.eylemler).map(([anahtar, e]) => [e.komut, (interaction) => eylem(interaction, anahtar)]),
+  ]),
   prefixed: [[ui.IDS.prefix, handle]],
+  panelFor,
   durumOf: (userId, at = Date.now()) => store.durumOf(userId, at),
 };
