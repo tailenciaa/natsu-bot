@@ -28,6 +28,7 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 8. Bilgi komutları (yardım, seviye, profil, sıralama, saygı ve VIP listesi) ve komutla açılan sayfalar herkese açık ve kalıcıdır; hata ile kalıcı panel buton/menü cevapları sadece kullanana görünür (§6).
 9. Komut listesi minimal: butonla yapılabilen işin slash komutu yoktur. Kanal ve rol ID'leri koda sabit, hiçbir akış "şu kanala mı gitsin?" diye sormaz.
 10. Seviye atlama duyurusu (görsel kart), profil ve seviye kartları, bot durum yazısı, kurallar ve bilgilendirme içerik metinleri onaylı tasarımlardır; yalnızca açık hata ve yazım düzeltmesi yapılır. Tek istisna: bilgilendirmedeki **Botumuz Kazuki** bloğu botun kendi üstlenimini anlatır, yeni bir sistem eklendiğinde oradaki komut listesi de güncellenir.
+11. **Coin harcamak para basmaz.** Alımlar `coinStore.spend` ile düşülür ve `recordPurchase` ile üyenin sipariş defterine yazılır; `earned` asla büyümez. Ödeme sırası teslimata göre kurulur: rol gibi dışarıda gerçekleşen bir teslimatta **ön
 
 ## 3. Mesaj anatomisi
 
