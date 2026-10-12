@@ -1,13 +1,18 @@
 // Partner sistemi: talep kanalında "partner" / "dm" geçen ya da partner yetkilisi rolünü etiketleyen mesaja bot
 // yanıt olarak "oto partner yapmak ister misin?" sorar. Evet denirse sunucu ID'si ve partner metni formla alınır;
 // talep sahibine DM'den şartlar sorulur, kabul edince inceleme kanalına gider. Yetkili onaylarsa paylaşım
-// kanalına otomatik gönderilir ve talep sahibi otomatik güvenilir partnerler listesine eklenir. Paylaşım kanalına
+// kanalına otomatik gönderilir; talep sahibi, yetkili karttaki butona bastığında güvenilir partnerler listesine eklenir. Paylaşım kanalına
 // düşen her mesaj (oto onaylı ya da elle atılmış, fark etmez) bot tarafından silinip kendi standart kartıyla
 // yeniden paylaşılır; bu kanalda @everyone/@here hem kanal izniyle hem bot her zaman mention'ları kapalı
 // gönderdiği için asla gerçek bir bildirim göndermez. Güvenilir partnerler kanalındaki "Teklifte Bulun" butonu
 // bir partner yetkilisi atar; atanan yetkili kabul edip metni onaylar/düzenler/iptal eder, onaylanınca karşı
 // taraf (daha önce hiç kabul etmediyse) şartları kabul edip otomatik paylaşılır, ardından karşı tarafa bizim
-// tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını ayarlayabilir. Güvenilir listeye alınan partnerin yetkilileri DM'den bir Partner Paneli alır: müsaitlik durumlarını seçer (meşgulken yetkililerimiz teklif göndermez) ve istedikleri zaman kendi tarafından partnerlik teklifi gönderir; teklif oto partner talebiyle aynı yoldan inceleme kanalına düşer.
+// tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını ayarlayabilir. Güvenilir
+// listeye alınan partnerin yetkilileri DM'den bir Partner Paneli alır: müsaitlik durumlarını seçer (meşgulken
+// yetkililerimiz teklif göndermez) ve istedikleri zaman kendi tarafından partnerlik teklifi gönderir; teklif oto
+// partner talebiyle aynı yoldan inceleme kanalına düşer. CV2 kartlarda bağlantı önizlemesi açılmadığı için paylaşım
+// ve inceleme kartları metindeki Discord davetini okuyup **Sunucuya Katıl** butonuna çevirir; üyenin tek işi o butondur,
+// yetkilinin yönetim butonları kartın altındaki **Yetkili İşlemleri** başlığında durur.
 const { Events, InteractionContextType, SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
