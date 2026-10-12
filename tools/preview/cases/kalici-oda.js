@@ -187,6 +187,14 @@ module.exports = ({ mock, src }) => {
       },
     },
     {
+      id: 'oda-paneli-yonetici',
+      title: '/kalici-oda: yöneticinin oda paneli, oda yönetimi düğmesiyle',
+      where: 'Komutla açıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => message(k.roomPanel(room(), denetim.statusOf(room()), rosterOf(room()), true)),
+    },
+    {
       id: 'uyari-hafta',
       title: 'Haftalık şart kaçınca sahibine giden uyarı',
       where: 'Doğrudan mesaj',
@@ -214,11 +222,12 @@ module.exports = ({ mock, src }) => {
     { id: 'form-limit', title: 'Form: kişi limiti', where: 'Limiti Ayarla butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.limitModal(20) },
     { id: 'form-isim', title: 'Form: oda ismi', where: 'İsmi Değiştir butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.renameModal('Müzik Odası') },
 
-    // Yönetici tarafı: komut yok, paneldeki düğmenin açtığı sayfa var (oda numarası yazılmaz, oda menüden seçilir)
+    // Yönetici tarafı: ayrı komut yok. Odası olan yönetici listeyi oda panelindeki düğmeden gizli açar, odası
+    // olmayan yönetici /kalici-oda ile doğrudan açar (komutla açılan sayfa kalıcı ve açık). Oda numarası yazılmaz.
     {
       id: 'yonet-liste',
       title: 'Odaları Yönet: iki oda ve bekleyen başvuru',
-      where: 'Paneldeki "Odaları Yönet" düğmesi',
+      where: 'Oda panelindeki "Odaları Yönet" düğmesi',
       visibility: 'ephemeral',
       kind: 'message',
       build: () => message(k.roomAdmin([room(), second], new Map([[owner.id, 'Mehmet'], [a.id, 'Ayşe Yılmaz']]), 3)),
@@ -226,8 +235,8 @@ module.exports = ({ mock, src }) => {
     {
       id: 'yonet-liste-bos',
       title: 'Odaları Yönet: hiç oda yok',
-      where: 'Paneldeki "Odaları Yönet" düğmesi',
-      visibility: 'ephemeral',
+      where: '/kalici-oda · odası olmayan yönetici',
+      visibility: 'public',
       kind: 'message',
       build: () => message(k.roomAdmin([], new Map(), 0)),
     },
