@@ -121,10 +121,57 @@ async function publishPost(channel, request, trusted, banned, files = []) {
   if (!card && ad) await ad.delete().catch(() => {});
 
   request.adId = ad?.id ?? null;
-  // Kartın ID'si butonun geldiği mesajdan zaten biliniyor, yalnızca ilanın ID'si kayda yazılır
-  store.updateRequest(request.id, { adId: request.adId });
+  request.postId = card?.id ?? null;
+  // İki mesajın ID'si de kayda yazılır: "Partneri Sil" eşleşeni kaldırır, iptal/yasaklama ise sunucunun
+  // tüm mesajlarını sonradan bulup silebilmek için ikisini birden ister
+  store.updateRequest(request.id, { adId: request.adId, postId: request.postId });
   return { ad, card };
 }
+
+// Partnerliği sona erdirme (iptal ya da yasaklama): o sunucunun paylaşım kanalındaki TÜM mesajları (ilan + kart)
+// silinir, kayıtları "silindi"ye çekilir, sunucu güvenilir listeden ve sürmekte olan tekliften düşürülür, sonra
+// karşı sunucunun kayıtlı yetkililerine bilgi DM'i gider. Dönen sayılar arayüzde yetkiliye özet olarak gösterilir.
+async function revokePartnership(interaction, request, { kind, reason = null }) {
+  const serverId = request.serverId ?? null;
+  const requests = (serverId ? store.requestsOfServer(serverId) : [request]).filter((r) => r.guildId === interaction.guildId);
+  const trusted =
+    (serverId ? store.trustedOf(interaction.guildId).find((p) => p.serverId === serverId) : null) ??
+    store.trustedBySource(interaction.guildId, request.id);
+
+  if (trusted) {
+    store.removeTrusted(trusted.id);
+    store.deleteRenewalOffer(trusted.id);
+  }
+
+  const channel = await fetchTextChannel(interaction.guild, config.channels.posts);
+  let removed = 0;
+  for (const r of requests) {
+    const ids = [r.adId, r.postId].filter(Boolean);
+    if (!ids.length) continue;
+    for (const id of ids) {
+      // 10008 = mesaj zaten yok (elle silinmiş), onu başarı sayarız
+      const gone = channel ? await channel.messages.delete(id).then(() => true, (err) => err.code === UNKNOWN_MESSAGE) : false;
+      if (gone) removed += 1;
+    }
+    store.updateRequest(r.id, { status: 'silindi', adId: null, postId: null });
+  }
+  if (trusted) await refreshTrustedPanel(interaction.client, interaction.guildId);
+
+  const contacts = [...new Set([...(trusted?.contactIds ?? []), ...requests.map((r) => r.requesterId)].filter(Boolean))];
+  let notified = 0;
+  for (const id of contacts) {
+    const user = await interaction.client.users.fetch(id).catch(() => null);
+    const sent = await user
+      ?.send({ components: [ui.partnerRevokedDm(serverId, { kind, by: interaction.user.id, removed, reason })], flags: core.CV2 })
+      .then(() => true, () => false);
+    if (sent) notified += 1;
+  }
+  return { removed, notified };
+}
+
+// İptal/yasaklama sonrası yetkiliye verilen özet
+const revokeSummary = ({ removed, notified }) =>
+  `${removed} paylaşım mesajı silindi · ${notified} partner yetkilisine bilgi DM'i gönderildi.`;
 
 async function handlePostsChannel(message) {
   if (message.author.bot) return;
