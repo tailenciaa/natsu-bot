@@ -217,7 +217,7 @@ async function ciftRolu(guild, prova, aciklama) {
   try {
     const role = await guild.roles.create({
       name: prova?.ad ?? 'Evli Çift',
-      color: config.rol.renk(prova?.renk).hex,
+      color: config.rol.renk(prova?.renk).color,
       permissions: [],
       // Çiftin nişanı listelenmez, sıralarda tek başına bir bölüm açmaz: yalnızca iki kişinin üstünde durur
       mentionable: false,

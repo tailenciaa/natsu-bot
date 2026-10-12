@@ -54,7 +54,7 @@ function teklif({ oneren, hedef, no, sonAt, rol }) {
         `${config.notlar.yuzuk}\n${config.notlar.rol}`,
       ],
       // Kart çiftin seçtiği renkle çizilir: kabul eden eş hangi renk rolü giyeceğini provasında görür
-      accent: renk.hex,
+      accent: renk.color,
     })
     .addSeparatorComponents(core.divider())
     .addActionRowComponents(
