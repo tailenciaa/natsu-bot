@@ -605,11 +605,13 @@ function stripItems(view) {
     { label: 'Ses Seviyesi', value: String(levelFromXp(view.sesXp ?? 0)) },
     { label: 'Mesaj', value: number(view.messageCount ?? 0) },
     { label: 'Ses Süresi', value: shortDuration(view.voiceSeconds) },
-    { label: 'Yayın', value: view.streamSeconds >= 60 ? shortDuration(view.streamSeconds) : '-' },
     { label: 'Ziyaret', value: number(view.visits ?? 0) },
     { label: 'Sicil', value: sicil ? (sicil.active ? `${sicil.active} aktif` : 'Temiz') : '-' },
     { label: 'Sunucuda', value: view.joinedAt ? age(view.joinedAt) : '-' },
   ];
+  // Yayın, suç, keşif ve şakalaşma sütunları yalnızca kayıt varsa doğar: kart botun hangi köşesinin kullanıldığını
+  // gösteren bir vitrin olduğu için boş sayaç çizilmez, çizilirse şerit okunmaz hale gelir.
+  if (view.streamSeconds >= 60) items.splice(4, 0, { label: 'Yayın', value: shortDuration(view.streamSeconds) });
   if (view.soygun) items.push({ label: 'Soygun', value: number(view.soygun) });
   if (view.kesif) items.push({ label: 'Keşif', value: number(view.kesif) });
   if (view.sakalas) items.push({ label: 'Şakalaş', value: number(view.sakalas) });
