@@ -192,13 +192,25 @@ function tekSimge(girdi) {
   return ok ? ilk.segment : config.rol.varsayilanEmoji;
 }
 
+// Uzunluk kesimi simgenin ortadan bölünmemesi için grapheme ile yapılır: yarım kalan emoji Discord'da 50035 verir
+function kirp(deger, sinir) {
+  let ad = '';
+  let sayi = 0;
+  for (const { segment } of new Intl.Segmenter('tr', { granularity: 'grapheme' }).segment(deger)) {
+    if (sayi + segment.length > sinir) break;
+    ad += segment;
+    sayi += segment.length;
+  }
+  return ad;
+}
+
 // Teklifin rol provası: çiftin seçtiği ad, renk anahtarı ve simge. Ad kartlarda simgesiz yazılır (bot mesajları
 // süs simgesi taşımaz); simge yalnızca Discord'daki rolün adında ya da rol simgesi olarak durur.
 function rolProvasi({ ad, renk, simge }, oneren, hedef) {
   const isim =
     temizAd(ad) || `${temizAd(oneren.displayName ?? oneren.username)} & ${temizAd(hedef.displayName ?? hedef.username)}`;
   return {
-    ad: isim.slice(0, config.rol.maxUzunluk),
+    ad: kirp(isim, config.rol.maxUzunluk).trim() || 'Evli Çift',
     renk: config.rol.renk(renk).key,
     simge: tekSimge(simge),
   };
