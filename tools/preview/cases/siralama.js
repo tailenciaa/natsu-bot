@@ -10,7 +10,17 @@ module.exports = ({ mock, src }) => {
   const guild = mock.guild({ name: 'Kazuki Sunucusu' });
   const names = ['Mehmet', 'Ayşe', 'Can', 'Elif', 'Burak', 'Zeynep', 'Emre', 'Deniz', 'Selin', 'Kerem', 'Ece', 'Onur', 'Pınar', 'Tuna', 'Melis', 'Arda', 'Naz', 'Kaan', 'İrem', 'Baran'];
   const users = names.map((n) => mock.user({ username: n.toLocaleLowerCase('tr'), displayName: n }));
-  const ranking = (type) => users.map((u, i) => ({ userId: u.id, value: type === 'mesaj' ? 4800 - i * 213 : type === 'yayin' ? 26000 - i * 1300 : 90000 - i * 3700 }));
+  const ranking = (type) =>
+    users.map((u, i) => ({
+      userId: u.id,
+      value:
+        type === 'mesaj' ? 4800 - i * 213
+        : type === 'yayin' ? 26000 - i * 1300
+        : type === 'saygi' ? 40 - i * 2
+        : type === 'coin' ? 24000 - i * 900
+        : type === 'vip' ? Date.now() - (20 - i) * 86400000
+        : 90000 - i * 3700,
+    }));
   const role = mock.role({ name: 'Üye', color: '#57f287' });
   const view = (o) => ({ guild, viewerId: users[17].id, type: 'mesaj', period: 'genel', days: 0, roleId: '0', page: 0, ranking: ranking(o.type ?? 'mesaj'), ...o });
   const msg = (o) => ({ components: [s.leaderboard(view(o))], allowedMentions: { parse: [] } });
@@ -80,14 +90,30 @@ module.exports = ({ mock, src }) => {
     },
     { id: 'vip-verildi', title: 'VIP rolü verildi', where: '/vip-ver', visibility: 'public', kind: 'message', build: () => ({ components: [vip.given(users[0].id, users[1].id, vipConfig.roleId)], ...pub }) },
     {
-      id: 'vip-liste',
-      title: 'VIP listesi (2 sayfa)',
-      where: '/vip-siralama',
+      id: 'saygi-genel',
+      title: 'Saygınlık sıralaması: tek dönem olduğu için dönem düğmeleri pasif',
+      where,
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [vip.table(guild, users.map((u, i) => ({ userId: u.id, grantedAt: i < 18 ? Date.now() - (20 - i) * 86400000 : 0 })), 0)], ...pub }),
+      build: () => msg({ type: 'saygi' }),
     },
-    { id: 'vip-bos', title: 'VIP listesi: boş', where: '/vip-siralama', visibility: 'public', kind: 'message', build: () => ({ components: [vip.table(guild, [], 0)], ...pub }) },
+    {
+      id: 'coin-genel',
+      title: 'Coin sıralaması: üyenin şu anki cüzdanı',
+      where,
+      visibility: 'public',
+      kind: 'message',
+      build: () => msg({ type: 'coin' }),
+    },
+    {
+      id: 'vip-liste',
+      title: 'VIP sıralaması: satırın sağı VIP olunan gün, kaydı olmayan en başta',
+      where,
+      visibility: 'public',
+      kind: 'message',
+      build: () => msg({ type: 'vip', ranking: [...users.slice(0, 3).map((u, i) => ({ userId: u.id, value: 0 })), ...users.slice(3).map((u, i) => ({ userId: u.id, value: Date.now() - (17 - i) * 86400000 }))] }),
+    },
+    { id: 'vip-bos', title: 'VIP sıralaması: rolü taşıyan üye yok', where, visibility: 'public', kind: 'message', build: () => msg({ type: 'vip', ranking: [] }) },
     {
       id: 'ozel-sure-modal',
       title: 'Özel süre formu',
