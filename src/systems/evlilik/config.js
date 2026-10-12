@@ -12,17 +12,18 @@
 const DAY = 24 * 60 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
 
-// Renk paleti: komuttaki seçenek listesi buradan kurulur, elle hex yazılmaz. Seçilmeyen teklif ilk sıradakini alır.
+// Renk paleti: komuttaki seçenek listesi buradan kurulur, elle hex yazılmaz. `color` Discord'ın sayısal rengidir
+// (hem rol rengi hem kart vurgusu aynı sayıyı alır). Seçilmeyen teklif ilk sıradakini alır.
 const renkler = [
-  { key: 'gul', ad: 'Gül Kurusu', hex: '#f2789f' },
-  { key: 'pembe', ad: 'Pembe', hex: '#ff5ec4' },
-  { key: 'kizil', ad: 'Kızıl', hex: '#ed4245' },
-  { key: 'turuncu', ad: 'Turuncu', hex: '#f39c12' },
-  { key: 'altin', ad: 'Altın', hex: '#f1c40f' },
-  { key: 'yesil', ad: 'Yeşil', hex: '#52be80' },
-  { key: 'turkuaz', ad: 'Turkuaz', hex: '#1abc9c' },
-  { key: 'mavi', ad: 'Mavi', hex: '#5dade2' },
-  { key: 'mor', ad: 'Mor', hex: '#9b59b6' },
+  { key: 'gul', ad: 'Gül Kurusu', color: 0xf2789f },
+  { key: 'pembe', ad: 'Pembe', color: 0xff5ec4 },
+  { key: 'kizil', ad: 'Kızıl', color: 0xed4245 },
+  { key: 'turuncu', ad: 'Turuncu', color: 0xf39c12 },
+  { key: 'altin', ad: 'Altın', color: 0xf1c40f },
+  { key: 'yesil', ad: 'Yeşil', color: 0x52be80 },
+  { key: 'turkuaz', ad: 'Turkuaz', color: 0x1abc9c },
+  { key: 'mavi', ad: 'Mavi', color: 0x5dade2 },
+  { key: 'mor', ad: 'Mor', color: 0x9b59b6 },
 ];
 
 module.exports = {
