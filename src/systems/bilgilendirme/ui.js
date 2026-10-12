@@ -4,8 +4,6 @@ const { ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder } = requi
 const { text, divider } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 
-const TITLE = `${botName} Bilgilendirme`;
-
 // Bir bloğun metni: kalın alt başlık, açıklama, madde listesi ve küçük not
 function blockText(block) {
   const parts = [];
@@ -21,16 +19,14 @@ function blockText(block) {
 // Normal yazıyla gösterilir (küçük gri yazı değil); içerik metni onaylı tasarım olduğu için değiştirilmez.
 const titleText = (section) => `### ${section.title}\n${section.sub}`;
 
-// Her bölüm için bir container üretir; ilk container panel başlığı ve görselle başlar
-function messages() {
-  return config.sections.map((section, index) => {
+// Her bölüm için bir container üretir; ilk container panel başlığı, girişi ve varsa görselle başlar
+function messages(panel) {
+  return panel.sections.map((section, index) => {
     const container = new ContainerBuilder();
     if (index === 0) {
-      container.addTextDisplayComponents(
-        text(`${panelTitle(TITLE)}\nSunucumuz hakkında **bilmen gereken her şey** bu kanalda, sırayla oku.`),
-      );
-      if (config.banner) {
-        container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
+      container.addTextDisplayComponents(text(`${panelTitle(`${botName} ${panel.title}`)}\n${panel.intro}`));
+      if (panel.banner) {
+        container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(panel.banner)));
       }
       container.addSeparatorComponents(divider());
     }
@@ -42,4 +38,4 @@ function messages() {
   });
 }
 
-module.exports = { TITLE, messages };
+module.exports = { messages };
