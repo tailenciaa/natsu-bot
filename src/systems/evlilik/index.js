@@ -219,9 +219,12 @@ const rolSimgesi = (guild) => Boolean(guild.features?.includes?.('ROLE_ICONS'));
 // Kabul anında çiftin rolü açılır. İzin yoksa ya da yaratılamazsa evlilik yine de kaydedilir; sebep kartta yazar
 // ki üye de yönetici de ayrıca log aramasın.
 async function ciftRolu(guild, prova, aciklama) {
-  if (!guild) return { ok: false, sebep: 'Sunucu okunamadı, çift rolü açılamadı.' };
+  if (!guild) return { ok: false, sebep: 'Çift rolü açılamadı: sunucu okunamadı; evlilik yine kaydedildi.' };
   if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) {
-    return { ok: false, sebep: 'Botun "Rolleri Yönet" izni kapalı; bu bir sunucu ayarı, çiftin bir hatası yok.' };
+    return {
+      ok: false,
+      sebep: 'Çift rolü açılamadı: botun "Rolleri Yönet" izni kapalı. Evlilik kaydedildi; bu bir sunucu ayarı, çiftin hatası değil.',
+    };
   }
   const ad = prova?.ad || 'Evli Çift';
   const simge = prova?.simge ?? config.rol.varsayilanEmoji;
@@ -318,7 +321,6 @@ async function kabul(interaction, no) {
         hedef: t.hedef,
         user: interaction.user,
         rolId,
-        rolAdi: t.rol?.ad ?? null,
         uyari: acilan.ok ? null : acilan.sebep,
         at,
       }),

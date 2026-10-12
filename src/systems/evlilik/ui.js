@@ -31,10 +31,6 @@ const çift = (a, b) => `${mention(a)} ile ${mention(b)}`;
 const bosanEtiket = `Boşan · ${number(config.bosanma.price)}`;
 
 // ── Teklif kartı ──────────────────────────────────────────────────────────────
-// Çift rolünün karttaki görünümü: açılmışsa mention (adı ve rengi Discord'dan gelir), henüz açılamamışsa
-// teklifte seçilen ad düz yazılır — hiçbir kartta "rol yok" sessiz geçmez, nedeni okunur.
-const rolSatiri = ({ rolId, rolAdi }) => (rolId ? `<@&${rolId}>` : rolAdi ? core.chip(rolAdi) : null);
-
 function teklif({ oneren, hedef, no, sonAt, rol }) {
   const renk = config.rol.renk(rol?.renk);
   return core
@@ -68,9 +64,9 @@ function teklif({ oneren, hedef, no, sonAt, rol }) {
 }
 
 // ── Sonuç kartları ────────────────────────────────────────────────────────────
-// Kabul: evlilik ilanı. Bakiye yazılmaz, yakılan yüzük ve açılan çift rolü yazılır. Rol açılamamışsa sebebi
-// kartta durur: üye de yönetici de log aramasın.
-function evlilikKarti({ oneren, hedef, user, rolId, rolAdi = null, uyari = null, at = Date.now() }) {
+// Kabul: evlilik ilanı. Bakiye yazılmaz, yakılan yüzük ve açılan çift rolü yazılır. Rol açılamamışsa satır
+// "açılamadı" der, sebep alt notta durur: üye de yönetici de log aramasın.
+function evlilikKarti({ oneren, hedef, user, rolId, uyari = null, at = Date.now() }) {
   return core.receipt({
     title: config.basliklar.evlilik,
     sub: `${çift(oneren, hedef)} evlendi. Yüzük kabul anında yakıldı; ikili artık sunucuda çift olarak duruyor.`,
@@ -81,9 +77,9 @@ function evlilikKarti({ oneren, hedef, user, rolId, rolAdi = null, uyari = null,
       ['Eş', mention(oneren)],
       ['Başlangıç', core.rel(at)],
       ['Yüzük', core.chip('yakıldı')],
-      ['Çift Rolün', rolSatiri({ rolId, rolAdi }) ?? core.chip('açılamadı')],
+      ['Çift Rolün', rolId ? `<@&${rolId}>` : core.chip('açılamadı')],
     ],
-    note: uyari ? `${uyari} ${config.notlar.evli}` : config.notlar.evli,
+    note: uyari ?? config.notlar.evli,
     at,
   });
 }
@@ -198,7 +194,7 @@ function evlilikBloku(state) {
   const sonraki = bonus.hazir ? `${core.chip('hazır')}` : core.rel(bonus.sonrakiAt);
   return `### Evlisin\n${core.rows([
     ['Eşin', mention(es)],
-    ['Çift Rolün', rolSatiri({ rolId: rol, rolAdi: null }) ?? core.chip('rol açılamamış')],
+    ['Çift Rolün', rol ? `<@&${rol}>` : core.chip('rol açılamamış')],
     ['Başlangıç', core.rel(at)],
     ['Birlikte', `${number(gun)} gün`],
     ['Alınan Dönüm', bonus.sayi ? `${number(bonus.sayi)} kez` : 'henüz yok'],
