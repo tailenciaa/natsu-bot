@@ -476,7 +476,7 @@ const ekonomiPanel = {
           items: [
             '**Kırmızı** ya da **siyah**: tutma olasılığı **%47**, kazanç **2 katı**.',
             '**Yeşil**: olasılık **%7**, kazanç **14 katı**.',
-            '15 cepten 7\'si kırmızı, 7\'i siyah, 1\'i yeşil; masa hep kârlıdır.'
+            '15 cepten 7\'si kırmızı, 7\'si siyah, 1\'i yeşil; masa hep kârlıdır.'
           ]
         },
         {
@@ -509,7 +509,7 @@ const ekonomiPanel = {
           items: [
             'Suç işlemek için **seviye 5** gerekir; **seviye 3** altındaki üyeler soyulamaz.',
             'Günde **4 girişim** hakkın var, kendi girişimlerin arası **30 dakika**, aynı kişiye yeniden **3 saat** sonra.',
-            '**`/çal`** ile bir üyeyi soymaya kalkışırsın; kurban **90 saniye** içinde direnmezse cüzdanının **%5-%20**\'si (tek elde en fazla **500 coin**) el değiştirir.',
+            '**`/çal uye`** ile bir üyeyi soymaya kalkışırsın; kurban **90 saniye** içinde direnmezse cüzdanının **%5-%20**\'si (tek elde en fazla **500 coin**) el değiştirir.',
             'Hedefin cüzdanında en az **150 coin** olmalı.'
           ]
         },
