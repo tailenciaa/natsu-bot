@@ -437,57 +437,24 @@ const ekonomiPanel = {
     },
     {
       title: 'Arka Sokaklar',
-      sub: '**`/sokak`** suç tarafının sayfası: üye soymak, Devletin Kasasını zorlamak, cezaevi ve kefalet. Kazancı yüksek, riski de öyle.',
+      sub: '**`/sokak`** suç tarafının sayfası: üye soymak, Devletin Kasasını zorlamak, cezaevi ve kefalet. Kazancı yüksek, riski de öyle — ödediğin her ceza kasaya yazar.',
       blocks: [
         {
           heading: 'Üye soymak',
           items: [
-            'Suç işlemek için **seviye 5** gerekir; **seviye 3** altındaki üyeler soyulamaz.',
-            'Günde **4 girişim** hakkın var, kendi girişimlerin arası **30 dakika**, aynı kişiye yeniden **3 saat** sonra.',
-            '**`/çal uye`** ile bir üyeyi soymaya kalkışırsın; kurban **90 saniye** içinde direnmezse cüzdanının **%5-%20**\'si (tek elde en fazla **500 coin**) el değiştirir.',
-            'Hedefin cüzdanında en az **150 coin** olmalı.'
+            'Suç için **seviye 5** gerekir; **seviye 3** altındaki üye soyulamaz ve hedefin cüzdanında en az **150 coin** olmalı.',
+            '**`/çal uye`**: günde **4 girişim**, kendi girişimlerin arası **30 dakika**, aynı kişiye yeniden **3 saat** sonra.',
+            'Kurban **90 saniye** içinde direnmezse cüzdanının **%5-%20**\'si (tek elde en fazla **500 coin**) el değiştirir.',
+            'Direnirse yakalanma **%60**\'tan başlar, seviye farkına göre **%35-%90** arasına kayar: **150 coin** ceza ve **20 dakika** cezaevi, kefalet **350 coin**.'
           ]
-        },
-        {
-          heading: 'Kurban direnirse',
-          text: 'Yakalanma olasılığı **%60**\'tan başlar, müdahale edenle arandaki seviye farkı başına **%2** oynar (**%35-%90** arasında). Yakalanırsan **150 coin** ceza ve **20 dakika** cezaevi; kefalet **350 coin**. İkisi de Devletin Kasasına yazar.'
         },
         {
           heading: 'Kasayı soymak',
           items: [
-            'Kasa için **seviye 12** gerekir ve kasada en az **200 coin** olmalı.',
-            '**`/çal kasa`** → alınan **%10-%25** (tek elde en fazla **800 coin**), bir kasadan sonra **2 saat** yeni kasa girişimi yok.',
-            '**60 saniye** içinde senden başka biri müdahale ederse yakalanırsın; kurtaran ilk kişiye **100 coin** ikramiye düşer.',
-            'Kasa yakalama cezası: **400 coin**, **60 saat** cezaevi, kefalet **900 coin**.'
-          ]
-        },
-        {
-          note: 'Kasa **1500 coin** ile kurulur ve sadece ödenen ceza ve kefaletlerle büyür. Bir kez soyulan ya da direnen üye **6 saat** dokunulmaz olur.'
-        }
-      ]
-    },
-    {
-      title: 'Şakalaşma',
-      sub: '**`/öp`**, **`/tokat`** ve **`/şakalaş`**: muhataba şaka kartı atarsın, kart kanala düşer. Karşılık gelirse **iki taraf da** coin alır.',
-      blocks: [
-        {
-          heading: 'Nasıl çalışır',
-          items: [
-            '**`/öp`** ya da **`/tokat`** ile bir üyeye kart atarsın; kart kanalda görünür.',
-            'Muhatabın **3 dakika** içinde karşılık butonuna basarsa ödül ikinize de yatar: **öp 10-40 coin**, **tokat 5-45 coin**.',
-            'Karşılık gelmezse kart boşta kalır, kimse coin kaybetmez.'
-          ]
-        },
-        {
-          heading: 'Sınırlar',
-          items: [
-            'Günde **12 kart**, aynı kişiyle aranda **10 dakika** bekleme.',
-            'Karşılık ödülleri günlük **1200 coin** tavanına sayılır.'
-          ]
-        },
-        {
-          heading: 'Şakalaş sayfası',
-          text: '**`/şakalaş`** sana uzanan kartları süreleriyle toplar, kendi şaka sayılarını ve kuralları gösterir; **`/bakiye`** cüzdanındaki **Şakalaş** butonu da aynı sayfayı açar.'
+            '**`/çal kasa`** için **seviye 12** ve kasada en az **200 coin**; alınan **%10-%25** (tek elde en fazla **800 coin**), sonra **2 saat** yeni kasa girişimi yok.',
+            'Bir başkası **60 saniye** içinde müdahale ederse yakalanırsın: **400 coin** ceza ve **60 saat** cezaevi, kefalet **900 coin**. Kurtaran ilk kişiye **100 coin** ikramiye düşer.'
+          ],
+          note: 'Kasa **1500 coin** ile kurulur ve yalnızca ödenen ceza ve kefaletlerle büyür. Soyulan ya da direnen üye **6 saat** dokunulmaz olur.'
         }
       ]
     },
@@ -496,64 +463,30 @@ const ekonomiPanel = {
       sub: 'Coin üç rafta harcanır: **profil mağazası**, **butik** ve **evlilik**. Üçüne de **`/bakiye`** cüzdanının yanındaki butonlardan girilir.',
       blocks: [
         {
-          heading: 'Mağaza (profil süsleri)',
+          heading: 'Mağaza · Kart Süsü',
           items: [
-            '**Çerçeveler**: Bronz **1200** · Gümüş **2600** · Altın **4800** · Neon **7200 coin**',
-            '**Profil temaları**: **2500-7800 coin**',
-            '**Kapak arka planları**: **1800-4800 coin**',
-            '**Sergi rozetleri**: **1500-6400 coin**'
+            'Çerçeveler Bronz **1200** / Gümüş **2600** / Altın **4800** / Neon **7200** · profil temaları **2500-7800 coin**',
+            'Kapak arka planları **1800-4800** · sergi rozetleri **1500-6400 coin**'
           ]
         },
         {
-          heading: 'Butik (yüzük, ek hak, renkli rol)',
+          heading: 'Butik · Yüzük & Renk',
           items: [
-            '**Ek saygınlık hakkı** → günde bir hak daha: **1500 coin**',
-            '**Evlilik yüzüğü** → teklif için: **4000 coin**',
-            '**Renkli rol** → sunucuda adın renkli yazılır: **9000-15000 coin**, kalıcı'
+            'Ek saygınlık hakkı (günde bir hak daha) **1500** · evlilik yüzüğü **4000 coin**',
+            'Renkli rol: sunucuda adın renkli yazılır, **9000-15000 coin**, kalıcı'
           ]
         },
         {
           heading: 'Evlilik',
           items: [
-            'Yüzüğü butikten alır, **`/evlilik teklif`** ile uzanırsın; muhatap kabul ederse yüzük **o anda** yanar.',
-            'Teklif komutunun **rol_adi**, **renk** ve **simge** alanları çift rolünüzü kurar: kabul anında **bot bu rolü açıp ikinize giydirir**, boşanmada silinir.',
-            'Evli kalırsanız **her 7 günde bir ikinize de 400 coin** yıl dönümü ödülü yatar.',
-            'Boşanma bedeli **1200 coin**, doğrudan Devletin Kasasına yazar.'
+            'Yüzüğü butikten alır **`/evlilik teklif`** ile uzanırsın; muhatap kabul ederse yüzük **o anda** yanar. Teklifteki **rol_adi**, **renk** ve **simge** alanları çift rolünüzü kurar: kabul anında **bot bu rolü açıp ikinize giydirir**, boşanmada silinir.',
+            'Evli kalırsanız **her 7 günde bir ikinize de 400 coin** yıl dönümü ödülü yatar; boşanma bedeli **1200 coin**, doğrudan Devletin Kasasına yazar.'
           ]
         },
         {
           heading: 'Siparişlerim',
           text: '**`/bakiye`** yanındaki **Siparişlerim** defteri aldığın her şeyi fiyatıyla gösterir: kozmetikler kalıcı, saygınlık hakkı ve yüzük tükenen.',
           note: 'Harcanan coin profil puanından **düşmez**; sahip olduğun her kozmetik puana **+10** olarak yazılır.'
-        }
-      ]
-    },
-    {
-      title: 'Tavan, Sıralama ve Profil Puanı',
-      sub: 'Kazanmanın bir sınırı, emeğin de bir görünürlüğü var: günlük tavan, coin sıralaması ve profil puanı.',
-      blocks: [
-        {
-          heading: 'Günlük tavan',
-          text: 'Keşif ganimeti, şakalaşma ödülü, kasa soygunu ve kasa ikramiyesi **günde 1200 coin** ile sınırlı. Kumarhane kazançları ve üye→üye para transferi tavana sayılmaz; soyulan coin, başkasının tavanını yakmaz.'
-        },
-        {
-          heading: 'Sıralamalar',
-          items: [
-            '**`/siralama`** içindeki **coin** listesi **anlık cüzdan bakiyeni** ölçer; harcadıkça listede düşersin.',
-            '**VIP** listesi rolü en erken alan üyeyi başa yazar.'
-          ]
-        },
-        {
-          heading: 'Profil puanı',
-          items: [
-            'Alınan her görev **+2 puan** (görevlerden en fazla **120**).',
-            'Sahip olunan her kozmetik **+10 puan** (en fazla **130**).',
-            'Her seri günü **+5 puan** (en fazla **70**).',
-            'Puan **1000**\'de tavan; **Sevilen** rütbesi **360**, en üst rütbe **Destan 930**.'
-          ]
-        },
-        {
-          note: 'Cüzdanındaki coinin kendisi puana yazılmaz; harcayan olduğu yerde cezalandırılmaz.'
         }
       ]
     },
