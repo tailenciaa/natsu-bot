@@ -192,10 +192,16 @@ function tekSimge(girdi) {
   return ok ? ilk.segment : config.rol.varsayilanEmoji;
 }
 
-// Teklifin rol provası: ad, renk anahtarı ve simgeden rolün adı kurulur. Kabul edilince bu kayıt yaratılır.
+// Teklifin rol provası: çiftin seçtiği ad, renk anahtarı ve simge. Ad kartlarda simgesiz yazılır (bot mesajları
+// süs simgesi taşımaz); simge yalnızca Discord'daki rolün adında ya da rol simgesi olarak durur.
 function rolProvasi({ ad, renk, simge }, oneren, hedef) {
-  const isim = temizAd(ad) || `${temizAd(oneren.displayName ?? oneren.username)} & ${temizAd(hedef.displayName ?? hedef.username)}`;
-  return { ad: `${tekSimge(simge)} ${isim}`.slice(0, config.rol.maxUzunluk), renk: config.rol.renk(renk).key };
+  const isim =
+    temizAd(ad) || `${temizAd(oneren.displayName ?? oneren.username)} & ${temizAd(hedef.displayName ?? hedef.username)}`;
+  return {
+    ad: isim.slice(0, config.rol.maxUzunluk),
+    renk: config.rol.renk(renk).key,
+    simge: tekSimge(simge),
+  };
 }
 
 // Discord hata mesajından üyeye gösterilecek kısa gerekçe
@@ -207,6 +213,9 @@ const rolSebep = (err) => {
   return 'bir adım tamamlanamadı';
 };
 
+// Rol simgesi (unicode emoji) sunucuda takviye seviyesi 2 ister; olmayan sunucuda simge rol adının başına konur
+const rolSimgesi = (guild) => Boolean(guild.features?.includes?.('ROLE_ICONS'));
+
 // Kabul anında çiftin rolü açılır. İzin yoksa ya da yaratılamazsa evlilik yine de kaydedilir; sebep kartta yazar
 // ki üye de yönetici de ayrıca log aramasın.
 async function ciftRolu(guild, prova, aciklama) {
@@ -214,12 +223,16 @@ async function ciftRolu(guild, prova, aciklama) {
   if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageRoles)) {
     return { ok: false, sebep: 'Botun "Rolleri Yönet" izni kapalı; bu bir sunucu ayarı, çiftin bir hatası yok.' };
   }
+  const ad = prova?.ad || 'Evli Çift';
+  const simge = prova?.simge ?? config.rol.varsayilanEmoji;
+  const icons = rolSimgesi(guild);
   try {
     const role = await guild.roles.create({
-      name: prova?.ad ?? 'Evli Çift',
+      name: icons ? ad : `${simge} ${ad}`,
+      ...(icons ? { unicodeEmoji: simge } : {}),
       color: config.rol.renk(prova?.renk).color,
       permissions: [],
-      // Çiftin nişanı listelenmez, sıralarda tek başına bir bölüm açmaz: yalnızca iki kişinin üstünde durur
+      // Çiftin nişanı üye listesinde tek başına bir bölüm açmaz ve kimse onu ping'leyemez: iki kişinin üstünde durur
       mentionable: false,
       hoist: false,
       reason: aciklama,

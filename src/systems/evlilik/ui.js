@@ -239,7 +239,7 @@ function kurallarBloku() {
   return `### Nasıl İşler?
 1. **${coin(butikConfig.yuzuk.price)}** karşılığında Butikten **yüzük** al: /bakiye > Butik.
 2. **/evlilik teklif kullanici:@üye** yaz; teklif kartı kanala düşer, ${Math.round(config.teklif.pencere / 3600000)} saat yanıt beklenir.
-3. Komuttaki **rol_adi**, **renk** ve **simge** alanlarıyla çift rolünüzü siz seçersin; hepsini boş bırakırsan adınız yan yana yazılır, yüzük simgesi ve ilk renk verilir. Seçtiğin rol teklif kartında görünür, yani muhatap neyi kabul ettiğini okur.
+3. Komuttaki **rol_adi**, **renk** ve **simge** alanlarıyla çift rolünün adını, rengini ve simgesini sen seçersin; hepsini boş bırakırsan ikinizin adı yan yana yazılır, yüzük simgesi ve ilk renk verilir. Seçtiğin rol teklif kartında görünür, muhatap neyi kabul ettiğini okur.
 4. Muhatap **Kabul Ediyorum** basarsa yüzüğün yakılır, ikiniz evli olarak kaydedilirsiniz ve **bot çift rolünüzü açıp ikinize giydirir**. **Geri Çevir** ya da sessizlik yüzük kaybettirmez.
 5. Evliliğin her ${config.yilDonumu.gun} gününde bir **yıl dönümü ödülü** iki tarafa birden yatar: sayfadaki düğmeye kim basarsa bassın, para ikisinin de cebine geçer.
 6. Sunucudan düşüp dönersen bot çift rolünü geri verir; **${bosanEtiket}** düğmesiyle boşanınca rol silinir ve eşin de senin de yeni teklifi aynı süre bekler.`;
