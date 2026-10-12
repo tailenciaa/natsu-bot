@@ -79,7 +79,7 @@ function yolAl(userId, key, at = Date.now()) {
   });
 }
 
-// İzlenen adımlar (/profil açıldı, çekilişe katılıldı): hiçbir depoda izi yok, tek kaynağı bu gözlem.
+// İzlenen adımlar (/profil ve /sokak açıldı, çekilişe katılıldı): hiçbir depoda izi yok, tek kaynağı bu gözlem.
 const goruldu = (userId, key) => Boolean(rec(userId).gorulen[key]);
 
 function gorusuKaydet(userId, key, at = Date.now()) {

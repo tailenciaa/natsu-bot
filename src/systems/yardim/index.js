@@ -29,12 +29,13 @@ const systems = () => require('..');
 const SELF = 'yardim';
 
 // Kategori sırası ve kategori menüsündeki kısa açıklamaları; listede olmayan kategoriler sistem sırasıyla sona
-// eklenir. Bir kategoride listelenecek komut kalmıyorsa kategori hiç gösterilmez.
+// eklenir. Bir kategoride listelenecek komut kalmıyorsa kategori hiç gösterilmez. Açıklamalar üye davranışını
+// söyleyen cümleler: menü ilk kez açan kişi hangi komutla ne kazanacağını buradan anlasın.
 const CATEGORIES = [
-  ['hesap', 'Profil, seviye, coin ve cüzdan komutları'],
-  ['oyun', 'Oyun Salonu, suç dünyası, eğlence ve evlilik komutları'],
-  ['siralama', 'Sıralamalar ve saygınlık'],
-  ['partner', 'Partner sunucular'],
+  ['hesap', 'Kartını düzenle, her gün /gunluk ile coinini topla, /gorev ile görev bitir'],
+  ['oyun', '/oyun ile kumarhane ve keşif, /sokak ile suç dünyası, /öp ve /tokat ile şakalaş'],
+  ['siralama', 'Sunucunun en aktifleri ve saygınlık alanlar'],
+  ['partner', 'Partner sunucular ve ortak etkinlikler'],
 ];
 
 // Üye listesindeki komutun yanında gösterilmeyen seçenekler: yöneticiye özel seçenekler (test/önizleme) komut

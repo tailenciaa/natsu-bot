@@ -153,5 +153,5 @@ module.exports = {
   ]),
   prefixed: [[ui.IDS.prefix, handle]],
   panelFor,
-  durumOf: (userId, at = Date.now()) => store.durumOf(userId, at),
+  sayfaDurumu,
 };
