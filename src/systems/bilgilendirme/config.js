@@ -407,39 +407,31 @@ const ekonomiPanel = {
       ]
     },
     {
-      title: 'Oyun Salonu',
-      sub: '**`/oyun`** üç masayı açar: **rulet**, **şans merdiveni** ve **keşif gezileri**. Bahis butonlardan seçilir; rulet ve merdiven uzun vadede coin yakar, keşif ücretsizdir.',
+      title: 'Oyun, Keşif ve Şakalaşma',
+      sub: '**`/oyun`** üç masayı açar: **rulet**, **şans merdiveni** ve **keşif gezileri**. Bahis butonlardan seçilir (**50 / 100 / 250 / 500 / 1000 coin**); rulet ve merdiven uzun vadede coin yakar, keşif ücretsizdir.',
       blocks: [
         {
-          heading: 'Bahis seçenekleri',
-          text: '**50 / 100 / 250 / 500 / 1000 coin**.'
-        },
-        {
-          heading: 'Rulet',
+          heading: 'Kumarhane: rulet ve merdiven',
           items: [
-            '**Kırmızı** ya da **siyah**: tutma olasılığı **%47**, kazanç **2 katı**.',
-            '**Yeşil**: olasılık **%7**, kazanç **14 katı**.',
-            '15 cepten 7\'si kırmızı, 7\'si siyah, 1\'i yeşil; masa hep kârlıdır.'
-          ]
-        },
-        {
-          heading: 'Şans Merdiveni',
-          items: [
-            '**8 basamak**; her basamakta **tırman** ya da **çek** butonuna basarsın.',
-            'Düşme olasılığı ilk basamakta **%15**, son basamakta **%78**.',
-            'Kazanç, çıkılan basamakların çarpanlarının bahsinle çarpımı; tepede **182 katı**na kadar çıkar.',
-            'Yarım kalan tırmanış **30 dakika** sonra düşer.'
+            '**Rulet**: kırmızı ya da siyah **%47** tutar, **2 katı** verir; yeşil **%7** tutar, **14 katı** verir. Masa hep kârlıdır.',
+            '**Şans Merdiveni**: **8 basamak**, her basamakta **tırman** ya da **çek**. Düşme olasılığı ilk basamakta **%15**, tepede **%78**; tırmanırsan kazanç tepede **182 katına** çıkar.',
+            'Bu masalardan gelen kazanç **günlük tavana sayılmaz** — tavan kumarhanede değil, keşif ve şakalaşmada işler.'
           ]
         },
         {
           heading: 'Keşif gezileri',
           items: [
-            '**Ücretsiz**: günde **8 gezi**, geziler arası **20 dakika**.',
-            '**Kıyı Kasabası** herkese açık → **25-80 coin**, anahtar, çerçeve.',
-            '**Fısıltı Ormanı** (seviye **8**), **Kırık Mağara** (seviye **20**), **Ay Işığı Bahçesi** (seviye **35**): bölge büyüdükçe yağma **900-1600 coin**\'e, rozet, tema ve kapaklara çıkar.',
-            'Bir gezide **500 coin** ve üstü kazanırsan kazanç kanalda duyurulur.'
-          ],
-          note: 'Kumarhane kazançları günlük tavana sayılmaz, keşif ganimeti sayılır.'
+            '**Ücretsiz**: günde **8 gezi**, aralarında **20 dakika**. **Kıyı Kasabası** herkese açık ve **25-80 coin** ile anahtar, çerçeve bırakır.',
+            'Seviye **8**: Fısıltı Ormanı, **20**: Kırık Mağara, **35**: Ay Işığı Bahçesi. Bölge büyüdükçe yağma **900-1600 coin**\'e, rozet, tema ve kapaklara çıkar.',
+            'Bir gezide **500 coin** ve üstünü kazanırsan kazancın kanalda duyurulur. Keşif ganimeti **günlük tavana sayılır**.'
+          ]
+        },
+        {
+          heading: 'Şakalaşma',
+          items: [
+            '**`/öp`** ve **`/tokat`** muhataba kanalda görünen şaka kartı atar; **3 dakika** içinde karşılık verilirsen ödül **ikinize de** yatar: öp **10-40 coin**, tokat **5-45 coin**.',
+            'Günde **12 kart**, aynı kişiyle aranda **10 dakika** bekleme. Karşılık gelmezse kart boşta kalır, kimse coin kaybetmez; sana uzanan kartları **`/şakalaş`** toplar.'
+          ]
         }
       ]
     },
