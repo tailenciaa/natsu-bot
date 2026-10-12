@@ -2,6 +2,10 @@
 module.exports = ({ mock, src }) => {
   const d = src('systems/log/ui');
   const categories = src('systems/log/categories');
+  // Panellerde Discord CDN afişi üretimde yerel eke döner (core/banner.js + core/panel.js syncPanel);
+  // önizleme de aynı kapıdan geçsin ki attachment:// adı ile gönderilen dosya hep birbirini tutsun.
+  const bannerFiles = (container) =>
+    src('core/banner').attachmentsFor([...JSON.stringify(container.toJSON()).matchAll(/attachment:\/\/([^"]+)/g)].map((m) => m[1]));
 
   const guild = mock.guild({ name: 'Kazuki Sunucusu' });
   const uye = mock.user({ username: 'mehmet', displayName: 'Mehmet' });
@@ -79,7 +83,10 @@ module.exports = ({ mock, src }) => {
       where: '#log-paneli kanalına gönderilen kalıcı kategori menüsü',
       visibility: 'panel',
       kind: 'message',
-      build: () => ({ components: [d.panel()], ...noMentions }),
+      build: () => {
+        const container = d.panel();
+        return { components: [container], files: bannerFiles(container), ...noMentions };
+      },
     },
     {
       id: 'alt-baslik-linki',

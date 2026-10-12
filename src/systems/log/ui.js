@@ -9,8 +9,9 @@ const {
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
 const { botName, guildId } = require('../../core/config');
-const { colors, text, divider, unix, page } = require('../../core/ui');
+const { colors, text, divider, unix, page, bannerGallery } = require('../../core/ui');
 const categories = require('./categories');
+const config = require('./config');
 
 const IDS = { select: 'logpanel', setup: 'logkur', detail: 'logdetay' }; // logpanel:sec, logkur:<eylem>
 
@@ -66,11 +67,12 @@ function panel() {
       ),
     );
 
-  // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, çizgi, menü
+  // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, afiş, çizgi, menü
   return page({
     title: `${botName} Log Paneli`,
     sub: 'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
   })
+    .addMediaGalleryComponents(bannerGallery(config.banner))
     .addSeparatorComponents(divider())
     .addActionRowComponents(new ActionRowBuilder().addComponents(select));
 }
