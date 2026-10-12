@@ -28,7 +28,8 @@ Görünüm serbestçe değişir, şunlar değişmez (bozulursa saklanmış mesaj
 8. Bilgi komutları (yardım, seviye, profil, sıralama, saygı ve VIP listesi) ve komutla açılan sayfalar herkese açık ve kalıcıdır; hata ile kalıcı panel buton/menü cevapları sadece kullanana görünür (§6).
 9. Komut listesi minimal: butonla yapılabilen işin slash komutu yoktur. Kanal ve rol ID'leri koda sabit, hiçbir akış "şu kanala mı gitsin?" diye sormaz.
 10. Seviye atlama duyurusu (görsel kart), profil ve seviye kartları, bot durum yazısı, kurallar ve bilgilendirme içerik metinleri onaylı tasarımlardır; yalnızca açık hata ve yazım düzeltmesi yapılır. Tek istisna: bilgilendirmedeki **Botumuz Kazuki** bloğu botun kendi üstlenimini anlatır, yeni bir sistem eklendiğinde oradaki komut listesi de güncellenir.
-11. **Coin harcamak para basmaz.** Alımlar `coinStore.spend` ile düşülür ve `recordPurchase` ile üyenin sipariş defterine yazılır; `earned` asla büyümez. Ödeme sırası teslimata göre kurulur: rol gibi dışarıda gerçekleşen bir teslimatta **ön
+11. **Coin harcamak para basmaz.** Alımlar `coinStore.spend` ile düşülür ve `recordPurchase` ile üyenin sipariş defterine yazılır; `earned` asla büyümez. Ödeme sırası teslimata göre kurulur: rol gibi dışarıda gerçekleşen bir teslimatta **önce rol verilir**, verilemezse para hiç alınmaz (para düşürülemezse verilen rol geri alınır); elde biriken tükenen üründe ise kazanım yerelde olduğu için önce para düşer. Kanala düşen alım kartı üyenin **bakiyesini yazmaz** — elde duran hak/yüzük adedi ve satın alınan rol yeter.
+12. **Bot rol yaratmaz.** Sunucuda hazır bulunması gereken bir ödül (butik rengi, görev rolü, oda sahibi) sistemin `config.js` dosyasına ID olarak yazılır; `null` bırakılmışsa özellik kapalıdır ve rafı hiç çizilmez, kural metni rafın kapalı olduğunu üyeye söyler. Üye sunucudan düşüp dönerse satın aldığı roller `GuildMemberAdd` ile geri verilir — sayfa açılışında senkron yapılmaz, üç saniyelik etkileşim süresine sığmaz.
 
 ## 3. Mesaj anatomisi
 
@@ -187,7 +188,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 | --- | --- |
 | İşlem sonucu ve onay kartları (satın alma, giyme, saygı, VIP, seviye/çekiliş duyuruları, `/gunluk`, **kutu açılışı**) | Herkese açık `receipt` kartı; üye `<@etiket>` ile anılır, metin 3. tekil şahıs |
 | Liste ve sıralama tabloları, paneller, duyurular, loglar, talep/ortaklık inceleme kartları, yetkili işlem kanallarındaki kartlar | Kanalda herkese görünür |
-| **Sayfalar:** `/profil` kartı ve rozet/vitrin/mağaza/kapak/görünüm/**Puanım** sayfaları, `/bakiye` cüzdanı, `/gorev` paneli, `/seviye`, `/siralama`, `/yardim` | Kalıcı ve herkese açık; sekmeler ve düzenleme düğmeleri `update` ile aynı mesajı yerinde yeniler |
+| **Sayfalar:** `/profil` kartı ve rozet/vitrin/mağaza/kapak/görünüm/**Puanım** sayfaları, `/bakiye` cüzdanı ve **Butik** rafı, `/gorev` paneli, `/seviye`, `/siralama`, `/yardim` | Kalıcı ve herkese açık; sekmeler ve düzenleme düğmeleri `update` ile aynı mesajı yerinde yeniler |
 | **Kalıcı panel cevapları:** `cezalarim` süre/sebep/itiraz kartları, `yenihesap` kısıt kartı, `sicil` ceza detayı, yayın/etiket/partner görme rolü onayları, çekilişe katılım, destek ve kalıcı oda başvurusu cevabı, log paneli bağlantısı ve detayı, oryantasyon devir seçicisi | Sadece basana (`{ ephemeral: true }`) — kalıcı olsalar panelin altı dolar ve panel kaybolur |
 | Hata, izin reddi, doğrulama uyarısı | Sadece kullanana (`replyError`) |
 | `/sicil` yetkili komut kanalı dışında (üye kendi sicilini bakıyor) | Sadece kullanana; ceza kaydı kanalda görünmez |
@@ -207,6 +208,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 - Komut denetimi kuralı: `help.access` kaydı "Herkes" ile başlamayan bir komut `help.member` listesinde yer alırsa `yardim-uye-erisim` hatası verilir.
 - Yardım menüsü **tek mesajda gezilir**: `/yardim` kısa bir panel açar (başlık, tek cümlelik yönlendirme, kategori menüsü) ve o panelde **komut listesi yoktur**. Kategori seçmek yeni mesaj atmaz — panelin yerini o kategorinin komut kartı alır (`interaction.update`), kartın altındaki **Yardım Menüsüne Dön** panele döndürür. Panel ve kart **herkese açıktır**, kategoriyi herkes seçip değiştirebilir.
 - Kategori kartının başlığı kategorinin adıdır, altındaki gri açıklamada komutların adına tıklayarak kullanılabileceği söylenir; o kategorinin bütün komutları, tıpkı bir log girdisinin bilgi bloğu gibi, **tek bir blokta** toplanır.
+- **Butonla açılan sayfa komut almaz.** `butik` gibi bir raf, cüzdan kartındaki bir düğmeyle açılır ve o kartın yerini alır; `commands`, `help` ve `slash` hiç dışa açılmaz (`yayin`, `durum`, `otorol` da aynı kalıbı izler). Böyle sistemler tek bir customId öneki taşır (`butik:`) ve `prefixed` üzerinden yönlendirilir: önek eşleşmesi sunucu kontrolünden ve tam ID buton tablosundan önce çalıştığı için kapının buton tablosunda kaydı olmaz, kaydı olursa da gölgelenmiş olur.
 
 ## 8. Doğrulama (Discord'a bağlanmadan)
 
