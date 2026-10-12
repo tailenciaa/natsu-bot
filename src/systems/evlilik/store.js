@@ -1,7 +1,9 @@
 // Evlilik kayıtları: beş bölüm, hepsi data.evlilik altında.
-//   evliler    : kullanıcı ID'si -> { es, at }. Evlilik karşılıklıdır, iki tarafa da yazılır; tek taraflı kayıt
-//                bozuk sayılmaz çünkü boşanma iki satırı birden siler.
-//   teklifler  : teklifi götürenin ID'si -> { hedef, no, at, sonAt, kanal, mesaj }. Kişi başına bir bekleyen teklif.
+//   evliler    : kullanıcı ID'si -> { es, at, rol }. Evlilik karşılıklıdır, iki tarafa da yazılır; tek taraflı kayıt
+//                bozuk sayılmaz çünkü boşanma iki satırı birden siler. `rol` kabul anında botun yarattığı çift
+//                rolünün ID'sidir; açılamadıysa boş durur ve boşanmada silinecek bir şey olmaz.
+//   teklifler  : teklifi götürenin ID'si -> { hedef, no, at, sonAt, kanal, mesaj, rol }. Kişi başına bir bekleyen
+//                teklif. `rol` teklifte seçilen çift rolünün provasıdır ({ ad, renk }); kabul edilirse o rol yaratılır.
 //   retler     : çift anahtarı -> geri çevrilme anı. Aynı çiftin yeniden teklif etmesi için bekleme burada ölçülür.
 //   bosanmalar : kullanıcı ID'si -> boşanma anı. Yeni teklif götürmeden önceki bekleme buradan okunur.
 //   bonuslar   : çift anahtarı -> { sayi }. Yıl dönümü ödülünün kaç kez alındığı; hangi yedinci güne karşılık
@@ -30,10 +32,11 @@ const birlikteGun = (userId, at = Date.now()) => {
   return kayit ? Math.max(0, Math.floor((at - kayit.at) / DAY)) : 0;
 };
 
-// Evlendirmenin tek yeri: iki satır birlikte yazılır, bekleyen teklifler birlikte kalkar
-function evlendir(a, b, at = Date.now()) {
-  k('evliler')[a] = { es: b, at };
-  k('evliler')[b] = { es: a, at };
+// Evlendirmenin tek yeri: iki satır birlikte yazılır, bekleyen teklifler birlikte kalkar. `rol` kabulde yaratılmış
+// çift rolünün ID'sidir; verilemediyse boş kalır ve evlilik yine de kaydedilir.
+function evlendir(a, b, at = Date.now(), rol = null) {
+  k('evliler')[a] = { es: b, at, rol };
+  k('evliler')[b] = { es: a, at, rol };
   teklifSil(a);
   teklifSil(b);
   save();
@@ -79,8 +82,8 @@ function teklifGelen(userId) {
 
 const teklifByNo = (no) => Object.values(k('teklifler')).find((t) => t.no === no) ?? null;
 
-function teklifKaydet({ oneren, hedef, no, sonAt, kanal }) {
-  k('teklifler')[oneren] = { oneren, hedef, no, at: Date.now(), sonAt, kanal, mesaj: null };
+function teklifKaydet({ oneren, hedef, no, sonAt, kanal, rol = null }) {
+  k('teklifler')[oneren] = { oneren, hedef, no, at: Date.now(), sonAt, kanal, mesaj: null, rol };
   save();
   return k('teklifler')[oneren];
 }

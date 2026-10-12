@@ -5,10 +5,25 @@
 // çiftin birlikte geçirdiği her yedi günde bir, iki kişiye birden yatar.
 // Ritim düzeni: ret ve boşanma beklemeleri evliliği ucuz bir tekrar oyununa dönüştürmesin; teklif penceresi ise
 // üyenin botunun mesajına bakmasının bir işe yaramasını sağlar.
-// ROL DÜZENİ: bot rol YARATMAZ. evli rolü Discord'da önceden açılmış olmalı ve ID'si buraya yazılmalı.
-// null bırakılırsa evlilik yine çalışır, yalnızca çift rol verilmez.
+// ROL DÜZENİ: bot her çift için rolü KENDİSİ yaratır. Rolün adı, rengi ve simgesi teklifi götüren üye tarafından
+// seçilir; muhatap kabul ederken hangi rolün açılacağını kartta görür, yani seçim ikisinin de önündedir. Rol
+// boşanmada silinir, sunucudan düşüp dönen eşe geri verilir. Yaratılamazsa (botun izni yok ya da sunucu rol
+// sayısı dolu) evlilik yine kaydedilir ve gerekçe kartta okunur.
 const DAY = 24 * 60 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
+
+// Renk paleti: komuttaki seçenek listesi buradan kurulur, elle hex yazılmaz. Seçilmeyen teklif ilk sıradakini alır.
+const renkler = [
+  { key: 'gul', ad: 'Gül Kurusu', hex: '#f2789f' },
+  { key: 'pembe', ad: 'Pembe', hex: '#ff5ec4' },
+  { key: 'kizil', ad: 'Kızıl', hex: '#ed4245' },
+  { key: 'turuncu', ad: 'Turuncu', hex: '#f39c12' },
+  { key: 'altin', ad: 'Altın', hex: '#f1c40f' },
+  { key: 'yesil', ad: 'Yeşil', hex: '#52be80' },
+  { key: 'turkuaz', ad: 'Turkuaz', hex: '#1abc9c' },
+  { key: 'mavi', ad: 'Mavi', hex: '#5dade2' },
+  { key: 'mor', ad: 'Mor', hex: '#9b59b6' },
+];
 
 module.exports = {
   teklif: {
@@ -34,8 +49,14 @@ module.exports = {
   // Yıl dönümü: evliliğin başlangıcından itibaren her bu kadar günde bir, iki tarafa birden ödenen ödül
   yilDonumu: { gun: 7, odul: 400 },
 
-  // Çift rolü: Discord'da hazır rolün ID'si. Boşsa rol verilmez, evlilik yine kaydedilir
-  roles: { evli: null },
+  // Çift rolü: kabul anında bot tarafından açılır. Ad boş bırakılırsa iki eşin adı yan yana yazılır, simge boşsa
+  // yüzük kullanılır. maxUzunluk rol adının (simge dahil) taşıyabileceği en fazla karakter.
+  rol: {
+    renkler,
+    renk: (key) => renkler.find((r) => r.key === key) ?? renkler[0],
+    varsayilanEmoji: '💍',
+    maxUzunluk: 32,
+  },
 
   // Bekçinin aralığı: hiç karşılık görmemiş teklifler burada sonuçlanır ve kartları yerinde kapanır
   bekciAralik: 10 * 60 * 1000,
@@ -62,7 +83,7 @@ module.exports = {
     ret: 'Geri çevrilen teklif yüzük kaybettirmez; aynı kişiye yeniden teklif için kısa bir bekleme var.',
     sure: 'Karşılık gelmeyen teklif kendiliğinden kapanır, yüzük elde kalır.',
     gecersiz: 'Yüzük yanmadığı için hiçbir şey kaydedilmedi; raftan yeniden alıp teklif edebilirsin.',
-    evli: 'Evli rolü çiftin ikisine de verilir; üye sunucudan düşüp dönerse bot rolü geri verir.',
+    evli: 'Çift rolünüz ikinize de giydirildi; sunucudan düşüp dönersen bot rolü geri verir, boşanınca rol silinir.',
     bosanma: 'Boşanma bedeli Devletin Kasasına yazar; bir gün bir soyguncuya dağılır.',
   },
 };
