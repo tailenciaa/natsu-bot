@@ -1,5 +1,5 @@
-// Saygınlık mesajları: verme bildirimi ve haftalık kazanan duyurusu (ödül bölümüyle birlikte).
-// Tüm zamanların tablosu burada değil /siralama'nın saygınlık türünde çizilir.
+// Saygınlık mesajları: herkese açık verme kaydı, saygınlığı alan kişiye giden DM bildirimi ve haftalık kazanan
+// duyurusu (ödül bölümüyle birlikte). Tüm zamanların tablosu burada değil /siralama'nın saygınlık türünde çizilir.
 const { receipt, rows, chip, page } = require('../../core/ui');
 
 // Verme bildirimi (herkese açık): kimin kime verdiği ve hedefin yeni toplamı satırlarda; böylece kanalda
@@ -8,24 +8,22 @@ const { receipt, rows, chip, page } = require('../../core/ui');
 function given(giverId, targetId, newTotal, haktan = false, source = null) {
   return receipt({
     title: 'Saygınlık Verildi',
-    sub: `<@${giverId}> bir üyeye saygınlık verdi. Saygınlık **/saygi-ver** ile, mesajın içine **+rep @üye** yazarak ya da bir değerlendirmenin altından verilir; haftanın birincisi ödül rolünü alır.`,
+    sub: `<@${giverId}> bir üyeye saygınlık verdi. Saygınlık **/saygi-ver** ile, mesajın içine **+rep @üye** yazarak ya da bir değerlendirmenin altındaki butonla verilir; haftanın birincisi ödül rolünü alır.`,
     pairs: [
       ['Kişi', `<@${targetId}>`],
       ['Verilen', chip('+1 saygınlık')],
       ['Yeni Toplam', chip(`${newTotal} saygınlık`)],
       ['Kaynak', source],
     ],
-    note: [source ? null : 'Her saygınlık <#%feed%> kanalında bu kayıtla izlenir.', haktan ? 'Bu verme Butikten alınan ek saygınlık hakkıyla yapıldı; bekleme süresi yeniden başladı.' : null]
-      .filter(Boolean)
-      .join('\n'),
+    note: haktan ? 'Bu verme Butikten alınan ek saygınlık hakkıyla yapıldı; bekleme süresi yeniden başladı.' : undefined,
   });
 }
 
 // Saygınlığı verilen yetkilinin DM'i: değerlendirmesinden saygınlık çıkan kişiye "sana saygınlık verildi" bildirimi
-function givenDm(giverId, giverName, newTotal, source) {
+function givenDm(giverId, newTotal, source) {
   return receipt({
     title: 'Sana Saygınlık Verildi',
-    sub: `${giverName} bir değerlendirmesinden sana saygınlık bıraktı. Saygınlıkların birikir; haftanın en çok saygınlık kazanan üyesi ödül rolünü alır.`,
+    sub: `<@${giverId}> puanladığı değerlendirmesinde sana saygınlık bıraktı. Saygınlıkların birikir; haftanın en çok saygınlık kazanan üyesi ödül rolünü alır.`,
     pairs: [
       ['Veren', `<@${giverId}>`],
       ['Verilen', chip('+1 saygınlık')],
@@ -56,4 +54,4 @@ function weeklyAnnounce(guild, results, roleId) {
   });
 }
 
-module.exports = { given, weeklyAnnounce };
+module.exports = { given, givenDm, weeklyAnnounce };
