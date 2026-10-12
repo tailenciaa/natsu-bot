@@ -584,7 +584,13 @@ async function handleRenameSubmit(interaction) {
 async function handleMyRoom(interaction) {
   const room = store.roomsOwned(interaction.guildId, interaction.user.id)[0];
   if (!room) {
-    return replyError(interaction, 'Senin bir kalıcı odan yok.', 'Başvuru panelinden oda isteyebilirsin; odası olan üye bu komutla panelini açar.');
+    return replyError(
+      interaction,
+      'Senin bir kalıcı odan yok.',
+      config.channels.panel
+        ? `Oda istemek için <#${config.channels.panel}> kanalındaki **Başvuru Yap** düğmesine bas; yönetici onaylayınca odan açılır ve paneli bu komutla çıkar.`
+        : 'Odalar yönetici onayıyla açılıyor; başvuru paneli hazır olduğunda duyuruda olacak.',
+    );
   }
   await interaction.deferReply({ flags: core.CV2 });
   return respond(interaction, ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room)));
@@ -922,9 +928,10 @@ module.exports = {
   commands,
   help: {
     category: ['oda', 'Odalar'],
-    access: { 'kalici-oda': 'Oda sahipleri' },
-    // Komut herkesin kullanabildiği bir komut değil (yalnızca odası olan üye), bu yüzden üye yardım
-    // menüsünde listelenmez; üyeye komutu teslim kartı ve başvuru panelindeki kurallar söylüyor.
+    // Üye yardım menüsünde listelenir: odası olmayan da komutu çalıştırır ve başvuru kapısına yönlendirilir,
+    // böylece sistem yardım menüsünden keşfedilir. Panelin kendisi yalnızca oda sahibinde açılır.
+    member: ['kalici-oda'],
+    access: { 'kalici-oda': 'Herkes; kontrol paneli odası olan için açılır' },
   },
   slash: { 'kalici-oda': handleMyRoom },
   buttons: {
