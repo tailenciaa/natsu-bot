@@ -281,6 +281,10 @@ async function handleStartBanSubmit(interaction) {
   await bannedChannel
     ?.send({ components: [ui.serverBannedLog(serverId, reason, interaction.user.id)], flags: core.CV2, allowedMentions: { parse: [] } })
     .catch((err) => console.error('[partner] Yasaklı sunucu kanalına gönderilemedi:', err.message));
+
+  // Yasaklanan sunucunun paylaşım kanalındaki tüm mesajları da kaldırılır, kayıtlı yetkililerine bilgi DM'i gider
+  const posted = store.requestsOfServer(serverId).filter((r) => r.guildId === interaction.guildId);
+  if (posted.length) await revokePartnership(interaction, posted.at(-1), { kind: 'yasak', reason });
 }
 
 // Form gönderilince talep hemen incelemeye gitmez: önce talep sahibine DM'den şartlar sorulur, kabul edince
@@ -699,7 +703,8 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   return respond(interaction, core.alert('Partner güvenilir listeye eklendi.', null, 'success'));
 }
 
-// Paylaşım kartındaki "Yasaklıya Al": sadece partner lideri kullanabilir, yasaklanan güvenilir listedeyse oradan da çıkar
+// Paylaşım kartındaki "Yasaklıya Al": sadece partner lideri kullanabilir. Yasaklanan kullanıcı güvenilir listeden
+// de düşer, sunucunun paylaşım kanalındaki tüm mesajları kaldırılır ve kayıtlı yetkililere bilgi DM'i gider.
 async function handleBan(interaction) {
   const requestId = interaction.customId.slice(ui.IDS.ban.length + 1);
   if (!isLead(interaction)) return replyError(interaction, 'Bu işlemi sadece partner lideri yapabilir.');
@@ -708,11 +713,9 @@ async function handleBan(interaction) {
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
 
   store.banUser(request.requesterId, interaction.user.id);
-  const trustedEntry = store.trustedBySource(interaction.guildId, requestId);
-  if (trustedEntry) store.removeTrusted(trustedEntry.id);
-
+  // Kart önce güncellenir: temizlik kartı da sileceği için cevap sonra verilemez
   await interaction.update({ components: [ui.postCard(request, null, true, statsOf(request))], allowedMentions: { parse: [] } });
-  if (trustedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
+  await revokePartnership(interaction, request, { kind: 'yasak' });
 }
 
 // Yasaklı partner kartındaki "Yasağı Kaldır": sadece partner lideri kullanabilir, kullanıcı tekrar partner talebi açabilir
@@ -728,17 +731,39 @@ async function handleUnban(interaction) {
   await interaction.update({ components: [ui.postCard(request, trustedEntry, false, statsOf(request))], allowedMentions: { parse: [] } });
 }
 
-// Paylaşım kartındaki "Partneri Sil": sadece gönderiyi kaldırır, kullanıcıyı yasaklamaz
-async function handleDeletePost(interaction) {
-  const requestId = interaction.customId.slice(ui.IDS.deletePost.length + 1);
-  if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
+// Paylaşım kartındaki "Partneri İptal Et": partnerliği bitirir. Sunucunun o ana kadar paylaşım kanalına düşen TÜM
+// mesajları silinir, güvenilir listeden çıkarılır ve karşı sunucunun yetkilileri DM'den bilgilendirilir.
+// Silinen mesajlar geri gelmez; yasağın aksine sunucu yasaklanmaz, istenirse yeni taleple dönebilir.
+async function handleCancelPost(interaction) {
+  const requestId = interaction.customId.slice(ui.IDS.cancel.length + 1);
+  if (!isLead(interaction)) return replyError(interaction, 'Bu işlemi sadece partner lideri yapabilir.');
 
   const request = store.getRequest(requestId);
-  store.updateRequest(requestId, { status: 'silindi' });
-  // İlan kartın üstünde ayrı bir düz mesaj olarak duruyor: kart silinince metin de kaldırılır, yoksa sahipsiz ilan kalır
-  if (request?.adId) await interaction.channel.messages.delete(request.adId).catch(() => {});
+  if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
+
+  // Silme ve DM'ler 3 saniyeyi aşabilir; önce gizli cevap ertelenir, özet sonra aynı cevapta gösterilir
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  const result = await revokePartnership(interaction, request, { kind: 'iptal' });
+  return respond(interaction, core.alert('Partnerlik iptal edildi.', revokeSummary(result), 'danger'), { ephemeral: true });
+}
+
+// Paylaşım kartındaki "Partneri Sil": sadece kaydı yapan (oto talebi onaylayan yetkili, elle paylaşan üye ya da
+// teklifi gönderen karşı yetkili) ve partner lideri kullanabilir. Kullanıcıyı yasaklamaz, listeyi etkilemez.
+async function handleDeletePost(interaction) {
+  const requestId = interaction.customId.slice(ui.IDS.deletePost.length + 1);
+  const request = store.getRequest(requestId);
+  if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
+
+  const owner = request.decidedBy ?? request.requesterId;
+  if (interaction.user.id !== owner && !isLead(interaction)) {
+    return replyError(interaction, 'Bu gönderiyi sadece partneri yapan kişi silebilir.', `Partneri yapan: <@${owner}>`);
+  }
+
+  store.updateRequest(requestId, { status: 'silindi', adId: null, postId: null });
+  // İlan kartla birlikte ayrı bir düz mesaj olarak duruyor: kart silinince metin de kaldırılır, yoksa sahipsiz ilan kalır
+  if (request.adId) await interaction.channel.messages.delete(request.adId).catch(() => {});
   await interaction.message.delete().catch(() => {});
-  return respond(interaction, core.alert('Partner gönderisi silindi.', null, 'danger'));
+  return respond(interaction, core.alert('Partner gönderisi silindi.', 'İlan ve kart kaldırıldı, kayıt geçmişte "silindi" olarak duruyor.', 'danger'), { ephemeral: true });
 }
 
 const handleTrustedCommand = (interaction) => respond(interaction, ui.trustedList(store.trustedOf(interaction.guildId)));
@@ -1115,6 +1140,7 @@ module.exports = {
     [ui.IDS.trustedPage, handleTrustedPage],
     [ui.IDS.trustedPanelPage, handleTrustedPanelPage],
     [ui.IDS.deletePost, handleDeletePost],
+    [ui.IDS.cancel, handleCancelPost],
     [ui.IDS.trustedSelect, handleTrustedSelect],
     [ui.IDS.trustedAction, handleTrustedAction],
     [ui.IDS.contactAdd, handleContactAdd],
