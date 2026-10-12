@@ -12,13 +12,19 @@ const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
 
-const commands = Object.entries(config.eylemler).map(([, e]) =>
+const commands = [
   new SlashCommandBuilder()
-    .setName(e.komut)
-    .setDescription(e.aciklama)
-    .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Şakanın muhatabı olan üye.').setRequired(true)),
-);
+    .setName(config.sayfaKomut)
+    .setDescription(config.sayfaAciklama)
+    .setContexts(InteractionContextType.Guild),
+  ...Object.entries(config.eylemler).map(([, e]) =>
+    new SlashCommandBuilder()
+      .setName(e.komut)
+      .setDescription(e.aciklama)
+      .setContexts(InteractionContextType.Guild)
+      .addUserOption((o) => o.setName('kullanici').setDescription('Şakanın muhatabı olan üye.').setRequired(true)),
+  ),
+];
 
 // Ödüller 5'in katına yuvarlanır: kartta okunur dursun (keşif ve görevle aynı teamül)
 const yuvarla = (n) => Math.round(n / 5) * 5;
@@ -26,6 +32,19 @@ const odulCek = ([alt, ust]) => yuvarla(alt + Math.random() * (ust - alt));
 
 // Kart numarası kısa tutulur: custom_id içinde taşınır ve kart sonuçlandığında kayıttan kalkar
 const kartNo = () => `${Date.now().toString(36).slice(-5)}${Math.random().toString(36).slice(2, 5)}`;
+
+// Sayfanın okuduğu bütün durum: üyenin sayıları + sana uzanan açık kartlar (en acil üstte).
+// Dışa açılır ki önizleme ve cüzdan düğmesi aynı kapıdan geçsin.
+function sayfaDurumu(userId, user, at = Date.now()) {
+  return {
+    ...store.durumOf(userId, at),
+    at,
+    user,
+    kartlar: store.acikKartlar(userId).slice(0, config.sayfaKart),
+  };
+}
+
+const panelFor = (interaction) => ui.panel(sayfaDurumu(interaction.user.id, interaction.user));
 
 // ── Şaka atmak ────────────────────────────────────────────────────────────────
 async function eylem(interaction, anahtar) {

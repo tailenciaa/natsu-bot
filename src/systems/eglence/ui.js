@@ -86,4 +86,66 @@ function karsizSonuc({ eylem, saldirgan, hedef, user, at = Date.now() }) {
   });
 }
 
-module.exports = { IDS, aralik, cumle, kart, karsilikSonuc, karsizSonuc };
+// ── Şakalaşma sayfası ─────────────────────────────────────────────────────────
+// Dakikayı kısaca söyler: kartların ritmi dakika ile ölçülür
+const dk = (ms) => `${Math.max(1, Math.round((ms ?? 0) / 60000))} dk`;
+
+// Sayfadaki kart satırı: kim attı, ne attı, karşılık için ne kadar kaldı. Süresi geçmiş kart ayrı yazılır
+// ki üye boşuna düğme aramasın.
+const kartSatiri = (k, at) => {
+  const e = config.eylemler[k.eylem];
+  const sure = k.sonAt <= at ? 'süresi doldu' : `karşılık ${core.rel(k.sonAt)} içinde`;
+  return `<@${k.saldirgan}> sana bir **${e.ad}** gönderdi — ${sure}`;
+};
+
+function karsilikBekleyenler(state) {
+  if (!state.kartlar.length) return 'Karşılık bekleyen kartın yok. Şakayı sen başlat: **/öp** ya da **/tokat**.';
+  return state.kartlar.map((k) => kartSatiri(k, state.at)).join('\n');
+}
+
+function sayilarBloku(state) {
+  return `### Senin Sayıların\n${core.rows([
+    ['Öpücük Attın', `${number(state.atilan.op)} kez`],
+    ['Tokat Attın', `${number(state.atilan.tokat)} kez`],
+    ['Karşılık Verdik', `${number(state.karsilikVerdi)} kez`],
+    ['Karşılığın Geldi', `${number(state.karsilikAldi)} kez`],
+    ['Karşılıksız Kaldı', `${number(state.kacirdi)} kez`],
+    ['Cebine Yatan', coin(state.kazanc)],
+  ])}`;
+}
+
+function gunBloku(state) {
+  const siradaki = state.kalan > 0 ? `Bugün **${state.gunluk} / ${config.gunlukKart}** kart açtın, **${state.kalan}** hakkın var.` : `Bugünkü **${config.gunlukKart}** kartın bitti; gece sıfırlanır.`;
+  return `### Bugün\n${siradaki} Aynı üyeyle arka arkaya kart açılamaz: iki kart arasında **${dk(config.ikiliAralik)}** beklenir.\n` +
+    `Karşılık ödülü günlük oyun kazancı tavanına sayılır; tavan dolarsa kart yine sonuçlanır ama para cebine girmez.`;
+}
+
+function kurallarBloku() {
+  return `### Nasıl İşler?\n` +
+    `1. **/öp kullanici:@üye** ya da **/tokat kullanici:@üye** yaz; kart kanala düşer.\n` +
+    `2. Muhap **${dk(config.pencere)}** içinde kartındaki düğmeye basarsa ödül **iki tarafa da** yatar: ` +
+    `öpücükte ${aralik(config.eylemler.op.odul)}, tokatta ${aralik(config.eylemler.tokat.odul)}.\n` +
+    `3. Düğmeye basılmazsa kart karşılıksız kalır; kimse bir şey kaybetmez, kart sayacına yazılır.\n` +
+    `4. Karşılık vermek için tek yol düğme: yazıyla "tamam" demek işlemez.\n` +
+    `5. Bu sayfa sana uzanan kartları da gösterir; kartın aslı kanalda durur.`;
+}
+
+function panel(state) {
+  const container = core.page({
+    title: 'Şakalaşma',
+    sub: 'İki kişilik şaka kartları: bir üye atar, muhatap karşılık verirse **ikisi de** coin kazanır. ' +
+      'Kartlar kanalda herkese açık durur; karşılık vermeyen kart havada kalır.',
+    thumbnail: state.user.displayAvatarURL({ size: 256 }),
+    blocks: [
+      `### Sana Uzanan Kartlar\n${karsilikBekleyenler(state)}`,
+      sayilarBloku(state),
+      gunBloku(state),
+      kurallarBloku(),
+    ],
+  });
+  return container
+    .addSeparatorComponents(core.divider())
+    .addTextDisplayComponents(core.text(core.stamp(state.at)));
+}
+
+module.exports = { IDS, aralik, cumle, dk, kart, karsilikSonuc, karsizSonuc, panel };

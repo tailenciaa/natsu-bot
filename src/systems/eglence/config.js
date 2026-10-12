@@ -17,6 +17,13 @@ module.exports = {
   // Bir üye günde en fazla bu kadar şaka kartı atabilir; karşılık ödülü ayrıca günlük tavana sayılır
   gunlukKart: 12,
 
+  // Şakalaşma sayfası: /şakalaş ile açılır, cüzdan kartından da ulaşılır. Komut adı burada durur ki
+  // yardim menüsü, cüzdan düğmesi ve işleyici aynı adı okusun.
+  sayfaKomut: 'şakalaş',
+  sayfaAciklama: 'Şakalaşma sayfasını açar: sana uzanan kartlar, senin sayıların ve nasıl işlediği.',
+  // Sayfada birden fazla bekleyen kart listelenebilir ama liste uzamasın: en acili üstte, sınırlı satır
+  sayfaKart: 5,
+
   // Eylemler: komut adı, kart cümlesi, düğme etiketi ve karşılık ödülü aralığı (tek kişiye, coin olarak)
   eylemler: {
     op: {
