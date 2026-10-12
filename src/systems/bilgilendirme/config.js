@@ -362,7 +362,7 @@ const ekonomiPanel = {
           ]
         },
         {
-          note: 'Yalnızca günlük ve görevlerle günde **350-500 coin** birikir. Oyun, keşif ve şakalaşmadan gelen kazanç **günde 1200 coin** ile sınırlı; kumarhane ve üye→üye transfer bu sayıya girmez. Hiçbir şey almasan bile coin, **`/siralama`** içindeki coin listesinde yerini belirler.'
+          note: 'Yalnızca günlük ve görevlerle günde **350-500 coin** birikir. Keşif, şakalaşma ve suç dünyasından gelen kazanç **günde 1200 coin** ile sınırlı; kumarhane ve üye→üye transfer bu sayıya girmez. Hiçbir şey almasan bile coin, **`/siralama`** içindeki coin listesinde yerini belirler.'
         }
       ]
     },
@@ -477,8 +477,8 @@ const ekonomiPanel = {
         {
           heading: 'Evlilik',
           items: [
-            'Yüzüğü butikten alır **`/evlilik teklif`** ile uzanırsın; muhatap kabul ederse yüzük **o anda** yanar. Teklifteki **rol_adi**, **renk** ve **simge** alanları çift rolünüzü kurar: kabul anında **bot bu rolü açıp ikinize giydirir**, boşanmada silinir.',
-            'Evli kalırsanız **her 7 günde bir ikinize de 400 coin** yıl dönümü ödülü yatar; boşanma bedeli **1200 coin**, doğrudan Devletin Kasasına yazar.'
+            'Yüzüğü butikten alır **`/evlilik teklif`** ile uzanırsın; kabul edilirse yüzük **o anda** yanar ve bot **çift rolünüzü açıp ikinize giydirir**. Rolün adını, rengini ve simgesini teklif ederken sen seçersin; rol boşanmada silinir.',
+            'Evli kalırsanız **her 7 günde bir ikinize de 400 coin**; boşanma bedeli **1200 coin**, doğrudan Devletin Kasasına yazar.'
           ]
         },
         {
