@@ -40,6 +40,19 @@ const BADGES = [
   { key: 'koleksiyoncu', label: 'Koleksiyoncu', note: 'Üç kozmetik sahibi', color: '#a3e635', goal: 3, value: (c) => c.owned },
   { key: 'birikim', label: 'Birikim', note: 'İki bin beş yüz coin kazandı', color: '#fbbf24', goal: 2500, value: (c) => c.earned },
   { key: 'taninmis', label: 'Tanınmış', note: 'Yüz profil ziyareti', color: '#60a5fa', goal: 100, value: (c) => c.visits },
+  // ── Ekonomi rozetleri ───────────────────────────────────────────────────────
+  // Suç dünyası, salon, şakalaşma, butik ve evlilik kayıtlarından türerler: ayrı bir başvuru ya da tutulan
+  // durum yoktur. Bir evlilik bittiğinde "Evli" rozeti kendiliğinden düşer, ama dönüm ödülü sayacı kalıcıdır.
+  { key: 'sokak-kurtu', label: 'Sokak Kurdu', note: 'On girişimi başarıyla bitirdi', color: '#ff6a4d', goal: 10, value: (c) => c.soygun, icon: 'ates' },
+  { key: 'kolay-yem', label: 'Kolay Yem Değil', note: 'Beş pusuya zamanında direndi', color: '#5be08a', goal: 5, value: (c) => c.direnis },
+  { key: 'kasa-bekcisi', label: 'Kasa Bekçisi', note: 'Kasayı korurken ikramiye aldı', color: '#f4c95d', goal: 1, value: (c) => (c.ikramiye > 0 ? 1 : 0) },
+  { key: 'gezin', label: 'Gezgin', note: 'Yirmi keşif turu tamamladı', color: '#38c6e8', goal: 20, value: (c) => c.kesif },
+  { key: 'nese-sacan', label: 'Neşe Saçan', note: 'Yirmi beş şakalaşma kartı', color: '#fde047', goal: 25, value: (c) => c.sakalas },
+  { key: 'karsiligin-ver', label: 'Karşılığını Veren', note: 'On şakalaşmaya karşılık verdi', color: '#57f287', goal: 10, value: (c) => c.karsilik },
+  { key: 'butik-musterisi', label: 'Butik Müşterisi', note: 'Butikten bir renk aldı', color: '#3ee0a1', goal: 1, value: (c) => (c.renk > 0 ? 1 : 0), icon: 'elmas' },
+  { key: 'evli', label: 'Evli', note: 'Sunucuda bir evliliği var', color: '#ff6b9a', goal: 1, value: (c) => (c.evli ? 1 : 0), icon: 'kalp' },
+  { key: 'yil-donumu', label: 'Yıl Dönümü', note: 'Yıl dönümü ödülünü topladı', color: '#f97316', goal: 1, value: (c) => c.donum },
+  { key: 'bir-omur', label: 'Bir Ömür', note: 'Evlilikte yüz gün', color: '#b57bff', goal: 100, value: (c) => c.evlilikGun },
   // ── Görev rozetleri ─────────────────────────────────────────────────────────
   // Uzun vadeli hedefler: config.js'te karşılığına bir rol ID'si yazılanlar kazanılınca bot üyeye o rolü de verir.
   { key: 'sohbet-efsanesi', label: 'Sohbet Efsanesi', note: 'Yirmi beş bin mesaj', color: '#38c6e8', goal: 25000, value: (c) => c.messageCount, gorev: true },
@@ -59,6 +72,11 @@ function context({ guild, member, userId, messageCount = 0, voiceSeconds = 0, st
   const staffIds = [basvuruConfig.roles.accept, basvuruConfig.roles.reviewer].filter(Boolean);
   const mesajLevel = levelFromXp(seviyeStore.xpOf('mesaj', userId));
   const sesLevel = levelFromXp(seviyeStore.xpOf('ses', userId));
+  // Suç dünyası sayıları ham kayıttan okunur: durumOf her üyede bir kez çağrılırsa bütün sunucunun sicil
+  // defteri üye başına yeniden sıralanmış olur.
+  const suc = sucStore.rec(userId);
+  const sakalas = eglenceStore.durumOf(userId);
+  const es = evlilikStore.esOf(userId);
   return {
     owner: guild?.ownerId === userId,
     staff: roles ? staffIds.some((id) => roles.has(id)) : false,
@@ -79,6 +97,16 @@ function context({ guild, member, userId, messageCount = 0, voiceSeconds = 0, st
     questsDone: gorevStore.bitirilenSayisi(userId),
     chests: gorevStore.kutuSayilari(userId).toplam,
     visits,
+    soygun: suc.basari,
+    direnis: suc.direnis,
+    ikramiye: suc.ikramiye,
+    kesif: oyunStore.kesifSayilari(userId).toplam,
+    sakalas: sakalas.atilanToplam,
+    karsilik: sakalas.karsilikVerdi,
+    renk: butikStore.rolleri(userId).length,
+    evli: Boolean(es),
+    evlilikGun: es ? evlilikStore.birlikteGun(userId) : 0,
+    donum: evlilikStore.bonusDurumu(userId)?.sayi ?? 0,
   };
 }
 
