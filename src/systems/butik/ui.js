@@ -55,7 +55,7 @@ function rolRaf(state) {
     const owned = state.roller.includes(reng.key);
     return urunSatiri({
       ...reng,
-      durum: owned ? 'Bu renk zaten sende, adın onunla yazılıyor.' : fiyat(reng.price),
+      durum: owned ? 'Bu renk zaten sende, adın onunla yazılıyor.' : `Fiyatı ${fiyat(reng.price)}. Bir kez alınır, kalıcıdır.`,
       id: `${IDS.rol}${reng.key}`,
       etiket: `Al · ${number(reng.price)}`,
       sahipEtiketi: owned ? 'Sahipsin' : null,

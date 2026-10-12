@@ -89,7 +89,7 @@ module.exports = ({ mock, ui, src }) => {
     ),
     hataCase(
       'hata-renk-sende',
-      'Renk zaten sahip: ikinci kez para istenmez',
+      'Renk zaten sende: ikinci kez para istenmez',
       'Sahip olunan rengin düğmesine basınca',
       'Bu renk zaten sende.',
       'Sunucuda adın o rolün rengiyle yazılıyor.',
