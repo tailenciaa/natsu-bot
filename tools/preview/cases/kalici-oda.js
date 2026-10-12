@@ -161,7 +161,7 @@ module.exports = ({ mock, src }) => {
 
     {
       id: 'oda-paneli',
-      title: '/kalici-oda odam: oda kontrol paneli ve şart durumu',
+      title: '/kalici-oda: oda kontrol paneli ve şart durumu',
       where: 'Komutla açıldığı kanal',
       visibility: 'public',
       kind: 'message',
@@ -169,7 +169,7 @@ module.exports = ({ mock, src }) => {
     },
     {
       id: 'oda-paneli-yeni',
-      title: '/kalici-oda odam: henüz haftalık kaydı olmayan oda',
+      title: '/kalici-oda: henüz haftalık kaydı olmayan oda',
       where: 'Komutla açıldığı kanal',
       visibility: 'public',
       kind: 'message',
@@ -177,7 +177,7 @@ module.exports = ({ mock, src }) => {
     },
     {
       id: 'oda-paneli-yalniz',
-      title: '/kalici-oda odam: odada başka üye yokken üye menüleri',
+      title: '/kalici-oda: odada başka üye yokken üye menüleri',
       where: 'Komutla açıldığı kanal',
       visibility: 'public',
       kind: 'message',
@@ -214,7 +214,39 @@ module.exports = ({ mock, src }) => {
     { id: 'form-limit', title: 'Form: kişi limiti', where: 'Limiti Ayarla butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.limitModal(20) },
     { id: 'form-isim', title: 'Form: oda ismi', where: 'İsmi Değiştir butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.renameModal('Müzik Odası') },
 
-    { id: 'liste', title: '/kalici-oda liste: iki oda ve bekleyen başvuru', where: 'Yetkili komut kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomList([room(), second], 3)) },
-    { id: 'liste-bos', title: '/kalici-oda liste: hiç oda yok', where: 'Yetkili komut kanalı', visibility: 'public', kind: 'message', build: () => message(k.roomList([], 0)) },
+    // Yönetici tarafı: komut yok, paneldeki düğmenin açtığı sayfa var (oda numarası yazılmaz, oda menüden seçilir)
+    {
+      id: 'yonet-liste',
+      title: 'Odaları Yönet: iki oda ve bekleyen başvuru',
+      where: 'Paneldeki "Odaları Yönet" düğmesi',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => message(k.roomAdmin([room(), second], new Map([[owner.id, 'Mehmet'], [a.id, 'Ayşe Yılmaz']]), 3)),
+    },
+    {
+      id: 'yonet-liste-bos',
+      title: 'Odaları Yönet: hiç oda yok',
+      where: 'Paneldeki "Odaları Yönet" düğmesi',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => message(k.roomAdmin([], new Map(), 0)),
+    },
+    {
+      id: 'yonet-oda',
+      title: 'Oda yönetim kartı: devir menüsü ve kapatma düğmesi',
+      where: 'Odaları Yönet · oda seçilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => message(k.roomAdminCard(room(), denetim.statusOf(room()))),
+    },
+    {
+      id: 'yonet-devredildi',
+      title: 'Oda yönetim kartı: sahiplik devrinden sonra',
+      where: 'Devir menüsü seçilince',
+      visibility: 'ephemeral',
+      kind: 'message',
+      build: () => message(k.roomAdminCard(room({ ownerId: a.id, members: [owner.id, b.id, c.id] }), denetim.statusOf(room()), `**Sahiplik devredildi:** <@${owner.id}> yeni sahip; odasına **/kalici-oda** ile erişiyor.`)),
+    },
+    { id: 'form-kapat', title: 'Form: odayı kapatma sebebi', where: 'Odayı Kapat butonu', visibility: 'ephemeral', kind: 'modal', build: () => k.closeModal(room()) },
   ];
 };
