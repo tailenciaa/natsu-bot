@@ -115,6 +115,23 @@ function sureKarti({ oneren, hedef, user, at = Date.now() }) {
   });
 }
 
+// Kabul anında yüzük elde kalmamışsa kart bu karta döner: kayıt açılmaz, çift rolü verilmez
+function gecersizKarti({ oneren, hedef, user, at = Date.now() }) {
+  return core.receipt({
+    title: config.basliklar.gecersiz,
+    sub: `${çift(oneren, hedef)} için teklif kabul edildi ama yüzük bulunamadı; evlilik kaydedilmedi.`,
+    user,
+    accent: 'warning',
+    pairs: [
+      ['Teklif Eden', mention(oneren)],
+      ['Muhatap', mention(hedef)],
+      ['Sebep', core.chip('yüzük yok')],
+    ],
+    note: config.notlar.gecersiz,
+    at,
+  });
+}
+
 // Teklifinden vazgeçen tarafın kartı
 function iptalKarti({ oneren, hedef, user, at = Date.now() }) {
   return core.receipt({
@@ -229,6 +246,7 @@ function durumPaneli(state) {
       've yıl dönümü ödülünü gösterir.',
     thumbnail: state.user.displayAvatarURL({ size: 256 }),
     blocks: [
+      state.feedback ? `**${state.feedback}**` : null,
       state.evlilik ? evlilikBloku(state) : `### Bekârsın\n${core.chip('evli değilsin')}`,
       bekleyenBloku(state),
       state.evlilik ? null : sartBloku(state),
@@ -297,6 +315,7 @@ module.exports = {
   evlilikKarti,
   retKarti,
   sureKarti,
+  gecersizKarti,
   iptalKarti,
   bosanmaKarti,
   yilDonumuKarti,

@@ -61,6 +61,7 @@ module.exports = {
     yuzuk: 'Yüzük Butikte satılır ve kabul anında yakılır: /bakiye > Butik.',
     ret: 'Geri çevrilen teklif yüzük kaybettirmez; aynı kişiye yeniden teklif için kısa bir bekleme var.',
     sure: 'Karşılık gelmeyen teklif kendiliğinden kapanır, yüzük elde kalır.',
+    gecersiz: 'Yüzük yanmadığı için hiçbir şey kaydedilmedi; raftan yeniden alıp teklif edebilirsin.',
     evli: 'Evli rolü çiftin ikisine de verilir; üye sunucudan düşüp dönerse bot rolü geri verir.',
     bosanma: 'Boşanma bedeli Devletin Kasasına yazar; bir gün bir soyguncuya dağılır.',
   },
