@@ -1,6 +1,7 @@
 // Kalıcı oda sisteminin mesajları: kurallar ve gereksinimler paneli, başvurunun üye seçimi adımı ve formu,
-// yöneticinin karar verdiği başvuru kartı, sahibine giden teslim kartı, /kalici-oda odam komutuyla açılan oda kontrol
-// paneli, şart uyarı kartları, oda listesi ve duyuru kanalına düşen açılış/kapanış kayıtları.
+// yöneticinin karar verdiği başvuru kartı, sahibine giden teslim kartı, /kalici-oda komutuyla açılan oda kontrol
+// paneli, şart uyarı kartları, paneldeki düğmeden açılan yönetici oda sayfası ve duyuru kanalına düşen
+// açılış/kapanış kayıtları.
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -33,6 +34,13 @@ const IDS = {
   add: 'kalici-oda-uye-ekle', // kalici-oda-uye-ekle:0 (menünün önekli yönlenmesi için sabit ek)
   remove: 'kalici-oda-uye-cikar', // kalici-oda-uye-cikar:0
   transfer: 'kalici-oda-devret', // kalici-oda-devret:0
+  manage: 'kalici-oda-yonet', // paneldeki yönetici düğmesi: oda yönetim sayfasını açar
+  pickRoom: 'kalici-oda-yonet-oda', // kalici-oda-yonet-oda:0 (yönetilecek odayı seçme menüsü)
+  adminTransfer: 'kalici-oda-yonet-devret', // kalici-oda-yonet-devret:<oda no> (yöneticinin sahiplik devri menüsü)
+  close: 'kalici-oda-yonet-kapat', // kalici-oda-yonet-kapat:<oda no>
+  closeForm: 'kalici-oda-yonet-kapat-form', // kalici-oda-yonet-kapat-form:<oda no>
+  closeInput: 'kalici-oda-yonet-sebep',
+  back: 'kalici-oda-yonet-liste', // oda kartından oda seçme sayfasına dönüş
 };
 
 // Üye seçim menüsü: Discord kendi üye arama listesini gösterir, odadakileri tek tek saymaya gerek kalmaz
@@ -89,6 +97,13 @@ function applyPanel() {
           'Ses şartı, odayı kullanacakların birlikte geçirdiği toplam süredir; başvuruda hesaplanır, oda açık kaldıkça her hafta yeniden ölçülür.',
         ].join('\n'),
       ),
+    )
+    .addSeparatorComponents(divider())
+    // Yönetici tarafı: odalar tek tek numarayla değil bu düğmeden açılan sayfada seçilir. Düğme kalıcı panelde olduğu
+    // için herkese görünür, işlem yetkisi dışarıda denetlenir.
+    .addTextDisplayComponents(text('### Yöneticiler İçin\nOdaları bu düğmeden listeler, kapatır ya da sahibini değiştirirsin.'))
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.manage).setLabel('Odaları Yönet').setStyle(ButtonStyle.Secondary)),
     );
 }
 
