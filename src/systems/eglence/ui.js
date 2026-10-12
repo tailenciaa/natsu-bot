@@ -29,7 +29,7 @@ function kart({ eylem, saldirgan, hedef, girisimNo, sonAt }) {
       blocks: [
         `### Taraflar\n${core.rows([
           ['Şakayı Yapan', `<@${saldirgan.id}>`],
-          ['Muhap', `<@${hedef.id}>`],
+          ['Muhatap', `<@${hedef.id}>`],
           ['Karşılık Ödülü', aralik(e.odul)],
           ['Süre', core.rel(sonAt)],
         ])}`,
@@ -58,9 +58,9 @@ function karsilikSonuc({ eylem, saldirgan, hedef, odenenSaldirgan, odenenHedef, 
     pairs: [
       ['Eylem', core.chip(e.ad)],
       ['Şakayı Yapan', `<@${saldirgan.id}>`],
-      ['Muhap', `<@${hedef.id}>`],
+      ['Muhatap', `<@${hedef.id}>`],
       ['Şakayı Yapana Yatan', coin(odenenSaldirgan)],
-      ['Muhaba Yatan', coin(odenenHedef)],
+      ['Muhataba Yatan', coin(odenenHedef)],
       ['Karttan Çıkan', coin(odenenSaldirgan + odenenHedef)],
     ],
     note: kesinti ? config.tavanNotu : undefined,
@@ -79,7 +79,7 @@ function karsizSonuc({ eylem, saldirgan, hedef, user, at = Date.now() }) {
     pairs: [
       ['Eylem', core.chip(e.ad)],
       ['Şakayı Yapan', `<@${saldirgan.id}>`],
-      ['Muhap', `<@${hedef.id}>`],
+      ['Muhatap', `<@${hedef.id}>`],
       ['Kaçan Ödül', aralik(e.odul)],
     ],
     at,
