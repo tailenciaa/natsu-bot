@@ -65,11 +65,9 @@ async function handleUserUpdate(oldUser, newUser) {
   if (member) await handleChange(member);
 }
 
+// Komutu yok: etiket takılıp çıkarıldıkça kendiliğinden çalışır, sonucu üye profili ve rol gösterir.
 module.exports = {
   name: 'etiket',
-  commands,
-  help: { category: ['yetki', 'Yetkili İşlemleri'], access: { 'etiket-onizleme': 'Yöneticiler' }, },
-  slash: { 'etiket-onizleme': handlePreview },
   events: {
     [Events.ClientReady]: handleReady,
     [Events.UserUpdate]: handleUserUpdate,

@@ -78,8 +78,6 @@ module.exports = ({ mock, src }) => {
       build: () => ({ components: [aktif.weeklyAnnounce(guild, { ses: top(2, (i) => 7200 - i * 900), mesaj: top(1, () => 120), yayin: [] })], ...pub }),
     },
     { id: 'saygi-verildi', title: 'Saygınlık verildi', where: '/saygi-ver ya da +rep', visibility: 'public', kind: 'message', build: () => ({ components: [saygi.given(users[0].id, users[1].id, 7)], ...pub }) },
-    { id: 'saygi-tablo', title: 'Saygınlık tablosu', where: '/saygi-siralama', visibility: 'public', kind: 'message', build: () => ({ components: [saygi.table(guild, top(15, (i) => 60 - i * 3))], ...pub }) },
-    { id: 'saygi-bos', title: 'Saygınlık tablosu: kayıt yok', where: '/saygi-siralama', visibility: 'public', kind: 'message', build: () => ({ components: [saygi.table(guild, [])], ...pub }) },
     {
       id: 'saygi-haftalik',
       title: 'Haftanın saygın üyesi duyurusu',
