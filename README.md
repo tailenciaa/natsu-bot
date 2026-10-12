@@ -55,10 +55,9 @@ Butonla yapılabilen işler için komut yoktur. Komutlar şunlardır; `/yardim` 
 | `/evlilik durum` | Kendi evlilik hâlin: eşin, birlikte geçen gün, yıl dönümü ödülü, bekleyen teklifin ve teklif şartların. Sayfadaki düğmeler dönüm ödülünü toplar, tekliften vazgeçer ve boşanma bedelini öder | Herkes |
 | `/evlilik liste` | Sunucudaki evli çiftler ve birlikte geçirdikleri gün | Herkes |
 | `/evlilik bosan` | Eşinden boşanırsın; bedel Devletin Kasasına yazar ve iki tarafa da yeni teklif beklemesi konur | Evliler |
-| `/siralama` | Mesaj ve ses sıralaması (dönem, rol ve tür filtreli) | Herkes |
+| `/siralama` | Tek menüden altı sıralama: mesaj, ses, yayın, saygınlık, coin ve VIP; rol ile filtrelenir, dönem yalnızca mesaj/ses/yayında seçilir | Herkes |
 | `/saygi-ver kullanici` | Bir üyeye +1 saygınlık verir (günde bir kez, mesaja `+rep @üye` yazarak da verilir) | Herkes |
 | `/saygi-siralama` | Tüm zamanların saygınlık tablosu | Herkes |
-| `/vip-siralama` | VIP üyeleri VIP olma sırasına göre listeler | Herkes |
 | `/vip-ver kullanici` | Bir üyeye VIP rolünü verir | Yöneticiler |
 | `/guvenilir-partnerler` | Güvenilir partner sunucuların listesi | Herkes |
 | `/partner-musaitlik` | Teklif atamaları için partner müsaitliğini ayarlar | Partner yetkilileri |

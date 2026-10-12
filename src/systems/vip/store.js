@@ -1,5 +1,5 @@
 // VIP verileri: kullanıcı ID'si -> ne zaman ve kim tarafından VIP verildiği. Rolün kendisi tek doğru kaynaktır
-// (bot kapanıp açılsa da Discord'daki rol kaybolmaz); bu kayıt sadece /vip-siralama'da sıralama için kullanılır.
+// (bot kapanıp açılsa da Discord'daki rol kaybolmaz); bu kayıt sadece VIP'in /siralama türündeki tarihi gösterir.
 const { data, save } = require('../../core/db');
 
 data.vip ??= {};
