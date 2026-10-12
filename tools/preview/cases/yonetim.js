@@ -15,6 +15,13 @@ module.exports = ({ mock, ui, src }) => {
   const ep = { flags: ui.EPHEMERAL_CV2, allowedMentions: { parse: [] } };
   const noMentions = { allowedMentions: { parse: [] } };
 
+  // Panellerde Discord CDN afişi üretimde yerel eke döner (core/banner.js + core/panel.js syncPanel).
+  // Önizleme de aynı kapıdan geçsin ki attachment:// adı ile gönderilen dosya hep birbirini tutsun.
+  const bannerFiles = (container) => {
+    const names = [...JSON.stringify(container.toJSON()).matchAll(/attachment:\/\/([^"]+)/g)].map((m) => m[1]);
+    return src('core/banner').attachmentsFor(names);
+  };
+
   // Sicil kaydı (sicil/moderation.js punish ile aynı şema)
   let number = 11;
   const punishment = (o = {}) => {
@@ -362,7 +369,10 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Partner görme kanalı, bot açılırken gönderilen kalıcı panel',
       visibility: 'panel',
       kind: 'message',
-      build: () => ({ components: [pg.panel()] }),
+      build: () => {
+        const container = pg.panel();
+        return { components: [container], files: bannerFiles(container), ...noMentions };
+      },
     },
   ];
 };
