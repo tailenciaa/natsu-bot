@@ -272,29 +272,6 @@ function reviewCard(request, decided) {
       ),
     );
 }
-    const verdict =
-      decided.sonuc === 'onayla'
-        ? `<@${decided.by}> talebi **onayladı**; metin paylaşım kanalına gönderildi.`
-        : decided.banned
-          ? `<@${decided.by}> talebi **reddetti** ve sunucuyu **yasaklı listesine** aldı.`
-          : `<@${decided.by}> talebi **reddetti**.`;
-    return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Karar\n${verdict}`));
-  }
-
-  return container
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:onayla`).setLabel('Onayla').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:reddet`).setLabel('Reddet').setStyle(ButtonStyle.Danger),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.startBan}:${request.serverId}`).setLabel('Yasaklıya Al').setStyle(ButtonStyle.Danger),
-      ),
-    );
-}
 
 // Paylaşım kanalındaki standart partner kartı. Üyenin tek işi ilanı okuyup sunucuya girmek: metindeki Discord
 // daveti kartın en görünür yerine butona çevrilir, yetkilinin yönetim butonları en altta ayrı bir başlıkta durur.
@@ -600,7 +577,8 @@ function trustedListPanel(entries, page = 0, cardName = null) {
 
 // Seçilen güvenilir partnerin detayı; sadece yetkiliye görünür
 function trustedDetail(entry) {
-  return new ContainerBuilder()
+  const url = inviteUrl(entry.content);
+  const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         `Sunucu ${serverLabel(entry)}`,
@@ -616,13 +594,20 @@ function trustedDetail(entry) {
           field('Ekleyen', `<@${entry.addedBy}>`),
           field('Partner Yetkilisi', contactsText(entry)),
           field('Partner Durumu', chip(isBusy(entry) ? 'Meşgul' : 'Müsait')),
+          url ? field('Davet', chip(inviteLabel(url))) : null,
         ]),
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`))
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(...trustedActionRow(entry));
+    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`));
+
+  if (url) {
+    container.addActionRowComponents(
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
+    );
+  }
+
+  return container.addSeparatorComponents(divider()).addActionRowComponents(...trustedActionRow(entry));
 }
 
 // Güvenilir kayda partner yetkilisi(leri) ekler ya da günceller; current (varsa) tüm liste düzenlenmek üzere hazır gelir
@@ -900,6 +885,7 @@ function panelOfferModal(trustedId) {
 module.exports = {
   IDS,
   isBusy,
+  inviteUrl,
   PANEL_PAGE_SIZE,
   partnerPanel,
   panelOfferModal,
