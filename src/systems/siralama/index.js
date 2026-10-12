@@ -170,7 +170,8 @@ async function handleCustomSubmit(interaction) {
   if (days < 1 || days > 365) {
     return replyError(interaction, 'Geçerli bir gün sayısı yazmalısın.', '1 ile 365 arasında bir tam sayı gir.');
   }
-  return show(interaction, view(interaction, type, 'ozel', days, roleId, 0));
+  // Dönem saymayan bir tür için form açıldıysa (eski bir mesajdan) gün yok sayılır
+  return show(interaction, await view(interaction, type, ui.DONEM.has(type) ? 'ozel' : 'genel', days, roleId, 0));
 }
 
 module.exports = {

@@ -24,6 +24,13 @@ module.exports = {
 
   balance: (userId) => data.coins[userId]?.coins ?? 0,
 
+  // Bütün cüzdanlar { userId: bakiye }: coin sıralaması gibi toplu okumalar için, boş cüzdanlar listelenmez
+  balances() {
+    const out = {};
+    for (const [userId, w] of Object.entries(data.coins)) if (w.coins > 0) out[userId] = w.coins;
+    return out;
+  },
+
   earned: (userId) => data.coins[userId]?.earned ?? 0,
 
   streak: (userId) => data.coins[userId]?.streak ?? 0,
