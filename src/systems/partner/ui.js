@@ -70,6 +70,17 @@ const sanitize = (value) => String(value).replace(/@everyone/gi, '@​everyone')
 // yoksa metindeki bir etiket kartı her gönderişte ayrıca bildirim yollardı
 const inert = (value) => sanitize(value).replace(/<@([!&]?)(\d+)>/g, '<@​$1$2>');
 
+// Partner metnindeki Discord davet bağlantısı: kartın "Sunucuya Katıl" düğmesi buradan üretilir. Yalnızca Discord'un
+// kendi davet alanları alınır; üçüncü kişi kısaltma servisleri bağlantının nereye gittiği bilinmediği için düğmeye
+// taşınmaz, ilanın metni içinde okunur kalır.
+const INVITE_RE = /(?:discord\.gg|discord(?:app)?\.com\/invite)\/[\w-]+/i;
+const inviteUrl = (value) => {
+  const found = String(value ?? '').match(INVITE_RE);
+  return found ? `https://${found[0]}` : null;
+};
+// Kartta gösterilen davet: https:// başı düşürülür, üye gördüğü satırı kopyaladığında da aynı bağlantıya gider
+const inviteLabel = (url) => url.slice('https://'.length);
+
 // Standart başlık: büyük başlık ve iki satıra yayılan uzun normal yazılı açıklama (bütün mesajlar aynı genişlikte görünsün)
 const head = (title, sub) => text(`## ${title}\n${sub}`);
 
