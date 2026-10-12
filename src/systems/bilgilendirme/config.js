@@ -496,7 +496,7 @@ const ekonomiPanel = {
           items: [
             '`1.` **`/gunluk`** yaz, ilk coinlerini topla.',
             '`2.` **`/gorev`** yaz, bugünün üç görevine bak ve **Keşif Yolu** sekmesinden yürümeye başla.',
-            '`3.` **`/bakiye`** yaz; cüzdanın açılır, yanındaki **Görevler · Oyun Salonu · Arka Sokaklar · Şakalaş** ve **Mağaza · Kart Süsü · Butik · Yüzük & Renk · Siparişlerim** butonları bütün kapıları gösterir.',
+            '`3.` **`/bakiye`** yaz; cüzdanın açılır, yanındaki butonlar kazanma ve harcama kapılarının hepsini adlarıyla gösterir.',
             '`4.` **`/oyun`** ile ilk gezine çık ya da en düşük bahisle bir el çevir.',
             '`5.` **`/seviye`** ve **`/siralama`** ile nerede olduğunu gör.'
           ],
