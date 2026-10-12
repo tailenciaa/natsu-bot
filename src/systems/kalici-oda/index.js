@@ -747,8 +747,7 @@ const manageError = (interaction) => {
   if (isStaff(interaction, config.roles.reviewer)) return null;
   return config.roles.reviewer
     ? `Oda yönetimini yalnızca <@&${config.roles.reviewer}> rolündekiler ve yöneticiler kullanabilir.`
-    : 'Oda yönetimini yalnızca yöneticiler kullanabilir.'
-  ;
+    : 'Oda yönetimini yalnızca yöneticiler kullanabilir.';
 };
 
 // Oda numarasından kayıt: menü seçenekleri ve düğme ID'leri odayı numarası üzerinden taşır
