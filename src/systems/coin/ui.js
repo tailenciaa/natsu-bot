@@ -73,7 +73,7 @@ function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now(
     new ButtonBuilder().setCustomId(IDS.banter).setLabel('Şakalaş').setStyle(ButtonStyle.Secondary),
   );
   const harca = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza · Kart Süsleri').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza · Kart Süsü').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik · Yüzük & Renk').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId(`${IDS.orders}:0`).setLabel('Siparişlerim').setStyle(ButtonStyle.Secondary),
   );
