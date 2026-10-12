@@ -25,7 +25,7 @@ module.exports = {
       aciklama: 'Bir üyeye öpücük gönderirsin; karşılık gelirse ikiniz de coin kazanır.',
       baslik: 'Öpücük Karşılık Bekliyor',
       kart: '{vuran}, {hedef} kişisine bir öpücük kondurdu.',
-      karsilikEtiket: 'Öpücükle Karşılık Ver',
+      karsilikEtiket: 'Öperek Karşılık Ver',
       karsilik: '{hedef}, {vuran} kişisine öpücükle karşılık verdi.',
       odul: [10, 40],
       renk: 'success',
