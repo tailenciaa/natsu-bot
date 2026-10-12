@@ -121,9 +121,8 @@ async function publishPost(channel, request, trusted, banned, files = []) {
   if (!card && ad) await ad.delete().catch(() => {});
 
   request.adId = ad?.id ?? null;
-  request.postId = card?.id ?? null;
-  // Elle atılan ilanda kayıt henüz store'a yazılmamış olabilir: updateRequest yoksa sessizce geçer
-  store.updateRequest(request.id, { adId: request.adId, postId: request.postId });
+  // Kartın ID'si butonun geldiği mesajdan zaten biliniyor, yalnızca ilanın ID'si kayda yazılır
+  store.updateRequest(request.id, { adId: request.adId });
   return { ad, card };
 }
 
