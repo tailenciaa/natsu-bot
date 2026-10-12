@@ -123,7 +123,7 @@ function gunBloku(state) {
 function kurallarBloku() {
   return `### Nasıl İşler?\n` +
     `1. **/öp kullanici:@üye** ya da **/tokat kullanici:@üye** yaz; kart kanala düşer.\n` +
-    `2. Muhap **${dk(config.pencere)}** içinde kartındaki düğmeye basarsa ödül **iki tarafa da** yatar: ` +
+    `2. Muhatap **${dk(config.pencere)}** içinde kartındaki düğmeye basarsa ödül **iki tarafa da** yatar: ` +
     `öpücükte ${aralik(config.eylemler.op.odul)}, tokatta ${aralik(config.eylemler.tokat.odul)}.\n` +
     `3. Düğmeye basılmazsa kart karşılıksız kalır; kimse bir şey kaybetmez, kart sayacına yazılır.\n` +
     `4. Karşılık vermek için tek yol düğme: yazıyla "tamam" demek işlemez.\n` +

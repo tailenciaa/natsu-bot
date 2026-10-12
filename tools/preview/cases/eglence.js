@@ -1,4 +1,5 @@
-// Eğlence katmanı (src/systems/eglence): /öp ve /tokat ile atılan şaka kartları, karşılık ve karşılıksız sonuç kartları.
+// Eğlence katmanı (src/systems/eglence): /şakalaş sayfası, /öp ve /tokat ile atılan şaka kartları, karşılık ve
+// karşılıksız sonuç kartları.
 // Sayfadaki hiçbir coin sayısı elle kurulmaz: ödüller gerçek yazım kapısından (coin/store.addWin) geçer, kartta
 // okunan "cebine yatan" gerçekten yalandır; tavan doluysa kesinti de yine gerçek ölçümdür. Kartların sayısı,
 // ikilinin bekleme süresi ve kota gerçek store'a yazılır, sonra store'un kendi okumasından (durumOf, ikiliBekleme)
@@ -8,6 +9,7 @@ module.exports = ({ mock, ui, src }) => {
   const config = src('systems/eglence/config');
   const store = src('systems/eglence/store');
   const u = src('systems/eglence/ui');
+  const eglence = src('systems/eglence');
   const coinStore = src('systems/coin/store');
   const coinConfig = src('systems/coin/config');
 
