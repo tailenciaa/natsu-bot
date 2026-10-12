@@ -8,7 +8,7 @@
 const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { fetchTextChannel, respond, replyError } = require('../../core/helpers');
+const { fetchTextChannel, replyError } = require('../../core/helpers');
 const config = require('./config');
 const store = require('./store');
 const { levelFromXp } = require('./level');
@@ -25,8 +25,7 @@ const commands = [
     .setName('seviye')
     .setDescription('Mesaj ve ses seviyeni gösterir.')
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesine bakılacak üyeyi seçer, boş bırakırsan kendi seviyen gösterilir.'))
-    .addBooleanOption((o) => o.setName('test').setDescription('Yöneticiler için seviye atlama duyurusunun örneğini duyuru kanalına gönderir.')),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Seviyesine bakılacak üyeyi seçer, boş bırakırsan kendi seviyen gösterilir.')),
 ];
 
 // Üyenin XP'sine göre o türdeki (mesaj/ses) seviye rolünü eşitler: ulaştığı en yüksek ana seviyenin rolü verilir,
@@ -76,9 +75,9 @@ async function syncAllRoles(guild) {
 }
 
 // Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider).
-// ping false ise (örnek duyuru ya da ara seviye) etiket görünür ama kimseye bildirim gitmez. Gönderildiyse true döner.
-async function sendLevelUp(channel, user, kind, level, role, { ping = true } = {}) {
-  const allowedMentions = ping ? { users: [user.id] } : { parse: [] };
+// Gönderildiyse true döner.
+async function sendLevelUp(channel, user, kind, level, role) {
+  const allowedMentions = { users: [user.id] };
   try {
     const member = await channel.guild.members.fetch(user.id).catch(() => null);
     const image = await buildLevelUpCard(user, {
@@ -208,27 +207,8 @@ function handleMessage(message) {
   grantXp(message.guild, message.author.id, 'mesaj', amount).catch((err) => console.error('[seviye] Mesaj XP verilemedi:', err.message));
 }
 
-// /seviye test:True (sadece yöneticiler): komutu kullanan üye için örnek duyuruyu gerçek duyuru kanalına gönderir;
-// etiket görünür ama kimseye bildirim gitmez, sonuç sadece yöneticiye gösterilir
-async function sendTestAnnounce(interaction) {
-  if (!interaction.memberPermissions?.has('Administrator')) {
-    return replyError(interaction, 'Test duyurusunu sadece yöneticiler gönderebilir.', 'Kendi seviyeni görmek için komutu **test** seçeneği olmadan kullan.');
-  }
-  // GİZLİ İSTİSNA: bu bir test/önizleme; asıl duyuru kanala düşer, "gönderildi" geri bildirimi yöneticide kalır
-  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
-  const channel = await fetchTextChannel(interaction.guild, config.channel);
-  if (!channel) return replyError(interaction, 'Duyuru kanalı bulunamadı.', 'Kanalın **silinmediğinden** ve botun görebildiğinden emin ol.');
-  const roleId = config.roles.mesaj[15];
-  const role = roleId ? (interaction.guild.roles.cache.get(roleId) ?? null) : null;
-  const sent = await sendLevelUp(channel, interaction.user, 'mesaj', 15, role, { ping: false });
-  if (!sent) return replyError(interaction, 'Örnek duyuru gönderilemedi.', 'Botun duyuru kanalında **mesaj** ve **dosya gönderme** izni olmalı.');
-  // Yanıt gizli ertelendiği için burada da ephemeral belirtilir; bayraklar uyuşmazsa Discord düzenlemeyi reddeder
-  return respond(interaction, core.alert('Örnek duyuru gönderildi.', `<#${channel.id}> kanalına bakabilirsin. **Kimseye bildirim gitmedi.**`, 'success'), { ephemeral: true });
-}
-
 // /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta
 async function handleCommand(interaction) {
-  if (interaction.options.getBoolean('test')) return sendTestAnnounce(interaction);
   const user = interaction.options.getUser('kullanici') ?? interaction.user;
   if (user.bot) return replyError(interaction, 'Botların seviyesi bulunmaz.', 'Bir üye seçerek tekrar dene.');
   await interaction.deferReply();
