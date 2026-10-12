@@ -212,10 +212,12 @@ module.exports = {
   },
 
   // Partner istatistikleri: paylaşım kartının altındaki bugün / bu hafta / bu ay sayıları. Bir talebin sonucu
-  // decidedAt ile (yoksa createdAt ile) sayılır; silinen gönderiler talep sayısına girmez.
-  partnerStats(guildId, requestId = null) {
+  // decidedAt ile (yoksa createdAt ile) sayılır; silinen gönderiler sayılmaz. current: kartı çizilen kayıt —
+  // teklif akışında paylaşım kayıttan önce yapılır, o yüzden henüz store'da olmayan kayıt listeye elle eklenir.
+  partnerStats(guildId, current = null) {
     const now = Date.now();
     const requests = Object.values(data.partnerRequests).filter((r) => r.guildId === guildId);
+    if (current?.guildId === guildId && !requests.some((r) => r.id === current.id)) requests.push(current);
     const approved = requests
       .filter((r) => r.status === 'approved')
       .sort((a, b) => (a.decidedAt ?? a.createdAt) - (b.decidedAt ?? b.createdAt));
@@ -234,7 +236,7 @@ module.exports = {
       guvenilir: Object.values(data.trustedPartners).filter((p) => p.guildId === guildId).length,
       yasakli: Object.keys(data.partnerBans).length,
       // Bu kayıt onaylanmış partnerler arasında kaçıncı; silinmiş/bulunamazsa null
-      sira: requestId ? approved.findIndex((r) => r.id === requestId) + 1 || null : null,
+      sira: current ? approved.findIndex((r) => r.id === current.id) + 1 || null : null,
     };
   },
 };

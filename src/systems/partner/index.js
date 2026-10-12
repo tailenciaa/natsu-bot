@@ -93,7 +93,7 @@ async function handleRequestChannel(message) {
 // ── Paylaşım kanalı: her mesaj silinip bot tarafından yeniden, ilan + yetkili kartı olarak paylaşılır ──────
 
 // Kartın altındaki sayılar: kayda tıklandığı anda yeniden sayılır, saklanmaz
-const statsOf = (request) => store.partnerStats(request.guildId, request.id);
+const statsOf = (request) => store.partnerStats(request.guildId, request);
 
 // Partner ilanı iki mesaj olur. Üstte düz mesaj: Discord davet bağlantısının önizlemesini ve ekleri ancak düz
 // mesajda gösteriyor, üye ilanı kartın içinde dümdüz metin olarak kalıyordu. Altta CV2 kart: kaydın durumu,
@@ -679,7 +679,7 @@ async function handleUnban(interaction) {
 
   store.unbanUser(request.requesterId);
   const trustedEntry = store.trustedBySource(interaction.guildId, requestId);
-  await interaction.update({ components: [ui.postCard(request, trustedEntry, false)], allowedMentions: { parse: [] } });
+  await interaction.update({ components: [ui.postCard(request, trustedEntry, false, statsOf(request))], allowedMentions: { parse: [] } });
 }
 
 // Paylaşım kartındaki "Partneri Sil": sadece gönderiyi kaldırır, kullanıcıyı yasaklamaz
@@ -687,7 +687,10 @@ async function handleDeletePost(interaction) {
   const requestId = interaction.customId.slice(ui.IDS.deletePost.length + 1);
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
 
+  const request = store.getRequest(requestId);
   store.updateRequest(requestId, { status: 'silindi' });
+  // İlan kartın üstünde ayrı bir düz mesaj olarak duruyor: kart silinince metin de kaldırılır, yoksa sahipsiz ilan kalır
+  if (request?.adId) await interaction.channel.messages.delete(request.adId).catch(() => {});
   await interaction.message.delete().catch(() => {});
   return respond(interaction, core.alert('Partner gönderisi silindi.', null, 'danger'));
 }
