@@ -108,7 +108,7 @@ async function publishPost(channel, request, trusted, banned, files = []) {
     });
   const card = await channel
     .send({
-      components: [ui.postCard(request, trusted, banned, store.partnerStats(request.guildId, request.id))],
+      components: [ui.postCard(request, trusted, banned, statsOf(request))],
       flags: core.CV2,
       allowedMentions: { parse: [] },
     })
@@ -506,7 +506,7 @@ async function handleTrustedAdd(interaction) {
   if (request.source === 'manuel') return interaction.showModal(ui.trustedAddModal(requestId, interaction.message.id));
 
   const entry = createTrustedRecord(interaction, request, [request.requesterId]);
-  await interaction.update({ components: [ui.postCard(request, entry, store.isBanned(request.requesterId))], allowedMentions: { parse: [] } });
+  await interaction.update({ components: [ui.postCard(request, entry, store.isBanned(request.requesterId), statsOf(request))], allowedMentions: { parse: [] } });
   await refreshTrustedPanel(interaction.client, interaction.guildId);
 
   // Karşı tarafın yetkilisine bizim metni ve Partner Paneli'ni gönder
@@ -640,7 +640,7 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
 
   const channel = await fetchTextChannel(interaction.guild, config.channels.posts);
   await channel?.messages
-    .edit(messageId, { components: [ui.postCard(request, entry, contactIds.some((id) => store.isBanned(id)))], allowedMentions: { parse: [] } })
+    .edit(messageId, { components: [ui.postCard(request, entry, contactIds.some((id) => store.isBanned(id)), statsOf(request))], allowedMentions: { parse: [] } })
     .catch(() => {});
   await refreshTrustedPanel(interaction.client, interaction.guildId);
 
@@ -665,7 +665,7 @@ async function handleBan(interaction) {
   const trustedEntry = store.trustedBySource(interaction.guildId, requestId);
   if (trustedEntry) store.removeTrusted(trustedEntry.id);
 
-  await interaction.update({ components: [ui.postCard(request, null, true)], allowedMentions: { parse: [] } });
+  await interaction.update({ components: [ui.postCard(request, null, true, statsOf(request))], allowedMentions: { parse: [] } });
   if (trustedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
 }
 
