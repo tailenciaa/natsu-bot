@@ -4,8 +4,9 @@
 // ses kanalının kendi sohbetidir. Herkes odayı kanal listesinde görür ama bağlanamaz ve sohbetini okuyamaz; bu
 // erişim yalnızca odadakilerdedir. Sahibine teslim kartı DM olarak gider, odası olan üye oda sahibi rolünü alır ve
 // oda ayarlarını **/kalici-oda** komutuyla yönetir (isim, kişi limiti, üye ekle/çıkar, sahiplik devri) — panel
-// odanın kanalına düşmez. Yöneticinin oda işleri (listeleme, kapatma, devir) komut değil: başvuru panelindeki
-// **Odaları Yönet** düğmesinden açılan sayfada oda menüden seçilir, numara yazılmaz. Oda kalıcıdır ama ay sonu
+// odanın kanalına düşmez. Yöneticinin oda işleri (listeleme, kapatma, devir) de aynı komutun içindedir: odası olan
+// yönetici panelindeki **Odaları Yönet** düğmesinden, odası olmayan yönetici komutun doğrudan açtığı oda
+// listesinden girer; oda menüden seçilir, numara yazılmaz. Oda kalıcıdır ama ay sonu
 // şartına bağlıdır: odadakilerin ses süresi her hafta ölçülüp odaya yazılır, hedefin altındaki hafta sahibine
 // hatırlatılır ve ay başında geçen ay şartı karşılamayan oda "şart yetersizliği" ile kapatılır. Açılış ve kapanış
 // duyuru kanalında herkese açık kart olarak görünür, sahibi ayrılmış odayı yönetici bir üyeye devreder. Odanın ses
@@ -101,8 +102,9 @@ async function takeOwnerRole(guild, userId) {
   await member.roles.remove(config.roles.owner, 'Kalıcı odası kapandı ya da devredildi').catch(hata('Oda sahibi rolü alınamadı'));
 }
 
-// Komut tek bir işe iner: üyenin kendi odasının paneli. Yöneticinin oda işleri komut değil panel düğmesidir,
-// bu yüzden komutta alt komut katmanı yok. Yetki kontrolü komut tanımında değil handler içinde yapılır.
+// Komut tek kapıdır: üye kendi odasının panelini açar, yöneticide oda yönetimi ya bu panelin altındaki düğmeden
+// ya da (odası yoksa) komutun doğrudan açtığı listeden yürür. Bu yüzden komutta alt komut katmanı yok.
+// Yetki kontrolü komut tanımında değil handler içinde yapılır.
 const commands = [
   new SlashCommandBuilder()
     .setName('kalici-oda')
@@ -422,7 +424,7 @@ async function rosterOf(guild, room) {
 }
 
 async function redraw(interaction, room) {
-  const panel = ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room));
+  const panel = ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room), !manageError(interaction));
   return interaction.editReply({ components: [panel], allowedMentions: { parse: [] } }).catch(hata('Oda paneli güncellenemedi'));
 }
 
@@ -581,9 +583,16 @@ async function handleRenameSubmit(interaction) {
 
 // /kalici-oda: üyenin kendi odasının panelini komutun kullanıldığı kanalda açar.
 // Komutla açılan sayfa kalıcı ve herkese açıktır; panel bir odanın ayarıdır, gizli tutulacak kişi kaydı değildir.
+// Yöneticide komut tek kapı olmaya devam eder: odası varsa panelin altına oda yönetimi düğmesi gelir, yoksa komut
+// doğrudan oda listesini açar.
 async function handleMyRoom(interaction) {
   const room = store.roomsOwned(interaction.guildId, interaction.user.id)[0];
+  const canManage = !manageError(interaction);
   if (!room) {
+    if (canManage) {
+      await interaction.deferReply({ flags: core.CV2 });
+      return respond(interaction, await roomPage(interaction));
+    }
     return replyError(
       interaction,
       'Senin bir kalıcı odan yok.',
@@ -593,7 +602,7 @@ async function handleMyRoom(interaction) {
     );
   }
   await interaction.deferReply({ flags: core.CV2 });
-  return respond(interaction, ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room)));
+  return respond(interaction, ui.roomPanel(room, statusOf(room), await rosterOf(interaction.guild, room), canManage));
 }
 
 // ── Odayı açık tutan şart ───────────────────────────────────────────────────────
@@ -745,9 +754,10 @@ async function closeRoom(guild, room, reason, dm) {
 }
 
 // ── Yönetici oda sayfası ──────────────────────────────────────────────────────
-// Oda listeleme, kapatma ve devir komut değil başvuru panelindeki düğmenin açtığı sayfadır: yönetici oda numarası
-// yazmaz, odayı menüden seçer. Düğme kalıcı panelde herkese görünür, yetki her işlemde ayrıca denetlenir ve sayfa
-// gizli açılır (SABİT PANEL KURALI: kalıcı panelin buton cevabı kanalda birikmez).
+// Oda listeleme, kapatma ve devirin kapısı **/kalici-oda** komutudur: odası olan yönetici panelindeki düğmeden,
+// odası olmayan yönetici komutun doğrudan açtığı listeden girer. Yönetici oda numarası yazmaz, odayı menüden seçer.
+// Yetki her işlemde ayrıca denetlenir. Düğmenin açtığı sayfa gizli gelir (SABİT PANEL KURALI: panel mesajı kanalda
+// kalıcı durur, buton cevabı birikmesin); komutun doğrudan açtığı liste sayfaysa kalıcı ve herkese açıktır.
 
 const manageError = (interaction) => {
   if (isStaff(interaction, config.roles.reviewer)) return null;
