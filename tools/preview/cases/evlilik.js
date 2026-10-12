@@ -217,7 +217,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: sunucuda henüz az vakit geçirmiş üye teklif götüremiyor',
       '/evlilik teklif denemesinde',
       'Teklif için seviyen düşük.',
-      `Giriş için seviye ${config.teklif.minSeviye} gerekir, ölçülen seviyen ${evlilik.durumOf(yeni.uid, yeni.user).seviye}.`,
+      `Teklif götürmek için seviye ${config.teklif.minSeviye} gerekir, senin seviyen ${evlilik.durumOf(yeni.uid, yeni.user).seviye}.`,
     ),
     hataCase(
       'hata-hapis',

@@ -193,7 +193,7 @@ module.exports = ({ mock, ui, src }) => {
       'Reddetme: bölge üyenin seviyesine kapalı',
       'Kilitli bölge düğmesine eski bir sayfadan basıldığında',
       'Bu bölge senin seviyene açık değil.',
-      `${magara.ad} için seviye ${magara.seviye} gerekir, senin ölçülen seviyen ${kilitliSeviye}.`,
+      `${magara.ad} için seviye ${magara.seviye} gerekir, senin seviyen ${kilitliSeviye}.`,
     ),
     hataCase(
       'hata-kota',

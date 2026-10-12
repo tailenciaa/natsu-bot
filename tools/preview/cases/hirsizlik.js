@@ -243,10 +243,10 @@ module.exports = ({ mock, ui, src }) => {
     // ── Reddetmeler ──────────────────────────────────────────────────────────
     hataCase(
       'hata-seviye',
-      'Reddetme: suç dünyası üyenin seviyesine kapalı',
+      'Reddetme: sokaklar üyenin seviyesine kapalı',
       '/çal uye kullanan yeni hesapta',
-      'Suç dünyası senin seviyene kapalı.',
-      `Girişim için seviye ${config.minSeviye} gerekir, ölçülen seviyen ${suc.durumOf(yeni.uid).seviye}.`,
+      'Sokaklar sana henüz kapalı.',
+      `Bir girişim için seviye ${config.minSeviye} gerekir, senin seviyen ${suc.durumOf(yeni.uid).seviye}. Şartlar /sokak sayfasında duruyor.`,
     ),
     hataCase(
       'hata-hapis',
@@ -275,6 +275,13 @@ module.exports = ({ mock, ui, src }) => {
       'Dokunulmazlık süresinde /çal uye denemesinde',
       'Bu üye dokunulmaz.',
       `${ui.rel(suc.durumOf(mafya.uid).dokunulmaz)} kadar hedef olamaz; yeni soyulan ya da direnen üye bir süre korunur.`,
+    ),
+    hataCase(
+      'hata-yeni-uye',
+      'Reddetme: hedef üye sunucuya yeni geldiği için soyulamaz',
+      'Koruma seviyesinin altındaki üyeye /çal uye denemesinde',
+      'Bu üye yeni, henüz soyulamaz.',
+      `Kurbanın seviyesi en az ${config.korumaSeviye} olmalı. <@${yeni.uid}> şu an ${suc.durumOf(yeni.uid).seviye} seviyesinde; daha oturmuş bir üye seç.`,
     ),
     hataCase(
       'hata-kasa-bos',
