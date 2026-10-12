@@ -336,18 +336,19 @@ const anaPanel = {
   ],
 };
 
-// Ekonomi paneli: coin sisteminin bütün kapılarını tek tek anlatan, ayrı kanala giden panel. Sayılar sistem
-// config'lerinden alındığı için bir ödül değişirse buradaki metin de yenilenmeli.
+// Ekonomi paneli: coin sisteminin kapılarını anlatan, ayrı kanala giden panel. Yedi kart, her kartta yalnızca üyenin
+// karar verirken işine yarayan sayılar var: ödüllerin tam cetveli sistemlerin kendi panellerinde duruyor, burada
+// tekrar edilmez. Sayılar sistem config'lerinden alındığı için bir ödül değişirse buradaki metin de yenilenmeli.
 const ekonomiPanel = {
   key: 'ekonomi',
   name: 'Ekonomi Paneli',
   title: 'Ekonomi',
-  intro: 'Coin nasıl kazanılır, nerede harcanır ve seni ne bekliyor: botun para sisteminin **bütün kapıları** bu kanalda.',
+  intro: 'Coin nasıl kazanılır, nerede harcanır ve seni ne bekliyor: botun para sisteminin bütün kapıları bu kanalda, yedi kısa kartta anlatılıyor.',
   channel: '1558968836420665615',
   sections: [
     {
       title: 'Coin Nedir?',
-      sub: 'Coin, Kazuki\'nin kendi parası: kazanmak için sunucuda vakit geçirmen, harcamak için üç raftan birini seçmen gerekiyor. Bu kanalda o kapıların hepsi tek tek anlatılıyor.',
+      sub: 'Coin, Kazuki\'nin kendi parası: kazanmak için sunucuda vakit geçirmen, harcamak için üç raftan birini seçmen gerekiyor. Bu kanal o kapıların haritası.',
       blocks: [
         {
           text: 'Coin **mesaj sayısıyla ya da spamle üretilmez**; günlük ödülden, görevlerden, oyunlardan ve etkinliklerden gelir. Yani cüzdanı dolu üye gerçekten burada vakit geçirmiş üyedir.'
@@ -355,17 +356,13 @@ const ekonomiPanel = {
         {
           heading: 'Üç kapı',
           items: [
-            '**`/gorev`** — bugün için üç görev çekilir, üçünü de bitirince günün demeti açılır. Nereden başlayacağını bilmiyorsan buradan başla.',
-            '**`/gunluk`** — günde bir kez yazdığın komut; coinini verir ve arka arkaya geldikçe serini uzatır.',
-            '**`/bakiye`** — cüzdanın. Bakiyen, kazancın ve harcaman bu kartta; kazanma ve harcama kapılarının butonları da kartın yanında durur.'
+            '**`/gunluk`** — günde bir kez yazdığın komut; coinini verir, arka arkaya geldikçe serin büyür.',
+            '**`/gorev`** — bugün için üç görev çeker; üçünü bitirince günün demeti açılır.',
+            '**`/bakiye`** — cüzdanın. Bakiyen, kazancın ve harcaman bu kartta; kazanma ve harcama kapılarının butonları da yanında durur.'
           ]
         },
         {
-          heading: 'Ne kadar kazanılır',
-          text: 'Sadece günlük ödül ve görevlerle günde **350-500 coin** birikir. Oyunlar, keşif gezileri ve şakalaşma bunu büyütür; ama o kanallardan gelen kazanç **günde 1200 coin** ile sınırlı.'
-        },
-        {
-          note: 'Hiçbir şey satın almak istemesen bile coin, **`/siralama`** içindeki coin listesinde yerini belirler.'
+          note: 'Yalnızca günlük ve görevlerle günde **350-500 coin** birikir. Oyun, keşif ve şakalaşmadan gelen kazanç **günde 1200 coin** ile sınırlı; kumarhane ve üye→üye transfer bu sayıya girmez. Hiçbir şey almasan bile coin, **`/siralama`** içindeki coin listesinde yerini belirler.'
         }
       ]
     },
