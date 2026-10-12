@@ -33,7 +33,7 @@ const SELF = 'yardim';
 const CATEGORIES = [
   ['hesap', 'Kartını düzenle, her gün /gunluk ile coinini topla, /gorev ile görev bitir'],
   ['oyun', '/oyun ile kumarhane ve keşif, /sokak ile suç dünyası, /öp ve /tokat ile şakalaş'],
-  ['siralama', 'Sunucunun en aktifleri ve saygınlık alanlar'],
+  ['siralama', 'Mesaj, ses, yayın, saygınlık, coin ve VIP listelerinde sunucudaki sıran'],
   ['partner', 'Partner sunucular ve ortak etkinlikler'],
 ];
 
