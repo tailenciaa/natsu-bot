@@ -684,8 +684,8 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
     return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
   }
 
-  // Yetkililere gönderilen DM'ler 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.CV2 });
+  // Yetkililere gönderilen DM'ler 3 saniyeyi aşabilir; önce cevap ertelenir (işlem yetkiliye özel, o yüzden gizli)
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const entry = createTrustedRecord(interaction, request, contactIds);
 
   const channel = await fetchTextChannel(interaction.guild, config.channels.posts);
@@ -700,7 +700,7 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
     await sendPartnerPanel(interaction.client, contactId, entry);
   }
 
-  return respond(interaction, core.alert('Partner güvenilir listeye eklendi.', null, 'success'));
+  return respond(interaction, core.alert('Partner güvenilir listeye eklendi.', null, 'success'), { ephemeral: true });
 }
 
 // Paylaşım kartındaki "Yasaklıya Al": sadece partner lideri kullanabilir. Yasaklanan kullanıcı güvenilir listeden
