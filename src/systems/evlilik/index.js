@@ -314,7 +314,7 @@ async function kabul(interaction, no) {
   if (rolId) {
     const a = await rolVer(interaction.guild, t.oneren, rolId, 'Evlilik');
     const b = await rolVer(interaction.guild, t.hedef, rolId, 'Evlilik');
-    if (!a || !b) uyari = 'Rol açıldı ama ikinizden birine giydirilemedi; botun rolü diğer rollerin üstünde durmuyor.';
+    if (!a || !b) uyari = 'Rol açıldı ama ikinizden birine giydirilemedi: üye sunucudan ayrılmış ya da botun rol sırası geride kalmış olabilir.';
   }
 
   return interaction.update({
