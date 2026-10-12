@@ -293,6 +293,15 @@ async function paintHeader(ctx, user, view, theme, p, c) {
   pill(ctx, `Mesaj  ${view.mesajRank ? `#${view.mesajRank}` : '-'}`, right, 28, rankColor);
   pill(ctx, `${number(view.coins ?? 0)} coin`, WIDTH - PAD, 92, c.accent, '#120a10', null);
 
+  // Evlilik bandı: kalp simgeli etiket coinin altında durur, birlikte geçen günle birlikte okunur. Boşanma
+  // kaydı götürdüğü için etiket kendiliğinden kalkar; hiç evlenmemiş üyede satır doğmaz.
+  if (view.evlilik) {
+    const ad = view.evlilik.es ? `Eş: ${view.evlilik.es}` : 'Evli';
+    ctx.font = font(500, 24);
+    const yazi = fitText(ctx, view.evlilik.gun ? `${ad} · ${number(view.evlilik.gun)} gün` : ad, 520);
+    pill(ctx, yazi, WIDTH - PAD, 156, 'rgba(10,6,12,0.58)', '#ffd9e5', hexAlpha('#ff6b9a', 0.6), 'kalp', '#ff6b9a');
+  }
+
   // Birleşim rengi kapağın kendi alt tonundan türer ve ince bir karartmayla gövdeye bağlanır. Gövde bu tondan
   // başladığı için çizgi ya da kirli bant oluşmaz; karartma yazılardan önce çizilir ki altlarına almasınlar.
   const tone = avgTone(ctx, 0, HEADER - 6, WIDTH, 6);
@@ -374,10 +383,12 @@ function paintAmbient(ctx, height, p) {
   glow(WIDTH * 0.9, height - 60, body, p.accent, 0.06);
 }
 
-// Yuvarlak köşeli küçük etiket (rank, coin); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer
-function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(255,255,255,0.18)') {
+// Yuvarlak köşeli küçük etiket (rank, coin, evlilik); genişliğini yazıya göre ayarlar ve (sağ kenar hizalı) çizer.
+// `icon` verilirse simge metnin soluna, kendi renkleriyle oturur ve metin kalan alanda ortalanır.
+function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(255,255,255,0.18)', icon = null, iconColor = textColor) {
   ctx.font = font(500, 24);
-  const width = ctx.measureText(text).width + 44;
+  const alan = icon ? 30 : 0;
+  const width = ctx.measureText(text).width + 44 + alan;
   const x = right - width;
   ctx.fillStyle = color;
   roundRect(ctx, x, y, width, 52, 26);
@@ -388,9 +399,10 @@ function pill(ctx, text, right, y, color, textColor = '#ffffff', border = 'rgba(
     roundRect(ctx, x + 0.5, y + 0.5, width - 1, 51, 25.5);
     ctx.stroke();
   }
+  if (icon) drawIcon(ctx, icon, x + 26, y + 25, 10, iconColor);
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
-  ctx.fillText(text, x + width / 2, y + 35);
+  ctx.fillText(text, x + alan / 2 + width / 2, y + 35);
   return width;
 }
 
