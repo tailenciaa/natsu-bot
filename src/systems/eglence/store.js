@@ -1,7 +1,8 @@
-// Eğlence kayıtları: açık şaka kartları, ikililer arası bekleme ve üyenin şaka sicili burada durur. Coinin
-// kendisi burada tutulmaz (coin/store.js); buradaki sayılar yalnızcakaç kez karşılık verildiği ve cebine
-// kaç coin yattığı sayacıdır — profil ve görevler bu sayaçları okur.
-// Sayaçlar gün anahtarıyla sayılır; gece bekçisi yoktur, yeni günün anahtarı ilk okumada kendiliğinden boş gelir.
+// Eğlence kayıtları: karşılık bekleyen şaka kartları, ikililer arası bekleme ve üyenin şaka sicili burada durur.
+// Coinin kendisi burada tutulmaz (coin/store.js); buradaki sayılar kaç kart atıldığı, kaç karşılık verildiği ve
+// karşılıklardan cebine kaç coin yattığıdır — profil kartı ve görevler bu sayaçları okur.
+// Kartlar tek seferde sonuçlanır: karşılık ya da süre sonu kartı kayıttan düşürür, böylece eski bir karttan
+// düğmeye basmak ikinci kez ödül üretemez.
 const { data, save } = require('../../core/db');
 const config = require('./config');
 
@@ -17,8 +18,8 @@ const KEEP_DAYS = 3;
 const rec = (userId) => (e.kullanici[userId] ??= {
   kart: {}, // gün anahtarı -> o gün atılan kart sayısı
   atilan: {}, // eylem anahtarı -> toplam atılan kart
-  karsilikVerdi: 0, // başkasının kartına karşılık düğmesine bastığı次数
-  karsilikAldi: 0, // kendi kartına karşılık geldiği次数
+  karsilikVerdi: 0, // başkasının kartına karşılık verdiği sayı
+  karsilikAldi: 0, // kendi kartına karşılık geldiği sayı
   kacirdi: 0, // karşılıksız kalan kartı
   kazanc: 0, // karşılıklardan cebine yatan toplam coin
 });
@@ -39,7 +40,7 @@ const ikiliAnahtari = (a, b) => [a, b].sort().join(':');
 
 const kart = (no) => e.kartlar[no] ?? null;
 
-// Atılan kart kayda geçer: eşleşme beklerken düğme bu numaradan hangi tarafa karşılık verildiğini bulur
+// Atılan kart kayda geçer: düğme bu numaradan hangi ikilinin şakasını çözdüğünü bulur
 function kartKaydet({ no, eylem, saldirgan, hedef, sonAt }, at = Date.now()) {
   yaz(() => {
     e.kartlar[no] = { no, eylem, saldirgan, hedef, sonAt, olusum: at };
@@ -57,55 +58,50 @@ function kartKapat(no) {
   });
 }
 
-// Sonu hiç gelmeyen kart (muhatabı hiç dokunmadı, bot yeniden başladı) dosyada birikmesin
+// Süresi hiç sonuçlanmayan kart (muhatabı hiç dokunmadı, bot yeniden başladı) dosyada birikmesin
 function kartTemizle(at = Date.now()) {
   const eski = Object.values(e.kartlar).filter((k) => at - k.olusum > 6 * 60 * 60 * 1000);
-  if (!esil.length) return 0;
+  if (!eski.length) return 0;
   yaz(() => {
     for (const k of eski) delete e.kartlar[k.no];
   });
   return eski.length;
 }
 
-// Bu ikili arasındaki son kart: ödemeden okunur ki üye "neden bekliyorum" sorusunu sayıdan görsün
-const ikiliBekleme = (a, b, at = Date.now()) => {
+// Bu ikili arasındaki son kartın bitişi: sıfırsa bekleme yok
+function ikiliBekleme(a, b, at = Date.now()) {
   const son = e.ikili[ikiliAnahtari(a, b)] ?? 0;
-  return son && son + config.ikiliAralik > at ? son + config.ikiliAralik : 0;
-};
-
-// Karşılık geldi: iki tarafın da sayacı büyür, ödenen coin cebine göre yazılır
-function karsilikKaydet({ eylem, saldirgan, hedef, odenenSaldirgan, odenenHedef }, at = Date.now()) {
-  yaz(() => {
-    const vuran = rec(saldirgan);
-    const yiyen = rec(hedef);
-    vuran.karsilikAldi += 1;
-    yiyen.karsilikVerdi += 1;
-    vuran.kazanc += odenenSaldirgan;
-    yiyen.kazanc += odenenHedef;
-    e.kartlar[eylem] && delete e.kartlar[eylem];
-    gunGuncelle(yiyen, 'kart', 0);
-    at && null;
-  });
-  return true;
+  const bitti = son + config.ikiliAralik;
+  return bitti > at ? bitti : 0;
 }
 
-// Karşılıksız kalan kart: sahibi için kaçırılan hanesine yazılır
-function karsizKaydet(saldirgan) {
+// Karşılık geldi: kart kayıttan kalkar, iki tarafın sayacı ve kazancı yazılır
+function karsilikSonuclandir(g, odenenSaldirgan, odenenHedef) {
   yaz(() => {
-    rec(saldirgan).kacirdi += 1;
+    delete e.kartlar[g.no];
+    rec(g.saldirgan).karsilikAldi += 1;
+    rec(g.saldirgan).kazanc += odenenSaldirgan;
+    rec(g.hedef).karsilikVerdi += 1;
+    rec(g.hedef).kazanc += odenenHedef;
   });
 }
 
-// Sayfanın, profilin ve görevlerin okuduğu bütün durum
+// Süre doldu, karşılık gelmedi: kart kalkar, sahibi kaçırılan hanesine yazar
+function karsizSonuclandir(g) {
+  yaz(() => {
+    delete e.kartlar[g.no];
+    rec(g.saldirgan).kacirdi += 1;
+  });
+}
+
+// Kartın sahibine göre okunan özeti: profil ve görevler bu tek kapıdan beslenir
 function durumOf(userId, at = Date.now()) {
   const r = rec(userId);
-  const gun = config.dayKey(at);
-  const gunluk = r.kart[gun] ?? 0;
-  const atilanToplam = Object.values(r.atilan).reduce((a, b) => a + b, 0);
+  const gunluk = r.kart[config.dayKey(at)] ?? 0;
   return {
     at,
-    atilan: { ...Object.fromEntries(Object.keys(config.eylemler).map((k) => [k, r.atilan[k] ?? 0])) },
-    atilanToplam,
+    atilan: Object.fromEntries(Object.keys(config.eylemler).map((k) => [k, r.atilan[k] ?? 0])),
+    atilanToplam: Object.values(r.atilan).reduce((a, b) => a + b, 0),
     karsilikVerdi: r.karsilikVerdi,
     karsilikAldi: r.karsilikAldi,
     kacirdi: r.kacirdi,
@@ -123,7 +119,7 @@ module.exports = {
   kartKapat,
   kartTemizle,
   ikiliBekleme,
-  karsilikKaydet,
-  karsizKaydet,
+  karsilikSonuclandir,
+  karsizSonuclandir,
   durumOf,
 };
