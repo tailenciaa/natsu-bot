@@ -2,8 +2,8 @@
 // özel renkli roller — alım kartları ve hata cevapları.
 // Sayfadaki sayılar elle kurulmaz: bakiye, elde duran hak/yüzük adedi ve sahip olunan renkler gerçek store'lara
 // yazılır, sonra üretim kapısından (butik.sayfaDurumu) okunur. Renk rafının açılması da gerçek config okumasıdır:
-// roleId doldurulunca raf kendiliğinden görünür oluyor, boşken kalkıyor. db.init() çağrılmadığı için save()
-// hiçbir yere dokunmaz.
+// roleId doluysa raf görünür, boşsa kalkar. Kartlar bu sırayla çizildikten sonra config yine rol bekleyen hâline
+// döndürülür. db.init() çağrılmadığı için save() hiçbir yere dokunmaz.
 module.exports = ({ mock, ui, src }) => {
   const config = src('systems/butik/config');
   const store = src('systems/butik/store');
@@ -30,58 +30,42 @@ module.exports = ({ mock, ui, src }) => {
   const yeni = mock.user({ username: 'kaan', displayName: 'Kaan' });
   const arkadas = mock.user({ username: 'mert', displayName: 'Mert' });
 
-  // Alışveriş yapan üye: parası bakiyeye yazılır, hakları ve bir rengi butiğin kendi kayıtlarından gelir
+  // Alışveriş yapmış üye: parası cüzdana, hakları ve bir rengi butiğin kendi kaydına yazılır
   coinStore.add(alisveris.id, 24000, 'önizleme cüzdanı');
   store.ekle(config.hak.key, alisveris.id, 2);
   store.ekle(config.yuzuk.key, alisveris.id, 1);
   store.rolEkle(alisveris.id, 'kirmizi');
 
-  // Rafın görünmesi için rol ID'leri doldurulur (canlıda bunları sunucu sahibi config'e yazar)
-  const rolIdleri = config.roller.map((reng) => [reng.key, (reng.roleId = mock.id())]);
-  const rolleriKapat = () => {
-    for (const [key, id] of rolIdleri) config.roller.find((r) => r.key === key).roleId = id;
-  };
-  const rafKapali = () => config.roller.forEach((reng) => (reng.roleId = null));
+  // ── Kartlar, config'in rol ID'leriyle oynanarak sırayla çizilir ─────────────
+  const rolIdleri = config.roller.map(() => mock.id());
+  const rolleriAyarla = (dolu) => config.roller.forEach((reng, i) => (reng.roleId = dolu ? rolIdleri[i] : null));
+
+  rolleriAyarla(true);
+  const rafAcik = u.panel(butik.sayfaDurumu(alisveris.id, alisveris));
+  const hakKarti = u.tukenenAlindi({ user: alisveris, ...config.hak, total: 3 });
+  const yuzukKarti = u.tukenenAlindi({ user: alisveris, ...config.yuzuk, total: 2 });
+  const reng = config.roller[3];
+  const rolKarti = u.rolAlindi({ user: alisveris, ad: reng.ad, price: reng.price, roleId: reng.roleId });
+
+  rolleriAyarla(false);
+  const rafKapali = u.panel(butik.sayfaDurumu(yeni.id, yeni));
+  rolleriAyarla(false);
 
   return [
-    caseOf(
-      'raf',
-      'Butik rafı: bakiye, elde duran haklar, satıştaki renkler ve işleyiş',
-      '/bakiye cüzdanındaki Butik düğmesi',
-      u.panel(butik.sayfaDurumu(alisveris.id, alisveris)),
-    ),
+    caseOf('raf', 'Butik rafı: bakiye, elde duran haklar, satıştaki renkler ve işleyiş', '/bakiye cüzdanındaki Butik düğmesi', rafAcik),
     caseOf(
       'raf-rolsuz',
-      'Butik rafı: renkler henüz hazırlanmamış, yeni üye için hak da yüzük de yok',
-      'Cüzdanından butiği ilk kez açan üye',
-      u.panel((() => {
-        const durum = butik.sayfaDurumu(yeni.id, yeni);
-        rafKapali();
-        return { ...durum, renkler: store.satisdakiRenkler() };
-      })()),
+      'Butik rafı: renkler henüz hazırlanmamış, üyenin elinde de hiç hak yok',
+      'Cüzdanından butiği ilk kez açayan yeni üye',
+      rafKapali,
     ),
 
     // ── Alım kartları ─────────────────────────────────────────────────────────
-    caseOf(
-      'alim-hak',
-      'Ek saygınlık hakkı alındı: elde biriken adet yazılır',
-      'Butik rafındaki Al düğmesi',
-      u.tukenenAlindi({ user: alisveris, ...config.hak, total: 3 }),
-    ),
-    caseOf(
-      'alim-yuzuk',
-      'Evlilik yüzüğü alındı',
-      'Butik rafındaki Al düğmesi',
-      u.tukenenAlindi({ user: alisveris, ...config.yuzuk, total: 2 }),
-    ),
-    caseOf(
-      'alim-rol',
-      'Renkli rol alındı: rol verildiği için mention da kartta durur',
-      'Butik rafındaki Al düğmesi',
-      u.rolAlindi({ user: alisveris, ad: config.roller[3].ad, price: config.roller[3].price, roleId: config.roller[3].roleId }),
-    ),
+    caseOf('alim-hak', 'Ek saygınlık hakkı alındı: elde biriken adet yazılır', 'Raftaki Al düğmesi', hakKarti),
+    caseOf('alim-yuzuk', 'Evlilik yüzüğü alındı', 'Raftaki Al düğmesi', yuzukKarti),
+    caseOf('alim-rol', 'Renkli rol alındı: rol verildiği için etiketi de kartta durur', 'Raftaki Al düğmesi', rolKarti),
 
-    // ── Bağlantının öteki ucu: hak saygınlık verirken yanar ────────────────────
+    // ── Bağlantının öteki ucu: hak saygınlık verirken kendiliğinden yanar ──────
     caseOf(
       'saygi-ek-hak',
       'Saygınlık verildi: bekleme dolmadan, Butikteki ek hakla verildiği kartta okunur',
@@ -92,35 +76,35 @@ module.exports = ({ mock, ui, src }) => {
     // ── Hata cevapları ────────────────────────────────────────────────────────
     hataCase(
       'hata-bakiye',
-      'Bakiye yetmiyor: fiyat ve bakiye yan yana',
-      'Butikte Al düğmesine az parası olan üye basınca',
+      'Bakiye yetmiyor: fiyat ve bakiye yan yana yazılır',
+      'Al düğmesine az parası olan üye basınca',
       'Bakiyen bu ürün için yetmiyor.',
       `Fiyatı ${ui.chip('4.000 coin')}, senin bakiyen ${ui.chip('1.200 coin')}. Günlük ödüller, görevler ve oyunlarla tamamlayabilirsin.`,
     ),
     hataCase(
       'hata-renk-yok',
-      'Renk satışta değil: rol ID si config'e yazılmamış',
-      'Rafı açılmamış renge eski mesajdan basılınca',
+      'Renk satışta değil: config'e rol ID'si henüz yazılmamış',
+      'Rafı açılmamış rengin eski düğmesine basınca',
       'Bu renk şu anda satışta değil.',
       'Rol sunucuda hazırlanınca raf kendini gösterir.',
     ),
     hataCase(
       'hata-renk-sende',
       'Renk zaten sahip: ikinci kez para istenmez',
-      'Sahip olunduğu rengin düğmesine basılınca',
+      'Sahip olunan rengin düğmesine basınca',
       'Bu renk zaten sende.',
       'Sunucuda adın o rolün rengiyle yazılıyor.',
     ),
     hataCase(
       'hata-rol-verilemedi',
-      'Rol verilemedi: para alınmadığı üye hemen öğrenir',
-      'Botun rol yönetme yetkisi yokken Al düğmesi',
+      'Rol verilemedi: paranın alınmadığı hemen söylenir',
+      'Botun rolleri yönetme yetkisi yokken Al düğmesi',
       'Rol verilemedi, para alınmadı.',
       'Botun rolleri yönetme yetkisi yoksa bir yetkiliye haber ver.',
     ),
     hataCase(
       'hata-baska-uye',
-      'Sayfa sahibi olmayan üye butona basarsa',
+      'Sayfa sahibi olmayan üye basarsa raf açılmaz',
       'Başkasının cüzdan kartındaki Butik düğmesi',
       'Bu menüyü sadece komutu kullanan kişi gezebilir.',
       null,
