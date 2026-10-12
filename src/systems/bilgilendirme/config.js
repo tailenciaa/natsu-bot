@@ -368,23 +368,23 @@ const ekonomiPanel = {
     },
     {
       title: 'Her Gün İki Dakika',
-      sub: '**`/gunluk`** serini büyütür, **`/gorev`** bugünün üç görevini bitirince demetini açar. İkisi birlikte iki dakika sürer; gün **İstanbul saatiyle 00:00\'da** yenilenir.',
+      sub: 'Alışkanlık iki komut: **`/gunluk`** serini büyütür, **`/gorev`** bugünün üç görevini bitirince demetini açar. Gün **İstanbul saatiyle 00:00\'da** yenilenir.',
       blocks: [
         {
           heading: 'Günlük ödül',
           items: [
-            'Taban **40 coin**; arka arkaya her seri günü **+12** (en fazla **+72**), ulaştığın her seviye **+3** (en fazla **+180**) → tek günde en fazla **292 coin**.',
-            'Bir gün kaçırırsan seri **1\'e** düşer ama kaybettiğin coin geri istenmez. Her seri günü profil puanına **+5** yazılır.'
+            'Taban **40 coin** + her seri günü **+12** (en fazla **+72**) + her seviye **+3** (en fazla **+180**) → tek günde en fazla **292 coin**.',
+            'Bir gün kaçırırsan seri **1\'e** döner, ama kaybettiğin coin geri istenmez. Her seri günü profil puanına **+5** yazılır.'
           ]
         },
         {
           heading: 'Üç görev ve demet',
           items: [
-            'Havuzdan çekilen görevler örneğin **20 mesaj** (70 coin), **30 dakika seste** (90 coin), **günlük ödülünü topla** (50 coin), **saygınlık ver** (60 coin), **3 gezi** (100 coin) ya da **3 şaka kartı** (90 coin).',
-            'Üçünün ödülünü de alınca **Demeti Al** butonu aktifleşir: **120 coin + 1 anahtar + 3 sezon puanı**. Haftalık görevler her pazartesi değişir: **250-500 coin** ve üstüne **1 anahtar**.',
-            '**Keşif Yolu** tek seferlik, **18 adımlık** tur: botun sistemlerini sırayla gezdirir, sonunda **600 coin + 3 anahtar** ve **Sevilen** rütbesi var.'
+            'Havuzdan çekilen görevler örneğin **20 mesaj** (70 coin), **30 dakika seste** (90 coin), **günlük ödülünü topla** (50 coin), **saygınlık ver** (60 coin), **3 gezi** (100 coin).',
+            'Üçünün ödülünü de alınca **Demeti Al** butonu aktifleşir: **120 coin + 1 anahtar + 3 sezon puanı**. Haftalıklar her pazartesi değişir: **250-500 coin + 1 anahtar**.',
+            '**Keşif Yolu**: tek seferlik, **18 adımlık** tur. Botun sistemlerini sırayla gezdirir; sonunda **600 coin + 3 anahtar** ve **Sevilen** rütbesi var.'
           ],
-          note: 'Görev kaydı tutulmaz: ilerleme mesaj ve ses sayıları gibi sistemlerde zaten duran veriden okunur, yani bot kurulmadan önce attığın mesajlar da sayılır.'
+          note: 'Görev kaydı tutulmaz: ilerleme mesaj ve ses sayılarından okunur, yani bot kurulmadan önce attığın mesajlar da sayılır.'
         }
       ]
     },
