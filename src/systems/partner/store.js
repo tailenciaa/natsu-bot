@@ -82,6 +82,10 @@ module.exports = {
       .sort((a, b) => a.createdAt - b.createdAt);
   },
 
+  requestsOfGuild(guildId) {
+    return Object.values(data.partnerRequests).filter((r) => r.guildId === guildId);
+  },
+
   // Paylaşım kanalındaki ilan ya da kart mesajının ait olduğu kayıt
   requestByMessage(messageId) {
     return Object.values(data.partnerRequests).find((r) => r.adId === messageId || r.postId === messageId) ?? null;

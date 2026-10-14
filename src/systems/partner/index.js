@@ -178,7 +178,9 @@ async function revokePartnership(interaction, request, { kind, reason = null }) 
   }
   if (trusted) await refreshTrustedPanel(interaction.client, interaction.guildId);
 
-  const contacts = [...new Set([...(trusted?.contactIds ?? []), ...requests.map((r) => r.requesterId)].filter(Boolean))];
+  // Elle paylaşımın sahibi bizim üyemizdir, karşı taraf değil; bilgi DM'i ona gitmez
+  const requesters = requests.filter((r) => r.source !== 'manuel').map((r) => r.requesterId);
+  const contacts = [...new Set([...(trusted?.contactIds ?? []), ...requesters].filter(Boolean))];
   let notified = 0;
   for (const id of contacts) {
     const user = await interaction.client.users.fetch(id).catch(() => null);
@@ -204,13 +206,15 @@ async function handlePostsChannel(message) {
     image: Boolean(a.contentType?.startsWith('image/')),
   }));
 
+  // Sunucu ID'si davetten çözülür: iptal/yasaklama o sunucunun bütün ilanlarını bu sayede bulur
+  const serverId = await serverOfInvite(message.client, text);
   const number = store.nextRequestNumber(message.guildId);
   const request = {
     id: `${message.guildId}-${number}`,
     number,
     guildId: message.guildId,
     requesterId: message.author.id,
-    serverId: null,
+    serverId,
     text: text || '(metin yok, sadece dosya paylaşıldı)',
     files: attachments.map(({ name, image }) => ({ name, image })),
     status: 'approved',
@@ -247,8 +251,8 @@ async function handleMessageDelete(message) {
   const request = store.requestByMessage(message.id);
   if (!request) return;
 
-  store.updateRequest(request.id, { status: 'silindi', adId: null, postId: null });
   const pair = [request.adId, request.postId].filter((id) => id && id !== message.id);
+  store.updateRequest(request.id, { status: 'silindi', adId: null, postId: null });
   for (const id of pair) await message.channel.messages.delete(id).catch(() => {});
 }
 
@@ -812,9 +816,11 @@ async function handleDeletePost(interaction) {
     return replyError(interaction, 'Bu gönderiyi sadece partneri yapan kişi silebilir.', `Partneri yapan: <@${owner}>`);
   }
 
+  // updateRequest kaydın kendisini değiştirir: ilanın ID'si sıfırlanmadan önce alınır
+  const { adId } = request;
   store.updateRequest(requestId, { status: 'silindi', adId: null, postId: null });
   // İlan kartla birlikte ayrı bir düz mesaj olarak duruyor: kart silinince metin de kaldırılır, yoksa sahipsiz ilan kalır
-  if (request.adId) await interaction.channel.messages.delete(request.adId).catch(() => {});
+  if (adId) await interaction.channel.messages.delete(adId).catch(() => {});
   await interaction.message.delete().catch(() => {});
   return respond(interaction, core.alert('Partner gönderisi silindi.', 'İlan ve kart kaldırıldı, kayıt geçmişte "silindi" olarak duruyor.', 'danger'), { ephemeral: true });
 }
