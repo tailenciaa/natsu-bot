@@ -1,5 +1,5 @@
 // Partner sistemi: talep kanalında "partner" / "dm" geçen ya da partner yetkilisi rolünü etiketleyen mesaja bot
-// yanıt olarak "oto partner yapmak ister misin?" sorar. Evet denirse sunucu ID'si ve partner metni formla alınır;
+// yanıt olarak "oto partner yapmak ister misin?" sorar. Evet denirse partner metni formla alınır (sunucu davetten tanınır);
 // talep sahibine DM'den şartlar sorulur, kabul edince inceleme kanalına gider. Yetkili onaylarsa paylaşım
 // kanalına otomatik gönderilir; talep sahibi, yetkili karttaki butona bastığında güvenilir partnerler listesine eklenir. Paylaşım kanalına
 // düşen her mesaj (oto onaylı ya da elle atılmış, fark etmez) bot tarafından silinip iki mesajla yeniden
@@ -80,10 +80,16 @@ function matchesTrigger(message) {
   return config.triggerWords.some((word) => words.includes(word));
 }
 
-// Sunucu ID'sinin geçerli olup olmadığını kontrol et (sadece rakamlar, 15-25 karakter)
-function isValidServerId(serverId) {
-  return /^\d{15,25}$/.test(serverId);
-}
+// Kayda ait yasak (sunucu ID'siyle ya da ID çözülemediyse davet koduyla verilmiş olabilir); yoksa null
+const serverBan = (record) =>
+  [record.serverId, ui.inviteKey(record.text ?? record.content)].filter(Boolean).map((key) => store.isServerBanned(key)).find(Boolean) ?? null;
+
+// Yasak anahtarına (ID ya da davet-<kod>) ait tüm talepler, eskiden yeniye
+const requestsOfServer = (guildId_, key) =>
+  store
+    .requestsOfGuild(guildId_)
+    .filter((r) => r.serverId === key || ui.inviteKey(r.text) === key)
+    .sort((a, b) => a.createdAt - b.createdAt);
 
 // Partner metninde Discord invite linki var mı kontrol et
 function hasDiscordInviteLink(text) {
@@ -320,8 +326,7 @@ async function handleStartBanSubmit(interaction) {
   store.banServer(serverId, reason, interaction.user.id);
 
   // Bu sunucunun bekleyen talepleri de reddedilir; yoksa kart butonlarıyla birlikte kaybolur ama talep "bekliyor" kalırdı
-  const rejected = store
-    .requestsOfServer(serverId)
+  const rejected = requestsOfServer(interaction.guildId, serverId)
     .filter((r) => ['pending', 'awaiting_terms'].includes(r.status))
     .map((r) => store.updateRequest(r.id, { status: 'rejected', decidedBy: interaction.user.id, decidedAt: Date.now() }));
 
@@ -333,7 +338,7 @@ async function handleStartBanSubmit(interaction) {
       allowedMentions: { parse: [] },
     });
   } else {
-    await interaction.editReply({ components: [core.alert('Sunucu yasaklandı.', `Sunucu ID: \`${serverId}\``, 'danger')], allowedMentions: { parse: [] } });
+    await interaction.editReply({ components: [core.alert('Sunucu yasaklandı.', `Sunucu: \`${ui.serverKeyLabel(serverId)}\``, 'danger')], allowedMentions: { parse: [] } });
   }
 
   // Reddedilen taleplerin sahiplerine sonuç DM'i gider
@@ -349,7 +354,7 @@ async function handleStartBanSubmit(interaction) {
     .catch((err) => console.error('[partner] Yasaklı sunucu kanalına gönderilemedi:', err.message));
 
   // Yasaklanan sunucunun paylaşım kanalındaki tüm mesajları da kaldırılır, kayıtlı yetkililerine bilgi DM'i gider
-  const posted = store.requestsOfServer(serverId).filter((r) => r.guildId === interaction.guildId);
+  const posted = requestsOfServer(interaction.guildId, serverId);
   if (posted.length) await revokePartnership(interaction, posted.at(-1), { kind: 'yasak', reason });
 }
 
@@ -370,26 +375,26 @@ async function sendToReview(client, request) {
   );
 }
 
-async function handleNewRequestSubmit(interaction, serverId, adText, messageId) {
+async function handleNewRequestSubmit(interaction, adText, messageId) {
   const pending = store.pendingOf(interaction.guildId, interaction.user.id);
   if (pending) return replyError(interaction, ...pendingMessage(pending));
-
-  // Sunucu ID doğrulama
-  if (!isValidServerId(serverId)) {
-    return replyError(interaction, 'Geçersiz Sunucu ID.', 'Sunucu ID sadece rakamlardan oluşmalı ve 15-25 karakter olmalı.');
-  }
 
   // Partner metni Discord invite linki kontrolü
   if (!hasDiscordInviteLink(adText)) {
     return replyError(interaction, 'Partner metni Discord invite linki içermeli.', 'discord.gg/... formatında bir link ekle.');
   }
 
-  // Bundan sonraki işlemler (DM, kanal mesajları) 3 saniyeyi aşabilir; önce cevap ertelenir.
+  // Bundan sonraki işlemler (davet çözme, DM, kanal mesajları) 3 saniyeyi aşabilir; önce cevap ertelenir.
   // KİŞİYE ÖZEL: "talebin incelemeye gitti / DM'nden şartları onayla" cevabı sadece talep sahibini ilgilendirir.
   await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
 
+  // Sunucu ID'si ve adı metindeki davetten çözülür; davet çözülemezse kayıt davet bağlantısıyla tutulur
+  const server = await serverOfInvite(interaction.client, adText);
+  const serverId = server?.id ?? null;
+  const serverName = server?.name ?? null;
+
   // Yasaklı sunucu kontrolü
-  const bannedInfo = store.isServerBanned(serverId);
+  const bannedInfo = serverBan({ serverId, text: adText });
   if (bannedInfo) {
     // Talep sahibine sebep DM ile bildirilir
     await interaction.user.send({ components: [ui.serverBannedDm(bannedInfo.reason)], flags: core.CV2 }).catch(() => {});
@@ -413,6 +418,7 @@ async function handleNewRequestSubmit(interaction, serverId, adText, messageId) 
     guildId: interaction.guildId,
     requesterId: interaction.user.id,
     serverId,
+    serverName,
     text: adText,
     status: alreadyAccepted ? 'pending' : 'awaiting_terms',
     source: 'oto',
@@ -486,9 +492,8 @@ async function handleModalSubmit(interaction) {
   if (mode === 'guven') return handleTrustedAddSubmit(interaction, a, b);
 
   const messageId = a;
-  const serverId = interaction.fields.getTextInputValue(ui.IDS.serverId).trim();
   const adText = interaction.fields.getTextInputValue(ui.IDS.adText).trim();
-  return handleNewRequestSubmit(interaction, serverId, adText, messageId);
+  return handleNewRequestSubmit(interaction, adText, messageId);
 }
 
 // Kartın içindeki metin davet önizlemesini göstermez; ilan paylaşılacağı düz mesaj haliyle basana gizli gönderilir
@@ -507,7 +512,7 @@ async function handleReviewDecision(interaction) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu kararı sadece partner yetkilileri verebilir.');
   const request = store.getRequest(requestId);
   if (!request || request.status !== 'pending') return replyError(interaction, 'Bu talep zaten sonuçlandı ya da bulunamadı.');
-  if (sonuc === 'onayla' && store.isServerBanned(request.serverId)) {
+  if (sonuc === 'onayla' && serverBan(request)) {
     return replyError(interaction, 'Bu sunucu yasaklı.', 'Yasak kalkmadan talep onaylanamaz; talebi reddedebilirsin.');
   }
 
@@ -651,7 +656,7 @@ function panelAccess(interaction, trustedId) {
   const entry = store.getTrusted(trustedId);
   if (!entry) return { error: 'Bu partnerlik artık mevcut değil.' };
   if (!entry.contactIds?.includes(interaction.user.id)) return { error: 'Bu panel sadece sunucunun partner yetkilileri içindir.' };
-  if (store.isBanned(interaction.user.id) || store.isServerBanned(entry.serverId)) return { error: 'Partner sisteminden yasaklı olduğun için bu paneli kullanamazsın.' };
+  if (store.isBanned(interaction.user.id) || serverBan(entry)) return { error: 'Partner sisteminden yasaklı olduğun için bu paneli kullanamazsın.' };
   return { entry };
 }
 

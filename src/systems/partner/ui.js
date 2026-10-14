@@ -24,7 +24,6 @@ const IDS = {
   startBanModal: 'partner:baslat-yasakla-form', // partner:baslat-yasakla-form:<sunucu ID>
   banReason: 'partner-yasaklama-sebebi',
   modal: 'partner:form',
-  serverId: 'partner-sunucu-id',
   adText: 'partner-metin',
   contactId: 'partner-yetkili-id',
   termsAccept: 'partner-sartlar-kabul', // partner-sartlar-kabul:<talep>
@@ -166,14 +165,8 @@ function requestModalWithMessageId(messageId) {
     .setTitle('Oto Partner')
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel('Sunucu ID')
-        .setDescription('Sunucunun sayısal kimliği; sunucu ayarlarından ya da geliştirici modundan kopyalanır.')
-        .setTextInputComponent(
-          new TextInputBuilder().setCustomId(IDS.serverId).setStyle(TextInputStyle.Short).setPlaceholder('Örn: 123456789012345678').setMaxLength(32).setRequired(true),
-        ),
-      new LabelBuilder()
         .setLabel('Partner Metni')
-        .setDescription('Paylaşım kanalına bu haliyle gider; metnindeki davet bağlantısı butona dönüşür.')
+        .setDescription('Paylaşım kanalına bu haliyle gider; sunucun metindeki davet bağlantısından tanınır.')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.adText)
@@ -238,7 +231,7 @@ function reviewCard(request, decided) {
           '### Talep Bilgileri',
           rows([
             ['Gönderen', `<@${request.requesterId}>`],
-            ['Sunucu ID', chip(request.serverId)],
+            ...serverRows(request),
           ]),
           decided ? null : `<@&${config.roles.staff}>, **yeni bir partner talebi** var.`,
         ]),
@@ -269,7 +262,7 @@ function reviewCard(request, decided) {
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:onayla`).setLabel('Onayla').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:reddet`).setLabel('Reddet').setStyle(ButtonStyle.Danger),
-        new ButtonBuilder().setCustomId(`${IDS.startBan}:${request.serverId}`).setLabel('Yasaklıya Al').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(`${IDS.startBan}:${serverKey(request)}`).setLabel('Yasaklıya Al').setStyle(ButtonStyle.Danger),
       ),
     );
 }
@@ -358,7 +351,7 @@ const requesterResult = (sonuc, request, by) =>
           '### Talep Bilgileri',
           rows([
             ['Talep', chip(`#${request.number}`)],
-            ['Sunucu ID', chip(request.serverId)],
+            ...serverRows(request),
             ['Değerlendiren', `<@${by}>`],
           ]),
         ]),
@@ -376,11 +369,11 @@ function noticeCard(title, sub, infoLines, reason) {
 }
 
 // Yasaklı partnerler kanalına giden kayıt
-const serverBannedLog = (serverId, reason, by) =>
+const serverBannedLog = (key, reason, by) =>
   noticeCard(
     'Sunucu Yasaklandı',
     'Bu sunucu **partner sisteminden yasaklandı**. Yasak kaldırılana kadar bu sunucuyla **partner yapılamaz** ve gelen talepler otomatik engellenir.',
-    ['### Yasak Bilgileri', rows([['Sunucu ID', chip(serverId)], ['Yasaklayan', `<@${by}>`]])],
+    ['### Yasak Bilgileri', rows([['Sunucu', chip(serverKeyLabel(key))], ['Yasaklayan', `<@${by}>`]])],
     reason,
   );
 
@@ -862,6 +855,9 @@ module.exports = {
   IDS,
   isBusy,
   inviteUrl,
+  inviteKey,
+  serverKey,
+  serverKeyLabel,
   PANEL_PAGE_SIZE,
   partnerPanel,
   panelOfferModal,

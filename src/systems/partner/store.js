@@ -75,13 +75,6 @@ module.exports = {
     );
   },
 
-  // Bir sunucu ID'sine ait tüm talepler (yasaklama sırasında bekleyenleri bulmak için)
-  requestsOfServer(serverId) {
-    return Object.values(data.partnerRequests)
-      .filter((r) => r.serverId === serverId)
-      .sort((a, b) => a.createdAt - b.createdAt);
-  },
-
   requestsOfGuild(guildId) {
     return Object.values(data.partnerRequests).filter((r) => r.guildId === guildId);
   },
