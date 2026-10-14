@@ -17,9 +17,9 @@ const ui = require('./ui');
 //   Kalıcı panel ayrımı sayfa ayrımını yenilmez mi? Panelde duran kontrolü kurcalamanın çıktısı geçicidir; üyenin
 //   açtığı sayfayı yeniden görebilmesi gerekir. İki testi aynı anda geçiren mesaj her zaman açıktır.
 //   İstisna: `sicil` — yetkili komut kanalı dışında kişiye özel kalır, çünkü ceza kaydı herkesin önüne yazılmaz.
-// Dikkat: görünürlük defer anında kilitlenir. `deferReply({ flags: core.CV2 })` ile açılmış bir akışın sonundaki
-// `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Buton/menü cevapları
-// `followUp` ile gittiği için onların görünürlüğü defer'den bağımsızdır; slash komutlarında bayrağı defer'de ver.
+// Dikkat: görünürlük defer anında kilitlenir; açık `deferReply` sonrasındaki ilk followUp/editReply o yükleme
+// mesajını düzenler ve gizli bayrağı yok sayar. Bu yüzden açık ertelenmiş cevaba gizli cevap istenirse yükleme
+// mesajı silinir ve cevap ayrı gizli mesaj olarak gider (aşağıda). Yine de sonucu baştan belli olan akışta bayrağı defer'de ver.
 // Dikkat: tam tersi de geçerli — `deferReply({ flags: core.EPHEMERAL_CV2 })` ile açılan akışın her cevabı
 // `{ ephemeral: true }` olmak zorunda; bayraklar uyuşmazsa Discord mesajı/son düzenlemeyi reddeder.
 // Butonlarda deferUpdate kullanıldığı için orijinal mesajın üzerine yazmamak adına followUp yapılır.
@@ -31,21 +31,20 @@ async function respond(interaction, container, { ephemeral = false, allowedMenti
   // deferUpdate ile ertelenmiş modal gönderiminde (interaction.ephemeral hâlâ null; deferReply bunu true/false yapar) cevap,
   // modalın bağlı olduğu mesajın üstüne yazılmasın diye ayrı mesaj olarak gider
   const updatedByModal = interaction.isModalSubmit?.() && interaction.deferred && interaction.ephemeral === null;
-  if (!followUp && !updatedByModal && interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
-    return interaction.editReply({ components: [container], flags: ephemeral ? ui.EPHEMERAL_CV2 : ui.CV2, allowedMentions });
-  }
   const payload = { components: [container], flags: ephemeral ? ui.EPHEMERAL_CV2 : ui.CV2, allowedMentions };
+  if (ephemeral && interaction.deferred && !interaction.replied && interaction.ephemeral === false) {
+    await interaction.deleteReply().catch(() => {});
+    return interaction.followUp(payload);
+  }
+  if (!followUp && !updatedByModal && interaction.deferred && !interaction.replied && !interaction.isMessageComponent()) {
+    return interaction.editReply(payload);
+  }
   if (interaction.deferred || interaction.replied) return interaction.followUp(payload);
   return interaction.reply(payload);
 }
 
-// HATA/REDDETME: gizli mesajın kullanılabildiği tek ortak kapı
+// HATA/REDDETME: her zaman sadece kullanana görünür, açık ertelenmiş akışın içinde bile
 const replyError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'), { ephemeral: true });
-
-// AKIŞ İÇİ HATA: akışın görünürlüğü defer anında kilitlendiği için, `deferReply()` ile AÇIK açılmış bir akışın
-// hatası gizli yapılamaz (Discord bayrak değiştirmeyi reddeder) ve kanalda görünür. Yalnızca açık ertelenmiş
-// akışların içinde kullanılır; aksi hâlde üye de yetkili de hiçbir uyarı görmez.
-const replyFlowError = (interaction, message, hint) => respond(interaction, ui.alert(message, hint, 'danger'));
 
 // Yöneticiler ya da verilen rollerden (tek rol ya da liste) birine sahip olanlar
 function isStaff(interaction, roleIds) {
@@ -93,4 +92,4 @@ function stillMember(guild, userId) {
   return guild.members.cache.size < guild.memberCount * 0.9 || guild.members.cache.has(userId);
 }
 
-module.exports = { respond, replyError, replyFlowError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
+module.exports = { respond, replyError, isStaff, fetchTextChannel, stillMember, userName, isMenuOwner, menuOwnerError, inStaffChannel, staffChannelError };
