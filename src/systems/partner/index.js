@@ -31,6 +31,10 @@ const isLead = (interaction) => isStaff(interaction, config.roles.lead);
 
 const UNKNOWN_MESSAGE = 10008;
 
+// Puanlama yalnızca gerçekleşen partnerlikte gider (oto onay, teklif yenilemesi, elle paylaşım); ret puanlatılmaz
+const rateStaff = (client, request, staffId, userId) =>
+  ratings.requestForPartner(client, request, staffId, userId).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
+
 // Sürmekte olan "Teklifte Bulun" süreci bu süre içinde sonuçlanmazsa düşer; yetkili hiç yanıt vermese bile o partnere tekrar teklif edilebilir
 const OFFER_TTL_MS = 3 * 24 * 60 * 60 * 1000;
 function activeOffer(trustedId) {
@@ -458,10 +462,9 @@ async function handleReviewDecision(interaction) {
 
   const requester = await interaction.client.users.fetch(request.requesterId).catch(() => null);
   await requester?.send({ components: [ui.requesterResult(sonuc, updated, interaction.user.id)], flags: core.CV2 }).catch(() => {});
-  // Talep sahibi kararı veren partner yetkilisini puanlayabilir
-  await ratings.requestForPartner(interaction.client, updated, interaction.user.id).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
 
   if (sonuc === 'onayla') {
+    await rateStaff(interaction.client, updated, interaction.user.id);
     // Onayda güvenilir listeye otomatik eklemiyoruz; yetkili karttaki "Güvenilir Partnerler Listesine Al"
     // butonuna basarak elle ekler. Kart bu yüzden "güvenilir değil" (buton aktif) durumuyla paylaşılır.
     // Güvenilir partnerin Partner Paneli'nden gelen tekliflerde kayıt yeni metinle güncellenir (yenileme gibi)

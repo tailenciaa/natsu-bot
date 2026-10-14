@@ -51,7 +51,7 @@ const CATEGORIES = {
   partner: {
     short: 'Partner',
     ref: (r) => `Partner Talebi #${pad(r.partnerNumber)}`,
-    handled: (name) => `Partner talebinle ${name} ilgilendi.`,
+    handled: (name) => `Partnerliğimizle ${name} ilgilendi.`,
     question: 'Partner sürecinde yetkiliden ne kadar memnun kaldın?',
     modalTitle: 'Partner Sürecini Puanla',
     placeholder: 'Örn: Talebimi hızlı inceledi ve her şeyi net anlattı.',
@@ -385,8 +385,8 @@ function ratingRequestDm(rating) {
     },
     partner: {
       title: 'Partner Sürecini Değerlendir',
-      sub: 'Partner talebin yetkilimiz tarafından sonuçlandırıldı. Yetkiliye yıldız vererek puanlayabilirsin; geri bildirimin partner sürecimizi geliştirmemize yardımcı olur.',
-      block: `### Talep Bilgileri\n**Talep:** #${pad(rating.partnerNumber)}`,
+      sub: 'Sunucunla **partnerliğimiz gerçekleşti**. Partnerlikle ilgilenen yetkilimize yıldız vererek puanlayabilirsin; geri bildirimin partner sürecimizi geliştirmemize yardımcı olur.',
+      block: `### Partner Bilgileri\n**Partner Kaydı:** #${pad(rating.partnerNumber)}`,
     },
   }[rating.category] ?? {
     title: 'Görüşmeni Değerlendir',

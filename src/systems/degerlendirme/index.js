@@ -75,11 +75,11 @@ async function requestForApplication(client, app, category, staffId) {
   return user?.send({ components: [ui.ratingRequestDm(rating)], flags: core.CV2 }).catch(() => null);
 }
 
-// Partner sistemi talebi sonuçlandırınca çağırır: talep sahibine kararı veren partner yetkilisini puanlama mesajı gönderir.
-// Her talep için bir kez; talep sahibi kendini değerlendiremez.
-async function requestForPartner(client, request, staffId) {
-  const id = `partner-${request.id}`;
-  if (!staffId || staffId === request.requesterId || store.getRating(id)) return null;
+// Partner sistemi bir partnerlik gerçekleşince çağırır: karşı tarafa (userId; varsayılan talep sahibi) partnerliği
+// yapan yetkilimizi puanlama mesajı gönderir. Her talep ve kişi için bir kez; kimse kendini değerlendiremez.
+async function requestForPartner(client, request, staffId, userId = request.requesterId) {
+  const id = userId === request.requesterId ? `partner-${request.id}` : `partner-${request.id}-${userId}`;
+  if (!staffId || staffId === userId || store.getRating(id)) return null;
 
   const guild = client.guilds.cache.get(request.guildId);
   const staff = await client.users.fetch(staffId).catch(() => null);
@@ -91,7 +91,7 @@ async function requestForPartner(client, request, staffId) {
     partnerNumber: request.number,
     staffId,
     staffName: staff?.username ?? 'Yetkili',
-    userId: request.requesterId,
+    userId,
     score: null,
     comment: '',
     ratedAt: null,
@@ -102,7 +102,7 @@ async function requestForPartner(client, request, staffId) {
     reportReason: null,
   });
 
-  const user = await client.users.fetch(request.requesterId).catch(() => null);
+  const user = await client.users.fetch(userId).catch(() => null);
   return user?.send({ components: [ui.ratingRequestDm(rating)], flags: core.CV2 }).catch(() => null);
 }
 
