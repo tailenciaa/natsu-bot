@@ -11,6 +11,8 @@ module.exports = ({ mock, ui, src }) => {
   const claimed = () => mock.ticket({ ...base, claimedBy: staff.id });
   const closed = () =>
     mock.ticket({ ...base, claimedBy: staff.id, closedBy: staff.id, closeReason: { label: 'Sorun çözüldü', note: 'Rol verildi, sorun giderildi.' } });
+  const rejected = () =>
+    mock.ticket({ ...base, closedBy: staff.id, rejected: true, closeReason: { label: 'Konu anlaşılmıyor veya eksik', note: 'Talepte hangi sorunun çözüleceği yazmıyor.' } });
   const thread = mock.thread({ guild });
   const logFile = mock.file('destek-0008.txt', 'Destek talebi #0008\n[12:01] Mehmet: Merhaba\n[12:03] Ayşe: Merhaba, nasıl yardımcı olabilirim?\n');
   const noMentions = { allowedMentions: { parse: [] } };
@@ -92,6 +94,14 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'public',
       kind: 'message',
       build: () => ({ components: [d.ticketPanel(closed())], ...noMentions }),
+    },
+    {
+      id: 'talep-reddedilmis',
+      title: 'Talep mesajı: reddedilmiş',
+      where: 'Talep alt başlığı, yetkili talebi reddedince güncellenir (butonlar kalkar)',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ components: [d.ticketPanel(rejected())], ...noMentions }),
     },
     {
       id: 'yetkili-geldi',

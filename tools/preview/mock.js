@@ -327,6 +327,7 @@ function ticket(o = {}) {
     claimedBy: null,
     closedBy: null,
     closeReason: null,
+    rejected: false,
     panelMessageId: snowflake(),
     claimMessages: { main: snowflake(), reminder: null },
     ...o,

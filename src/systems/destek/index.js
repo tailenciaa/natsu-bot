@@ -1,6 +1,8 @@
 // Destek sistemi: #destek-talebi kanalındaki panelden talep açılır, talep o kanalın altında özel alt başlık olur.
 // Panel bot açılınca kanala kendiliğinden gönderilir. Yetkililere #destek-talepleri kanalına "Yeni Destek Talebi"
 // mesajı gider, butona ilk basan talebi üstlenir. Talep kapanınca değerlendirme sistemi üyeye DM'den yetkiliyi puanlatır.
+// Aynı karttan talep reddedilebilir: boş ya da asılsız talepler üyeyle görüşülmeden kilitlenir, sebebi üyeye
+// bildirilir ve yetkili puanlaması istenmez.
 const {
   AttachmentBuilder,
   ChannelType,
@@ -444,6 +446,54 @@ async function handleCloseSubmit(interaction) {
   });
 }
 
+// Reddetme yetkisi ve durum kontrolü; sorun yoksa null, varsa hata mesajı döner
+function rejectError(interaction, ticket) {
+  if (!ticket) return 'Bu talep artık mevcut değil.';
+  if (!isStaff(interaction, ticket.staffRoleId)) return 'Talepleri sadece destek ekibi reddedebilir.';
+  if (ticket.closedBy) return 'Bu talep zaten kapanmış.';
+  if (ticket.claimedBy) return `Bu talebi <@${ticket.claimedBy}> üstlendi, artık reddedilemez.`;
+  return null;
+}
+
+// Yetkili kanalındaki "Talebi Reddet" butonu: red sebebini soran formu açar. Boş ya da asılsız talepler
+// böylece üyeyle hiç görüşülmeden kilitlenir; talep sahibi nedenini öğrenir.
+async function handleRejectRequest(interaction) {
+  const threadId = interaction.customId.slice(ui.IDS.reject.length + 1);
+  const error = rejectError(interaction, store.getTicket(threadId));
+  if (error) return replyError(interaction, error);
+
+  return interaction.showModal(ui.rejectModal(threadId));
+}
+
+// Red formu gönderilince talebi seçilen sebeple reddeder (kapanışla aynı akış, puanlama hariç)
+async function handleRejectSubmit(interaction) {
+  const threadId = interaction.customId.slice(ui.IDS.rejectModal.length + 1);
+  const error = rejectError(interaction, store.getTicket(threadId));
+  if (error) return replyError(interaction, error);
+
+  const thread = await interaction.guild.channels.fetch(threadId).catch(() => null);
+  if (!thread) {
+    store.deleteTicket(threadId);
+    return replyError(interaction, 'Bu talep silinmiş.');
+  }
+
+  const [value] = interaction.fields.getStringSelectValues(ui.IDS.rejectReason);
+  const closeReason = {
+    label: config.rejectReasons.find((reason) => reason.value === value)?.label ?? 'Belirtilmedi',
+    note: interaction.fields.getTextInputValue(ui.IDS.rejectNote).trim(),
+  };
+
+  // closeTicket kilidini (closing) ilk await'ten önce eşzamanlı alır; aynı anda gelen ikinci form reddi tekrarlamaz
+  const closed = closeTicket(thread, interaction.user, closeReason, { rejected: true });
+  await interaction.deferReply({ flags: core.CV2 });
+  await closed;
+  await interaction.editReply({
+    components: [core.alert('Talep reddedildi.', 'Alt başlık kilitlendi, üyeye reddin sebebi bildirildi.', 'success')],
+    flags: core.CV2,
+    allowedMentions: { parse: [] },
+  });
+}
+
 // Talep silinmez: kayıt alınır, yönetici olmayan herkes çıkarılır, alt başlık kilitlenip arşivlenir.
 // Böylece kenar çubuğundan kalkar, sadece "Alt Başlıkları Yönet" yetkisi olanlar alt başlıklar listesinden görebilir.
 // rejected: yetkili talebi reddediyor → üyeye red mesajı gider, yetkili puanlaması istenmez (üyeyle görüşülmemiştir)
@@ -609,7 +659,13 @@ module.exports = {
     [ui.IDS.close]: handleCloseRequest,
   },
   modals: { [ui.IDS.modal]: handleModalSubmit, [ui.IDS.closeModal]: handleCloseSubmit },
-  prefixed: [[ui.IDS.claim, handleClaim], [ui.IDS.statusDetail, handleStatusDetail], [ui.IDS.statusPage, handleStatusPage]],
+  prefixed: [
+    [ui.IDS.claim, handleClaim],
+    [ui.IDS.reject, handleRejectRequest],
+    [ui.IDS.rejectModal, handleRejectSubmit],
+    [ui.IDS.statusDetail, handleStatusDetail],
+    [ui.IDS.statusPage, handleStatusPage],
+  ],
   events: {
     [Events.ClientReady]: sendPanel,
     // Kapanmış taleplere yazılmasını engelle
