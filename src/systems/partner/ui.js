@@ -276,7 +276,8 @@ function postCard(request, trusted, banned, stats = {}) {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        `Partner Kaydı #${request.number}`,
+        // Başlık 28 karakteri geçmez; adı çözülemeyen (davetsiz/süresi dolmuş) kayıtta numara kalır
+        request.serverName ? shorten(inert(request.serverName), 28) : `Partner Kaydı #${request.number}`,
         url
           ? 'Sunucunun ilanı bu kartla birlikte paylaşıldı; ilanı okuyup **Sunucuya Katıl** ile sunucuya girebilirsin.'
           : 'Sunucunun ilanı bu kartla birlikte paylaşıldı; sunucuya nasıl gireceğin **ilanın metninde** yazıyor.',

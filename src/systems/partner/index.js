@@ -33,10 +33,10 @@ const UNKNOWN_MESSAGE = 10008;
 
 const inviteCode = (text) => ui.inviteUrl(text)?.split('/').pop() ?? null;
 
-// İlandaki davetin ait olduğu sunucu; davet yoksa ya da süresi dolmuşsa null
+// İlandaki davetin ait olduğu sunucu ({ id, name }); davet yoksa ya da süresi dolmuşsa null
 async function serverOfInvite(client, text) {
   const url = ui.inviteUrl(text);
-  return url ? client.fetchInvite(url).then((invite) => invite.guild?.id ?? null, () => null) : null;
+  return url ? client.fetchInvite(url).then((invite) => invite.guild ?? null, () => null) : null;
 }
 
 // Puanlama yalnızca gerçekleşen partnerlikte gider (oto onay, teklif yenilemesi, elle paylaşım); ret puanlatılmaz
@@ -116,6 +116,14 @@ const statsOf = (request) => store.partnerStats(request.guildId, request);
 // partner sayıları (bugün/hafta/ay) ve butonlar. Kartın ID'si butondan bulunur; ilanın ID'si kayda yazılır ki
 // "Partneri Sil" ikisini birden kaldırsın.
 async function publishPost(channel, request, trusted, banned, files = []) {
+  // Kartın başlığı sunucunun adıdır; ad ve (yoksa) ID ilandaki davetten çözülüp kayda yazılır
+  if (!request.serverName) {
+    const server = await serverOfInvite(channel.client, request.text);
+    request.serverName = server?.name ?? null;
+    request.serverId ??= server?.id ?? null;
+    store.updateRequest(request.id, { serverName: request.serverName, serverId: request.serverId });
+  }
+
   const ad = await channel
     .send({ content: ui.postContent(request), files, allowedMentions: { parse: [] } })
     .catch((err) => {
@@ -148,7 +156,7 @@ async function publishPost(channel, request, trusted, banned, files = []) {
 // silinir, kayıtları "silindi"ye çekilir, sunucu güvenilir listeden ve sürmekte olan tekliften düşürülür, sonra
 // karşı sunucunun kayıtlı yetkililerine bilgi DM'i gider. Dönen sayılar arayüzde yetkiliye özet olarak gösterilir.
 async function revokePartnership(interaction, request, { kind, reason = null }) {
-  const serverId = request.serverId ?? (await serverOfInvite(interaction.client, request.text));
+  const serverId = request.serverId ?? (await serverOfInvite(interaction.client, request.text))?.id ?? null;
   // Elle atılmış eski ilanlarda sunucu ID'si yok: aynı davet kodunu taşıyanlar da o sunucunun sayılır
   const code = inviteCode(request.text);
   const requests = store
@@ -206,15 +214,14 @@ async function handlePostsChannel(message) {
     image: Boolean(a.contentType?.startsWith('image/')),
   }));
 
-  // Sunucu ID'si davetten çözülür: iptal/yasaklama o sunucunun bütün ilanlarını bu sayede bulur
-  const serverId = await serverOfInvite(message.client, text);
+  // Sunucu ID'si ve adı paylaşırken davetten çözülür (publishPost)
   const number = store.nextRequestNumber(message.guildId);
   const request = {
     id: `${message.guildId}-${number}`,
     number,
     guildId: message.guildId,
     requesterId: message.author.id,
-    serverId,
+    serverId: null,
     text: text || '(metin yok, sadece dosya paylaşıldı)',
     files: attachments.map(({ name, image }) => ({ name, image })),
     status: 'approved',
