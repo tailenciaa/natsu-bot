@@ -31,6 +31,14 @@ const isLead = (interaction) => isStaff(interaction, config.roles.lead);
 
 const UNKNOWN_MESSAGE = 10008;
 
+const inviteCode = (text) => ui.inviteUrl(text)?.split('/').pop() ?? null;
+
+// İlandaki davetin ait olduğu sunucu; davet yoksa ya da süresi dolmuşsa null
+async function serverOfInvite(client, text) {
+  const url = ui.inviteUrl(text);
+  return url ? client.fetchInvite(url).then((invite) => invite.guild?.id ?? null, () => null) : null;
+}
+
 // Puanlama yalnızca gerçekleşen partnerlikte gider (oto onay, teklif yenilemesi, elle paylaşım); ret puanlatılmaz
 const rateStaff = (client, request, staffId, userId) =>
   ratings.requestForPartner(client, request, staffId, userId).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
@@ -140,8 +148,12 @@ async function publishPost(channel, request, trusted, banned, files = []) {
 // silinir, kayıtları "silindi"ye çekilir, sunucu güvenilir listeden ve sürmekte olan tekliften düşürülür, sonra
 // karşı sunucunun kayıtlı yetkililerine bilgi DM'i gider. Dönen sayılar arayüzde yetkiliye özet olarak gösterilir.
 async function revokePartnership(interaction, request, { kind, reason = null }) {
-  const serverId = request.serverId ?? null;
-  const requests = (serverId ? store.requestsOfServer(serverId) : [request]).filter((r) => r.guildId === interaction.guildId);
+  const serverId = request.serverId ?? (await serverOfInvite(interaction.client, request.text));
+  // Elle atılmış eski ilanlarda sunucu ID'si yok: aynı davet kodunu taşıyanlar da o sunucunun sayılır
+  const code = inviteCode(request.text);
+  const requests = store
+    .requestsOfGuild(interaction.guildId)
+    .filter((r) => r.id === request.id || (serverId && r.serverId === serverId) || (code && inviteCode(r.text) === code));
   const trusted =
     (serverId ? store.trustedOf(interaction.guildId).find((p) => p.serverId === serverId) : null) ??
     store.trustedBySource(interaction.guildId, request.id);
@@ -251,8 +263,7 @@ const messageExists = (channel, id) =>
 async function sweepOrphanPosts(guild) {
   const channel = await fetchTextChannel(guild, config.channels.posts);
   if (!channel) return;
-  const live = store.allRequests().filter((r) => r.guildId === guild.id && r.status !== 'silindi' && (r.adId || r.postId));
-  for (const r of live) {
+  for (const r of store.postedRequests(guild.id)) {
     const ids = [r.adId, r.postId].filter(Boolean);
     const states = [];
     for (const id of ids) states.push(await messageExists(channel, id));
@@ -1157,6 +1168,7 @@ function handleReady(client) {
   if (!guild) return;
   syncPostsChannelPermissions(guild).catch((err) => console.error('[partner] Hazırlık hatası:', err.message));
   refreshTrustedPanel(client, guild.id).catch((err) => console.error('[partner] Güvenilir partnerler paneli güncellenemedi:', err.message));
+  sweepOrphanPosts(guild).catch((err) => console.error('[partner] Yarım kalan partner mesajları temizlenemedi:', err.message));
 }
 
 module.exports = {
@@ -1206,5 +1218,7 @@ module.exports = {
   events: {
     [Events.ClientReady]: handleReady,
     [Events.MessageCreate]: handleMessageCreate,
+    [Events.MessageDelete]: handleMessageDelete,
+    [Events.MessageBulkDelete]: handleBulkDelete,
   },
 };

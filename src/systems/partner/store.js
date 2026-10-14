@@ -87,6 +87,11 @@ module.exports = {
     return Object.values(data.partnerRequests).find((r) => r.adId === messageId || r.postId === messageId) ?? null;
   },
 
+  // Paylaşım kanalında hâlâ mesajı duran kayıtlar
+  postedRequests(guildId) {
+    return Object.values(data.partnerRequests).filter((r) => r.guildId === guildId && r.status !== 'silindi' && (r.adId || r.postId));
+  },
+
   nextTrustedNumber(guildId) {
     const guild = guildData(guildId);
     guild.trustedCounter = (guild.trustedCounter ?? 0) + 1;
