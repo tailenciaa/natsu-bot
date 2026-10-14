@@ -307,6 +307,7 @@ async function handleClaim(interaction) {
   if (interaction.user.id === ticket.ownerId) {
     return replyError(interaction, 'Kendi açtığın talebi üstlenemezsin.', 'Talebini başka bir yetkilinin üstlenmesi gerekiyor.');
   }
+  if (ticket.closedBy) return replyError(interaction, 'Bu talep zaten kapanmış.');
   if (ticket.claimedBy) {
     return replyError(interaction, `Bu talep zaten <@${ticket.claimedBy}> tarafından üstlenildi.`);
   }

@@ -314,7 +314,7 @@ function rejectModal(threadId) {
   return new ModalBuilder()
     .setCustomId(`${IDS.rejectModal}:${threadId}`)
     .setTitle('Talebi Reddet')
-    .addTextDisplayComponents(text(`Talep kilitlenip arşivlenecek, üye reddedildiğine dair bilgilendirilecek${logEnabled() ? '; konuşma kaydı ekibe iletilecek' : ''}.`))
+    .addTextDisplayComponents(text(`Talep kilitlenip arşivlenecek, üyeye talebinin reddedildiği ve sebebi bildirilecek${logEnabled() ? '; konuşma kaydı ekibe iletilecek' : ''}.`))
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('Talep neden reddediliyor?')
