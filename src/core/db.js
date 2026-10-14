@@ -11,7 +11,12 @@
 //   punishments                    : sicildeki cezalar (sunucu-numara ID'si ile); guilds[id].punishmentCounter sayacı
 //   stats.messages / stats.voice   : sıralama için kullanıcı başına günlük mesaj sayısı ve ses süresi (saniye)
 //   weeklyActive / weeklyHolders   : haftalık en aktif üye takibi (mesaj/ses/yayın) ve o anki unvan sahipleri
-//   weeklyLastRun                  : haftalık en aktif ödülünün en son ne zaman dağıtıldığı
+//   weeklyLastRun                  : haftalık aktif duyurusunun hangi hafta için zaten yapılmış olduğu
+//   weeklyLastAttempt              : aktif duyurusunu izleyen zamanlayıcının son denemesi (hafta, an, durum, not)
+//   saygi                          : hafta hafta ve tüm zamanlar saygınlık toplamları
+//   saygiCooldown / saygiHolder    : kimin ne zaman saygınlık verdiği ve haftanın saygın üyesi rolünün sahibi
+//   saygiLastRun                   : saygınlık duyurusunun hangi hafta için zaten yapılmış olduğu
+//   saygiLastAttempt               : saygınlık duyurusunu izleyen zamanlayıcının son denemesi
 //   boosterPerks                   : takviye eden üyelerin kullandığı ücretsiz emoji/çıkartma hakkı (kullanıcı ID'si ile)
 //   boosterRoles / boosterNicks    : takviye süresince geçerli özel rol ve değiştirilen takma ad (takviye bitince geri alınır)
 //   levelXp / levelAnnounced       : seviye sisteminin kalıcı XP'si ve duyurulan seviyeler, mesaj ve ses için ayrı (kullanıcı ID'si ile)

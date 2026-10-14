@@ -2,7 +2,8 @@
 // @kullanıcı" yazarak ya da bir değerlendirmenin altındaki saygınlık butonuyla); tüm zamanların toplam tablosu
 // /siralama menüsünün saygınlık türüdür. Her verme ayarlı kayıt kanalında (bot komutları) herkese açık bir
 // kayıtla görünür. Her hafta pazartesi, geçen haftanın en çok saygınlık kazanan üyesi ayarlı kanala duyurulur ve
-// ayarlı rol verilir (önceki haftanın sahibinden geri alınır).
+// ayarlı rol verilir (önceki haftanın sahibinden geri alınır). Kontrol 15 dakikada bir tekrarlanır ve kaydı olan
+// bitmiş haftalar eskiden yeniye yakalanır; bot kapalıyken geçen hafta duyurulsuz kalmaz.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -13,7 +14,7 @@ const butik = require('../butik/store'); // ek saygınlık hakkı Butikte satıl
 const config = require('./config');
 const store = require('./store');
 const ui = require('./ui');
-const { weekKey, previousWeekKey } = require('../aktif/week');
+const { weekKey, pendingWeeks } = require('../aktif/week');
 
 const commands = [
   new SlashCommandBuilder()
@@ -234,6 +235,7 @@ module.exports = {
   give,
   rejection,
   runWeekly,
+  lastAttempt: store.lastAttempt,
   commands,
   help: {
     category: ['siralama', 'Sıralama'],
