@@ -153,7 +153,7 @@ async function announceWeek(guild, target, pay = true) {
     }
   }
   const kayit = KINDS.map((kind) => `${kind}: ${results[kind].length}`).join(' · ');
-  return { ok: true, durum: 'gönderildi', not: `${target} · ${kayit} · ${pay ? 'ödüller yattı' : 'bu çalıştırmada ödül yatırılmadı'}` };
+  return { ok: true, mark: true, durum: 'gönderildi', not: `${target} · ${kayit} · ${pay ? 'ödüller yattı' : 'bu çalıştırmada ödül yatırılmadı'}` };
 }
 
 // Hedef haftanın duyurusunu yapar ve loglar. Ödül ve "bu hafta duyuruldu" işareti YALNIZCA bitmiş ve işareti o
