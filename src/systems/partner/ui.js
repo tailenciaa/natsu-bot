@@ -88,6 +88,7 @@ const inviteLabel = (url) => url.slice('https://'.length);
 const head = (title, sub) => text(`## ${title}\n${sub}`);
 
 const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
+const serverTitle = (entry) => (entry.serverName ? shorten(inert(entry.serverName), 60) : `Sunucu ${serverLabel(entry)}`);
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
 
 // Talep kanalında "partner" / "dm" geçen ya da rol etiketlenen mesaja yanıt olarak gider
@@ -443,7 +444,7 @@ function trustedList(entries, page = 0) {
               .map((e) =>
                 new StringSelectMenuOptionBuilder()
                   .setValue(e.id)
-                  .setLabel(e.serverId ? `Sunucu ${e.serverId}` : `Kayıt #${e.id.split('-').pop()}`)
+                  .setLabel(shorten(e.serverName ?? (e.serverId ? `Sunucu ${e.serverId}` : `Kayıt #${e.id.split('-').pop()}`), 100))
                   .setDescription(shorten(e.content.replace(/\s+/g, ' '), 100)),
               ),
           ),
@@ -556,7 +557,7 @@ function trustedDetail(entry) {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        `Sunucu ${serverLabel(entry)}`,
+        serverTitle(entry),
         'Seçtiğin güvenilir partner sunucusunun kayıt bilgileri ve paylaşılan tanıtım metni burada yer alıyor. Yetkiliysen butonlarla **bu kayıt üzerinde işlem yapabilirsin**.',
       ),
     )
@@ -650,7 +651,7 @@ function assignedOfferDm(entry, startedBy) {
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['### Teklif Bilgileri', field('Partner Sunucu', `\`${serverLabel(entry)}\``), startedBy ? field('Atayan', `<@${startedBy}>`) : null])),
+      text(fields(['### Teklif Bilgileri', field('Partner Sunucu', serverTitle(entry)), startedBy ? field('Atayan', `<@${startedBy}>`) : null])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -666,7 +667,7 @@ function renewalReviewDm(entry) {
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        `Sunucu ${serverLabel(entry)}`,
+        serverTitle(entry),
         '**Teklifi kabul ettin.** Partner metnini inceleyip olduğu gibi onaylayabilir, istersen düzenleyebilir ya da bir sebep belirterek teklifi iptal edebilirsin.',
       ),
     )

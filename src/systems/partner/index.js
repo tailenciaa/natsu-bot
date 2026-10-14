@@ -564,6 +564,18 @@ async function trustedPanelView(guildId_, page = 0) {
   };
 }
 
+// Adı kaydedilmemiş eski güvenilir kayıtlar: ad önce kaynak talepten, yoksa davet bağlantısından alınır.
+// Çözülemeyen kayıt her yenilemede yeniden davet sorgulatmasın diye süreç boyunca bir kez denenir
+const nameTried = new Set();
+async function fillTrustedNames(client, guildId_) {
+  for (const entry of store.trustedOf(guildId_)) {
+    if (entry.serverName || nameTried.has(entry.id)) continue;
+    nameTried.add(entry.id);
+    const serverName = store.getRequest(entry.sourceRequestId)?.serverName ?? (await serverOfInvite(client, entry.content))?.name;
+    if (serverName) store.updateTrusted(entry.id, { serverName });
+  }
+}
+
 // Güvenilir partnerler kanalındaki sürekli güncel panel: liste değiştiğinde aynı mesaj düzenlenir, yoksa/silinmişse yeniden gönderilir
 async function refreshTrustedPanel(client, guildId_) {
   if (!config.channels.trustedList) return;
@@ -571,6 +583,7 @@ async function refreshTrustedPanel(client, guildId_) {
   const channel = await fetchTextChannel(guild, config.channels.trustedList);
   if (!channel) return;
 
+  await fillTrustedNames(client, guildId_);
   const view = await trustedPanelView(guildId_);
   const messageId = store.trustedPanelMessageId(guildId_);
   let missing = !messageId;
@@ -610,6 +623,7 @@ function createTrustedRecord(interaction, request, contactIds) {
     guildId: interaction.guildId,
     sourceRequestId: request.id,
     serverId: request.serverId,
+    serverName: request.serverName ?? null,
     content: request.text,
     contactIds,
     addedBy: interaction.user.id,

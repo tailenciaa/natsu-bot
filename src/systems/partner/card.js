@@ -37,7 +37,7 @@ function buildTrustedCard(entries, page, name) {
       ctx,
       {
         color: busy ? BUSY_COLOR : scheme.accent,
-        title: `Sunucu ${entry.serverId ?? 'bilinmiyor'}`,
+        title: entry.serverName ?? `Sunucu ${entry.serverId ?? 'bilinmiyor'}`,
         sub: `Eklenme ${fmtDate(entry.addedAt)} · Partner yetkilisi: ${contacts ? `${contacts} kişi` : 'bilinmiyor'}`,
         status: busy ? 'Meşgul' : 'Müsait',
         statusColor: busy ? BUSY_COLOR : scheme.accent,
