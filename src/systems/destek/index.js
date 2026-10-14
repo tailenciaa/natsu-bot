@@ -246,6 +246,7 @@ async function createTicket(interaction, reason, afterCreate) {
         greeted: false,
         claimedBy: null,
         closedBy: null,
+        rejected: false,
         panelMessageId: null,
         claimMessages: { main: null, reminder: null },
       });
@@ -445,7 +446,8 @@ async function handleCloseSubmit(interaction) {
 
 // Talep silinmez: kayıt alınır, yönetici olmayan herkes çıkarılır, alt başlık kilitlenip arşivlenir.
 // Böylece kenar çubuğundan kalkar, sadece "Alt Başlıkları Yönet" yetkisi olanlar alt başlıklar listesinden görebilir.
-async function closeTicket(channel, closedBy, closeReason) {
+// rejected: yetkili talebi reddediyor → üyeye red mesajı gider, yetkili puanlaması istenmez (üyeyle görüşülmemiştir)
+async function closeTicket(channel, closedBy, closeReason, { rejected = false } = {}) {
   const ticket = store.getTicket(channel.id);
   if (!ticket || closing.has(channel.id)) return;
   closing.add(channel.id);
@@ -461,13 +463,17 @@ async function closeTicket(channel, closedBy, closeReason) {
   };
 
   try {
-    store.updateTicket(channel.id, { closedBy: closedBy.id, closeReason });
+    store.updateTicket(channel.id, rejected ? { closedBy: closedBy.id, closeReason, rejected: true } : { closedBy: closedBy.id, closeReason });
     await step('talep mesajları', async () => {
       await refreshClaimMessage(channel.guild, ticket);
       await refreshTicketPanel(channel, ticket);
     });
     await step('kapanış mesajı', () =>
-      channel.send({ components: [ui.ticketClosed(ticket)], flags: core.CV2, allowedMentions: { parse: [] } }),
+      channel.send({
+        components: [rejected ? ui.ticketRejected(ticket) : ui.ticketClosed(ticket)],
+        flags: core.CV2,
+        allowedMentions: { parse: [] },
+      }),
     );
 
     const owner = await step('talep sahibi', () => channel.client.users.fetch(ticket.ownerId));
@@ -487,17 +493,30 @@ async function closeTicket(channel, closedBy, closeReason) {
       });
     }
 
-    // Talep sahibine kısa bilgi ve yetkiliyi değerlendirme isteği gider (DM'si kapalıysa kayda geçip devam edilir)
-    const rating = await step('değerlendirme', () => ratings.createPending(channel.client, ticket));
-    await owner
-      ?.send({ components: [ui.closeDm(ticket.number, channel.guild.name, rating)], flags: core.CV2 })
-      .catch((err) =>
-        console.error(`[destek] Talep #${core.pad(ticket.number)} sahibine DM gönderilemedi (DM kapalı olabilir):`, err.message),
-      );
+    // Reddedilen talepte yetkili puanlanmaz; kapanan talepte sahibine kısa bilgi ve değerlendirme isteği gider
+    // (DM'si kapalıysa kayda geçip devam edilir)
+    if (rejected) {
+      await owner
+        ?.send({ components: [ui.rejectDm(ticket, channel.guild.name)], flags: core.CV2 })
+        .catch((err) =>
+          console.error(`[destek] Talep #${core.pad(ticket.number)} sahibine red DM'i gönderilemedi (DM kapalı olabilir):`, err.message),
+        );
+    } else {
+      const rating = await step('değerlendirme', () => ratings.createPending(channel.client, ticket));
+      await owner
+        ?.send({ components: [ui.closeDm(ticket.number, channel.guild.name, rating)], flags: core.CV2 })
+        .catch((err) =>
+          console.error(`[destek] Talep #${core.pad(ticket.number)} sahibine DM gönderilemedi (DM kapalı olabilir):`, err.message),
+        );
+    }
 
     await step('üyeleri çıkarma', () => removeRegularMembers(channel, ticket));
     await step('kilitleme', () =>
-      channel.edit({ locked: true, archived: true, reason: `Destek talebi kapatıldı (${closedBy.username})` }),
+      channel.edit({
+        locked: true,
+        archived: true,
+        reason: `Destek talebi ${rejected ? 'reddedildi' : 'kapatıldı'} (${closedBy.username})`,
+      }),
     );
   } finally {
     // Kapanan talep silinmez, sicilde görünmesi için geçmişe taşınır
