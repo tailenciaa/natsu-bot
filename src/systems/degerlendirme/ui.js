@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, text, divider, pad, unix, quote, stars, rows, messageUrl, page } = require('../../core/ui');
+const { colors, text, divider, pad, unix, quote, stars, rows, messageUrl, page, withActions } = require('../../core/ui');
 const config = require('./config');
 
 // Hepsinin sonuna veri eklenir (değerlendirme ID'si, puan, karar)
@@ -331,13 +331,13 @@ function ratingComplaint(rating) {
       '### İtiraz Bilgileri\n' +
         `${rating.leaderRoleId ? `<@&${rating.leaderRoleId}>, ` : ''}<@${rating.staffId}> aldığı bir değerlendirmeye itiraz etti.\n` +
         `<@${rating.userId}> tarafından verilen puanın haksız olduğunu düşünüyor.`,
-      `### Değerlendirme\n**Kaynak:** ${refText(rating)}\n**Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : 'Yorum bırakılmadı.'}`,
-      `### İtiraz Sebebi\n${quote(rating.reportReason)}`,
-      status,
+      // Değerlendirme, sebep ve durum tek blok: mesaj 10 bileşeni aşamasın (kırmızı düğme ayrı satır + çizgi yer kaplar)
+      `### Değerlendirme\n**Kaynak:** ${refText(rating)}\n**Puan:** ${stars(rating.score)}\n${rating.comment ? quote(rating.comment) : 'Yorum bırakılmadı.'}` +
+        `\n\n### İtiraz Sebebi\n${quote(rating.reportReason)}\n\n${status}`,
     ],
   });
 
-  if (actionRow.components.length) container.addSeparatorComponents(divider()).addActionRowComponents(actionRow);
+  withActions(container, buttons, { danger: true });
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# <t:${unix(rating.reportedAt)}:F>`));
 }
