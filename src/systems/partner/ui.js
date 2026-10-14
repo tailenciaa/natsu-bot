@@ -86,6 +86,10 @@ const inviteLabel = (url) => url.slice('https://'.length);
 // Standart başlık: büyük başlık ve iki satıra yayılan uzun normal yazılı açıklama (bütün mesajlar aynı genişlikte görünsün)
 const head = (title, sub) => text(`## ${title}\n${sub}`);
 
+// Kopyalanıp kendi sunucusunda paylaşılacak metinler kod bloğuna konur; bloğun içindeki üçlü tırnak
+// sırasına küçük bir boşluk karakteri eklenir, yoksa bloğun tamamı bozulur
+const copyBlock = (value) => '```\n' + String(value ?? '').replace(/```/g, '`\u200b``') + '\n```';
+
 const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
 const serverTitle = (entry) => (entry.serverName ? shorten(inert(entry.serverName), 60) : `Sunucu ${serverLabel(entry)}`);
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
@@ -331,14 +335,16 @@ function postCard(request, trusted, banned, stats = {}) {
   return withActions(container, buttons, { danger: true });
 }
 
-const requesterResult = (sonuc, request, by) =>
-  new ContainerBuilder()
+// Talep sahibinin onay/red sonucu DM'i. Onayda tek buton vardır: metninin paylaşıldığı ilana gider.
+// sharedUrl paylaşım başarısızsa null gelir; o zaman buton gösterilmez, mesaj yine de bilgilendirir.
+function requesterResult(sonuc, request, by, sharedUrl = null) {
+  const container = new ContainerBuilder()
     .setAccentColor(sonuc === 'onayla' ? colors.success : colors.danger)
     .addTextDisplayComponents(
       head(
         sonuc === 'onayla' ? 'Partner Talebin Onaylandı' : 'Partner Talebin Reddedildi',
         sonuc === 'onayla'
-          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Sunucunun tanıtım metni paylaşım kanalına gönderildi, **partnerlik başladı**.'
+          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Partner metnin paylaşım kanalımıza **paylaşıldı**, partnerlik başladı.\nAşağıdaki butondan paylaşılan mesaja gidebilirsin; bizim sunucumuzu tanıtan metin ise bir sonraki mesajda kopyalaman için geliyor.'
           : 'Oto partner talebin yetkililer tarafından incelendi ve **reddedildi**. Talebin paylaşım kanalına gönderilmedi; ayrıntılar için yetkililerle iletişime geçebilirsin.',
       ),
     )
@@ -354,9 +360,18 @@ const requesterResult = (sonuc, request, by) =>
           ]),
         ]),
       ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(stamp()));
+    );
+
+  if (sonuc === 'onayla' && sharedUrl) {
+    container
+      .addSeparatorComponents(divider())
+      .addActionRowComponents(
+        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(sharedUrl).setLabel('Paylaşılan Mesaja Git').setStyle(ButtonStyle.Link)),
+      );
+  }
+
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp()));
+}
 
 // Bir yasaklama ya da teklif iptali gibi yetkili kanalına düşen kayıt (başlık, bilgi satırları ve sebep)
 function noticeCard(title, sub, infoLines, reason) {
@@ -722,41 +737,28 @@ function renewalCancelModal(trustedId) {
     );
 }
 
-// Teklif onaylandıktan sonra, karşı tarafın metni ve bizim sunucumuzu tanıtan metin karşı tarafa gider.
-// partnerJumpUrl: karşı tarafın metninin paylaşıldığı mesaj, ourJumpUrl: bizim bağlantımız (paylaşım kanalı ya da
-// mesaj). Aynı yere gidiyorlarsa tek buton gösterilir.
-function ourTextDm(entry, partnerJumpUrl, ourJumpUrl) {
+// Onaydan sonra karşı sunucunun partner yetkilisine giden ikinci mesaj: bizim sunucumuzu tanıtan metin.
+// Metin kod bloğunda verilir ki olduğu gibi kopyalanıp karşı tarafın kendi sunucusunda paylaşılabilsin.
+// sharedUrl biliniyorsa tek buton eklenir: karşı tarafın metninin paylaşıldığı mesaja gider.
+function ourTextDm(entry, sharedUrl = null) {
   const container = new ContainerBuilder().setAccentColor(colors.success).addTextDisplayComponents(
     head(
-      'Partner Metinleri',
-      '**Teklif onaylandı.** Karşı sunucunun paylaşılan metni ile bizim sunucumuzu tanıtan metin bu mesajda yer alıyor; butonlarla paylaşılan mesaja doğrudan gidebilirsin.',
+      'Bizim Partner Metnimiz',
+      `**${serverTitle(entry)}** sunucunun partner metni paylaşım kanalımızda yayında. Aşağıdaki metin bizim sunucumuzu tanıtan partner ilanımız; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
     ),
   );
 
-  // Karşı tarafın metni (bizim gözüktüğümüz şekilde)
-  if (entry?.serverId) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(`${field('Onların Sunucusu', `\`${entry.serverId}\``)}\n${quote(shorten(sanitize(entry.content), 1500))}`));
+  container.addSeparatorComponents(divider()).addTextDisplayComponents(
+    text(`### Bizim Sunucumuz\n${copyBlock(config.ourAdText)}`),
+  );
 
-    if (partnerJumpUrl) {
-      container.addActionRowComponents(
-        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(partnerJumpUrl).setLabel('Mesaja Git').setStyle(ButtonStyle.Link)),
-      );
-    }
-  }
-
-  // Bizim metni
-  container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`### Bizim Sunucumuz\n${config.ourAdText}`));
-
-
-  if (ourJumpUrl && ourJumpUrl !== partnerJumpUrl) {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(ourJumpUrl).setLabel('Partner Kanalına Git').setStyle(ButtonStyle.Link)),
+  if (sharedUrl) {
+    container.addSeparatorComponents(divider()).addActionRowComponents(
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(sharedUrl).setLabel('Paylaşılan Mesaja Git').setStyle(ButtonStyle.Link)),
     );
   }
 
-  return container;
+  return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp()));
 }
 
 function banServerModal(serverId) {
