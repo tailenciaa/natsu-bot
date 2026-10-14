@@ -421,12 +421,12 @@ const partnerRevokedDm = (serverId, { kind, by, removed, reason = null }) =>
     reason,
   );
 
-// Teklifte bulunma iptal edilince inceleme kanalına düşen kayıt
+// Karşı sunucunun yetkilisi teklifi reddedince inceleme kanalına düşen kayıt
 const renewalCancelledLog = (entry, staffId, reason) =>
   noticeCard(
-    'Teklif İptal Edildi',
-    'Teklifte bulunma süreci atanan yetkili tarafından **iptal edildi**. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
-    ['### Teklif Bilgileri', rows([['Sunucu ID', chip(serverLabel(entry))], ['Yetkili', `<@${staffId}>`]])],
+    'Teklif Reddedildi',
+    'Teklifte bulunma süreci **karşı sunucunun partner yetkilisi** tarafından reddedildi. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
+    ['### Teklif Bilgileri', rows([['Sunucu', serverTitle(entry)], ['Reddeden', `<@${staffId}>`]])],
     reason,
   );
 
@@ -612,13 +612,13 @@ function contactModal(trustedId, currentIds) {
     );
 }
 
-// Teklifte Bul'a basınca: o an hangi yetkilinin bu yenilemeyle ilgileneceğini seçtiren menü (sadece basan kişiye görünür)
-function staffSelect(trustedId, members, statusOf) {
+// Teklifte Bul'a basınca: teklifin hangi **karşı sunucu yetkilisine** gideceğini seçtiren menü (sadece basana görünür)
+function contactSelect(trustedId, members) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        'Yetkili Seç',
-        'Teklifte bulunma sürecini yürütecek **partner yetkilisini seçmelisin**. Seçilen yetkiliye DM gider; partner metnini inceleyip onaylaması ya da düzenlemesi istenir.',
+        'Teklifin Gideceği Yetkili',
+        'Teklif, bu partner sunucusunun **kayıtlı partner yetkilisine** gider; kabul edince kendi metnini görüp onaylar. Kayıtta birden fazla yetkili varsa muhatabı seç.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -626,7 +626,7 @@ function staffSelect(trustedId, members, statusOf) {
       text(
         fields([
           '### Yetkili Seçimi',
-          'Bu teklifle **hangi partner yetkilisinin** ilgileneceğini menüden seç.',
+          'Seçtiğin kişiye DM olarak teklif kartı açılır. Kayıtlı yetkilileri **Yetkiliyi Güncelle** ile değiştirebilirsin.',
           members.length > 25 ? 'Menüde **ilk 25 yetkili** listelenir.' : null,
         ]),
       ),
@@ -644,25 +644,25 @@ function staffSelect(trustedId, members, statusOf) {
                 new StringSelectMenuOptionBuilder()
                   .setValue(m.id)
                   .setLabel(m.displayName ?? m.user.username)
-                  .setDescription(statusOf(m.id) === 'mesgul' ? 'Meşgul' : 'Aktif'),
+                  .setDescription('Karşı sunucunun partner yetkilisi'),
               ),
           ),
       ),
     );
 }
 
-// Atanan yetkiliye giden, teklifi kabul edip etmeyeceğini soran ilk DM. startedBy: teklifi başlatan yetkili
+// Karşı sunucunun partner yetkilisine giden, teklifi kabul edip etmeyeceğini soran ilk DM. startedBy: teklifi başlatan yetkili
 function assignedOfferDm(entry, startedBy) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         'Partner Yenileme Teklifi',
-        'Bir yetkili, güvenilir partner kaydındaki metnin yenilenmesi için **seni atadı**. Kabul edersen metni inceleyip onaylayabilir, düzenleyebilir ya da teklifi iptal edebilirsin.',
+        'Bir yetkilimiz, sunucunun partner metnini yeniden paylaşmak için **sana teklifte bulunuyor**. Kabul edersen metnini görüp onaylayabilir, istersen güncelleyebilir ya da teklifi reddedebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['### Teklif Bilgileri', field('Partner Sunucu', serverTitle(entry)), startedBy ? field('Atayan', `<@${startedBy}>`) : null])),
+      text(fields(['### Teklif Bilgileri', field('Partner Sunucu', serverTitle(entry)), startedBy ? field('Teklif Eden', `<@${startedBy}>`) : null])),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -672,14 +672,14 @@ function assignedOfferDm(entry, startedBy) {
     );
 }
 
-// Atanan yetkili kabul edince aynı DM mesajı bu haline güncellenir: metni görüp onaylar, düzenler ya da iptal eder
+// Karşı yetkili "Kabul Ediyorum" deyince aynı DM mesajı bu haline güncellenir: metnini görür, onaylar, günceller ya da reddeder
 function renewalReviewDm(entry) {
   const url = inviteUrl(entry.content);
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         serverTitle(entry),
-        '**Teklifi kabul ettin.** Partner metnini inceleyip olduğu gibi onaylayabilir, istersen düzenleyebilir ya da bir sebep belirterek teklifi iptal edebilirsin.',
+        '**Teklifi kabul ettin.** Kayıtlı partner metnin bu; olduğu gibi onaylayabilir, istersen güncelleyebilir ya da bir sebep belirterek teklifi reddedebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -693,10 +693,10 @@ function renewalReviewDm(entry) {
 
   const buttons = [
     new ButtonBuilder().setCustomId(`${IDS.renewalApprove}:${entry.id}`).setLabel('Onayla').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId(`${IDS.renewalEdit}:${entry.id}`).setLabel('Metni Düzenle').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(`${IDS.renewalEdit}:${entry.id}`).setLabel('Metni Güncelle').setStyle(ButtonStyle.Primary),
   ];
   if (url) buttons.push(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
-  buttons.push(new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('İptal Et').setStyle(ButtonStyle.Danger));
+  buttons.push(new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('Reddet').setStyle(ButtonStyle.Danger));
   return withActions(container.addSeparatorComponents(divider()), buttons, { danger: true });
 }
 
@@ -705,7 +705,7 @@ function renewalEditModal(entry) {
   const current = shorten(entry.content, 2800);
   return new ModalBuilder()
     .setCustomId(`${IDS.renewalEditModal}:${entry.id}`)
-    .setTitle('Partner Metnini Düzenle')
+    .setTitle('Partner Metnini Güncelle')
     .addLabelComponents(
       new LabelBuilder()
         .setLabel('Partner Metni')
@@ -725,10 +725,10 @@ function renewalEditModal(entry) {
 function renewalCancelModal(trustedId) {
   return new ModalBuilder()
     .setCustomId(`${IDS.renewalCancelModal}:${trustedId}`)
-    .setTitle('Teklifi İptal Et')
+    .setTitle('Teklifi Reddet')
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel('Neden iptal ediyorsun?')
+        .setLabel('Neden reddediyorsun?')
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId(IDS.renewalCancelInput)
