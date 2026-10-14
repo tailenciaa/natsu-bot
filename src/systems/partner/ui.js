@@ -470,35 +470,28 @@ function trustedAddModal(requestId, messageId, defaultIds = []) {
     );
 }
 
-// Bir güvenilir kaydın işlem butonları: Teklifte Bul (eylem) ve yönetim butonları (Listeden Çıkar, Yetkili
-// işlemleri) ayrı satırlarda. Teklifte Bul sadece yetkili varsa anlamlı; Listeden Çıkar sadece partner lideri,
-// diğerleri partner yetkilileri içindir (yetki kontrolü index.js'de yapılır)
-function trustedActionRow(entry) {
+// Bir güvenilir kaydın işlem butonları tek satırda: Teklifte Bul (sadece yetkili varsa), yetkili düzenleme, davet
+// bağlantısı (verilirse), en sonda silme işlemleri. Listeden Çıkar sadece partner lideri, diğerleri partner
+// yetkilileri içindir (yetki kontrolü index.js'de yapılır)
+function trustedActionRow(entry, url = null) {
   const hasContacts = Boolean(entry.contactIds?.length);
-  const rows = [];
-
+  const row = new ActionRowBuilder();
   if (hasContacts) {
-    rows.push(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bul').setStyle(ButtonStyle.Primary),
-      ),
-    );
+    row.addComponents(new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bul').setStyle(ButtonStyle.Primary));
   }
-
-  // Yönetim butonları: Yetkili Ekle/Güncelle, Listeden Çıkar, Yetkili Çıkar
-  const managementRow = new ActionRowBuilder().addComponents(
+  row.addComponents(
     new ButtonBuilder()
       .setCustomId(`${IDS.contactAdd}:${entry.id}`)
       .setLabel(hasContacts ? 'Yetkiliyi Güncelle' : 'Yetkili Ekle')
       .setStyle(ButtonStyle.Secondary),
+  );
+  if (url) row.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  if (hasContacts) {
+    row.addComponents(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Danger));
+  }
+  return row.addComponents(
     new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:kaldir`).setLabel('Listeden Çıkar').setStyle(ButtonStyle.Danger),
   );
-  if (hasContacts) {
-    managementRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Danger));
-  }
-  rows.push(managementRow);
-
-  return rows;
 }
 
 const PANEL_PAGE_SIZE = 3;
@@ -546,7 +539,7 @@ function trustedListPanel(entries, page = 0, cardName = null) {
               ]),
             ),
       )
-      .addActionRowComponents(...trustedActionRow(entry));
+      .addActionRowComponents(trustedActionRow(entry));
   }
 
   // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
@@ -583,13 +576,7 @@ function trustedDetail(entry) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`));
 
-  if (url) {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
-    );
-  }
-
-  return container.addSeparatorComponents(divider()).addActionRowComponents(...trustedActionRow(entry));
+  return container.addSeparatorComponents(divider()).addActionRowComponents(trustedActionRow(entry, url));
 }
 
 // Güvenilir kayda partner yetkilisi(leri) ekler ya da günceller; current (varsa) tüm liste düzenlenmek üzere hazır gelir
@@ -674,7 +661,6 @@ function assignedOfferDm(entry, startedBy) {
 }
 
 // Atanan yetkili kabul edince aynı DM mesajı bu haline güncellenir: metni görüp onaylar, düzenler ya da iptal eder
-// Onay/Düzenleme ve İptal ayrı işlemler olduğu için farklı satırlarda
 function renewalReviewDm(entry) {
   const url = inviteUrl(entry.content);
   const container = new ContainerBuilder()
@@ -690,25 +676,16 @@ function renewalReviewDm(entry) {
   if (url) {
     container
       .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(fields(['### Davet', field('Bağlantı', chip(inviteLabel(url))), 'Onaylamadan önce sunucuyu bu bağlantıdan görebilirsin.'])))
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
-      );
+      .addTextDisplayComponents(text(fields(['### Davet', field('Bağlantı', chip(inviteLabel(url))), 'Onaylamadan önce sunucuyu **Sunucuya Katıl** ile görebilirsin.'])));
   }
 
-  return container
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.renewalApprove}:${entry.id}`).setLabel('Onayla').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`${IDS.renewalEdit}:${entry.id}`).setLabel('Metni Düzenle').setStyle(ButtonStyle.Primary),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('İptal Et').setStyle(ButtonStyle.Danger),
-      ),
-    );
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`${IDS.renewalApprove}:${entry.id}`).setLabel('Onayla').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId(`${IDS.renewalEdit}:${entry.id}`).setLabel('Metni Düzenle').setStyle(ButtonStyle.Primary),
+  );
+  if (url) row.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('İptal Et').setStyle(ButtonStyle.Danger));
+  return container.addSeparatorComponents(divider()).addActionRowComponents(row);
 }
 
 function renewalEditModal(entry) {
