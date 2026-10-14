@@ -221,6 +221,7 @@ function claimRequest(ticket) {
   } else {
     buttons.push(
       new ButtonBuilder()
+        .setCustomId(`${IDS.claim}:${ticket.threadId}`)
         .setStyle(ButtonStyle.Secondary)
         .setLabel(rejected ? 'Reddedildi' : ticket.closedBy ? 'Kapatıldı' : 'Üstlenildi')
         .setDisabled(true),
