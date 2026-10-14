@@ -175,15 +175,34 @@ function ticketClosed(ticket) {
   });
 }
 
+// Talep reddedilince alt başlığa giden mesaj: üyeyle görüşülmediği için puanlama istenmez
+function ticketRejected(ticket) {
+  return page({
+    title: 'Talep Reddedildi',
+    sub: 'Talebin bir yetkili tarafından reddedildi. Kimin reddettiği ve red sebebi bu mesajda yer alır. Gerçek bir sorunla karşılaştığında destek panelinden istediğin zaman yeni bir talep açabilirsin.',
+    accent: colors.danger,
+    blocks: [
+      rows([
+        ['Reddeden', `<@${ticket.closedBy}>`],
+        logEnabled() && ['Konuşma Kaydı', chip('ekibe iletildi')],
+      ]),
+      reasonText(ticket.closeReason, '### Red Sebebi'),
+    ],
+  });
+}
+
 // Yetkili talep kanalındaki "Yeni Destek Talebi" mesajı, butona ilk basan yetkili talebi üstlenir.
 // Sicil bu mesajı butonsuz (sadece bağlantı butonlarıyla) gösterdiği için metinler butona atıf yapmaz.
 function claimRequest(ticket) {
   const waiting = !ticket.claimedBy && !ticket.closedBy;
+  const rejected = Boolean(ticket.rejected);
 
   let sub;
   let color;
   if (ticket.closedBy) {
-    sub = 'Talep kapatıldı ve alt başlık kilitlendi. Kimin kapattığı ve kapanış sebebi bu mesajda güncellenir; **Talebe Git** butonuyla alt başlığa ulaşabilirsin.';
+    sub = rejected
+      ? 'Talep reddedildi ve alt başlık kilitlendi. Kimin reddettiği ve red sebebi bu mesajda güncellenir; **Talebe Git** butonuyla alt başlığa ulaşabilirsin.'
+      : 'Talep kapatıldı ve alt başlık kilitlendi. Kimin kapattığı ve kapanış sebebi bu mesajda güncellenir; **Talebe Git** butonuyla alt başlığa ulaşabilirsin.';
     color = colors.danger;
   } else if (ticket.claimedBy) {
     sub = 'Talep üstlenildi ve yetkili üyeyle ilgileniyor. Talebin son durumu bu mesajda güncellenir; konuşmanın tamamına **Talebe Git** butonuyla ulaşabilirsin.';
@@ -193,15 +212,18 @@ function claimRequest(ticket) {
     color = colors.warning;
   }
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`${IDS.claim}:${ticket.threadId}`)
-      .setStyle(ticket.closedBy ? ButtonStyle.Secondary : ButtonStyle.Success)
-      .setLabel(ticket.closedBy ? 'Kapatıldı' : ticket.claimedBy ? 'Üstlenildi' : 'Talebi Üstlen')
-      .setDisabled(!waiting),
-  );
-  if (!waiting) {
-    row.addComponents(
+  const buttons = [];
+  if (waiting) {
+    buttons.push(
+      new ButtonBuilder().setCustomId(`${IDS.claim}:${ticket.threadId}`).setStyle(ButtonStyle.Success).setLabel('Talebi Üstlen'),
+      new ButtonBuilder().setCustomId(`${IDS.reject}:${ticket.threadId}`).setStyle(ButtonStyle.Danger).setLabel('Talebi Reddet'),
+    );
+  } else {
+    buttons.push(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setLabel(rejected ? 'Reddedildi' : ticket.closedBy ? 'Kapatıldı' : 'Üstlenildi')
+        .setDisabled(true),
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Talebe Git')
@@ -209,22 +231,26 @@ function claimRequest(ticket) {
     );
   }
 
-  return page({
-    title: `${waiting ? 'Yeni ' : ''}Destek Talebi #${pad(ticket.number)}`,
-    sub,
-    accent: color,
-    blocks: [
-      rows([
-        ['Talep Sahibi', `<@${ticket.ownerId}>`],
-        ['Açılış', `<t:${unix(ticket.createdAt)}:R>`],
-        ticket.claimedBy && ['Üstlenen', `<@${ticket.claimedBy}>`],
-        ticket.closedBy && ['Kapatan', `<@${ticket.closedBy}>`],
-        ticket.closedBy && ticket.closeReason && ['Kapatma Sebebi', ticket.closeReason.label],
-      ]),
-      waiting ? `<@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
-      `### Konu\n${quote(ticket.reason)}`,
-    ],
-  }).addActionRowComponents(row);
+  return withActions(
+    page({
+      title: `${waiting ? 'Yeni ' : ''}Destek Talebi #${pad(ticket.number)}`,
+      sub,
+      accent: color,
+      blocks: [
+        rows([
+          ['Talep Sahibi', `<@${ticket.ownerId}>`],
+          ['Açılış', `<t:${unix(ticket.createdAt)}:R>`],
+          ticket.claimedBy && ['Üstlenen', `<@${ticket.claimedBy}>`],
+          rejected && ['Reddeden', `<@${ticket.closedBy}>`],
+          !rejected && ticket.closedBy && ['Kapatan', `<@${ticket.closedBy}>`],
+          ticket.closedBy && ticket.closeReason && [rejected ? 'Red Sebebi' : 'Kapatma Sebebi', ticket.closeReason.label],
+        ]),
+        waiting ? `<@&${ticket.staffRoleId}>, bekleyen yeni bir talep var.` : null,
+        `### Konu\n${quote(ticket.reason)}`,
+      ],
+    }),
+    buttons,
+  );
 }
 
 // Üye "Hatırlat"a basınca yetkili kanalına giden hatırlatma: üstlenme mesajına yanıt olarak gider,
@@ -281,6 +307,42 @@ function closeModal() {
     );
 }
 
+// Yetkili kanalındaki "Talebi Reddet" ile açılan form: red sebebi seçilir, istenirse not yazılır.
+// threadId forma taşınır, böylece form hangi talebi reddettiğini kaybeden bir tıklamada bile bilinir.
+function rejectModal(threadId) {
+  return new ModalBuilder()
+    .setCustomId(`${IDS.rejectModal}:${threadId}`)
+    .setTitle('Talebi Reddet')
+    .addTextDisplayComponents(text(`Talep kilitlenip arşivlenecek, üye reddedildiğine dair bilgilendirilecek${logEnabled() ? '; konuşma kaydı ekibe iletilecek' : ''}.`))
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel('Talep neden reddediliyor?')
+        .setDescription('Seçtiğin sebep üyenin gördüğü mesajda görünür.')
+        .setStringSelectMenuComponent(
+          new StringSelectMenuBuilder()
+            .setCustomId(IDS.rejectReason)
+            .setPlaceholder('Sebep seç')
+            .setRequired(true)
+            .addOptions(
+              config.rejectReasons.map((reason) =>
+                new StringSelectMenuOptionBuilder().setValue(reason.value).setLabel(reason.label),
+              ),
+            ),
+        ),
+      new LabelBuilder()
+        .setLabel('Üyeye kısa bir açıklama yazmak ister misin?')
+        .setDescription('İsteğe bağlı; neyi eksik gördüğünü tek cümleyle anlatabilirsin.')
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId(IDS.rejectNote)
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder('Örn: Talepte anlatılan bir sorun yok, sadece merhaba yazmışsın.')
+            .setMaxLength(500)
+            .setRequired(false),
+        ),
+    );
+}
+
 function openLog(ticket, channel, owner) {
   return page({
     title: `Talep Açıldı #${pad(ticket.number)}`,
@@ -299,21 +361,24 @@ function openLog(ticket, channel, owner) {
 
 // owner: talep sahibinin kullanıcı nesnesi (alınamadıysa null, o zaman sadece etiket gösterilir)
 function closeLog(ticket, closedBy, fileName, owner) {
+  const rejected = Boolean(ticket.rejected);
   return page({
-    title: `Talep Kapatıldı #${pad(ticket.number)}`,
-    sub: 'Bir destek talebi kapatıldı. İlgili kişiler, zamanlar, konu ve kapatma sebebi bu kayıtta yer alır; konuşmanın tamamı ekteki dosyadadır.',
+    title: `Talep ${rejected ? 'Reddedildi' : 'Kapatıldı'} #${pad(ticket.number)}`,
+    sub: rejected
+      ? 'Bir destek talebi bir yetkili tarafından reddedildi. İlgili kişiler, zamanlar, konu ve red sebebi bu kayıtta yer alır; konuşmanın tamamı ekteki dosyadadır.'
+      : 'Bir destek talebi kapatıldı. İlgili kişiler, zamanlar, konu ve kapatma sebebi bu kayıtta yer alır; konuşmanın tamamı ekteki dosyadadır.',
     accent: colors.danger,
     blocks: [
       rows([
         ['Talep', `<#${ticket.threadId}>`],
         ['Talep Sahibi', personText(ticket.ownerId, owner)],
         ['Üstlenen', ticket.claimedBy ? `<@${ticket.claimedBy}>` : chip('yok')],
-        ['Kapatan', personText(closedBy.id, closedBy)],
+        [rejected ? 'Reddeden' : 'Kapatan', personText(closedBy.id, closedBy)],
         ['Açılış', `<t:${unix(ticket.createdAt)}:F>`],
         ['Kapanış', `<t:${unix(Date.now())}:F>`],
       ]),
       `### Konu\n${quote(ticket.reason)}`,
-      reasonText(ticket.closeReason),
+      reasonText(ticket.closeReason, rejected ? '### Red Sebebi' : '### Kapatma Sebebi'),
     ],
   })
     .addSeparatorComponents(divider())
@@ -332,6 +397,19 @@ function closeDm(ticketNumber, guildName, rating) {
   });
   if (rating) ratingUi.ratingSection(container, rating);
   return container;
+}
+
+// Talep reddedilince sahibine giden DM. Yetkiliyle görüşülmediği için puanlama istenmez.
+function rejectDm(ticket, guildName) {
+  return page({
+    title: 'Talebin Reddedildi',
+    sub: 'Destek talebin bir yetkili tarafından reddedildi. Reddin sebebi burada yazıyor; gerçekten çözülmesi gereken bir sorunla karşılaştığında destek panelinden istediğin zaman yeni bir talep açabilirsin.',
+    accent: colors.danger,
+    blocks: [
+      rows([['Sunucu', guildName], ['Talep', chip(`#${pad(ticket.number)}`)]]),
+      reasonText(ticket.closeReason, '### Red Sebebi'),
+    ],
+  });
 }
 
 // Durum panelinin görünecek sayfası: kartı çizenle mesajı kuranın aynı dilimi kullanması için tek yerde
