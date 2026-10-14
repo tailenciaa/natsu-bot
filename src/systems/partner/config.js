@@ -30,7 +30,7 @@ module.exports = {
   // Partner talebini tetikleyen kelimeler (mesaj küçük harfe çevrilip tam kelime olarak aranır)
   triggerWords: ['partner', 'dm'],
 
-  // Teklifte bulunma (yenileme) onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin
+  // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin
   ourAdText: '**Kazuki Anime & Public**\n' +
     'Anime sohbetinden oyun odalarına, etkinliklerden çekilişlere kadar her şeyin olduğu Türkçe bir topluluk sunucusuyuz.\n' +
     'Toksiklikten uzak, güvenli ve samimi bir ortam; aktif yetkili ekibi ve destek sistemi; seviye sistemi, özel odalar ve sürekli etkinlikler.\n' +

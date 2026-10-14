@@ -124,7 +124,7 @@ module.exports = ({ mock, src }) => {
     },
     { id: 'detay', title: 'Güvenilir partner detayı', where: 'Güvenilir liste menüsünden seçilince', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [ui.trustedDetail(entry())], ...noMentions }) },
     { id: 'form-yetkili', title: 'Form: partner yetkilisi', where: 'Yetkili Ekle butonu', visibility: 'ephemeral', kind: 'modal', build: () => ui.contactModal('1-3', [member.id, staff.id]) },
-    { id: 'yetkili-sec', title: 'Teklifte bulunma: muhatap yetkili seçimi', where: 'Teklifte Bul butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [ui.contactSelect('1-3', [staff, member])], ...noMentions }) },
+    { id: 'yetkili-sec', title: 'Partner yenileme: muhatap yetkili seçimi', where: 'Partner Yenile butonu', visibility: 'ephemeral', kind: 'message', build: () => ({ components: [ui.contactSelect('1-3', [staff, member])], ...noMentions }) },
     { id: 'teklif-dm', title: 'DM: partner yenileme teklifi', where: 'Karşı sunucunun yetkilisine', visibility: 'dm', kind: 'message', build: () => ({ components: [ui.assignedOfferDm(entry({ serverName: 'Anime & Sohbet Cenneti' }), staff.id)] }) },
     { id: 'yenileme-dm', title: 'DM: yenileme metni onayı', where: 'Karşı yetkili, kabul sonrası', visibility: 'dm', kind: 'message', build: () => ({ components: [ui.renewalReviewDm(entry({ serverName: 'Anime & Sohbet Cenneti' }))] }) },
     { id: 'yenileme-form', title: 'Form: partner metnini güncelle', where: 'Karşı yetkili', visibility: 'dm', kind: 'modal', build: () => ui.renewalEditModal(entry()) },

@@ -41,7 +41,7 @@ const IDS = {
   contactAdd: 'partner-yetkili-ekle', // partner-yetkili-ekle:<kayıt>
   contactAddModal: 'partner-yetkili-ekle-form', // partner-yetkili-ekle-form:<kayıt>
   contactRemove: 'partner-yetkili-cikar', // partner-yetkili-cikar:<kayıt>
-  // Teklifte bulunma (yenileme) akışı: teklif, güvenilir kaydın karşı sunucu yetkilisine gider; o kişi kendi
+  // Partner yenileme akışı: teklif, güvenilir kaydın karşı sunucu yetkilisine gider; o kişi kendi
   // metnini onaylar (istersen günceller), gerekirse önce şartları kabul eder ve metin otomatik paylaşılır
   renewalAssign: 'partner-yenile-ata', // partner-yenile-ata:<kayıt>
   renewalAssignedAccept: 'partner-yenile-kabul', // partner-yenile-kabul:<kayıt>
@@ -186,7 +186,7 @@ function requestModalWithMessageId(messageId) {
     );
 }
 
-// Şartları kabul ettiren genel DM: hem ilk oto partner talebinde (talep sahibine) hem teklifte bulunma akışında
+// Şartları kabul ettiren genel DM: hem ilk oto partner talebinde (talep sahibine) hem partner yenileme akışında
 // (karşı tarafa, daha önce hiç kabul etmediyse) kullanılır; acceptCustomId tıklanınca neyin olacağını belirler
 function termsDm(acceptCustomId) {
   return new ContainerBuilder()
@@ -425,7 +425,7 @@ const partnerRevokedDm = (serverId, { kind, by, removed, reason = null }) =>
 const renewalCancelledLog = (entry, staffId, reason) =>
   noticeCard(
     'Teklif Reddedildi',
-    'Teklifte bulunma süreci **karşı sunucunun partner yetkilisi** tarafından reddedildi. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
+    'Partner yenileme teklifi **karşı sunucunun partner yetkilisi** tarafından reddedildi. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
     ['### Teklif Bilgileri', rows([['Sunucu', serverTitle(entry)], ['Reddeden', `<@${staffId}>`]])],
     reason,
   );

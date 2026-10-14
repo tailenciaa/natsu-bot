@@ -951,7 +951,7 @@ async function handleContactRemove(interaction) {
   return respond(interaction, core.alert('Partner yetkilileri kaldırıldı.', null, 'danger'), { ephemeral: true });
 }
 
-// ── Teklifte bulunma (yenileme) akışı ───────────────────────────────────────────
+// ── Partner yenileme akışı ──────────────────────────────────────────────────────
 
 // Kayıttaki karşı sunucu yetkilileri: seçim menüsünü adlarıyla doldurmak için. Sunucudan ayrılan kişi menüde
 // listelenmez, kayıtlı kullanıcı adı hâlâ çözülebiliyorsa onunla gösterilir
