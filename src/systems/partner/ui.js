@@ -15,7 +15,7 @@ const {
   TextInputStyle,
   UserSelectMenuBuilder,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, alert, field, fields, rows, chip, pills, stamp, pageInfo, pagerRow } = require('../../core/ui');
+const { text, divider, colors, unix, quote, shorten, alert, field, fields, rows, chip, pills, stamp, pageInfo, pagerRow, actionRows, withActions } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -542,7 +542,7 @@ function trustedListPanel(entries, page = 0, cardName = null) {
               ]),
             ),
       )
-      .addActionRowComponents(core.actionRows(trustedActionButtons(entry), { danger: true }).rows);
+      .addActionRowComponents(actionRows(trustedActionButtons(entry), { danger: true }).rows);
   }
 
   // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
@@ -579,7 +579,7 @@ function trustedDetail(entry) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`));
 
-  return core.withActions(container.addSeparatorComponents(divider()), trustedActionButtons(entry, url), { danger: true });
+  return withActions(container.addSeparatorComponents(divider()), trustedActionButtons(entry, url), { danger: true });
 }
 
 // Güvenilir kayda partner yetkilisi(leri) ekler ya da günceller; mevcut yetkililer menüde hazır seçili gelir
