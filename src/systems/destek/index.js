@@ -168,9 +168,17 @@ async function removeRegularMembers(thread, ticket) {
 
 // ── Panel ────────────────────────────────────────────────────────────────────
 
+// Zaten açık olan taleplerin yetkili kanalındaki kartları bot açılırken tazelenir: kartın butonları ya da
+// metni sonradan değiştiyse eski basılı mesajlar da güncel hale gelir, yoksa yeni buton hiç görünmez.
+async function refreshOpenClaimCards(guild) {
+  for (const ticket of store.openTicketsAll(guild.id)) await refreshClaimMessage(guild, ticket);
+}
+
 // Bot açılınca paneli destek kanalına gönderir (değişmediyse dokunmaz)
 function sendPanel(client) {
   const { guildId } = require('../../core/config');
+  const guild = client.guilds.cache.get(guildId);
+  if (guild) refreshOpenClaimCards(guild).catch((err) => console.error('[destek] Yetkili kartları tazelenemedi:', err.message));
   refreshStatusPanel(client, guildId).catch((err) => console.error('[destek] Durum paneli güncellenemedi:', err.message));
   return syncPanel(client, {
     key: 'destek',
