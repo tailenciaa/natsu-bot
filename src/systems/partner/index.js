@@ -903,12 +903,13 @@ async function handleTrustedAction(interaction) {
     return replyError(interaction, 'Bu partnerin yetkilisi şu an meşgul.', 'Müsait olduğunu bildirince ya da 7 gün sonra otomatik olarak tekrar teklif gönderebilirsin.');
   }
 
-  // Yetkili listesini çekmek 3 saniyeyi aşabilir; önce cevap ertelenir. Seçici kalıcı panelden açıldığı için gizlidir
+  // Teklif, kaydın **karşı sunucu yetkililerine** gider; üye adlarını çekmek 3 saniyeyi aşabilir, cevap ertelenir.
+  // Seçici kalıcı panelden açıldığı için gizlidir
   await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
-  const members = await fetchStaffMembers(interaction.guild);
-  if (!members.length) return replyError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
+  const contacts = await resolveContacts(interaction.guild, entry.contactIds);
+  if (!contacts.length) return replyError(interaction, 'Bu kaydın partner yetkilisi bulunamadı.', '"Yetkili Ekle" ile karşı sunucunun yetkilisini seç, sonra tekrar teklif et.');
 
-  return respond(interaction, ui.staffSelect(id, members, store.staffStatus), { ephemeral: true });
+  return respond(interaction, ui.contactSelect(id, contacts), { ephemeral: true });
 }
 
 // Güvenilir kayda partner yetkilisi(leri) ekler/günceller (tam liste her seferinde yeniden girilir)
@@ -951,12 +952,19 @@ async function handleContactRemove(interaction) {
 
 // ── Teklifte bulunma (yenileme) akışı ───────────────────────────────────────────
 
-// Partner yetkilisi rolüne sahip üyeler, yetkili seçim menüsünü doldurmak için
-async function fetchStaffMembers(guild) {
-  const role = guild.roles.cache.get(config.roles.staff);
-  if (!role) return [];
-  if (role.members.size === 0) await guild.members.fetch().catch((err) => console.error('[partner] Üyeler çekilemedi:', err.message));
-  return [...role.members.values()];
+// Kayıttaki karşı sunucu yetkilileri: seçim menüsünü adlarıyla doldurmak için. Sunucudan ayrılan kişi menüde
+// listelenmez, kayıtlı kullanıcı adı hâlâ çözülebiliyorsa onunla gösterilir
+async function resolveContacts(guild, ids = []) {
+  return (
+    await Promise.all(
+      ids.map(async (id) => {
+        const member = guild.members.cache.get(id) ?? (await guild.members.fetch(id).catch(() => null));
+        if (member) return member;
+        const user = await guild.client.users.fetch(id).catch(() => null);
+        return user ? { id, displayName: user.username } : null;
+      }),
+    )
+  ).filter(Boolean);
 }
 
 // Yetkili seçim menüsünden seçim yapılınca: seçilen yetkiliye DM gider, süreç atanmış olarak kaydedilir

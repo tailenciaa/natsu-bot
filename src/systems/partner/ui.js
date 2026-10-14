@@ -881,7 +881,7 @@ module.exports = {
   trustedList,
   trustedListPanel,
   trustedDetail,
-  staffSelect,
+  contactSelect,
   assignedOfferDm,
   renewalReviewDm,
   renewalEditModal,
