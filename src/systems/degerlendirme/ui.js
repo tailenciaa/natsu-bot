@@ -306,12 +306,12 @@ function ratingComplaint(rating) {
     const reviewId = (action) => `${IDS.review}:${rating.id}:${action}`;
     decisionRow.addComponents(
       new ButtonBuilder().setCustomId(reviewId('onay')).setStyle(ButtonStyle.Success).setLabel('Onayla'),
-      new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
       new ButtonBuilder()
         .setCustomId(reviewId('gorusme'))
         .setStyle(ButtonStyle.Primary)
         .setLabel(rating.meetingBy ? 'Görüşmeye Çağrıldı' : 'Görüşmeye Çağır')
         .setDisabled(Boolean(rating.meetingBy)),
+      new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
     );
   }
   const linkRow = new ActionRowBuilder();

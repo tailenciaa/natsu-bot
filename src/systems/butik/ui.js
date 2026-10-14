@@ -101,7 +101,7 @@ function panel(state) {
 
   container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(kurallar(state)));
 
-  const nav = [IDS.cuzdan, IDS.siparis].map((id) =>
+  const nav = [IDS.siparis, IDS.cuzdan].map((id) =>
     new ButtonBuilder().setCustomId(id).setLabel(id === IDS.cuzdan ? 'Cüzdana Dön' : 'Siparişlerim').setStyle(ButtonStyle.Secondary),
   );
   return container

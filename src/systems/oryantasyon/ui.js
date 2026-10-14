@@ -97,11 +97,15 @@ function noticeRow(app) {
   if (o.status === 'unassigned') return row.addComponents(claimButton(app), cancelButton(app));
   if (o.status === 'choosing') return row.addComponents(cancelButton(app));
   if (o.status === 'active' && o.messageId) {
-    row.addComponents(
+    const [hold, transfer, cancel] = manageButtons(app);
+    return row.addComponents(
+      hold,
+      transfer,
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Oryantasyona Git')
         .setURL(messageUrl(app.guildId, o.channelId, o.messageId)),
+      cancel,
     );
   }
   return row.addComponents(manageButtons(app));
@@ -224,13 +228,7 @@ function panel(app, applicantUser) {
     if (note) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(note));
   }
 
-  const nav = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(actionId(app, 'geri'))
-      .setStyle(ButtonStyle.Secondary)
-      .setLabel('Geri')
-      .setDisabled(o.step === 0),
-  );
+  const nav = new ActionRowBuilder();
   if (step.type === 'final') {
     nav.addComponents(
       new ButtonBuilder().setCustomId(actionId(app, 'ver')).setStyle(ButtonStyle.Success).setLabel('Yetki Ver').setDisabled(!o.areas.length),
@@ -247,6 +245,13 @@ function panel(app, applicantUser) {
       nav.addComponents(new ButtonBuilder().setCustomId(actionId(app, 'atla')).setStyle(ButtonStyle.Secondary).setLabel('Biliyor, Atla'));
     }
   }
+  nav.addComponents(
+    new ButtonBuilder()
+      .setCustomId(actionId(app, 'geri'))
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel('Geri')
+      .setDisabled(o.step === 0),
+  );
 
   return container
     .addSeparatorComponents(divider())

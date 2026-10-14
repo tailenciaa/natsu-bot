@@ -305,28 +305,28 @@ function postCard(request, trusted, banned, stats = {}) {
     .addSeparatorComponents(divider());
 
   // Davetsiz ilanda katılma düğmesi olmaz; güvenilir liste düğmesi satırda tek kalır
-  const topRow = new ActionRowBuilder();
-  if (url) topRow.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
-  topRow.addComponents(
+  const topRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`${IDS.trustedAdd}:${request.id}`)
       .setLabel(trusted ? 'Güvenilir Listede' : 'Güvenilir Listeye Al')
       .setStyle(trusted ? ButtonStyle.Secondary : ButtonStyle.Success)
       .setDisabled(Boolean(trusted) || Boolean(banned)),
   );
+  if (url) topRow.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
 
-  return container.addActionRowComponents(
-    topRow,
-    new ActionRowBuilder().addComponents(
-      // İptal ve yasak sadece lider, sil kaydı yapan ve lider içindir (yetki index.js'de denetlenir)
-      new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger),
-      new ButtonBuilder()
-        .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
-        .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
-        .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
-    ),
-  );
+  // İptal ve yasak sadece lider, sil kaydı yapan ve lider içindir (yetki index.js'de denetlenir)
+  const banButton = new ButtonBuilder()
+    .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
+    .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
+    .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger);
+  const dangerRow = new ActionRowBuilder();
+  // Yeşil "Yasağı Kaldır" kırmızıların önüne geçer
+  if (banned) dangerRow.addComponents(banButton);
+  dangerRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger));
+  if (!banned) dangerRow.addComponents(banButton);
+  dangerRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger));
+
+  return container.addActionRowComponents(topRow, dangerRow);
 }
 
 const requesterResult = (sonuc, request, by) =>

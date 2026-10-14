@@ -260,9 +260,6 @@ function durumPaneli(state) {
   if (state.evlilik && state.evlilik.bonus.hazir) {
     butonlar.push(new ButtonBuilder().setCustomId(IDS.bonus).setLabel('Yıl Dönümü Ödülü').setStyle(ButtonStyle.Success));
   }
-  if (state.evlilik) {
-    butonlar.push(new ButtonBuilder().setCustomId(IDS.bosan).setLabel(bosanEtiket).setStyle(ButtonStyle.Danger));
-  }
   if (state.giden) {
     butonlar.push(new ButtonBuilder().setCustomId(`${IDS.iptal}${state.giden.no}`).setLabel('Tekliften Vazgeç').setStyle(ButtonStyle.Secondary));
   }
@@ -270,6 +267,9 @@ function durumPaneli(state) {
     new ButtonBuilder().setCustomId(IDS.butik).setLabel('Butik · Yüzük Al').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId(IDS.list).setLabel('Çiftler Listesi').setStyle(ButtonStyle.Secondary),
   );
+  if (state.evlilik) {
+    butonlar.push(new ButtonBuilder().setCustomId(IDS.bosan).setLabel(bosanEtiket).setStyle(ButtonStyle.Danger));
+  }
 
   container.addSeparatorComponents(core.divider()).addActionRowComponents(new ActionRowBuilder().addComponents(butonlar));
   return container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(core.stamp(state.at)));

@@ -63,8 +63,8 @@ const geriButton = () => new ButtonBuilder().setCustomId(IDS.geri).setLabel('Ger
 // mesajı kaldırır.
 const SHOP_NAV = {
   cuzdan: [
-    { id: 'coin-bakiye', label: 'Cüzdana Dön' },
     { id: 'coin-siparis:0', label: 'Siparişlerim' },
+    { id: 'coin-bakiye', label: 'Cüzdana Dön' },
   ],
 };
 
