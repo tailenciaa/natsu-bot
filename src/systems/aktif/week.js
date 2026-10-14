@@ -12,15 +12,15 @@ function weekKey(ms = Date.now()) {
 const previousWeekKey = (ms = Date.now()) => weekKey(ms - 7 * 24 * 60 * 60 * 1000);
 
 // Anahtarlar YYYY-AA-GG biçiminde olduğu için sözlük sırası tarih sırasıdır: "<" karşılaştırması "daha eski hafta" demektir.
-// Duyurulmamış, bitişi görülmüş haftalar: kaydı olan (keys), içinde bulunulan haftadan eski ve son duyurulandan yeni
-// anahtarlar. Uzun süre kapalı kalan bot eskileri yakalayıp kanalı doldurmasın diye en fazla `limit` tanesi,
-// eskiden yeniye döner (rol devri doğru sırayla ilerlesin).
+// Duyurulmayı bekleyen haftalar: kaydı olanlardan içinde bulunulan haftadan eski ve son duyurulandan yeni olanlar.
+// Uzun süre kapalı kalan bot hepsini birden kanala doldurmasın diye en fazla `limit` tanesi döner; eskiden yeniye
+// sıralıdır, böylece rol devri doğru sıra ile ilerler.
 function pendingWeeks(keys, lastRun, limit = 2) {
   const current = weekKey();
-  const done = [...new Set(keys)]
+  const waiting = [...new Set(keys)]
     .filter((week) => week < current && (!lastRun || week > lastRun))
     .sort();
-  return done.slice(-limit);
+  return waiting.slice(-limit);
 }
 
 // İstanbul saatine göre bugün pazartesi mi
