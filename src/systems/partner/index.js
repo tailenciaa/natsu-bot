@@ -524,8 +524,9 @@ async function handleReviewDecision(interaction) {
   await interaction.editReply({ components: [ui.reviewCard(updated, { sonuc, by: interaction.user.id })], allowedMentions: { parse: [] } });
 
   const requester = await interaction.client.users.fetch(request.requesterId).catch(() => null);
-  await requester?.send({ components: [ui.requesterResult(sonuc, updated, interaction.user.id)], flags: core.CV2 }).catch(() => {});
 
+  // Onayda sonuç DM'i paylaşımın ardından gider: mesajdaki buton talebin sahibini paylaşılan ilana götürsün
+  let sharedUrl = null;
   if (sonuc === 'onayla') {
     // Düz oto talep puanlatılmaz (yetkili sadece onaylıyor); DM'deki Partner Paneli'nden gelen teklif puanlatılır
     if (request.renewalOf) await rateStaff(interaction.client, updated, interaction.user.id);
@@ -537,9 +538,10 @@ async function handleReviewDecision(interaction) {
       : null;
     if (renewedEntry) await refreshTrustedPanel(interaction.client, interaction.guildId);
     const postsChannel = await fetchTextChannel(interaction.guild, config.channels.posts);
-    const { card: posted } = postsChannel
+    const { ad, card: posted } = postsChannel
       ? await publishPost(postsChannel, updated, renewedEntry, store.isBanned(request.requesterId))
       : {};
+    if (posted) sharedUrl = core.messageUrl(postsChannel.guildId, postsChannel.id, (ad ?? posted).id);
     if (!posted) {
       await interaction.followUp({
         components: [core.alert('Paylaşım kanalına gönderilemedi.', 'Talep onaylandı olarak kaydedildi; kanal izinlerini kontrol edip metni elle paylaşabilirsin.', 'warning')],
@@ -548,6 +550,8 @@ async function handleReviewDecision(interaction) {
       });
     }
   }
+
+  await requester?.send({ components: [ui.requesterResult(sonuc, updated, interaction.user.id, sharedUrl)], flags: core.CV2 }).catch(() => {});
 }
 
 // ── Güvenilir partnerler listesi ────────────────────────────────────────────────
@@ -736,19 +740,13 @@ async function handlePanelOfferSubmit(interaction) {
   return respond(interaction, core.alert('Teklifin incelemeye gönderildi.', 'Yetkilimiz onaylayınca metnin otomatik paylaşılır, sonucu buradan öğreneceksin.', 'success'), { ephemeral: true });
 }
 
-// Güvenilir listeye eklenen partnerin yetkilisine bizim metni gönder: paylaşılan mesaj bilinmediği için sadece
-// paylaşım kanalına giden bağlantı eklenir
-async function sendOurTextToContact(client, contactId, entry) {
+// Güvenilir listeye eklenen partnerin yetkilisine bizim metni gönder: buton, biliniyorsa karşı tarafın
+// metninin paylaşıldığı mesaja gider, yoksa mesaj butonsuz olarak yalnızca kopyalanacak metni taşır
+async function sendOurTextToContact(client, contactId, entry, sharedUrl = null) {
   const contact = await client.users.fetch(contactId).catch(() => null);
   if (!contact) return;
 
-  const guild = client.guilds.cache.get(entry.guildId);
-  const postsChannel = guild && (await fetchTextChannel(guild, config.channels.posts));
-
-  if (!postsChannel) return;
-
-  const channelUrl = `https://discord.com/channels/${postsChannel.guildId}/${postsChannel.id}`;
-  return contact.send({ components: [ui.ourTextDm(entry, null, channelUrl)], flags: core.CV2 }).catch(() => null);
+  return contact.send({ components: [ui.ourTextDm(entry, sharedUrl)], flags: core.CV2 }).catch(() => null);
 }
 
 // Güvenilir liste formunda seçilen partner yetkilileri gönderilince
@@ -773,8 +771,9 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   await refreshTrustedPanel(interaction.client, interaction.guildId);
 
   // Karşı tarafın tüm yetkililerine bizim metni gönder; elle yapılan partnerlikte paylaşan yetkilimizi de puanlayabilirler
+  const sharedUrl = channel ? core.messageUrl(channel.guildId, channel.id, request.adId ?? messageId) : null;
   for (const contactId of contactIds) {
-    await sendOurTextToContact(interaction.client, contactId, entry);
+    await sendOurTextToContact(interaction.client, contactId, entry, sharedUrl);
     await sendPartnerPanel(interaction.client, contactId, entry);
     if (request.source === 'manuel') await rateStaff(interaction.client, request, request.requesterId, contactId);
   }
@@ -1176,7 +1175,7 @@ async function sendOurTextDm(client, contactId, { message, channel }, entry) {
   if (!contact) return;
 
   const sharedUrl = core.messageUrl(channel.guildId, channel.id, message.id);
-  await contact.send({ components: [ui.ourTextDm(entry, sharedUrl, sharedUrl)], flags: core.CV2 }).catch(() => {});
+  await contact.send({ components: [ui.ourTextDm(entry, sharedUrl)], flags: core.CV2 }).catch(() => {});
 }
 
 // ── Paylaşım kanalında @everyone/@here'in gerçekten çalışmasını engelleyen izin ─────────────────────────────

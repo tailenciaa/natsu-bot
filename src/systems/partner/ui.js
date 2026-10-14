@@ -798,7 +798,7 @@ function partnerPanel(entry, guildName) {
       text(
         fields([
           '### Partner Bilgileri',
-          field('Sunucu', `\`${serverLabel(entry)}\``),
+          field('Sunucu', serverTitle(entry)),
           field('Partnerlik', `<t:${unix(entry.addedAt)}:D>`),
           field('Durum', chip(busy ? 'Meşgul' : 'Müsait')),
         ]),
