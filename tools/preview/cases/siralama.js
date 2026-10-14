@@ -6,7 +6,6 @@ module.exports = ({ mock, src }) => {
   const vip = src('systems/vip/ui');
   const aktifConfig = src('systems/aktif/config');
   const saygiConfig = src('systems/saygi/config');
-  const vipConfig = src('systems/vip/config');
   const guild = mock.guild({ name: 'Kazuki Sunucusu' });
   const names = ['Mehmet', 'Ayşe', 'Can', 'Elif', 'Burak', 'Zeynep', 'Emre', 'Deniz', 'Selin', 'Kerem', 'Ece', 'Onur', 'Pınar', 'Tuna', 'Melis', 'Arda', 'Naz', 'Kaan', 'İrem', 'Baran'];
   const users = names.map((n) => mock.user({ username: n.toLocaleLowerCase('tr'), displayName: n }));
