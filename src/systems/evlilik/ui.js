@@ -271,7 +271,7 @@ function durumPaneli(state) {
     butonlar.push(new ButtonBuilder().setCustomId(IDS.bosan).setLabel(bosanEtiket).setStyle(ButtonStyle.Danger));
   }
 
-  container.addSeparatorComponents(core.divider()).addActionRowComponents(new ActionRowBuilder().addComponents(butonlar));
+  core.withActions(container.addSeparatorComponents(core.divider()), butonlar, { danger: true });
   return container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(core.stamp(state.at)));
 }
 

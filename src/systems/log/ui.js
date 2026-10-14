@@ -131,9 +131,10 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
         button('setup', 'Eksikleri Kur', ButtonStyle.Primary, ready === rows.length),
         button('panel', panelUrl ? 'Paneli Yenile' : 'Paneli Gönder', ButtonStyle.Secondary),
         button('refresh', 'Yenile', ButtonStyle.Secondary),
-        button('reset', 'Hepsini Sıfırla', ButtonStyle.Danger),
       ),
-    );
+    )
+    .addSeparatorComponents(divider())
+    .addActionRowComponents(new ActionRowBuilder().addComponents(button('reset', 'Hepsini Sıfırla', ButtonStyle.Danger)));
 }
 
 // Sıfırlama onayı: alt başlıklar eski loglarıyla birlikte silineceği için sorulur

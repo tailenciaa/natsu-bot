@@ -249,8 +249,11 @@ function gorunumPage(imageName, { themeLabel, glass, opacity }) {
         btn('artir', 'Saydamlığı Artır'),
         new ButtonBuilder().setCustomId(`${IDS.shopTab}tema`).setLabel('Temalar').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
-        btn('sifirla', 'Sıfırla', ButtonStyle.Danger),
       ),
+    )
+    .addSeparatorComponents(core.divider())
+    .addActionRowComponents(
+      new ActionRowBuilder().addComponents(btn('sifirla', 'Sıfırla', ButtonStyle.Danger)),
     );
 }
 
