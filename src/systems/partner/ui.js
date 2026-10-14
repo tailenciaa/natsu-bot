@@ -485,13 +485,13 @@ function trustedActionRow(entry) {
     );
   }
 
-  // Yönetim butonları: Listeden Çıkar, Yetkili Ekle/Güncelle/Çıkar
+  // Yönetim butonları: Yetkili Ekle/Güncelle, Listeden Çıkar, Yetkili Çıkar
   const managementRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:kaldir`).setLabel('Listeden Çıkar').setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId(`${IDS.contactAdd}:${entry.id}`)
       .setLabel(hasContacts ? 'Yetkiliyi Güncelle' : 'Yetkili Ekle')
       .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:kaldir`).setLabel('Listeden Çıkar').setStyle(ButtonStyle.Danger),
   );
   if (hasContacts) {
     managementRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Danger));
