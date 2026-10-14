@@ -106,6 +106,9 @@ const serverRows = (request) => [
   ['Sunucu', request.serverName ? shorten(inert(request.serverName), 60) : 'Adı çözülemedi'],
   ['Sunucu ID', chip(request.serverId ?? 'davetten çözülemedi')],
 ];
+// Yetkili olmayanların gördüğü sunucu satırı: ad çözüldüyse ad, yoksa davet kodu ya da ID.
+// Ham sunucu ID'si sadece yetkili kartlarında (serverRows) gösterilir.
+const serverLine = (record) => (record.serverName ? shorten(inert(record.serverName), 60) : chip(serverKeyLabel(serverKey(record))));
 
 // Talep kanalında "partner" / "dm" geçen ya da rol etiketlenen mesaja yanıt olarak gider
 function startPrompt(authorId) {
@@ -355,7 +358,7 @@ function requesterResult(sonuc, request, by, sharedUrl = null) {
           '### Talep Bilgileri',
           rows([
             ['Talep', chip(`#${request.number}`)],
-            ...serverRows(request),
+            ['Sunucu', serverLine(request)],
             ['Değerlendiren', `<@${by}>`],
           ]),
         ]),
