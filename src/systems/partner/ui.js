@@ -744,10 +744,11 @@ function renewalCancelModal(trustedId) {
 // Metin kod bloğunda verilir ki olduğu gibi kopyalanıp karşı tarafın kendi sunucusunda paylaşılabilsin.
 // sharedUrl biliniyorsa tek buton eklenir: karşı tarafın metninin paylaşıldığı mesaja gider.
 function ourTextDm(entry, sharedUrl = null) {
+  const kimlik = entry?.serverName ? `**${shorten(inert(entry.serverName), 60)}** sunucunun` : 'Sunucunun';
   const container = new ContainerBuilder().setAccentColor(colors.success).addTextDisplayComponents(
     head(
       'Bizim Partner Metnimiz',
-      `**${serverTitle(entry)}** sunucunun partner metni paylaşım kanalımızda yayında. Bu mesajdaki metin bizim sunucumuzu tanıtan partner ilanımız; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
+      `${kimlik} partner metni paylaşım kanalımızda yayında. Bu mesajdaki metin bizim sunucumuzu tanıtan partner ilanımız; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
     ),
   );
 
