@@ -138,7 +138,7 @@ module.exports = ({ mock, src }) => {
       kind: 'message',
       build: () => ({ components: [saygi.weeklyAnnounce(guild, top(5, (i) => 14 - i * 2), saygiConfig.roleId)], ...pub }),
     },
-    { id: 'vip-verildi', title: 'VIP rolü verildi', where: '/vip-ver', visibility: 'public', kind: 'message', build: () => ({ components: [vip.given(users[0].id, users[1].id, vipConfig.roleId)], ...pub }) },
+    { id: 'vip-verildi', title: 'VIP rolü verildi', where: '/vip-ver', visibility: 'public', kind: 'message', build: () => ({ components: [vip.given(users[0].id, users[1].id)], ...pub }) },
     {
       id: 'saygi-genel',
       title: 'Saygınlık sıralaması: tek dönem olduğu için dönem düğmeleri pasif',

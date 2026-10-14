@@ -37,7 +37,7 @@ async function handleGive(interaction) {
   if (!added) return replyError(interaction, 'VIP rolü verilemedi.', 'Botun rolünün VIP rolünden üstte olduğundan ve rol yönetme izni olduğundan emin ol.');
   store.grant(target.id, interaction.user.id);
 
-  return respond(interaction, ui.given(interaction.user.id, target.id, config.roleId), {
+  return respond(interaction, ui.given(interaction.user.id, target.id), {
     allowedMentions: { users: [target.id] },
   });
 }
