@@ -40,6 +40,14 @@ function add(userId, weekKey) {
 // { userId: değer } şeklinde o haftanın toplamları
 const weekTotals = (weekKey) => data.saygi.weekly[weekKey] ?? {};
 
+// En az bir üyenin saygınlık kazandığı hafta anahtarları, eskiden yeniye
+function weekKeys() {
+  return Object.entries(data.saygi.weekly)
+    .filter(([, users]) => Object.values(users).some((value) => value > 0))
+    .map(([week]) => week)
+    .sort();
+}
+
 // Tüm zamanların toplam saygınlığı, { userId: değer }
 const allTotals = () => data.saygi.total;
 
@@ -64,4 +72,26 @@ function setLastRun(weekKey) {
   save();
 }
 
-module.exports = { add, weekTotals, allTotals, lastGiven, setLastGiven, holder, setHolder, lastRun, setLastRun, flush };
+// Otomatik (zamanlayıcı) son denemenin sonucu: { week, at, durum, not }
+const lastAttempt = () => data.saygiLastAttempt;
+
+function setLastAttempt(attempt) {
+  data.saygiLastAttempt = attempt;
+  save();
+}
+
+module.exports = {
+  add,
+  weekTotals,
+  weekKeys,
+  allTotals,
+  lastGiven,
+  setLastGiven,
+  holder,
+  setHolder,
+  lastRun,
+  setLastRun,
+  lastAttempt,
+  setLastAttempt,
+  flush,
+};

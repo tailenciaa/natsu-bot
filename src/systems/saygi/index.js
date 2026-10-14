@@ -54,17 +54,20 @@ async function passRole(guild, winnerId) {
   store.setHolder(given ? winnerId : null);
 }
 
-// Duyuruyu gönderir ve rolü devreder. Döner: { ok, durum, not } — aktif ile aynı biçim, /haftalik iki sonucu
-// tek kartta gösterir. ok, haftanın "duyuruldu" sayılacağını taşır (gönderildi ya da duyurulacak kayıt yok).
+// Duyuruyu gönderir ve rolü devreder. Döner: { ok, mark, durum, not } — aktif ile aynı biçim, /haftalik iki sonucu
+// tek kartta gösterir. ok kartın rengini, mark ise haftanın "duyuruldu" sayılıp sayılmayacağını taşır: kayıt
+// bulunamazsa hafta tüketilmez, sayım görünür olduğu anda (ör. bot yeniden başladığında) tekrar denenir.
 async function announceWeek(guild, target) {
   const results = topUsers(guild, store.weekTotals(target));
   const winner = results[0] ?? null;
 
-  await passRole(guild, winner?.userId ?? null);
-  if (!winner) return { ok: true, durum: 'kayıt yok', not: `${target} haftasında kimse saygınlık kazanmamış.` };
+  // Rol devri kayıt varken yapılır: boş haftada mevcut sahibinin rolü haksızca geri alınmasın
+  if (!winner) return { ok: true, mark: false, durum: 'kayıt yok', not: `${target} haftasında saygınlık kaydı bulunamadı.` };
+
+  await passRole(guild, winner.userId);
 
   const channel = await fetchTextChannel(guild, config.channel);
-  if (!channel) return { ok: false, durum: 'kanal yok', not: `Duyuru kanalı (ID ${config.channel}) bulunamadı; bot kanalı göremiyor ya da kanal silinmiş olabilir.` };
+  if (!channel) return { ok: false, mark: false, durum: 'kanal yok', not: `Duyuru kanalı (ID ${config.channel}) bulunamadı; bot kanalı göremiyor ya da kanal silinmiş olabilir.` };
 
   try {
     await channel.send({
@@ -73,27 +76,28 @@ async function announceWeek(guild, target) {
       allowedMentions: { users: [winner.userId] },
     });
   } catch (err) {
-    return { ok: false, durum: 'gönderilemedi', not: `Kanala gönderilemedi: ${err.message}` };
+    return { ok: false, mark: false, durum: 'gönderilemedi', not: `Kanala gönderilemedi: ${err.message}` };
   }
-  return { ok: true, durum: 'gönderildi', not: `${target} · birinci ${winner.value} saygınlıkla kazandı` };
+  return { ok: true, mark: true, durum: 'gönderildi', not: `${target} · birinci ${winner.value} saygınlıkla kazandı` };
 }
 
-// Hedef haftanın duyurusunu yapar ve loglar. Hafta anahtarı yalnızca geçen haftanın ilk duyurusunda tüketilir:
-// tekrar çalıştırma aynı haftayı iki kez duyurmaz, bu haftanın önizlemesi pazartesinin hakkını yemez.
-async function runWeekly(guild, target) {
-  const gecenHafta = previousWeekKey(Date.now());
-  const mark = target === gecenHafta && store.lastRun() !== target;
-  const sonuc = await announceWeek(guild, target).catch((err) => ({ ok: false, durum: 'hata', not: err.message }));
-  if (mark && sonuc.ok) store.setLastRun(target);
+// Hedef haftanın duyurusunu yapar ve loglar. Hafta işareti yalnızca bitmiş ve kendisini henüz geçmemiş bir
+// haftada ilerler: tekrar çalıştırma aynı haftayı iki kez duyurmaz, bu haftanın önizlemesi pazartesinin hakkını
+// yemez. auto=true olduğunda sonuç store'a yazılır ki yetkili /haftalik kartından zamanlayıcıyı denetleyebilsin.
+async function runWeekly(guild, target, { auto = false } = {}) {
+  const sonIsaret = store.lastRun();
+  const ilk = target < weekKey(Date.now()) && (!sonIsaret || sonIsaret < target);
+  const sonuc = await announceWeek(guild, target).catch((err) => ({ ok: false, mark: false, durum: 'hata', not: err.message }));
+  if (ilk && sonuc.mark) store.setLastRun(target);
+  if (auto) store.setLastAttempt({ week: target, at: Date.now(), durum: sonuc.durum, not: sonuc.not });
   console.log(`[saygi] Haftalık duyuru (${target}) ${sonuc.durum} — ${sonuc.not}`);
   return sonuc;
 }
 
-// Bir önceki haftanın duyurusu yapılmadıysa yapar; bot pazartesi kapalıysa ya da kanal sorunluysa sonraki kontrolde yakalar
+// Bitmiş haftaların duyurusu: kaydı olan ve işareti ilerlememiş haftalar eskiden yeniye yakalanır. Bot bir hafta
+// kapalı kaldıysa ya da kanal göndermeyi geçici olarak reddettiyse eksikler sonraki kontrolde tamamlanır.
 async function checkWeeklyAnnounce(guild) {
-  const target = previousWeekKey(Date.now());
-  if (store.lastRun() === target) return;
-  await runWeekly(guild, target);
+  for (const target of pendingWeeks(store.weekKeys(), store.lastRun())) await runWeekly(guild, target, { auto: true });
 }
 
 // Saygınlık verme kuralları: kendine/bota verilemez, günde bir kez verilir. Üç verme yolu da (/saygi-ver, "+rep",
