@@ -44,7 +44,7 @@ async function serverOfInvite(client, text) {
 const rateStaff = (client, request, staffId, userId) =>
   ratings.requestForPartner(client, request, staffId, userId).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
 
-// Sürmekte olan "Teklifte Bulun" süreci bu süre içinde sonuçlanmazsa düşer; yetkili hiç yanıt vermese bile o partnere tekrar teklif edilebilir
+// Sürmekte olan "Partner Yenile" süreci bu süre içinde sonuçlanmazsa düşer; karşı taraf hiç yanıt vermese bile o partnere tekrar teklif edilebilir
 const OFFER_TTL_MS = 3 * 24 * 60 * 60 * 1000;
 function activeOffer(trustedId) {
   const offer = store.getRenewalOffer(trustedId);
@@ -939,7 +939,7 @@ async function handleContactAddSubmit(interaction) {
   return respond(interaction, core.alert('Partner yetkilisi kaydedildi.', null, 'success'), { ephemeral: true });
 }
 
-// Güvenilir kayıttaki tüm partner yetkililerini çıkarır; Teklifte Bulun artık kullanılamaz (iletişim kalmadığı için)
+// Güvenilir kayıttaki tüm partner yetkililerini çıkarır; Partner Yenile artık kullanılamaz (iletişim kalmadığı için)
 async function handleContactRemove(interaction) {
   const id = interaction.customId.slice(ui.IDS.contactRemove.length + 1);
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');

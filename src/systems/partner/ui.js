@@ -1,5 +1,5 @@
 // Partner sisteminin mesajları: talep kanalındaki oto partner teklifi, şartlar DM'i, yetkili kanalındaki karar
-// kartı, paylaşım kanalındaki standart partner kartı, güvenilir partner listesi ve teklifte bulunma (yenileme) akışı.
+// kartı, paylaşım kanalındaki standart partner kartı, güvenilir partner listesi ve partner yenileme akışı.
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -490,7 +490,7 @@ function trustedAddModal(requestId, messageId, defaultIds = []) {
     );
 }
 
-// Bir güvenilir kaydın işlem düğmeleri: üstte normal işlemler (Teklifte Bul, yetkili düzenleme, davet bağlantısı),
+// Bir güvenilir kaydın işlem düğmeleri: üstte normal işlemler (Partner Yenile, yetkili düzenleme, davet bağlantısı),
 // çizginin altında geri alınamayanlar (Yetkili Çıkar, Listeden Çıkar). Listeden Çıkar sadece partner lideri,
 // diğerleri partner yetkilileri içindir (yetki kontrolü index.js'de yapılır)
 function trustedActionButtons(entry, url = null) {
@@ -612,7 +612,7 @@ function contactModal(trustedId, currentIds) {
     );
 }
 
-// Teklifte Bul'a basınca: teklifin hangi **karşı sunucu yetkilisine** gideceğini seçtiren menü (sadece basana görünür)
+// Partner Yenile'ye basınca: teklifin hangi **karşı sunucu yetkilisine** gideceğini seçtiren menü (sadece basana görünür)
 function contactSelect(trustedId, members) {
   return new ContainerBuilder()
     .addTextDisplayComponents(

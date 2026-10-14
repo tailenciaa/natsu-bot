@@ -12,7 +12,7 @@ data.partnerRequests ??= {};
 data.trustedPartners ??= {};
 data.partnerTermsAccepted ??= {}; // kullanıcı ID'si -> ilk kabul zamanı (bir kez kabul edince tekrar sorulmaz)
 data.partnerStaffStatus ??= {}; // yetkili ID'si -> 'aktif' | 'mesgul'
-data.partnerRenewalOffers ??= {}; // güvenilir kayıt ID'si -> sürmekte olan "Teklifte Bulun" süreci
+data.partnerRenewalOffers ??= {}; // güvenilir kayıt ID'si -> sürmekte olan "Partner Yenile" süreci
 data.partnerBans ??= {}; // kullanıcı ID'si -> { by, at } (partner sisteminden yasaklananlar)
 data.bannedServers ??= {}; // sunucu ID'si -> { reason, by, at } (yasaklı sunucular)
 
@@ -161,7 +161,7 @@ module.exports = {
     save();
   },
 
-  // "Teklifte Bulun" ile başlayan, bir yetkiliye atanmış sürmekte olan yenileme süreci
+  // "Partner Yenile" ile başlayan, karşı sunucunun bir yetkilisine gönderilmiş sürmekte olan yenileme süreci
   setRenewalOffer(trustedId, offer) {
     data.partnerRenewalOffers[trustedId] = offer;
     save();

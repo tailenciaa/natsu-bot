@@ -31,7 +31,7 @@
 //   trustedPartners                : güvenilir partnerler listesi (kayıt ID'si ile)
 //   partnerTermsAccepted           : partner şartlarını kabul etmiş kullanıcılar (kullanıcı ID'si ile)
 //   partnerStaffStatus             : partner yetkililerinin aktif/meşgul durumu (kullanıcı ID'si ile)
-//   partnerRenewalOffers           : sürmekte olan "Teklifte Bulun" süreçleri (güvenilir kayıt ID'si ile)
+//   partnerRenewalOffers           : sürmekte olan "Partner Yenile" süreçleri (güvenilir kayıt ID'si ile)
 //   partnerBans                    : partner sisteminden yasaklanan kullanıcılar (kullanıcı ID'si ile)
 // Kalıcı kayıt: MONGODB_URI tanımlıysa veriler MongoDB'de (kazuki veritabanı, "state" koleksiyonu) tutulur,
 // her üst düzey alan (tickets, history, guilds...) ayrı bir belge olarak: { _id: alan adı, value: veri }. Yerel data/db.json da yedek olarak yazılmaya devam eder.
