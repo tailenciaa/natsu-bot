@@ -75,23 +75,22 @@ function profile(imageName, editable, currentTheme = null, description = 'Profil
   );
   if (!editable) return container;
 
-  return container
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(IDS.bio).setLabel('Biyografi').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.vitrin).setLabel('Vitrin').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.rozet).setLabel('Rozetler').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.shop).setLabel('Mağaza').setStyle(ButtonStyle.Secondary),
+  const nav = (id, label) => new ButtonBuilder().setCustomId(id).setLabel(label).setStyle(ButtonStyle.Secondary);
+  return core
+    .withActions(
+      container,
+      [
+        nav(IDS.bio, 'Biyografi'),
+        nav(IDS.vitrin, 'Vitrin'),
+        nav(IDS.rozet, 'Rozetler'),
+        nav(IDS.shop, 'Mağaza'),
+        nav(IDS.color, 'Renk'),
+        nav(IDS.gorunum, 'Görünüm'),
+        nav(IDS.banner, 'Kapağı Düzenle'),
+        nav(IDS.score, 'Puanım'),
         new ButtonBuilder().setCustomId(IDS.reset).setLabel('Sıfırla').setStyle(ButtonStyle.Danger),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(IDS.color).setLabel('Renk').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.gorunum).setLabel('Görünüm').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(IDS.score).setLabel('Puanım').setStyle(ButtonStyle.Secondary),
-      ),
+      ],
+      { danger: true },
     )
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(

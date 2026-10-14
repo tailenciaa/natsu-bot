@@ -145,24 +145,27 @@ function tabRow(tabs, active, idOf) {
 }
 
 // İşlem düğmeleri: ana işlem → normal → bağlantı → kırmızı. {danger:true} verilirse kırmızılar (geri alınamaz
-// işlemler) çizgiyle ayrılıp alt satıra iner; satırda en çok beş düğme durur, taşarsan alt satıra geçer
+// işlemler) çizgiyle ayrılıp alt satıra iner; satırda en çok beş düğme durur, taşarsa alt satıra geçer
 function actionRows(buttons, { danger = false } = {}) {
   const order = { [ButtonStyle.Success]: 0, [ButtonStyle.Primary]: 1, [ButtonStyle.Secondary]: 2, [ButtonStyle.Link]: 3, [ButtonStyle.Danger]: 4 };
   const sorted = [...buttons].sort((a, b) => order[a.style] - order[b.style]);
   const red = sorted.filter((b) => b.style === ButtonStyle.Danger);
   const rest = sorted.filter((b) => b.style !== ButtonStyle.Danger);
-  const rows = danger && red.length ? [rest, red] : [sorted];
-  return {
-    rows: rows.map((list) => new ActionRowBuilder().addComponents(list)),
-    divider: danger && red.length ? divider() : null,
-  };
+  const groups = danger && red.length ? [rest, red] : [sorted];
+  const rows = [];
+  let splitAt = -1;
+  for (const [g, group] of groups.entries()) {
+    if (g === 1) splitAt = rows.length;
+    for (let i = 0; i < group.length; i += 5) rows.push(new ActionRowBuilder().addComponents(group.slice(i, i + 5)));
+  }
+  return { rows, splitAt };
 }
 
-// Bir karta düğme satırlarını (istersen aralarında çizgiyle) ekler
+// Bir karta düğme satırlarını ekler; {danger:true} kırmızıları çizgiyle ayırıp alta iner
 function withActions(container, buttons, options) {
-  const { rows, divider } = actionRows(buttons, options);
+  const { rows, splitAt } = actionRows(buttons, options);
   rows.forEach((row, i) => {
-    if (i && divider) container.addSeparatorComponents(divider);
+    if (i === splitAt) container.addSeparatorComponents(divider());
     container.addActionRowComponents(row);
   });
   return container;

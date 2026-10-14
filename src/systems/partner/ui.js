@@ -540,7 +540,7 @@ function trustedListPanel(entries, page = 0, cardName = null) {
         ),
       );
     }
-    container.addActionRowComponents(actionRows(trustedActionButtons(entry), { danger: true }).rows);
+    withActions(container, trustedActionButtons(entry), { danger: true });
   }
 
   // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
