@@ -8,7 +8,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { colors, alert, page, quote, stamp, text, divider, rows, chip, rel, pills } = require('../../core/ui');
+const { colors, alert, page, quote, stamp, text, divider, rows, chip, rel, pills, withActions } = require('../../core/ui');
 
 // cekilis-ayril:<no>, cekilis-onay:<eylem>:<no>, cekilis-form:<no>, cekilis-yeni:<kanalID>:<rolID>
 const IDS = {
@@ -71,7 +71,7 @@ function panel(g) {
   // Yeniden Çek: iptal edilen çekilişte hiç kazanan seçilmediği için gösterilmez; açıkken pasif, bitince aktif
   if (g.status !== 'cancelled') buttons.push(button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary).setDisabled(g.status !== 'ended'));
   if (g.status === 'active') buttons.push(button(IDS.cancel, 'İptal Et', ButtonStyle.Danger));
-  return core.withActions(container, buttons, { danger: true });
+  return withActions(container, buttons, { danger: true });
 }
 
 // Boş değer ve yer tutucu hiç gönderilmez (Discord boş dizgeyi reddedebilir)

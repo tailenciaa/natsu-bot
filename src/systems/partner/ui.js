@@ -528,9 +528,9 @@ function trustedListPanel(entries, page = 0, cardName = null) {
   const nav = (target, slot) => `${IDS.trustedPanelPage}:${target}:${slot}`;
 
   for (const entry of shown) {
-    // Kartlı panelde her kayıt çizgi + bilgi satırı + iki düğme satırı tutar; mesaj 10 bileşeni aşamaz.
-    // Kart çizilemezse aynı bilgiler tek sıkışık satıra iner (yer açılmak için çizgiden vazgeçilmez)
-    container.addSeparatorComponents(divider());
+    // Her kayıt iki düğme satırı tuttuğu için sayfada 2 kayıt durur; mesaj 10 bileşeni aşamaz. Kart çizilemediğinde
+    // çizgiler düşürülüp bilgiler tek sıkışık satıra iner (kartlı hali kuşaklar, bu yedek panel)
+    if (cardName) container.addSeparatorComponents(divider());
     if (cardName) {
       container.addTextDisplayComponents(text(`**Partner Yetkilisi:** ${contactsText(entry)} · **Ekleyen:** <@${entry.addedBy}>`));
     } else {
@@ -544,7 +544,6 @@ function trustedListPanel(entries, page = 0, cardName = null) {
   }
 
   // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
-  if (cardName) container.addSeparatorComponents(divider());
   if (!cardName) container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, entries.length)}`));
   container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
 
