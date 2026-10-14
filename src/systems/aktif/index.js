@@ -158,7 +158,7 @@ async function announceWeek(guild, target, pay = true) {
 
 // Hedef haftanın duyurusunu yapar ve loglar. Ödül ve "bu hafta duyuruldu" işareti YALNIZCA bitmiş ve işareti o
 // haftayı henüz geçmemiş bir haftada devreye girer: tekrar çalıştırma ödülü iki kez yatırmaz, bu haftanın
-// önizlemesi pazartesi yapılacak asıl duyuruyu tüketmez. auto=true zamansal kontrol demektir; sonucu store'a
+// önizlemesi pazartesi yapılacak asıl duyuruyu tüketmez. auto=true zamanlayıcıdenemesidir; sonucu store'a
 // yazar ki yetkili /haftalik kartından zamanlayıcının çalışıp çalışmadığını görebilsin.
 async function runWeekly(guild, target, { auto = false } = {}) {
   const sonIsaret = store.lastRun();

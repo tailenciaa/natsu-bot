@@ -57,9 +57,11 @@ function weeklyRunCard({ target, aktif, saygi, user, denemeler = {} }) {
       ['Otomatik deneme (Aktifler)', deneme(denemeler.aktif)],
       ['Otomatik deneme (En Saygın)', deneme(denemeler.saygi)],
     ],
-    note: aktif.pay
-      ? 'Coin ödülleri bu çalıştırmada yatırıldı. Aynı haftayı ikinci kez çalıştırırsan ödüller tekrar yatmaz.'
-      : 'Bu çalıştırmada coin ödülü yatırılmadı: ya bu hafta zaten duyuruldu ya da süren haftanın önizlemesini açtın.',
+    note: bos
+      ? 'Kayıt olmadığı için coin ödülü de verilmedi. Hafta tüketilmedi: sayım biriktiği anda duyuru ve ödüller kendiliğinden gelir.'
+      : aktif.pay
+        ? 'Coin ödülleri bu çalıştırmada yatırıldı. Aynı haftayı ikinci kez çalıştırırsan ödüller tekrar yatmaz.'
+        : 'Bu çalıştırmada coin ödülü yatırılmadı: ya bu hafta zaten duyuruldu ya da süren haftanın önizlemesini açtın.',
     user,
     accent: bos ? 'warning' : tamam ? 'success' : 'danger',
   });
