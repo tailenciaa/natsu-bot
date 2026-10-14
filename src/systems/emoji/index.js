@@ -203,7 +203,7 @@ async function handleStickerCommand(interaction) {
       console.error('[emoji] Çıkartma eklenemedi:', err.message);
       return { error: stickerFailureReason(err) };
     });
-  if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'));
+  if (sticker.error) return respond(interaction, core.alert('Çıkartma eklenemedi.', sticker.error, 'danger'), { ephemeral: true });
 
   if (!perm.unlimited) boostStore.use(interaction.user.id, 'sticker');
   return respond(interaction, core.alert('Çıkartma eklendi.', `\`${sticker.name}\` adıyla sunucuya eklendi.`, 'success'));
@@ -230,7 +230,8 @@ async function handleMessageMenu(interaction) {
       found.size ? undefined : 'Sadece sunuculara ait özel emojiler eklenebilir, Discord\'un kendi emojileri eklenemez.',
     );
   }
-  return respond(interaction, ui.pickPanel(emojis));
+  // Seçici, sağ tıklayan yetkilinin aracıdır; başkasının mesajının altında herkese görünmesin
+  return respond(interaction, ui.pickPanel(emojis), { ephemeral: true });
 }
 
 // Seçim menüsü: seçilen emojileri ekler, panel sonuca döner

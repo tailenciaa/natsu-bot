@@ -562,8 +562,9 @@ async function handleStatusDetail(interaction) {
   const threadId = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const ticket = store.getTicket(threadId);
   if (!ticket) return replyError(interaction, 'Bu talep artık mevcut değil.');
-  await interaction.deferReply({ flags: core.CV2 });
-  await interaction.editReply({ components: [ui.claimRequest(ticket)], flags: core.CV2, allowedMentions: { parse: [] } });
+  // Durum paneli kalıcı; detay kartı bakan yetkiliye özel
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
+  await interaction.editReply({ components: [ui.claimRequest(ticket)], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
 }
 
 // Durum panelindeki sayfa butonları: aynı mesaj yeni sayfanın kartıyla yeniden çizilir

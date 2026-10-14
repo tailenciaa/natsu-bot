@@ -26,8 +26,8 @@ const commands = [
     .setContexts(InteractionContextType.Guild),
 ];
 
-// /gunluk: bugün henüz alınmadıysa ödül yazar ve kart kanala düşer. Kazanç da "bugün zaten alındı" bilgisi de
-// herkese açıktır; ikincisi 3. tekil şahısla yazılır ki kanalda kimin aldığı belli olsun.
+// /gunluk: bugün henüz alınmadıysa ödül yazar ve kart kanala düşer. "Bugün zaten alındı" bir hata cevabıdır;
+// tekrar tekrar denenince kanalda birikmesin diye sadece komutu kullanana görünür.
 async function handleDaily(interaction) {
   const level = Math.max(levelFromXp(seviyeStore.xpOf('mesaj', interaction.user.id)), levelFromXp(seviyeStore.xpOf('ses', interaction.user.id)));
   const result = store.claim(interaction.user.id, level);
@@ -35,8 +35,8 @@ async function handleDaily(interaction) {
   if (!result.ok) {
     return respond(
       interaction,
-      core.alert('Günlük ödül bugün zaten toplandı.', `<@${interaction.user.id}> bu günün ödülünü daha önce aldı; sıradaki ödül ${core.rel(result.nextAt)} içinde hazır oluyor.`),
-      { allowedMentions: { users: [interaction.user.id] } },
+      core.alert('Günlük ödülü bugün zaten topladın.', `Sıradaki ödül ${core.rel(result.nextAt)} hazır oluyor.`),
+      { ephemeral: true },
     );
   }
 

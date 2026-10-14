@@ -246,7 +246,7 @@ async function handleRenameSubmit(interaction) {
   ]);
   if (result === 'fail') return replyError(interaction, 'Oda ismi değiştirilemedi.', 'Botun bu kanalı yönetme izni olmalı.');
   if (result === 'slow') {
-    return respond(interaction, core.alert('Oda ismi sıraya alındı.', 'Discord kanal adını 10 dakikada en fazla 2 kez değiştirmeye izin verir; isim sıra gelince kendiliğinden güncellenir.', 'warning'));
+    return respond(interaction, core.alert('Oda ismi sıraya alındı.', 'Discord kanal adını 10 dakikada en fazla 2 kez değiştirmeye izin verir; isim sıra gelince kendiliğinden güncellenir.', 'warning'), { ephemeral: true });
   }
   return finishEdit(interaction, room, 'Oda ismi güncellendi.');
 }

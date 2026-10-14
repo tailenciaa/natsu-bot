@@ -156,7 +156,7 @@ function pendingStatus(app) {
 // /basvuru liste: henüz karara bağlanmamış tüm başvuruları numara, başvuran, durum ve mesaj bağlantısıyla listeler
 async function handleList(interaction) {
   const pending = store.pendingApplications(interaction.guildId);
-  if (!pending.length) return respond(interaction, core.alert('Bekleyen başvuru yok.', 'Tüm başvurular sonuçlandırılmış.', 'success'));
+  if (!pending.length) return respond(interaction, core.alert('Bekleyen başvuru yok.', 'Tüm başvurular sonuçlandırılmış.', 'success'), { ephemeral: true });
 
   const lines = pending.map(
     (a) => `**#${core.pad(a.number)}** <@${a.userId}> - ${pendingStatus(a)} · [Mesaja git](${core.messageUrl(a.guildId, a.channelId, a.messageId)})`,
@@ -370,7 +370,7 @@ async function callToMeeting(interaction, app) {
   }
   await interaction.deferUpdate();
   const { access, sent } = await beginMeetingFor(interaction.guild, app, interaction.user);
-  return respond(interaction, staffReport('Başvuran görüşmeye çağrıldı.', access, sent));
+  return respond(interaction, staffReport('Başvuran görüşmeye çağrıldı.', access, sent), { ephemeral: true });
 }
 
 // "Bağlan": başvuranın içinde bulunduğu ses kanalına yetkili katılır; ses kanalı açılmaz, başvurana DM gider
@@ -409,7 +409,7 @@ async function callToConnect(interaction, app) {
     'Başvuran ses kanalına bağlanabilirsin.',
     [`<#${applicantChannel}> kanalına git.`, sent ? 'Başvurana hazır olması söylendi.' : "Başvuranın DM'si kapalı."].join('\n'),
     sent ? 'success' : 'warning',
-  ));
+  ), { ephemeral: true });
 }
 
 // "Devam Et": başvuru onaylanır, görüşme biter ve oryantasyonu kimin vereceği sorulur
@@ -913,6 +913,7 @@ async function handleTransfer(interaction) {
         `<@${hold.by}> onaylarsa işlem sana geçer; reddederse ya da cevap vermezse <t:${Math.floor(hold.until / 1000)}:R> süre dolunca herhangi bir yetkili üstlenebilir.`,
         'success',
       ),
+      { ephemeral: true },
     );
   }
 
@@ -996,7 +997,8 @@ async function handleStatusDetail(interaction) {
   const id = interaction.customId.slice(ui.IDS.statusDetail.length + 1);
   const app = store.getApplication(id);
   if (!app) return respond(interaction, core.alert('Bu başvuru artık mevcut değil.'), { ephemeral: true });
-  await interaction.deferReply({ flags: core.CV2 });
+  // Durum paneli kalıcı; detay kartı bakan yetkiliye özel
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const applicant = await interaction.client.users.fetch(app.userId).catch(() => null);
   const container = ui.applicationNotice(app, applicant);
   // Başvuran bir ses kanalındaysa ve görüşme henüz başlamadıysa "Bağlan" butonu göster
@@ -1011,7 +1013,7 @@ async function handleStatusDetail(interaction) {
       ),
     );
   }
-  await interaction.editReply({ components: [container], flags: core.CV2, allowedMentions: { parse: [] } });
+  await interaction.editReply({ components: [container], flags: core.EPHEMERAL_CV2, allowedMentions: { parse: [] } });
 }
 
 // Durum panelindeki sayfa butonları: aynı mesaj yeni sayfanın kartıyla yeniden çizilir

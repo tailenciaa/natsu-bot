@@ -860,7 +860,8 @@ async function handleStaffStatusCommand(interaction) {
 async function handleTrustedSelect(interaction) {
   const entry = store.getTrusted(interaction.values[0]);
   if (!entry) return replyError(interaction, 'Bu kayıt artık mevcut değil.');
-  return respond(interaction, ui.trustedDetail(entry));
+  // Her seçim yeni kart açtığı için gizli; yoksa listenin altında detay kartları birikir
+  return respond(interaction, ui.trustedDetail(entry), { ephemeral: true });
 }
 
 async function handleTrustedAction(interaction) {
