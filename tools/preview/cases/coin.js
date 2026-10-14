@@ -74,17 +74,17 @@ module.exports = ({ mock, ui, src }) => {
       id: 'gunluk-tekrar',
       title: '/gunluk: bugün zaten toplanmış',
       where: '/gunluk komutu günde ikinci kez kullanılınca',
-      visibility: 'public',
+      visibility: 'ephemeral',
       kind: 'message',
       build: () => ({
         components: [
           ui.alert(
-            'Günlük ödül bugün zaten toplandı.',
-            `<@${user.id}> bu günün ödülünü daha önce aldı; sıradaki ödül <t:${Math.floor(Date.now() / 1000) + 9 * 3600 + 40 * 60}:R> içinde hazır oluyor.`,
+            'Günlük ödülü bugün zaten topladın.',
+            `Sıradaki ödül <t:${Math.floor(Date.now() / 1000) + 9 * 3600 + 40 * 60}:R> hazır oluyor.`,
           ),
         ],
-        flags: ui.CV2,
-        allowedMentions: { users: [user.id] },
+        flags: ui.EPHEMERAL_CV2,
+        allowedMentions: { parse: [] },
       }),
     },
 
