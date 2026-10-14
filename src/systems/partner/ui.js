@@ -91,6 +91,19 @@ const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
 const serverTitle = (entry) => (entry.serverName ? shorten(inert(entry.serverName), 60) : `Sunucu ${serverLabel(entry)}`);
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
 
+// Yasak/eşleşme anahtarı: davetten sunucu ID'si çözülemediyse davet kodu (davet-<kod>) yerine geçer
+const inviteKey = (value) => {
+  const code = inviteUrl(value)?.split('/').pop();
+  return code ? `davet-${code}` : null;
+};
+const serverKey = (entry) => entry.serverId ?? inviteKey(entry.text ?? entry.content);
+const serverKeyLabel = (key) => (key?.startsWith('davet-') ? `discord.gg/${key.slice('davet-'.length)}` : key ?? 'bilinmiyor');
+// Talep kartlarındaki sunucu satırları: ad (davetten), ID (çözülebildiyse)
+const serverRows = (request) => [
+  ['Sunucu', request.serverName ? shorten(inert(request.serverName), 60) : 'Adı çözülemedi'],
+  ['Sunucu ID', chip(request.serverId ?? 'davetten çözülemedi')],
+];
+
 // Talep kanalında "partner" / "dm" geçen ya da rol etiketlenen mesaja yanıt olarak gider
 function startPrompt(authorId) {
   return new ContainerBuilder()
@@ -104,7 +117,7 @@ function startPrompt(authorId) {
     .addTextDisplayComponents(
       text(
         '### Oto Partner Nasıl Çalışır?\n' +
-          "**Sunucu ID'ni** ve **partner metnini** gönderirsin.\n" +
+          "**Partner metnini** gönderirsin; sunucun metindeki davetten otomatik tanınır.\n" +
           'Yetkili onaylayınca metnin **otomatik paylaşılır**.',
       ),
     )
