@@ -19,13 +19,17 @@ const core = require('../../core/ui');
 const ratingUi = require('../degerlendirme/ui');
 const config = require('./config');
 
-const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, fields, rows, chip, stamp, pageInfo, pagerRow } = core;
+const { colors, text, divider, pad, messageUrl, unix, quote, page, alert, fields, rows, chip, stamp, pageInfo, pagerRow, withActions } = core;
 
 const IDS = {
   create: 'destek:olustur',
   modal: 'destek:modal',
   reason: 'destek:konu',
   claim: 'destek:ustlen', // yetkili kanalında, sonuna talebin ID'si eklenir
+  reject: 'destek:reddet', // yetkili kanalında, sonuna talebin ID'si eklenir
+  rejectModal: 'destek:reddet-form', // sonuna talebin ID'si eklenir
+  rejectReason: 'destek:reddet-sebep',
+  rejectNote: 'destek:reddet-not',
   notify: 'destek:haber-ver',
   greet: 'destek:selamla',
   close: 'destek:kapat',
@@ -52,9 +56,9 @@ function ticketState(ticket) {
 // Log kanalı kapalıysa konuşma kaydı kimseye gitmez, mesajlarda bahsedilmez
 const logEnabled = () => Boolean(config.channels.log);
 
-// Kapatma sebebi bölümü: kapanış mesajında, logda ve DM'de aynı görünür
-const reasonText = (closeReason) =>
-  closeReason ? fields(['### Kapatma Sebebi', closeReason.label, closeReason.note ? quote(closeReason.note) : null]) : null;
+// Kapatma/red sebebi bölümü: kapanış mesajında, logda ve DM'de aynı görünür
+const reasonText = (closeReason, header = '### Kapatma Sebebi') =>
+  closeReason ? fields([header, closeReason.label, closeReason.note ? quote(closeReason.note) : null]) : null;
 
 // Log satırlarındaki kişi: etiket ve (biliniyorsa) kullanıcı adı
 const personText = (id, user) => `<@${id}>${user ? ` (\`${user.username}\`)` : ''}`;
@@ -95,7 +99,11 @@ function ticketPanel(ticket) {
   let sub;
   let status;
   let color;
-  if (ticket.closedBy) {
+  if (ticket.rejected) {
+    sub = 'Bu talep reddedildi. Kimin reddettiği ve red sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir. Gerçek bir sorunla karşılaştığında destek panelinden yeni bir talep açabilirsin.';
+    status = '**Talebin reddedildi.**\nAlt başlık kilitlendi ve arşivlendi.';
+    color = colors.danger;
+  } else if (ticket.closedBy) {
     sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir.';
     status = '**Talep kapatıldı.**\nAlt başlık kilitlendi ve arşivlendi.';
     color = colors.danger;
