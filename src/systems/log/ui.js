@@ -130,8 +130,8 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
       new ActionRowBuilder().addComponents(
         button('setup', 'Eksikleri Kur', ButtonStyle.Primary, ready === rows.length),
         button('panel', panelUrl ? 'Paneli Yenile' : 'Paneli Gönder', ButtonStyle.Secondary),
-        button('reset', 'Hepsini Sıfırla', ButtonStyle.Danger),
         button('refresh', 'Yenile', ButtonStyle.Secondary),
+        button('reset', 'Hepsini Sıfırla', ButtonStyle.Danger),
       ),
     );
 }
@@ -150,8 +150,8 @@ function resetConfirm() {
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        button('resetyes', 'Evet, Sıfırla', ButtonStyle.Danger),
         button('refresh', 'Vazgeç', ButtonStyle.Secondary),
+        button('resetyes', 'Evet, Sıfırla', ButtonStyle.Danger),
       ),
     );
 }

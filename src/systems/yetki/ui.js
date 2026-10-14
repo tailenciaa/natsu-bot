@@ -205,13 +205,13 @@ function takePanel({ user, held, picked, done, by, roleIds = [], all = false }) 
   if (held.dutyIds.length) controlRows.push(menu(IDS.takeDuties, 'Kaldırılacak görev rolleri', duties, held.dutyIds, picked.dutyIds));
   controlRows.push(
     new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(IDS.takeCancel).setStyle(ButtonStyle.Secondary).setLabel('İptal'),
       new ButtonBuilder()
         .setCustomId(stateId(IDS.takeSelected))
         .setStyle(ButtonStyle.Danger)
         .setLabel('Seçilenleri Kaldır')
         .setDisabled(![picked.levelIds, picked.permIds, picked.dutyIds].some((list) => list.length)),
       new ButtonBuilder().setCustomId(`${IDS.takeAll}:${user.id}`).setStyle(ButtonStyle.Danger).setLabel('Hepsini Kaldır'),
-      new ButtonBuilder().setCustomId(IDS.takeCancel).setStyle(ButtonStyle.Secondary).setLabel('İptal'),
     ),
   );
   return container.addSeparatorComponents(divider()).addActionRowComponents(...controlRows);

@@ -71,7 +71,7 @@ function panel(g) {
   container.addActionRowComponents(joinRow);
   if (g.status === 'active') {
     container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(button(IDS.edit, 'Düzenle', ButtonStyle.Secondary), button(IDS.end, 'Bitir', ButtonStyle.Primary), button(IDS.cancel, 'İptal Et', ButtonStyle.Danger)),
+      new ActionRowBuilder().addComponents(button(IDS.end, 'Bitir', ButtonStyle.Primary), button(IDS.edit, 'Düzenle', ButtonStyle.Secondary), button(IDS.cancel, 'İptal Et', ButtonStyle.Danger)),
     );
   }
   return container;
