@@ -39,7 +39,7 @@ async function serverOfInvite(client, text) {
   return url ? client.fetchInvite(url).then((invite) => invite.guild ?? null, () => null) : null;
 }
 
-// Puanlama yalnızca gerçekleşen partnerlikte gider (oto onay, teklif yenilemesi, elle paylaşım); ret puanlatılmaz
+// Puanlama yalnızca DM üzerinden (teklif/Partner Paneli) ya da elle yapılan partnerlikte gider; oto talep ve ret puanlatılmaz
 const rateStaff = (client, request, staffId, userId) =>
   ratings.requestForPartner(client, request, staffId, userId).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
 
@@ -522,7 +522,8 @@ async function handleReviewDecision(interaction) {
   await requester?.send({ components: [ui.requesterResult(sonuc, updated, interaction.user.id)], flags: core.CV2 }).catch(() => {});
 
   if (sonuc === 'onayla') {
-    await rateStaff(interaction.client, updated, interaction.user.id);
+    // Düz oto talep puanlatılmaz (yetkili sadece onaylıyor); DM'deki Partner Paneli'nden gelen teklif puanlatılır
+    if (request.renewalOf) await rateStaff(interaction.client, updated, interaction.user.id);
     // Onayda güvenilir listeye otomatik eklemiyoruz; yetkili karttaki "Güvenilir Partnerler Listesine Al"
     // butonuna basarak elle ekler. Kart bu yüzden "güvenilir değil" (buton aktif) durumuyla paylaşılır.
     // Güvenilir partnerin Partner Paneli'nden gelen tekliflerde kayıt yeni metinle güncellenir (yenileme gibi)
