@@ -86,8 +86,12 @@ module.exports = ({ mock, src }) => {
         components: [
           aktif.weeklyRunCard({
             target: '2026-10-05',
-            aktif: { ok: true, durum: 'gönderildi', not: '2026-10-05 · ses: 5 · mesaj: 5 · yayın: 3 · ödüller yattı', pay: true },
-            saygi: { ok: true, durum: 'gönderildi', not: '2026-10-05 · birinci 9 saygınlıkla kazandı' },
+            aktif: { ok: true, mark: true, durum: 'gönderildi', not: '2026-10-05 · ses: 5 · mesaj: 5 · yayın: 3 · ödüller yattı', pay: true },
+            saygi: { ok: true, mark: true, durum: 'gönderildi', not: '2026-10-05 · birinci 9 saygınlıkla kazandı' },
+            denemeler: {
+              aktif: { week: '2026-10-05', at: Date.now() - 3 * 60 * 60 * 1000, durum: 'gönderildi', not: '2026-10-05 · ses: 5 · mesaj: 5 · yayin: 3 · ödüller yattı' },
+              saygi: { week: '2026-10-05', at: Date.now() - 3 * 60 * 60 * 1000, durum: 'gönderildi', not: '2026-10-05 · birinci 9 saygınlıkla kazandı' },
+            },
             user: users[0],
           }),
         ],
@@ -104,9 +108,30 @@ module.exports = ({ mock, src }) => {
         components: [
           aktif.weeklyRunCard({
             target: '2026-10-05',
-            aktif: { ok: false, durum: 'gönderilemedi', not: 'Kanala gönderilemedi: Missing Permissions', pay: false },
-            saygi: { ok: true, durum: 'kayıt yok', not: '2026-10-05 haftasında kimse saygınlık kazanmamış.' },
+            aktif: { ok: false, mark: false, durum: 'gönderilemedi', not: 'Kanala gönderilemedi: Missing Permissions', pay: false },
+            saygi: { ok: true, mark: false, durum: 'kayıt yok', not: '2026-10-05 haftasında saygınlık kaydı bulunamadı.' },
+            denemeler: {
+              aktif: { week: '2026-10-05', at: Date.now() - 20 * 60 * 1000, durum: 'gönderilemedi', not: 'Kanala gönderilemedi: Missing Permissions' },
+            },
             user: users[1],
+          }),
+        ],
+        ...pub,
+      }),
+    },
+    {
+      id: 'haftalik-komut-bos',
+      title: '/haftalık komutu: haftada kayıt yok',
+      where: 'Yetkili komutunun cevabı, komutun kullanıldığı kanal',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({
+        components: [
+          aktif.weeklyRunCard({
+            target: '2026-10-05',
+            aktif: { ok: true, mark: false, durum: 'kayıt yok', not: '2026-10-05 haftasının mesaj, ses ve yayın kaydı bulunamadı.', pay: true },
+            saygi: { ok: true, mark: false, durum: 'kayıt yok', not: '2026-10-05 haftasında saygınlık kaydı bulunamadı.' },
+            user: users[2],
           }),
         ],
         ...pub,
