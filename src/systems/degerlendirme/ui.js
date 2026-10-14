@@ -300,10 +300,11 @@ function ratingComplaint(rating) {
     color = colors.warning;
   }
 
-  const actionRow = new ActionRowBuilder();
+  // Karar düğmeleri üstte, geri alınamaz olan "Reddet" çizginin altında kendi satırında
+  const buttons = [];
   const reviewId = (action) => `${IDS.review}:${rating.id}:${action}`;
   if (!decided) {
-    actionRow.addComponents(
+    buttons.push(
       new ButtonBuilder().setCustomId(reviewId('onay')).setStyle(ButtonStyle.Success).setLabel('Onayla'),
       new ButtonBuilder()
         .setCustomId(reviewId('gorusme'))
@@ -313,14 +314,14 @@ function ratingComplaint(rating) {
     );
   }
   if (rating.messageId) {
-    actionRow.addComponents(
+    buttons.push(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Değerlendirmeye Git')
         .setURL(messageUrl(rating.guildId, rating.channelId, rating.messageId)),
     );
   }
-  if (!decided) actionRow.addComponents(new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'));
+  if (!decided) buttons.push(new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'));
 
   const container = page({
     title: 'Değerlendirme İtirazı',
