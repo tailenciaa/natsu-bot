@@ -344,7 +344,7 @@ function requesterResult(sonuc, request, by, sharedUrl = null) {
       head(
         sonuc === 'onayla' ? 'Partner Talebin Onaylandı' : 'Partner Talebin Reddedildi',
         sonuc === 'onayla'
-          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Partner metnin paylaşım kanalımıza **paylaşıldı**, partnerlik başladı.\nAşağıdaki butondan paylaşılan mesaja gidebilirsin; bizim sunucumuzu tanıtan metin ise bir sonraki mesajda kopyalaman için geliyor.'
+          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Partner metnin paylaşım kanalımıza **paylaşıldı**, partnerlik başladı.\nMetninin paylaşıldığı mesaja bu karttaki butondan ulaşabilirsin; bizim sunucumuzu tanıtan metin ise bir sonraki mesajda kopyalaman için geliyor.'
           : 'Oto partner talebin yetkililer tarafından incelendi ve **reddedildi**. Talebin paylaşım kanalına gönderilmedi; ayrıntılar için yetkililerle iletişime geçebilirsin.',
       ),
     )
@@ -366,7 +366,7 @@ function requesterResult(sonuc, request, by, sharedUrl = null) {
     container
       .addSeparatorComponents(divider())
       .addActionRowComponents(
-        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(sharedUrl).setLabel('Paylaşılan Mesaja Git').setStyle(ButtonStyle.Link)),
+        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(sharedUrl).setLabel('Paylaşılan Mesaj').setStyle(ButtonStyle.Link)),
       );
   }
 
@@ -744,7 +744,7 @@ function ourTextDm(entry, sharedUrl = null) {
   const container = new ContainerBuilder().setAccentColor(colors.success).addTextDisplayComponents(
     head(
       'Bizim Partner Metnimiz',
-      `**${serverTitle(entry)}** sunucunun partner metni paylaşım kanalımızda yayında. Aşağıdaki metin bizim sunucumuzu tanıtan partner ilanımız; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
+      `**${serverTitle(entry)}** sunucunun partner metni paylaşım kanalımızda yayında. Bu mesajdaki metin bizim sunucumuzu tanıtan partner ilanımız; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
     ),
   );
 
@@ -754,7 +754,7 @@ function ourTextDm(entry, sharedUrl = null) {
 
   if (sharedUrl) {
     container.addSeparatorComponents(divider()).addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(sharedUrl).setLabel('Paylaşılan Mesaja Git').setStyle(ButtonStyle.Link)),
+      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(sharedUrl).setLabel('Paylaşılan Mesaj').setStyle(ButtonStyle.Link)),
     );
   }
 
