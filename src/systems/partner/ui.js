@@ -28,6 +28,7 @@ const IDS = {
   contactId: 'partner-yetkili-id',
   termsAccept: 'partner-sartlar-kabul', // partner-sartlar-kabul:<talep>
   review: 'partner-karar', // partner-karar:<talep>:<onayla|reddet>
+  preview: 'partner-onizle', // partner-onizle:<talep>
   trustedAdd: 'partner-guven-ekle', // partner-guven-ekle:<talep>
   ban: 'partner-yasakla', // partner-yasakla:<talep>
   unban: 'partner-yasak-kaldir', // partner-yasak-kaldir:<talep>
@@ -204,9 +205,8 @@ function termsDm(acceptCustomId) {
     );
 }
 
-// Yetkili kanalına giden onay/red kartı. decided: { sonuc, by, banned } varsa butonlar yerine sonucu gösterir
-// Metindeki davet ayrı satırda ve buton olarak gösterilir: yetkili onaylamadan önce sunucuya bakabilsin,
-// karar sonrası kart da kayıt olarak okunur kalsın
+// Yetkili kanalına giden onay/red kartı. decided: { sonuc, by, banned } varsa butonlar yerine sonucu gösterir.
+// Kartın içindeki metin davet önizlemesini göstermez; "Önizle" ilanı paylaşılacağı düz mesaj haliyle gizli gönderir
 function reviewCard(request, decided) {
   const url = inviteUrl(request.text);
   const container = new ContainerBuilder()
@@ -216,7 +216,7 @@ function reviewCard(request, decided) {
         `Oto Partner Talebi #${request.number}`,
         decided
           ? 'Bu talep **bir yetkili tarafından değerlendirildi**. Talebin ayrıntıları ve verilen karar kayıt olarak burada kalır, **başka bir işlem yapmana gerek yok**.'
-          : 'Bir üye oto partner talebi gönderdi. Sunucu bilgilerini ve partner metnini inceleyip **Onayla** ya da **Reddet** butonuyla karar verebilirsin; troll bir talepse **Yasaklıya Al** ile sunucuyu yasaklayabilirsin.',
+          : 'Bir üye oto partner talebi gönderdi. **Önizle** ile ilanı paylaşılacağı haliyle görüp **Onayla** ya da **Reddet** ile karar verebilirsin; troll bir talepse **Yasaklıya Al**.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -235,22 +235,11 @@ function reviewCard(request, decided) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(inert(request.text), 1500))}`));
 
-  if (url) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(
-        text(
-          fields([
-            '### Davet',
-            field('Bağlantı', chip(inviteLabel(url))),
-            decided ? 'Karar kaydı için bağlantı burada duruyor.' : 'Onaylamadan önce sunucuyu bu bağlantıdan görebilirsin.',
-          ]),
-        ),
-      )
-      .addActionRowComponents(
-        new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
-      );
-  }
+  const previewRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`${IDS.preview}:${request.id}`).setLabel('Önizle').setStyle(ButtonStyle.Primary),
+  );
+  if (url) previewRow.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  container.addActionRowComponents(previewRow);
 
   if (decided) {
     const verdict =
@@ -268,10 +257,6 @@ function reviewCard(request, decided) {
       new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:onayla`).setLabel('Onayla').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId(`${IDS.review}:${request.id}:reddet`).setLabel('Reddet').setStyle(ButtonStyle.Danger),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`${IDS.startBan}:${request.serverId}`).setLabel('Yasaklıya Al').setStyle(ButtonStyle.Danger),
       ),
     );
