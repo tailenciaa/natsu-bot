@@ -488,8 +488,8 @@ function roomAdminCard(room, status, note) {
     .addTextDisplayComponents(text('### Odayı Kapat'))
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.close}:${room.no}`).setLabel('Odayı Kapat').setStyle(ButtonStyle.Danger),
         new ButtonBuilder().setCustomId(IDS.back).setLabel('Oda Listesi').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`${IDS.close}:${room.no}`).setLabel('Odayı Kapat').setStyle(ButtonStyle.Danger),
       ),
     )
     .addSeparatorComponents(divider())
