@@ -300,29 +300,27 @@ function ratingComplaint(rating) {
     color = colors.warning;
   }
 
-  // Karar butonları (işlem) ile "Değerlendirmeye Git" (gezinme) farklı işler yaptığı için ayrı satırlarda durur
-  const decisionRow = new ActionRowBuilder();
+  const actionRow = new ActionRowBuilder();
+  const reviewId = (action) => `${IDS.review}:${rating.id}:${action}`;
   if (!decided) {
-    const reviewId = (action) => `${IDS.review}:${rating.id}:${action}`;
-    decisionRow.addComponents(
+    actionRow.addComponents(
       new ButtonBuilder().setCustomId(reviewId('onay')).setStyle(ButtonStyle.Success).setLabel('Onayla'),
       new ButtonBuilder()
         .setCustomId(reviewId('gorusme'))
         .setStyle(ButtonStyle.Primary)
         .setLabel(rating.meetingBy ? 'Görüşmeye Çağrıldı' : 'Görüşmeye Çağır')
         .setDisabled(Boolean(rating.meetingBy)),
-      new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'),
     );
   }
-  const linkRow = new ActionRowBuilder();
   if (rating.messageId) {
-    linkRow.addComponents(
+    actionRow.addComponents(
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel('Değerlendirmeye Git')
         .setURL(messageUrl(rating.guildId, rating.channelId, rating.messageId)),
     );
   }
+  if (!decided) actionRow.addComponents(new ButtonBuilder().setCustomId(reviewId('red')).setStyle(ButtonStyle.Danger).setLabel('Reddet'));
 
   const container = page({
     title: 'Değerlendirme İtirazı',
@@ -338,9 +336,7 @@ function ratingComplaint(rating) {
     ],
   });
 
-  if (decisionRow.components.length || linkRow.components.length) container.addSeparatorComponents(divider());
-  if (decisionRow.components.length) container.addActionRowComponents(decisionRow);
-  if (linkRow.components.length) container.addActionRowComponents(linkRow);
+  if (actionRow.components.length) container.addSeparatorComponents(divider()).addActionRowComponents(actionRow);
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(`-# <t:${unix(rating.reportedAt)}:F>`));
 }

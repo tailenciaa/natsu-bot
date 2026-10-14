@@ -57,24 +57,20 @@ function panel(g) {
   });
   if (g.status === 'ended') container.addTextDisplayComponents(text(stamp(g.endsAt, 'f')));
 
-  // Katıl butonunun altındaki yönetim butonlarını sadece yöneticiler kullanabilir (basınca kontrol edilir)
+  // Katıl dışındaki yönetim butonlarını sadece yöneticiler kullanabilir (basınca kontrol edilir)
   const button = (id, label, style) => new ButtonBuilder().setCustomId(id).setLabel(label).setStyle(style);
-  const joinRow = new ActionRowBuilder().addComponents(
+  const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(IDS.join)
       .setLabel(g.status === 'active' ? `Katıl (${g.participants.length})` : closedLabel)
       .setStyle(g.status === 'active' ? ButtonStyle.Success : ButtonStyle.Secondary)
       .setDisabled(g.status !== 'active'),
   );
+  if (g.status === 'active') row.addComponents(button(IDS.end, 'Bitir', ButtonStyle.Primary), button(IDS.edit, 'Düzenle', ButtonStyle.Secondary));
   // Yeniden Çek: iptal edilen çekilişte hiç kazanan seçilmediği için gösterilmez; açıkken pasif, bitince aktif
-  if (g.status !== 'cancelled') joinRow.addComponents(button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary).setDisabled(g.status !== 'ended'));
-  container.addActionRowComponents(joinRow);
-  if (g.status === 'active') {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(button(IDS.end, 'Bitir', ButtonStyle.Primary), button(IDS.edit, 'Düzenle', ButtonStyle.Secondary), button(IDS.cancel, 'İptal Et', ButtonStyle.Danger)),
-    );
-  }
-  return container;
+  if (g.status !== 'cancelled') row.addComponents(button(IDS.reroll, 'Yeniden Çek', ButtonStyle.Secondary).setDisabled(g.status !== 'ended'));
+  if (g.status === 'active') row.addComponents(button(IDS.cancel, 'İptal Et', ButtonStyle.Danger));
+  return container.addActionRowComponents(row);
 }
 
 // Boş değer ve yer tutucu hiç gönderilmez (Discord boş dizgeyi reddedebilir)

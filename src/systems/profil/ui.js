@@ -245,12 +245,12 @@ function gorunumPage(imageName, { themeLabel, glass, opacity }) {
       ),
     )
     .addActionRowComponents(
-      new ActionRowBuilder().addComponents(btn('azalt', 'Saydamlığı Azalt'), btn('artir', 'Saydamlığı Artır'), btn('sifirla', 'Sıfırla', ButtonStyle.Danger)),
-    )
-    .addActionRowComponents(
       new ActionRowBuilder().addComponents(
+        btn('azalt', 'Saydamlığı Azalt'),
+        btn('artir', 'Saydamlığı Artır'),
         new ButtonBuilder().setCustomId(`${IDS.shopTab}tema`).setLabel('Temalar').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.banner).setLabel('Kapağı Düzenle').setStyle(ButtonStyle.Secondary),
+        btn('sifirla', 'Sıfırla', ButtonStyle.Danger),
       ),
     );
 }

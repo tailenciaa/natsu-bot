@@ -59,19 +59,15 @@ function controlPanel(room, channel, state = {}, access = { invited: [], banned:
     ],
   });
 
-  // Ayar düğmeleri üstte, üye menüleri altta
+  // Ayar düğmeleri üstte, üye menüleri altta. Kilit/gizlilik açılıp kapandıkça yer değiştirmesin diye hep sonda durur
   container
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(IDS.lock).setLabel(locked ? 'Kilidi Aç' : 'Kilitle').setStyle(locked ? ButtonStyle.Success : ButtonStyle.Danger),
-        new ButtonBuilder().setCustomId(IDS.hide).setLabel(hidden ? 'Göster' : 'Gizle').setStyle(hidden ? ButtonStyle.Success : ButtonStyle.Danger),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(IDS.limit).setLabel('Limiti Ayarla').setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(IDS.rename).setLabel('İsmi Değiştir').setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(IDS.lock).setLabel(locked ? 'Kilidi Aç' : 'Kilitle').setStyle(locked ? ButtonStyle.Success : ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(IDS.hide).setLabel(hidden ? 'Göster' : 'Gizle').setStyle(hidden ? ButtonStyle.Success : ButtonStyle.Danger),
       ),
     );
 
