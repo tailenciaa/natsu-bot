@@ -606,14 +606,9 @@ async function refreshTrustedPanel(client, guildId_) {
   if (message) store.setTrustedPanelMessageId(guildId_, message.id);
 }
 
-// Birden fazla ID'yi virgül/boşluk/yeni satırla ayrılmış halde kabul eder, geçersizleri eler, tekrarları temizler
-function parseContactIds(raw) {
-  const ids = raw
-    .split(/[\s,]+/)
-    .map((v) => v.trim())
-    .filter((v) => /^\d{15,25}$/.test(v));
-  return [...new Set(ids)].slice(0, 10);
-}
+// Formdaki kullanıcı menüsünden seçilen partner yetkilileri; botlar elenir
+const selectedContacts = (interaction) =>
+  [...(interaction.fields.getSelectedUsers(ui.IDS.contactId)?.values() ?? [])].filter((u) => !u.bot).map((u) => u.id);
 
 // contactIds: güvenilir liste formunda seçilen karşı sunucu partner yetkilileri (handleTrustedAddSubmit)
 function createTrustedRecord(interaction, request, contactIds) {
@@ -759,7 +754,7 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
   if (store.trustedBySource(interaction.guildId, requestId)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
 
-  const contactIds = [...(interaction.fields.getSelectedUsers(ui.IDS.contactId)?.values() ?? [])].filter((u) => !u.bot).map((u) => u.id);
+  const contactIds = selectedContacts(interaction);
   if (!contactIds.length) return replyError(interaction, 'En az bir partner yetkilisi seçmelisin.', 'Botlar partner yetkilisi olarak seçilemez.');
 
   // Yetkililere gönderilen DM'ler 3 saniyeyi aşabilir; önce cevap ertelenir (işlem yetkiliye özel, o yüzden gizli)
@@ -927,10 +922,8 @@ async function handleContactAddSubmit(interaction) {
   const entry = store.getTrusted(id);
   if (!entry) return replyError(interaction, 'Bu kayıt artık mevcut değil.');
 
-  const contactIds = parseContactIds(interaction.fields.getTextInputValue(ui.IDS.contactId).trim());
-  if (!contactIds.length) {
-    return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
-  }
+  const contactIds = selectedContacts(interaction);
+  if (!contactIds.length) return replyError(interaction, 'En az bir partner yetkilisi seçmelisin.', 'Botlar partner yetkilisi olarak seçilemez.');
 
   await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const newContacts = contactIds.filter((contactId) => !entry.contactIds?.includes(contactId));

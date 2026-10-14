@@ -577,24 +577,18 @@ function trustedDetail(entry) {
   return container.addSeparatorComponents(divider()).addActionRowComponents(trustedActionRow(entry, url));
 }
 
-// Güvenilir kayda partner yetkilisi(leri) ekler ya da günceller; current (varsa) tüm liste düzenlenmek üzere hazır gelir
+// Güvenilir kayda partner yetkilisi(leri) ekler ya da günceller; mevcut yetkililer menüde hazır seçili gelir
 function contactModal(trustedId, currentIds) {
+  const select = new UserSelectMenuBuilder().setCustomId(IDS.contactId).setMinValues(1).setMaxValues(10).setRequired(true);
+  if (currentIds?.length) select.setDefaultUsers(currentIds.slice(0, 10));
   return new ModalBuilder()
     .setCustomId(`${IDS.contactAddModal}:${trustedId}`)
     .setTitle('Partner Yetkilisi')
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel('Partner Yetkilisi')
-        .setDescription('Birden fazlaysa virgül ya da yeni satırla ayır.')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId(IDS.contactId)
-            .setStyle(TextInputStyle.Paragraph)
-            .setValue(currentIds?.join(', ') ?? '')
-            .setPlaceholder('123456789012345678, 234567890123456789')
-            .setMaxLength(500)
-            .setRequired(true),
-        ),
+        .setLabel('Karşı Sunucunun Partner Yetkilileri')
+        .setDescription('Sunucumuzda olan ve o sunucunun partner işlerine bakan kişileri seç (en çok 10).')
+        .setUserSelectMenuComponent(select),
     );
 }
 
