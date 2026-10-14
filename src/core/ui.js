@@ -147,10 +147,12 @@ function tabRow(tabs, active, idOf) {
 // İşlem düğmeleri: ana işlem → normal → bağlantı → kırmızı. {danger:true} verilirse kırmızılar (geri alınamaz
 // işlemler) çizgiyle ayrılıp alt satıra iner; satırda en çok beş düğme durur, taşarsa alt satıra geçer
 function actionRows(buttons, { danger = false } = {}) {
+  // ButtonBuilder düğmeyi kendi `data` alanında tutar (düz `.style` yok)
+  const styleOf = (b) => (b?.style ?? b?.data ?? b?._data)?.style;
   const order = { [ButtonStyle.Success]: 0, [ButtonStyle.Primary]: 1, [ButtonStyle.Secondary]: 2, [ButtonStyle.Link]: 3, [ButtonStyle.Danger]: 4 };
-  const sorted = [...buttons].sort((a, b) => order[a.style] - order[b.style]);
-  const red = sorted.filter((b) => b.style === ButtonStyle.Danger);
-  const rest = sorted.filter((b) => b.style !== ButtonStyle.Danger);
+  const sorted = [...buttons].sort((a, b) => order[styleOf(a)] - order[styleOf(b)]);
+  const red = sorted.filter((b) => styleOf(b) === ButtonStyle.Danger);
+  const rest = sorted.filter((b) => styleOf(b) !== ButtonStyle.Danger);
   const groups = danger && red.length ? [rest, red] : [sorted];
   const rows = [];
   let splitAt = -1;
