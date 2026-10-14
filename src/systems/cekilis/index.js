@@ -7,7 +7,7 @@
 const { ChannelType, Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, replyFlowError, isStaff, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const logSystem = require('../log');
 const config = require('./config');
 const store = require('./store');
@@ -203,7 +203,7 @@ async function create(interaction) {
   if (!message) {
     g.status = 'cancelled';
     store.save();
-    return replyFlowError(interaction, 'Çekiliş mesajı gönderilemedi.', 'Botun kanaldaki yetkilerini kontrol et.');
+    return replyError(interaction, 'Çekiliş mesajı gönderilemedi.', 'Botun kanaldaki yetkilerini kontrol et.');
   }
   g.messageId = message.id;
   store.save();
@@ -237,7 +237,7 @@ async function end(interaction) {
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.', 'Sonuçlanmış çekilişte **/cekilis yeniden-cek** ile yeni kazanan seçebilirsin.');
   await interaction.deferReply({ flags: core.CV2 });
-  if (!(await finish(interaction.client, g))) return respond(interaction, core.alert('Çekiliş zaten sonuçlanıyor.', 'Birkaç saniye sonra çekiliş mesajına bakabilirsin.', 'warning'));
+  if (!(await finish(interaction.client, g))) return respond(interaction, core.alert('Çekiliş zaten sonuçlanıyor.', 'Birkaç saniye sonra çekiliş mesajına bakabilirsin.', 'warning'), { ephemeral: true });
   return respond(interaction, core.alert(`Çekiliş #${g.no} sonuçlandırıldı.`, g.winners.length ? 'Kazananlar çekiliş kanalında duyuruldu.' : ui.noWinnerReason(g), 'success'));
 }
 
@@ -247,7 +247,7 @@ async function reroll(interaction) {
   if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.', 'Açık bir çekilişi önce **/cekilis bitir** ile sonuçlandır.');
   await interaction.deferReply({ flags: core.CV2 });
   const ids = await pickWinners(interaction.guild, g, interaction.options.getInteger('kazanan') ?? 1);
-  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'));
+  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'), { ephemeral: true });
   g.winners.push(...ids);
   store.save();
   await refreshPanel(interaction.client, g);
@@ -381,7 +381,7 @@ async function handleEndButton(interaction) {
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Bu çekiliş zaten sonuçlanmış ya da iptal edilmiş.');
   // GİZLİ İSTİSNA: onay penceresi işlem henüz yapılmadığı için sadece yetkilide durur; onaylayınca sonuç kanala düşer
-  return interaction.reply({ components: [ui.confirm('bitir', g)], flags: core.CV2 });
+  return interaction.reply({ components: [ui.confirm('bitir', g)], flags: core.EPHEMERAL_CV2 });
 }
 
 async function handleCancelButton(interaction) {
@@ -389,7 +389,7 @@ async function handleCancelButton(interaction) {
   if (!g) return;
   if (g.status !== 'active') return replyError(interaction, 'Sadece açık çekilişler iptal edilebilir.');
   // GİZLİ İSTİSNA: onay penceresi sonuçlanmamış bir işlem için; onay çıkınca kart kanala düşer
-  return interaction.reply({ components: [ui.confirm('iptal', g)], flags: core.CV2 });
+  return interaction.reply({ components: [ui.confirm('iptal', g)], flags: core.EPHEMERAL_CV2 });
 }
 
 async function handleConfirm(interaction) {
@@ -411,14 +411,15 @@ async function handleRerollButton(interaction) {
   const g = await adminGiveaway(interaction);
   if (!g) return;
   if (g.status !== 'ended') return replyError(interaction, 'Yeniden çekiliş sadece sonuçlanmış çekilişlerde yapılabilir.');
-  await interaction.deferReply({ flags: core.CV2 });
+  // Kazanan kanalda ayrıca duyurulur; butonun cevabı kalıcı çekiliş mesajının altında birikmesin diye gizli
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const ids = await pickWinners(interaction.guild, g, 1);
-  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'));
+  if (!ids.length) return respond(interaction, core.alert('Seçilecek başka katılımcı kalmadı.', 'Tüm uygun katılımcılar zaten kazandı ya da sunucudan ayrıldı.', 'warning'), { ephemeral: true });
   g.winners.push(...ids);
   store.save();
   await refreshPanel(interaction.client, g);
   await announce(interaction.client, g, ids, true);
-  return respond(interaction, core.alert(`Çekiliş #${g.no} için yeni kazanan seçildi.`, undefined, 'success'));
+  return respond(interaction, core.alert(`Çekiliş #${g.no} için yeni kazanan seçildi.`, undefined, 'success'), { ephemeral: true });
 }
 
 module.exports = {

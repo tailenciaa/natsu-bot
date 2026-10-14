@@ -20,7 +20,7 @@
 const { Events, InteractionContextType, SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
-const { respond, replyError, replyFlowError, isStaff, isMenuOwner, menuOwnerError, fetchTextChannel } = require('../../core/helpers');
+const { respond, replyError, isStaff, isMenuOwner, menuOwnerError, fetchTextChannel } = require('../../core/helpers');
 const ratings = require('../degerlendirme');
 const config = require('./config');
 const store = require('./store');
@@ -889,12 +889,12 @@ async function handleTrustedAction(interaction) {
     return replyError(interaction, 'Bu partnerin yetkilisi şu an meşgul.', 'Müsait olduğunu bildirince ya da 7 gün sonra otomatik olarak tekrar teklif gönderebilirsin.');
   }
 
-  // Yetkili listesini çekmek 3 saniyeyi aşabilir; önce cevap ertelenir
-  await interaction.deferReply({ flags: core.CV2 });
+  // Yetkili listesini çekmek 3 saniyeyi aşabilir; önce cevap ertelenir. Seçici kalıcı panelden açıldığı için gizlidir
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   const members = await fetchStaffMembers(interaction.guild);
-  if (!members.length) return replyFlowError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
+  if (!members.length) return replyError(interaction, 'Şu an partner yetkilisi bulunamadı.', 'Lütfen daha sonra tekrar dene.');
 
-  return respond(interaction, ui.staffSelect(id, members, store.staffStatus));
+  return respond(interaction, ui.staffSelect(id, members, store.staffStatus), { ephemeral: true });
 }
 
 // Güvenilir kayda partner yetkilisi(leri) ekler/günceller (tam liste her seferinde yeniden girilir)
