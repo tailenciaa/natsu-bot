@@ -20,8 +20,8 @@ const config = require('./config');
 
 const IDS = {
   start: 'partner:baslat', // partner:baslat:<mesajı yazan kullanıcı>
-  startBan: 'partner:baslat-yasakla', // partner:baslat-yasakla:<sunucu ID>
-  startBanModal: 'partner:baslat-yasakla-form', // partner:baslat-yasakla-form:<sunucu ID>
+  startBan: 'partner:baslat-yasakla', // partner:baslat-yasakla:<sunucu ID ya da davet-kod>
+  startBanModal: 'partner:baslat-yasakla-form', // partner:baslat-yasakla-form:<sunucu ID ya da davet-kod>
   banReason: 'partner-yasaklama-sebebi',
   modal: 'partner:form',
   adText: 'partner-metin',
