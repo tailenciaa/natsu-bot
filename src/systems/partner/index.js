@@ -1014,7 +1014,7 @@ function renewalOfferError(interaction, trustedId) {
   return { offer, entry };
 }
 
-// Atanan yetkili "Kabul Ediyorum" deyince aynı DM, metni gösterip karar isteyen hale güncellenir
+// Karşı yetkili "Kabul Ediyorum" deyince aynı DM, metnini gösterip karar isteyen hale güncellenir
 async function handleRenewalAssignedAccept(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalAssignedAccept.length + 1);
   const { error, entry } = renewalOfferError(interaction, trustedId);

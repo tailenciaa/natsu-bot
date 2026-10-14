@@ -41,8 +41,8 @@ const IDS = {
   contactAdd: 'partner-yetkili-ekle', // partner-yetkili-ekle:<kayıt>
   contactAddModal: 'partner-yetkili-ekle-form', // partner-yetkili-ekle-form:<kayıt>
   contactRemove: 'partner-yetkili-cikar', // partner-yetkili-cikar:<kayıt>
-  // Teklifte bulunma (yenileme) akışı: kayıt sahibine özel bir yetkili atanır, o yetkili metni inceler,
-  // onaylarsa karşı tarafın gerekirse şartları kabul etmesinin ardından otomatik paylaşılır
+  // Teklifte bulunma (yenileme) akışı: teklif, güvenilir kaydın karşı sunucu yetkilisine gider; o kişi kendi
+  // metnini onaylar (istersen günceller), gerekirse önce şartları kabul eder ve metin otomatik paylaşılır
   renewalAssign: 'partner-yenile-ata', // partner-yenile-ata:<kayıt>
   renewalAssignedAccept: 'partner-yenile-kabul', // partner-yenile-kabul:<kayıt>
   renewalApprove: 'partner-yenile-onayla', // partner-yenile-onayla:<kayıt>
