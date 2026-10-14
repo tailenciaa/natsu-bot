@@ -305,29 +305,26 @@ function postCard(request, trusted, banned, stats = {}) {
     )
     .addSeparatorComponents(divider());
 
-  // Davetsiz ilanda katılma düğmesi olmaz; güvenilir liste düğmesi satırda tek kalır
-  const topRow = new ActionRowBuilder().addComponents(
+  // Tüm düğmeler tek satırda; davetsiz ilanda katılma düğmesi olmaz. İptal ve yasak sadece lider, sil kaydı yapan
+  // ve lider içindir (yetki index.js'de denetlenir). Yeşil "Yasağı Kaldır" kırmızıların önüne geçer
+  const banButton = new ButtonBuilder()
+    .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
+    .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
+    .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger);
+  const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`${IDS.trustedAdd}:${request.id}`)
       .setLabel(trusted ? 'Güvenilir Listede' : 'Güvenilir Listeye Al')
       .setStyle(trusted ? ButtonStyle.Secondary : ButtonStyle.Success)
       .setDisabled(Boolean(trusted) || Boolean(banned)),
   );
-  if (url) topRow.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  if (banned) row.addComponents(banButton);
+  if (url) row.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger));
+  if (!banned) row.addComponents(banButton);
+  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger));
 
-  // İptal ve yasak sadece lider, sil kaydı yapan ve lider içindir (yetki index.js'de denetlenir)
-  const banButton = new ButtonBuilder()
-    .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
-    .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
-    .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger);
-  const dangerRow = new ActionRowBuilder();
-  // Yeşil "Yasağı Kaldır" kırmızıların önüne geçer
-  if (banned) dangerRow.addComponents(banButton);
-  dangerRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger));
-  if (!banned) dangerRow.addComponents(banButton);
-  dangerRow.addComponents(new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger));
-
-  return container.addActionRowComponents(topRow, dangerRow);
+  return container.addActionRowComponents(row);
 }
 
 const requesterResult = (sonuc, request, by) =>

@@ -85,9 +85,13 @@ function kabuk({ tab, title, sub, blocks = [], rows = [], feedback, balance, bah
     accent: hapis ? core.colors.danger : feedback ? core.colors.success : undefined,
   });
   if (hapis) container.addSeparatorComponents(core.divider()).addTextDisplayComponents(core.text(hapisBlok(hapis)));
+  // Arka Sokaklar sekmenin son düğme satırının sonuna eklenir; satır doluysa (5 düğme) kendi satırına iner
+  const sokak = new ButtonBuilder().setCustomId(IDS.sokak).setLabel('Arka Sokaklar').setStyle(ButtonStyle.Secondary);
+  const last = rows.at(-1);
+  if (last && last.components.length < 5) last.addComponents(sokak);
+  else rows = [...rows, new ActionRowBuilder().addComponents(sokak)];
   for (const row of rows) container.addActionRowComponents(row);
   container
-    .addActionRowComponents(new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(IDS.sokak).setLabel('Arka Sokaklar').setStyle(ButtonStyle.Secondary)))
     .addSeparatorComponents(core.divider())
     .addTextDisplayComponents(core.text(cuzdan({ balance, bahis, kalanTavan })));
   return (
