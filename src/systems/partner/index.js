@@ -429,6 +429,13 @@ async function handleModalSubmit(interaction) {
   return handleNewRequestSubmit(interaction, serverId, adText, messageId);
 }
 
+// Kartın içindeki metin davet önizlemesini göstermez; ilan paylaşılacağı düz mesaj haliyle basana gizli gönderilir
+async function handleReviewPreview(interaction) {
+  const request = store.getRequest(interaction.customId.slice(ui.IDS.preview.length + 1));
+  if (!request) return replyError(interaction, 'Bu talep bulunamadı.');
+  return interaction.reply({ content: ui.postContent(request), flags: core.EPHEMERAL, allowedMentions: { parse: [] } });
+}
+
 async function handleReviewDecision(interaction) {
   const rest = interaction.customId.slice(ui.IDS.review.length + 1);
   const sep = rest.lastIndexOf(':');
@@ -1138,6 +1145,7 @@ module.exports = {
     [ui.IDS.termsAccept, handleInitialTermsAccept],
     [ui.IDS.modal, handleModalSubmit],
     [ui.IDS.review, handleReviewDecision],
+    [ui.IDS.preview, handleReviewPreview],
     [ui.IDS.trustedAdd, handleTrustedAdd],
     [ui.IDS.ban, handleBan],
     [ui.IDS.unban, handleUnban],

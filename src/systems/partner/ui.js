@@ -14,7 +14,7 @@ const {
   TextInputBuilder,
   TextInputStyle,
 } = require('discord.js');
-const { text, divider, colors, unix, quote, shorten, alert, field, fields, rows, chip, stamp, pageInfo, pagerRow } = require('../../core/ui');
+const { text, divider, colors, unix, quote, shorten, alert, field, fields, rows, chip, pills, stamp, pageInfo, pagerRow } = require('../../core/ui');
 const config = require('./config');
 
 const IDS = {
@@ -85,9 +85,6 @@ const inviteLabel = (url) => url.slice('https://'.length);
 
 // Standart başlık: büyük başlık ve iki satıra yayılan uzun normal yazılı açıklama (bütün mesajlar aynı genişlikte görünsün)
 const head = (title, sub) => text(`## ${title}\n${sub}`);
-
-// Kayıt kartında "Kaynak" satırında görünen talep türü
-const SOURCES = { oto: 'Oto partner talebi', manuel: 'Yetkili paylaşımı', teklif: 'Teklifte bulunma' };
 
 const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
@@ -277,7 +274,12 @@ function postCard(request, trusted, banned, stats = {}) {
 
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
-      head(`Partner Kaydı #${request.number}`, 'Sunucunun ilanı bu kartla birlikte paylaşıldı; ilanı okuyup **Sunucuya Katıl** ile sunucuya girebilirsin.'),
+      head(
+        `Partner Kaydı #${request.number}`,
+        url
+          ? 'Sunucunun ilanı bu kartla birlikte paylaşıldı; ilanı okuyup **Sunucuya Katıl** ile sunucuya girebilirsin.'
+          : 'Sunucunun ilanı bu kartla birlikte paylaşıldı; sunucuya nasıl gireceğin **ilanın metninde** yazıyor.',
+      ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
