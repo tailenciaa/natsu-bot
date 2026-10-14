@@ -156,12 +156,13 @@ async function revokePartnership(interaction, request, { kind, reason = null }) 
   for (const r of requests) {
     const ids = [r.adId, r.postId].filter(Boolean);
     if (!ids.length) continue;
+    // Kayıt silmeden önce kapanır: silme olayını dinleyen eşleştirme bu mesajları ikinci kez ele almaz
+    store.updateRequest(r.id, { status: 'silindi', adId: null, postId: null });
     for (const id of ids) {
       // 10008 = mesaj zaten yok (elle silinmiş), onu başarı sayarız
       const gone = channel ? await channel.messages.delete(id).then(() => true, (err) => err.code === UNKNOWN_MESSAGE) : false;
       if (gone) removed += 1;
     }
-    store.updateRequest(r.id, { status: 'silindi', adId: null, postId: null });
   }
   if (trusted) await refreshTrustedPanel(interaction.client, interaction.guildId);
 
@@ -225,6 +226,41 @@ function handleMessageCreate(message) {
   if (message.guildId !== guildId) return;
   if (message.channelId === config.channels.request) return handleRequestChannel(message);
   if (message.channelId === config.channels.posts) return handlePostsChannel(message);
+}
+
+// İlan ya da kart elle (sağ tık) silinince eşi de silinir ve kayıt "silindi"ye çekilir; kanalda yarım partner kalmaz.
+// Kayıt mesaj silinmeden kapatılır ki eşin silinmesi bu olayı tekrar tetiklediğinde boşa dönsün.
+async function handleMessageDelete(message) {
+  if (message.guildId !== guildId || message.channelId !== config.channels.posts) return;
+  const request = store.requestByMessage(message.id);
+  if (!request) return;
+
+  store.updateRequest(request.id, { status: 'silindi', adId: null, postId: null });
+  const pair = [request.adId, request.postId].filter((id) => id && id !== message.id);
+  for (const id of pair) await message.channel.messages.delete(id).catch(() => {});
+}
+
+async function handleBulkDelete(messages) {
+  for (const message of messages.values()) await handleMessageDelete(message);
+}
+
+// Bot kapalıyken silinen ilan/kartların eşleri açılışta temizlenir. null = mesaja ulaşılamadı (yok sayılmaz)
+const messageExists = (channel, id) =>
+  channel.messages.fetch(id).then(() => true, (err) => (err.code === UNKNOWN_MESSAGE ? false : null));
+
+async function sweepOrphanPosts(guild) {
+  const channel = await fetchTextChannel(guild, config.channels.posts);
+  if (!channel) return;
+  const live = store.allRequests().filter((r) => r.guildId === guild.id && r.status !== 'silindi' && (r.adId || r.postId));
+  for (const r of live) {
+    const ids = [r.adId, r.postId].filter(Boolean);
+    const states = [];
+    for (const id of ids) states.push(await messageExists(channel, id));
+    if (!states.includes(false)) continue;
+
+    store.updateRequest(r.id, { status: 'silindi', adId: null, postId: null });
+    for (const [i, id] of ids.entries()) if (states[i] !== false) await channel.messages.delete(id).catch(() => {});
+  }
 }
 
 // ── Oto partner akışı: buton → form → inceleme → onay/red ──────────────────────
