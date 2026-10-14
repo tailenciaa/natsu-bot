@@ -497,7 +497,7 @@ function trustedActionButtons(entry, url = null) {
   const hasContacts = Boolean(entry.contactIds?.length);
   const buttons = [];
   if (hasContacts) {
-    buttons.push(new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bul').setStyle(ButtonStyle.Primary));
+    buttons.push(new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Partner Yenile').setStyle(ButtonStyle.Primary));
   }
   buttons.push(
     new ButtonBuilder()

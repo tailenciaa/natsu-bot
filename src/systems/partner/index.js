@@ -7,7 +7,8 @@
 // kaydın durumuyla **partner sayılarını** (bugün/hafta/ay) taşıyan CV2 kart; tüm butonlar karttadır, "Partneri
 // Sil" kartı silerken eşleştiği ilanı da kaldırır. Bu kanalda @everyone/@here hem kanal izniyle hem bot her
 // zaman mention'ları kapalı gönderdiği için asla gerçek bir bildirim göndermez. Güvenilir partnerler kanalındaki
-// "Teklifte Bulun" butonu bir partner yetkilisi atar; atanan yetkili kabul edip metni onaylar/düzenler/iptal eder,
+// "Partner Yenile" butonu teklifi kaydın karşı sunucu yetkilisine gönderir; o kişi kabul edip kendi metnini
+// onaylar/günceller/reddeder,
 // onaylanınca karşı taraf (daha önce hiç kabul etmediyse) şartları kabul edip otomatik paylaşılır, ardından karşı
 // tarafa bizim tanıtım metnimiz de gönderilir. Yetkililer /partner-musaitlik ile aktif/meşgul durumlarını
 // ayarlayabilir. Güvenilir listeye alınan partnerin yetkilileri DM'den bir Partner Paneli alır: müsaitlik
