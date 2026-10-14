@@ -13,6 +13,7 @@ const {
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
   TextInputStyle,
+  UserSelectMenuBuilder,
 } = require('discord.js');
 const { text, divider, colors, unix, quote, shorten, alert, field, fields, rows, chip, pills, stamp, pageInfo, pagerRow } = require('../../core/ui');
 const config = require('./config');
@@ -452,24 +453,19 @@ function trustedList(entries, page = 0) {
   return container;
 }
 
-// Elle paylaşılan bir metni güvenilir listeye alırken karşı sunucunun partner yetkilisinin ID'si bilinmez,
-// oto partner akışının aksine bu formla sorulur
-function trustedAddModal(requestId, messageId) {
+// Güvenilir listeye alırken karşı sunucunun partner yetkilileri her zaman seçtirilir; menü yalnızca bizim
+// sunucumuzdaki üyeleri listeler. defaultIds: oto talepte formu dolduran kişi hazır seçili gelir
+function trustedAddModal(requestId, messageId, defaultIds = []) {
+  const select = new UserSelectMenuBuilder().setCustomId(IDS.contactId).setMinValues(1).setMaxValues(10).setRequired(true);
+  if (defaultIds.length) select.setDefaultUsers(defaultIds);
   return new ModalBuilder()
     .setCustomId(`${IDS.modal}:guven:${requestId}:${messageId}`)
     .setTitle('Güvenilir Listeye Al')
     .addLabelComponents(
       new LabelBuilder()
-        .setLabel('Karşı Sunucunun Partner Yetkilisi')
-        .setDescription('Karşı sunucunun yetkilisinin kullanıcı ID\'si; birden fazlaysa virgül ya da yeni satırla ayır.')
-        .setTextInputComponent(
-          new TextInputBuilder()
-            .setCustomId(IDS.contactId)
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('123456789012345678, 234567890123456789')
-            .setMaxLength(500)
-            .setRequired(true),
-        ),
+        .setLabel('Karşı Sunucunun Partner Yetkilileri')
+        .setDescription('Sunucumuzda olan ve o sunucunun partner işlerine bakan kişileri seç (en çok 10).')
+        .setUserSelectMenuComponent(select),
     );
 }
 

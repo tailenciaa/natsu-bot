@@ -543,8 +543,7 @@ function parseContactIds(raw) {
   return [...new Set(ids)].slice(0, 10);
 }
 
-// Oto partner / teklif akışında formu dolduran zaten karşı sunucunun partner yetkilisidir, ID biliniyor demektir.
-// Elle paylaşılan metinlerde bu bilgi yok; o durumda ayrı bir formla sorulur (handleTrustedAddSubmit).
+// contactIds: güvenilir liste formunda seçilen karşı sunucu partner yetkilileri (handleTrustedAddSubmit)
 function createTrustedRecord(interaction, request, contactIds) {
   const number = store.nextTrustedNumber(interaction.guildId);
   return store.addTrusted({
@@ -567,15 +566,9 @@ async function handleTrustedAdd(interaction) {
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
   if (store.trustedBySource(interaction.guildId, requestId)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
 
-  if (request.source === 'manuel') return interaction.showModal(ui.trustedAddModal(requestId, interaction.message.id));
-
-  const entry = createTrustedRecord(interaction, request, [request.requesterId]);
-  await interaction.update({ components: [ui.postCard(request, entry, store.isBanned(request.requesterId), statsOf(request))], allowedMentions: { parse: [] } });
-  await refreshTrustedPanel(interaction.client, interaction.guildId);
-
-  // Karşı tarafın yetkilisine bizim metni ve Partner Paneli'ni gönder
-  await sendOurTextToContact(interaction.client, request.requesterId, entry);
-  await sendPartnerPanel(interaction.client, request.requesterId, entry);
+  // Elle paylaşımda "Paylaşan" bizim yetkilimizdir, karşı tarafın yetkilisi olarak hazır seçilmez
+  const defaults = request.source === 'manuel' ? [] : [request.requesterId];
+  return interaction.showModal(ui.trustedAddModal(requestId, interaction.message.id, defaults));
 }
 
 // Partner yetkilisine DM'den Partner Paneli gider: müsaitlik durumunu seçer, istediğinde kendi tarafından teklif gönderir
@@ -685,7 +678,7 @@ async function sendOurTextToContact(client, contactId, entry) {
   return contact.send({ components: [ui.ourTextDm(entry, null, channelUrl)], flags: core.CV2 }).catch(() => null);
 }
 
-// Elle paylaşılan metin için karşı sunucunun partner yetkilisi ID'si(leri) formla gönderilince
+// Güvenilir liste formunda seçilen partner yetkilileri gönderilince
 async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
 
@@ -693,10 +686,8 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
   if (store.trustedBySource(interaction.guildId, requestId)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
 
-  const contactIds = parseContactIds(interaction.fields.getTextInputValue(ui.IDS.contactId).trim());
-  if (!contactIds.length) {
-    return replyError(interaction, 'Geçerli en az bir kullanıcı ID\'si girmelisin.', 'ID genelde 17-19 haneli bir sayıdır, @etiket değil.');
-  }
+  const contactIds = [...(interaction.fields.getSelectedUsers(ui.IDS.contactId)?.values() ?? [])].filter((u) => !u.bot).map((u) => u.id);
+  if (!contactIds.length) return replyError(interaction, 'En az bir partner yetkilisi seçmelisin.', 'Botlar partner yetkilisi olarak seçilemez.');
 
   // Yetkililere gönderilen DM'ler 3 saniyeyi aşabilir; önce cevap ertelenir (işlem yetkiliye özel, o yüzden gizli)
   await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
@@ -708,10 +699,11 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
     .catch(() => {});
   await refreshTrustedPanel(interaction.client, interaction.guildId);
 
-  // Karşı tarafın tüm yetkililerine bizim metni gönder
+  // Karşı tarafın tüm yetkililerine bizim metni gönder; elle yapılan partnerlikte paylaşan yetkilimizi de puanlayabilirler
   for (const contactId of contactIds) {
     await sendOurTextToContact(interaction.client, contactId, entry);
     await sendPartnerPanel(interaction.client, contactId, entry);
+    if (request.source === 'manuel') await rateStaff(interaction.client, request, request.requesterId, contactId);
   }
 
   return respond(interaction, core.alert('Partner güvenilir listeye eklendi.', null, 'success'), { ephemeral: true });
@@ -1012,6 +1004,7 @@ async function handleRenewalApprove(interaction) {
     }
     store.deleteRenewalOffer(trustedId);
     await sendOurTextDm(interaction.client, acceptedContactId, result, entry);
+    await rateStaff(interaction.client, result.request, interaction.user.id);
     return interaction.editReply({ components: [core.alert('Teklif onaylandı.', 'Partner metni paylaşıldı.', 'success')] });
   }
 
@@ -1056,6 +1049,7 @@ async function handleRenewalTermsAccept(interaction) {
   await sendOurTextDm(interaction.client, interaction.user.id, result, entry);
 
   if (offer) {
+    await rateStaff(interaction.client, result.request, offer.assignedStaffId);
     const staffUser = await interaction.client.users.fetch(offer.assignedStaffId).catch(() => null);
     await staffUser?.send({ components: [core.alert('Karşı taraf şartları kabul etti, metin paylaşıldı.', null, 'success')], flags: core.CV2 }).catch(() => {});
   }
@@ -1099,7 +1093,7 @@ async function postRenewal(client, entry, contactId) {
   await refreshTrustedPanel(client, entry.guildId);
 
   // Karşı tarafa gönderilen bağlantı ilanın kendisine gitsin; kart yalnızca sayıları ve butonları taşıyor
-  return { message: ad ?? message, channel: postsChannel };
+  return { message: ad ?? message, channel: postsChannel, request };
 }
 
 // Paylaşımdan sonra bizim tanıtım metnimiz karşı tarafa gider; karşı tarafın metninin paylaşıldığı mesaja giden bir buton da eklenir
