@@ -1,12 +1,13 @@
 // Saygınlık verileri: hafta anahtarı -> kullanıcı ID'si -> o hafta kazandığı saygınlık adedi (haftanın kazananını
 // bulmak için), ayrıca her kullanıcının tüm zamanlar toplamı (/siralama'nın saygınlık türü için). Verenlerin bekleme
-// süresi, haftanın rol sahibi ve son duyurulan hafta de burada tutulur.
+// süresi, haftanın rol sahibi, son duyurulan hafta ve otomatik denemenin sonucu da burada tutulur.
 const { data, save } = require('../../core/db');
 
 data.saygi ??= { weekly: {}, total: {} };
 data.saygiCooldown ??= {};
 data.saygiHolder ??= null;
 data.saygiLastRun ??= null;
+data.saygiLastAttempt ??= null;
 
 const SAVE_DELAY = 10 * 1000;
 let saveTimer = null;

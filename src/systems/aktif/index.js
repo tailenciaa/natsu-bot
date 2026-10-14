@@ -1,7 +1,9 @@
 // Haftanın aktifleri: mesaj, ses ve yayın (ekran paylaşımı) süresi haftalık olarak ayrı ayrı sayılır. Her hafta
 // pazartesi, geçen haftanın üç kategorisinin de birincisi #haftalık kanalına duyurulur ve kategorisine özel rol
 // verilir; rol önceki haftanın sahibinden geri alınır. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi
-// verilir. /haftalik pazartesiyi beklemeden aynı duyuruyu hemen yaptırır; her deneme konsola tek satır yazılır.
+// verilir. Botlar ve AFK kanalı sayılmaz, ses/yayın dakikada bir kredi verilir. Kontrol 15 dakikada bir tekrarlanır
+// ve kaydı olan bitmiş haftalar eskiden yeniye yakalanır; bot kapalıyken geçen hafta duyurulsuz kalmaz.
+// /haftalik pazartesiyi beklemeden aynı duyuruyu hemen yaptırır; her deneme konsola tek satır yazılır.
 const { Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { guildId } = require('../../core/config');
@@ -185,7 +187,16 @@ async function handleWeekly(interaction) {
 
   const aktif = await runWeekly(interaction.guild, target);
   const saygiSonuc = await saygi.runWeekly(interaction.guild, target);
-  await respond(interaction, ui.weeklyRunCard({ target, aktif, saygi: saygiSonuc, user: interaction.user }));
+  await respond(
+    interaction,
+    ui.weeklyRunCard({
+      target,
+      aktif,
+      saygi: saygiSonuc,
+      user: interaction.user,
+      denemeler: { aktif: store.lastAttempt(), saygi: saygi.lastAttempt() },
+    }),
+  );
 }
 
 function handleReady(client) {
