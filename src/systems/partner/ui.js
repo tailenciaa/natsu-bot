@@ -474,28 +474,27 @@ function trustedAddModal(requestId, messageId, defaultIds = []) {
     );
 }
 
-// Bir güvenilir kaydın işlem butonları tek satırda: Teklifte Bul (sadece yetkili varsa), yetkili düzenleme, davet
-// bağlantısı (verilirse), en sonda silme işlemleri. Listeden Çıkar sadece partner lideri, diğerleri partner
-// yetkilileri içindir (yetki kontrolü index.js'de yapılır)
-function trustedActionRow(entry, url = null) {
+// Bir güvenilir kaydın işlem düğmeleri: üstte normal işlemler (Teklifte Bul, yetkili düzenleme, davet bağlantısı),
+// çizginin altında geri alınamayanlar (Yetkili Çıkar, Listeden Çıkar). Listeden Çıkar sadece partner lideri,
+// diğerleri partner yetkilileri içindir (yetki kontrolü index.js'de yapılır)
+function trustedActionButtons(entry, url = null) {
   const hasContacts = Boolean(entry.contactIds?.length);
-  const row = new ActionRowBuilder();
+  const buttons = [];
   if (hasContacts) {
-    row.addComponents(new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bul').setStyle(ButtonStyle.Primary));
+    buttons.push(new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:teklif`).setLabel('Teklifte Bul').setStyle(ButtonStyle.Primary));
   }
-  row.addComponents(
+  buttons.push(
     new ButtonBuilder()
       .setCustomId(`${IDS.contactAdd}:${entry.id}`)
       .setLabel(hasContacts ? 'Yetkiliyi Güncelle' : 'Yetkili Ekle')
       .setStyle(ButtonStyle.Secondary),
   );
-  if (url) row.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  if (url) buttons.push(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
   if (hasContacts) {
-    row.addComponents(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Danger));
+    buttons.push(new ButtonBuilder().setCustomId(`${IDS.contactRemove}:${entry.id}`).setLabel('Yetkili Çıkar').setStyle(ButtonStyle.Danger));
   }
-  return row.addComponents(
-    new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:kaldir`).setLabel('Listeden Çıkar').setStyle(ButtonStyle.Danger),
-  );
+  buttons.push(new ButtonBuilder().setCustomId(`${IDS.trustedAction}:${entry.id}:kaldir`).setLabel('Listeden Çıkar').setStyle(ButtonStyle.Danger));
+  return buttons;
 }
 
 const PANEL_PAGE_SIZE = 3;
@@ -543,7 +542,7 @@ function trustedListPanel(entries, page = 0, cardName = null) {
               ]),
             ),
       )
-      .addActionRowComponents(trustedActionRow(entry));
+      .addActionRowComponents(core.actionRows(trustedActionButtons(entry), { danger: true }).rows);
   }
 
   // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
@@ -580,7 +579,7 @@ function trustedDetail(entry) {
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`));
 
-  return container.addSeparatorComponents(divider()).addActionRowComponents(trustedActionRow(entry, url));
+  return core.withActions(container.addSeparatorComponents(divider()), trustedActionButtons(entry, url), { danger: true });
 }
 
 // Güvenilir kayda partner yetkilisi(leri) ekler ya da günceller; mevcut yetkililer menüde hazır seçili gelir

@@ -144,6 +144,30 @@ function tabRow(tabs, active, idOf) {
   );
 }
 
+// İşlem düğmeleri: ana işlem → normal → bağlantı → kırmızı. {danger:true} verilirse kırmızılar (geri alınamaz
+// işlemler) çizgiyle ayrılıp alt satıra iner; satırda en çok beş düğme durur, taşarsan alt satıra geçer
+function actionRows(buttons, { danger = false } = {}) {
+  const order = { [ButtonStyle.Success]: 0, [ButtonStyle.Primary]: 1, [ButtonStyle.Secondary]: 2, [ButtonStyle.Link]: 3, [ButtonStyle.Danger]: 4 };
+  const sorted = [...buttons].sort((a, b) => order[a.style] - order[b.style]);
+  const red = sorted.filter((b) => b.style === ButtonStyle.Danger);
+  const rest = sorted.filter((b) => b.style !== ButtonStyle.Danger);
+  const rows = danger && red.length ? [rest, red] : [sorted];
+  return {
+    rows: rows.map((list) => new ActionRowBuilder().addComponents(list)),
+    divider: danger && red.length ? divider() : null,
+  };
+}
+
+// Bir karta düğme satırlarını (istersen aralarında çizgiyle) ekler
+function withActions(container, buttons, options) {
+  const { rows, divider } = actionRows(buttons, options);
+  rows.forEach((row, i) => {
+    if (i && divider) container.addSeparatorComponents(divider);
+    container.addActionRowComponents(row);
+  });
+  return container;
+}
+
 // Panel düzeni: başlık ve sağında buton, açıklama, görsel, altta uyarı yazısı
 // image: tam bir http(s) URL'i ise doğrudan o kullanılır, değilse eklenmiş dosya adı (attachment://) sayılır
 function panelMessage(texts, buttonId, image) {
@@ -291,5 +315,7 @@ module.exports = {
   panelMessage,
   page,
   pagerRow,
+  actionRows,
+  withActions,
   tabRow,
 };
