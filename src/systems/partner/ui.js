@@ -311,26 +311,24 @@ function postCard(request, trusted, banned, stats = {}) {
     )
     .addSeparatorComponents(divider());
 
-  // Tüm düğmeler tek satırda; davetsiz ilanda katılma düğmesi olmaz. İptal ve yasak sadece lider, sil kaydı yapan
-  // ve lider içindir (yetki index.js'de denetlenir). Yeşil "Yasağı Kaldır" kırmızıların önüne geçer
-  const banButton = new ButtonBuilder()
-    .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
-    .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
-    .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger);
-  const row = new ActionRowBuilder().addComponents(
+  // Üstte normal işlemler (güvenilir listeye alma ve davet bağlantısı), çizginin altında geri alınamayanlar
+  // (iptal, yasaklama, silme). İptal ve yasak sadece lider, sil kaydı yapan ve lider içindir (yetki index.js'de denetlenir)
+  const buttons = [
     new ButtonBuilder()
       .setCustomId(`${IDS.trustedAdd}:${request.id}`)
       .setLabel(trusted ? 'Güvenilir Listede' : 'Güvenilir Listeye Al')
       .setStyle(trusted ? ButtonStyle.Secondary : ButtonStyle.Success)
       .setDisabled(Boolean(trusted) || Boolean(banned)),
+  ];
+  if (banned) buttons.push(new ButtonBuilder().setCustomId(`${IDS.unban}:${request.id}`).setLabel('Yasağı Kaldır').setStyle(ButtonStyle.Success));
+  if (url) buttons.push(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  buttons.push(
+    new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger),
+    ...(banned ? [] : [new ButtonBuilder().setCustomId(`${IDS.ban}:${request.id}`).setLabel('Yasaklıya Al').setStyle(ButtonStyle.Danger)]),
+    new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
   );
-  if (banned) row.addComponents(banButton);
-  if (url) row.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
-  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger));
-  if (!banned) row.addComponents(banButton);
-  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger));
 
-  return container.addActionRowComponents(row);
+  return withActions(container, buttons, { danger: true });
 }
 
 const requesterResult = (sonuc, request, by) =>
@@ -497,7 +495,9 @@ function trustedActionButtons(entry, url = null) {
   return buttons;
 }
 
-const PANEL_PAGE_SIZE = 3;
+// Panel mesajı en çok 10 bileşen taşıyabilir: her kayıt iki satır (normal işlemler + kırmızılar) olduğu için
+// sayfada 2 kayıt durur
+const PANEL_PAGE_SIZE = 2;
 
 // cardName: çizim kartı ekteyse başlık/açıklama/sayfa bilgisi kartta olduğu için mesajda tekrar yazılmaz;
 // kayıt satırlarının yerini kart alır, yetkili ve ekleyen etiketleri (görsele basılamadığı için) kısa metin olarak kalır
