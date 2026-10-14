@@ -967,17 +967,22 @@ async function resolveContacts(guild, ids = []) {
   ).filter(Boolean);
 }
 
-// Yetkili seçim menüsünden seçim yapılınca: seçilen yetkiliye DM gider, süreç atanmış olarak kaydedilir
+// Yetkili seçim menüsünden seçim yapılınca: teklif kartı seçilen **karşı sunucu yetkilisine** DM olarak gider
 async function handleRenewalAssign(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalAssign.length + 1);
+  if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
   const entry = store.getTrusted(trustedId);
   if (!entry) return replyError(interaction, 'Bu kayıt artık mevcut değil.');
 
-  const assignedStaffId = interaction.values[0];
+  // Menü seçeneği ancak kaydın kendi yetkililerinden biri olabilir; customId'yi tahmin eden biri teklif kuramaz
+  const contactId = interaction.values[0];
+  if (!entry.contactIds?.includes(contactId)) return replyError(interaction, 'Seçilen kişi bu kaydın partner yetkilisi değil.');
+  if (activeOffer(trustedId)) return replyError(interaction, 'Bu sunucu için zaten sürmekte olan bir teklif var.', 'O süreç sonuçlanmalı ya da 3 gün içinde kendiliğinden düşer.');
+
   await interaction.deferUpdate();
 
-  const staffUser = await interaction.client.users.fetch(assignedStaffId).catch(() => null);
-  const sent = await staffUser
+  const contact = await interaction.client.users.fetch(contactId).catch(() => null);
+  const sent = await contact
     ?.send({ components: [ui.assignedOfferDm(entry, interaction.user.id)], flags: core.CV2 })
     .catch(() => null);
   if (!sent) {
@@ -989,21 +994,21 @@ async function handleRenewalAssign(interaction) {
   store.setRenewalOffer(trustedId, {
     trustedId,
     guildId: interaction.guildId,
-    assignedStaffId,
+    contactId,
     startedBy: interaction.user.id,
     createdAt: Date.now(),
   });
 
   return interaction.editReply({
-    components: [core.alert(`<@${assignedStaffId}> yetkilisine bildirim gönderildi.`, 'Kabul ederse metni inceleyip onaylayacak.', 'success')],
+    components: [core.alert(`<@${contactId}> yetkilisine teklif gönderildi.`, 'Kabul ederse kendi metnini onaylayacak; onaylayınca partner kanalında paylaşılır.', 'success')],
   });
 }
 
-// Atanan yetkilinin kabul-ettiği şu süreç için kontrol: offer var mı, mesajı alan gerçekten bu kişi mi
+// Teklifin muhatap aldığı kişi için kontrol: offer var mı, mesajı alan gerçekten teklif edilen kişi mi
 function renewalOfferError(interaction, trustedId) {
   const offer = activeOffer(trustedId);
   if (!offer) return { error: 'Bu teklif artık geçerli değil.' };
-  if (offer.assignedStaffId !== interaction.user.id) return { error: 'Bu teklif sana atanmamış.' };
+  if (offer.contactId !== interaction.user.id) return { error: 'Bu teklif sana gönderilmemişti.' };
   const entry = store.getTrusted(trustedId);
   if (!entry) return { error: 'Bu kayıt artık mevcut değil.' };
   return { offer, entry };
@@ -1056,17 +1061,17 @@ async function handleRenewalCancelSubmit(interaction) {
   const reason = interaction.fields.getTextInputValue(ui.IDS.renewalCancelInput).trim();
   store.deleteRenewalOffer(trustedId);
 
-  await interaction.update({ components: [core.alert('Teklif iptal edildi.', null, 'danger')] });
+  await interaction.update({ components: [core.alert('Teklif reddedildi.', null, 'danger')] });
 
   const guild = interaction.client.guilds.cache.get(offer.guildId);
   const reviewChannel = guild && (await fetchTextChannel(guild, config.channels.review));
   await reviewChannel
-    ?.send({ components: [ui.renewalCancelledLog(entry, offer.assignedStaffId, reason)], flags: core.CV2, allowedMentions: { parse: [] } })
+    ?.send({ components: [ui.renewalCancelledLog(entry, offer.contactId, reason)], flags: core.CV2, allowedMentions: { parse: [] } })
     .catch(() => {});
 }
 
-// Atanan yetkili onaylayınca: kayıtlı yetkililerden hiçbiri daha önce şart kabul etmediyse hepsine şartlar gider,
-// içlerinden biri zaten kabul etmişse direkt o kişi adına paylaşılır
+// Karşı yetkili onaylayınca: kayıtlı yetkililerden hiçbiri daha önce şart kabul etmediyse hepsine şartlar gider,
+// içlerinden biri zaten kabul etmişse direkt onun adına paylaşılır
 async function handleRenewalApprove(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalApprove.length + 1);
   const { error, offer, entry } = renewalOfferError(interaction, trustedId);
@@ -1076,7 +1081,8 @@ async function handleRenewalApprove(interaction) {
 
   const acceptedContactId = entry.contactIds.find((id) => store.hasAcceptedTerms(id));
   if (acceptedContactId) {
-    const result = await postRenewal(interaction.client, entry, acceptedContactId);
+    // Paylaşım, teklifi kabul eden karşı yetkili adına yapılır; puanı ise süreci başlatan yetkilimiz alır
+    const result = await postRenewal(interaction.client, entry, interaction.user.id);
     // Paylaşım başarısız olursa teklif açık kalır, onay yeniden denenebilir
     if (!result) {
       return interaction.editReply({
@@ -1084,8 +1090,8 @@ async function handleRenewalApprove(interaction) {
       });
     }
     store.deleteRenewalOffer(trustedId);
-    await sendOurTextDm(interaction.client, acceptedContactId, result, entry);
-    await rateStaff(interaction.client, result.request, interaction.user.id);
+    await sendOurTextDm(interaction.client, interaction.user.id, result, entry);
+    await rateStaff(interaction.client, result.request, offer.startedBy);
     return interaction.editReply({ components: [core.alert('Teklif onaylandı.', 'Partner metni paylaşıldı.', 'success')] });
   }
 
@@ -1130,8 +1136,8 @@ async function handleRenewalTermsAccept(interaction) {
   await sendOurTextDm(interaction.client, interaction.user.id, result, entry);
 
   if (offer) {
-    await rateStaff(interaction.client, result.request, offer.assignedStaffId);
-    const staffUser = await interaction.client.users.fetch(offer.assignedStaffId).catch(() => null);
+    await rateStaff(interaction.client, result.request, offer.startedBy);
+    const staffUser = await interaction.client.users.fetch(offer.startedBy).catch(() => null);
     await staffUser?.send({ components: [core.alert('Karşı taraf şartları kabul etti, metin paylaşıldı.', null, 'success')], flags: core.CV2 }).catch(() => {});
   }
 }
