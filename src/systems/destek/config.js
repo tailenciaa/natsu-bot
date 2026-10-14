@@ -36,4 +36,13 @@ module.exports = {
     { value: 'yanlislikla', label: 'Talep yanlışlıkla açıldı' },
     { value: 'diger', label: 'Diğer' },
   ],
+
+  // Yetkili bir talebi reddederken formda seçtiği sebepler: anlatılan gerçek bir sorun olmadığı haller
+  rejectReasons: [
+    { value: 'belirsiz', label: 'Konu anlaşılmıyor veya eksik' },
+    { value: 'bos', label: 'Talepte çözülmesi gereken bir sorun yok' },
+    { value: 'spam', label: 'Şaka, spam veya gereksiz talep' },
+    { value: 'kural-disi', label: 'Kural dışı bir istek' },
+    { value: 'diger', label: 'Diğer' },
+  ],
 };
