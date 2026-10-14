@@ -495,8 +495,8 @@ function trustedActionButtons(entry, url = null) {
   return buttons;
 }
 
-// Panel mesajı en çok 10 bileşen taşıyabilir: her kayıt iki satır (normal işlemler + kırmızılar) olduğu için
-// sayfada 2 kayıt durur
+// Panel mesajı en çok 10 bileşen taşıyabilir: her kayıt iki düğme satırı (normal işlemler + kırmızılar) tuttuğu
+// için sayfada 2 kayıt durur
 const PANEL_PAGE_SIZE = 2;
 
 // cardName: çizim kartı ekteyse başlık/açıklama/sayfa bilgisi kartta olduğu için mesajda tekrar yazılmaz;
@@ -528,25 +528,23 @@ function trustedListPanel(entries, page = 0, cardName = null) {
   const nav = (target, slot) => `${IDS.trustedPanelPage}:${target}:${slot}`;
 
   for (const entry of shown) {
-    container
-      .addSeparatorComponents(divider())
-      .addTextDisplayComponents(
-        cardName
-          ? text(`**Partner Yetkilisi:** ${contactsText(entry)} · **Ekleyen:** <@${entry.addedBy}>`)
-          : text(
-              fields([
-                field('Sunucu', `\`${serverLabel(entry)}\``),
-                field('Partner Yetkilisi', contactsText(entry)),
-                field('Eklenme', `<t:${unix(entry.addedAt)}:D>`),
-                field('Ekleyen', `<@${entry.addedBy}>`),
-              ]),
-            ),
-      )
-      .addActionRowComponents(actionRows(trustedActionButtons(entry), { danger: true }).rows);
+    // Kartlı panelde her kayıt çizgi + bilgi satırı + iki düğme satırı tutar; mesaj 10 bileşeni aşamaz.
+    // Kart çizilemezse aynı bilgiler tek sıkışık satıra iner (yer açılmak için çizgiden vazgeçilmez)
+    container.addSeparatorComponents(divider());
+    if (cardName) {
+      container.addTextDisplayComponents(text(`**Partner Yetkilisi:** ${contactsText(entry)} · **Ekleyen:** <@${entry.addedBy}>`));
+    } else {
+      container.addTextDisplayComponents(
+        text(
+          `**${serverTitle(entry)}** · Yetkili: ${contactsText(entry)} · Ekleyen <@${entry.addedBy}> · <t:${unix(entry.addedAt)}:D>`,
+        ),
+      );
+    }
+    container.addActionRowComponents(actionRows(trustedActionButtons(entry), { danger: true }).rows);
   }
 
   // Sayfa bilgisi kartta gömülüyse metni yazılmaz. Sayfa butonları her zaman görünür; tek sayfada pasif kalır
-  container.addSeparatorComponents(divider());
+  if (cardName) container.addSeparatorComponents(divider());
   if (!cardName) container.addTextDisplayComponents(text(`-# ${pageInfo(current, pageCount, entries.length)}`));
   container.addActionRowComponents(pagerRow({ prevId: nav(current - 1, 'prev'), nextId: nav(current + 1, 'next'), page: current, pageCount }));
 
@@ -676,13 +674,13 @@ function renewalReviewDm(entry) {
       .addTextDisplayComponents(text(fields(['### Davet', field('Bağlantı', chip(inviteLabel(url))), 'Onaylamadan önce sunucuyu **Sunucuya Katıl** ile görebilirsin.'])));
   }
 
-  const row = new ActionRowBuilder().addComponents(
+  const buttons = [
     new ButtonBuilder().setCustomId(`${IDS.renewalApprove}:${entry.id}`).setLabel('Onayla').setStyle(ButtonStyle.Success),
     new ButtonBuilder().setCustomId(`${IDS.renewalEdit}:${entry.id}`).setLabel('Metni Düzenle').setStyle(ButtonStyle.Primary),
-  );
-  if (url) row.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
-  row.addComponents(new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('İptal Et').setStyle(ButtonStyle.Danger));
-  return container.addSeparatorComponents(divider()).addActionRowComponents(row);
+  ];
+  if (url) buttons.push(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  buttons.push(new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('İptal Et').setStyle(ButtonStyle.Danger));
+  return withActions(container.addSeparatorComponents(divider()), buttons, { danger: true });
 }
 
 function renewalEditModal(entry) {
