@@ -269,89 +269,60 @@ function postContent(request) {
   return shorten(sanitize(request.text), 1990);
 }
 
-// Paylaşım kanalındaki ikinci mesaj: kaydın durumu, sunucunun partner sayıları (bugün/hafta/ay) ve yetkilinin
-// işlemleri. Butonlar bu karttadır; ilanın kendisi üstteki düz mesajda durur.
-// trusted: güvenilir listedeki kayıt (null: değil), banned: gönderen yasaklı mı, stats: store.partnerStats()
+// Paylaşım kanalındaki ikinci mesaj: kaydın kısa özeti, partner sayıları ve yetkilinin işlemleri; ilanın kendisi
+// ayrı düz mesajdadır. trusted: güvenilir listedeki kayıt (null: değil), banned: gönderen yasaklı mı,
+// stats: store.partnerStats()
 function postCard(request, trusted, banned, stats = {}) {
   const url = inviteUrl(request.text);
-  const period = (p) => `${p?.onay ?? 0} onay · ${p?.talep ?? 0} talep · ${p?.ret ?? 0} ret`;
 
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
-      head(
-        `Partner Kaydı #${request.number}`,
-        'Bu sunucunun **kendi ilanı** kartla birlikte ayrı bir mesajda paylaşıldı: ilanı okuyup sunucuya girmen yeterli. Burada yalnızca kaydın durumu, **partner sayıları** ve yetkilinin işlemleri duruyor.',
-      ),
+      head(`Partner Kaydı #${request.number}`, 'Sunucunun ilanı bu kartla birlikte paylaşıldı; ilanı okuyup **Sunucuya Katıl** ile sunucuya girebilirsin.'),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
       text(
-        fields([
-          '### Bu Kayıt',
-          rows([
-            ['Sunucu ID', request.serverId ? chip(request.serverId) : chip('belirtilmedi')],
-            ['Paylaşan', `<@${request.requesterId}>`],
-            ['Tarih', `<t:${unix(request.decidedAt ?? request.createdAt)}:f>`],
-            ['Kaynak', chip(SOURCES[request.source] ?? request.source ?? 'bilinmiyor')],
-            ['Güvenilir Liste', trusted ? chip(`Listede · ${trusted.contactIds?.length ?? 0} yetkili`) : chip('Listede değil')],
-            ['Davet', url ? chip(inviteLabel(url)) : chip('ilan metninde yok')],
-          ]),
+        rows([
+          ['Sunucu ID', chip(request.serverId ?? 'belirtilmedi')],
+          ['Paylaşan', `<@${request.requesterId}> · <t:${unix(request.decidedAt ?? request.createdAt)}:R>`],
+          ['Güvenilir Liste', chip(trusted ? 'Listede' : 'Listede değil')],
+          [
+            'Partner Sayısı',
+            pills([
+              ['Bugün', stats.gun?.onay ?? 0],
+              ['Hafta', stats.hafta?.onay ?? 0],
+              ['Ay', stats.ay?.onay ?? 0],
+              ['Toplam', stats.toplam ?? 0],
+            ]),
+          ],
         ]),
       ),
     )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text(
-        fields([
-          '### Partner Sayıları',
-          rows([
-            ['Bugün', chip(period(stats.gun))],
-            ['Bu Hafta', chip(period(stats.hafta))],
-            ['Bu Ay', chip(period(stats.ay))],
-            ['Toplam', chip(`${stats.toplam ?? 0} onaylı · ${stats.guvenilir ?? 0} güvenilir · ${stats.yasakli ?? 0} yasaklı`)],
-            ['Bu Kayıt', chip(stats.sira ? `${stats.sira}. onaylı partner` : 'ilk onaylı partner')],
-          ]),
-        ]),
-      ),
-    )
-    .addSeparatorComponents(divider())
-    .addTextDisplayComponents(
-      text('### İşlemler\nÜye için tek düğme **Sunucuya Katıl**. **Partneri İptal Et** ve **Yasaklıya Al** yalnızca partner liderine, **Partneri Sil** ise kaydı yapan yetkiliye (ve lidere) açıktır.'),
-    );
+    .addSeparatorComponents(divider());
 
-  // Elle atılan ve Discord daveti içermeyen ilanda katılma düğmesi olmaz; davetin ilanın metninde araman gerekir
-  if (url) {
-    container.addActionRowComponents(
-      new ActionRowBuilder().addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link)),
-    );
-  }
+  // Davetsiz ilanda katılma düğmesi olmaz; güvenilir liste düğmesi satırda tek kalır
+  const topRow = new ActionRowBuilder();
+  if (url) topRow.addComponents(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
+  topRow.addComponents(
+    new ButtonBuilder()
+      .setCustomId(`${IDS.trustedAdd}:${request.id}`)
+      .setLabel(trusted ? 'Güvenilir Listede' : 'Güvenilir Listeye Al')
+      .setStyle(trusted ? ButtonStyle.Secondary : ButtonStyle.Success)
+      .setDisabled(Boolean(trusted) || Boolean(banned)),
+  );
 
-  return container
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`${IDS.trustedAdd}:${request.id}`)
-          .setLabel(trusted ? 'Güvenilir Listede' : 'Güvenilir Listeye Al')
-          .setStyle(trusted ? ButtonStyle.Secondary : ButtonStyle.Success)
-          .setDisabled(Boolean(trusted) || Boolean(banned)),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        // İptal: partnerlik biter, sunucunun tüm paylaşım mesajları kaldırılır (sadece lider kullanabilir)
-        new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger),
-        // Yasaklıysa aynı yerdeki buton yasağı kaldırır (sadece lider kullanabilir)
-        new ButtonBuilder()
-          .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
-          .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
-          .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger),
-      ),
-    )
-    .addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
-      ),
-    );
+  return container.addActionRowComponents(
+    topRow,
+    new ActionRowBuilder().addComponents(
+      // İptal ve yasak sadece lider, sil kaydı yapan ve lider içindir (yetki index.js'de denetlenir)
+      new ButtonBuilder().setCustomId(`${IDS.cancel}:${request.id}`).setLabel('Partneri İptal Et').setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(banned ? `${IDS.unban}:${request.id}` : `${IDS.ban}:${request.id}`)
+        .setLabel(banned ? 'Yasağı Kaldır' : 'Yasaklıya Al')
+        .setStyle(banned ? ButtonStyle.Success : ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId(`${IDS.deletePost}:${request.id}`).setLabel('Partneri Sil').setStyle(ButtonStyle.Danger),
+    ),
+  );
 }
 
 const requesterResult = (sonuc, request, by) =>
