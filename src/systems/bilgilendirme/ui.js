@@ -1,6 +1,6 @@
 // Bilgilendirme panelleri: her bölüm ayrı bir mesaj (container). Düzen kurallar paneliyle aynı: başlık, çizgiyle ayrılan
 // bloklar. İlk mesajın en üstünde panel başlığı, girişi ve varsa görsel bulunur.
-const { ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder } = require('discord.js');
 const { text, divider } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 
@@ -19,7 +19,13 @@ function blockText(block) {
 // Normal yazıyla gösterilir (küçük gri yazı değil); içerik metni onaylı tasarım olduğu için değiştirilmez.
 const titleText = (section) => `### ${section.title}\n${section.sub}`;
 
-// Her bölüm için bir container üretir; ilk container panel başlığı, girişi ve varsa görselle başlar
+// Panel mesajlarındaki buton kimlikleri; işleyiciler index.js'te bu tablodan bağlanır
+const IDS = {
+  partnerMetniKopyala: 'bilgi:partner-metni-kopyala',
+};
+
+// Her bölüm için bir container üretir; ilk container panel başlığı, girişi ve varsa görselle başlar.
+// hideTitle: bölüm başlığı yazılmaz (tek kartlık panellerde başlık zaten panel başlığıdır); button: kartın altına düğme
 function messages(panel) {
   return panel.sections.map((section, index) => {
     const container = new ContainerBuilder();
@@ -30,12 +36,21 @@ function messages(panel) {
       }
       container.addSeparatorComponents(divider());
     }
-    container.addTextDisplayComponents(text(titleText(section)));
-    for (const block of section.blocks) {
-      container.addSeparatorComponents(divider()).addTextDisplayComponents(text(blockText(block)));
+    if (!section.hideTitle) container.addTextDisplayComponents(text(titleText(section)));
+    for (const [blockIndex, block] of section.blocks.entries()) {
+      // Başlıksız ilk kartta panel başlığının çizgisi zaten var; ikinci çizgi üst üste binmesin
+      if (blockIndex > 0 || !(index === 0 && section.hideTitle)) container.addSeparatorComponents(divider());
+      container.addTextDisplayComponents(text(blockText(block)));
+    }
+    if (section.button) {
+      container.addActionRowComponents(
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId(section.button.id).setLabel(section.button.label).setStyle(ButtonStyle.Primary),
+        ),
+      );
     }
     return container;
   });
 }
 
-module.exports = { messages };
+module.exports = { messages, IDS };
