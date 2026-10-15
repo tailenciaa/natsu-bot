@@ -49,7 +49,7 @@ const yetkiliKurallari = {
     },
     {
       title: 'Ceza Verirken',
-      sub: 'Cezanın sırası, kanıtı ve kaydı vardır; ölçüyü kaçıran ya da kanıtsız verilen her işlem üye tarafından itiraz edilebilir hâle gelir.',
+      sub: 'Cezanın sırası, kanıtı ve kaydı vardır: her ceza numarasıyla <#1538535676000211034> kanalına düşer. Kanıtsız ya da ölçüsüz verilen her işlem üye tarafından itiraz edilebilir hâle gelir.',
       blocks: [
         {
           heading: 'Sıra ve ölçü',
@@ -145,7 +145,7 @@ const yetkiliBilgisi = {
         {
           items: [
             'Ceza ve yetki komutları **yalnızca** <#1538535501420826794> kanalında çalışır; başka kanalda yazılan komut işlemez.',
-            'Ceza kanıtı ve ekran görüntüsü <#1538535676000211034> kanalına bırakılır, üye önünde gösterilmez.',
+            'Ceza kanıtı <#1538535676000211034> kanalına **ceza numarasıyla** bırakılır, üye önünde gösterilmez.',
             'Danışma, devir ve ekip içi sohbet <#1538945273378639913> kanalında yürür.',
             '<#1538536351119446127> üye komutlarının kanalıdır; yetkili işi orada yazılmaz.',
           ],
