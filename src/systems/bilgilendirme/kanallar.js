@@ -4,6 +4,7 @@
 // Roller ve kanallar <@&ID> / <#ID> şeklinde yazılır; Discord bunları ada çevirir. Gönderim hep
 // allowedMentions: { parse: [] } ile yapılır, yani hiçbir etiket bildirim üretmez.
 const partnerConfig = require('../partner/config');
+const { IDS } = require('./ui');
 
 // 1) Yetkili kuralları: sadece yetkili rolü taşıyanları bağlayan, sunucu kurallarının üstüne geçen maddeler
 const yetkiliKurallari = {
@@ -888,62 +889,22 @@ const partnerSartlari = {
   ],
 };
 
-// 9) Partner metnimiz: karşı tarafa verdiğimiz, bizim sunucumuzu tanıtan sabit ilanın kanaldaki hali
+// 9) Partner metnimiz: kanalın tamamı tek kart. Başlık sunucunun adı, gövde karşı tarafa giden sabit ilan;
+// Kopyala düğmesi ilanının tamamını (başlık satırı dahil) kod kutusu içinde gizli mesajla verir.
 const partnerMetnimiz = {
   key: 'partner-metni',
   name: 'Partner Metni Paneli',
-  title: 'Partner Metnimiz',
-  intro: 'Sunucumuzu tanıtan, karşı tarafa gönderdiğimiz **tek sabit ilan**. Kopyala, paylaş, davet linki güncel kalsın.',
+  title: 'Anime & Public',
+  intro: 'Partnerlere verdiğimiz **tek sabit ilan**; kopyala, paylaş, davet bağlantısı güncel kalsın.',
   channel: '1538943528225476810',
   sections: [
     {
-      title: 'İlanımız',
-      sub: 'Partner yetkililerimiz bu metni karşı sunucunun yetkilisine DM olarak iletir; kanalda gördüğün hali de budur. Metin tek yerden yönetilir, böylece her sunucuya aynı tanıtım gider.',
+      hideTitle: true,
+      button: { id: IDS.partnerMetniKopyala, label: 'Metni Kopyala' },
       blocks: [
         {
-          text: partnerConfig.ourAdText,
-        },
-      ],
-    },
-    {
-      title: 'Nerede Kullanılır',
-      sub: 'Metin tek yerde durur ve iki yoldan gider: karşı tarafa DM olarak, bizim üyelerimize de paylaşım kanalında. Kopyalayıp kendi cümlenle birleştirdiğin hali bizim ilanımız sayılmaz.',
-      blocks: [
-        {
-          items: [
-            'Onaylanan partnerliklerde karşı sunucunun yetkilisine **DM** olarak bu metin gönderilir.',
-            'Kendi üyelerimiz partner paylaşımı yaparken <#1538943593665007696> kanalına bu metni koyar.',
-            '<#1538536775956566117> kanalında **partner** ya da **dm** yazan her üyeye bot bu metni teklif olarak sunar.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Metni Değiştirme',
-      sub: 'İlan sunucunun yüzüdür: değişiklik kararını yetki kademesi verir ve metin tek yerden yenilenir. Yayınlanmış haliyle oynanmış bir sürüm, karşı tarafta yanlış bilgi bırakır.',
-      blocks: [
-        {
-          items: [
-            'Metin botun ayarında durur; değiştirmek için <@&1554239996058411068> kararı gerekir.',
-            'Davet bağlantısı değişirse bu kanal ve bot ayarı **aynı gün** yenilenir.',
-            'Yayınlanmış bir partner metni kurallara aykırı içerik taşıyorsa paylaşım geri çekilir.',
-            'Metne kendi sunucunun bilgisini ekleyerek paylaşma; karşı tarafın gördüğü haliyle gönderilir.',
-          ],
-          note: '<@everyone> ya da rol etiketiyle paylaşım yapılmaz; partner kanallarında bildirim üretmek yetki gerektirir.',
-        },
-      ],
-    },
-    {
-      title: 'Soru ve Muhatap',
-      sub: 'Partnerlikle ilgili her konu tek kapıdan yürür: muhatap partner yetkilisi, üst karar lider kademesidir. Kanalın dışına taşan konuşma, kaydın kendisi kadar geçersiz sayılır.',
-      blocks: [
-        {
-          items: [
-            'Muhatap rolü: <@&1554237785416794202>, üst karar: <@&1554239996058411068>.',
-            'Durumu öğrenmek için <#1555293036026658957> listesine bak; oradaki satır senin kaydının halidir.',
-            'Şartlarda takıldıysan <#1538943458864005150> kanalı ve <#1538535372588326973> talep paneli var.',
-            'Yetkili olmayan üyeler partner kanallarını göremez; <#1538943369089126553> kanalından rol alınır.',
-          ],
+          // İlanın ilk satırı sunucunun adı; kartın başlığında zaten durduğu için gövdede tekrarlanmaz
+          text: partnerConfig.ourAdText.split('\n').slice(1).join('\n'),
         },
       ],
     },

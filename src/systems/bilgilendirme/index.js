@@ -7,8 +7,9 @@ const banner = require('../../core/banner');
 const { guildId } = require('../../core/config');
 const { data, save } = require('../../core/db');
 const { fetchTextChannel } = require('../../core/helpers');
-const { SILENT_CV2 } = require('../../core/ui');
+const { EPHEMERAL, SILENT_CV2 } = require('../../core/ui');
 const logSystem = require('../log');
+const partnerConfig = require('../partner/config');
 const config = require('./config');
 const ui = require('./ui');
 
@@ -99,7 +100,18 @@ async function sendPanels(client) {
   for (const panel of config.panels) await sendPanel(client, panel);
 }
 
+// Partner metni kanalındaki Kopyala düğmesi: ilanının tamamı kod kutusu içinde gizli mesajla gelir,
+// kod kutusunun köşesindeki düğme metni tek dokunuşla panoya alır
+async function copyPartnerText(interaction) {
+  await interaction.reply({
+    content: '```\n' + partnerConfig.ourAdText + '\n```\nKod kutusunun köşesindeki düğme metni bütün hâliyle kopyalar.',
+    flags: EPHEMERAL,
+    allowedMentions: { parse: [] },
+  });
+}
+
 module.exports = {
   name: 'bilgilendirme',
   events: { [Events.ClientReady]: sendPanels },
+  buttons: { [ui.IDS.partnerMetniKopyala]: copyPartnerText },
 };
