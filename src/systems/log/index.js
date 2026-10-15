@@ -1,9 +1,7 @@
-// Log sistemi: sunucudaki ve bottaki olayların (mesaj, ses, üye, moderasyon, sunucu, boost) kaydı kategorilere
-// ayrılmış alt başlıklara mesaj olarak atılır. Kategoriler dört gruba toplanmıştır (groups.js) ve her grubun
-// kendi log kanalı vardır; alt başlıklar o kanalın altında durur. Log paneli kanalındaki menüden grup sekmesi +
-// kategori seçilince o alt başlığa giden bağlantı gelir; kanala girip aramaya gerek kalmaz.
-// Dosyalar: categories.js (kategori listesi), groups.js (gruplar), engine.js (kanal ve alt başlık açma, gönderme),
-// events/ (olay dinleyicileri).
+// Log sistemi: sunucudaki ve bottaki olayların (mesaj, ses, üye, moderasyon, sunucu, boost) kaydı ana log
+// kanalının altındaki kategori alt başlıklarına mesaj olarak atılır. Log paneli kanalındaki menüden bir kategori
+// seçilince o alt başlığa giden bağlantı gelir; kanala girip aramaya gerek kalmaz.
+// Dosyalar: categories.js (kategori listesi), engine.js (alt başlık açma ve gönderme), events/ (olay dinleyicileri).
 const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
 const { data, save } = require('../../core/db');
@@ -12,7 +10,6 @@ const { syncPanel } = require('../../core/panel');
 const categories = require('./categories');
 const config = require('./config');
 const engine = require('./engine');
-const { GROUPS } = require('./groups');
 const store = require('./store');
 const ui = require('./ui');
 const message = require('./events/message');
@@ -58,19 +55,13 @@ const commands = [
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ];
 
-// Menünün gösterdiği güncel durum: her grubun kanalı, o gruptaki kategorilerin alt başlıkları, panel mesajı ve
-// eski tek kanal düzeninden ana log kanalında kalan alt başlık sayısı
-async function setupView(client, guild, note) {
-  const groups = [];
-  for (const group of GROUPS) {
-    const channelId = store.getGroupChannel(group.key);
-    const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
-    const items = [];
-    for (const category of categories.filter((c) => c.group === group.key)) {
-      const id = store.getThreadId(category.key);
-      items.push({ category, thread: id ? await guild.channels.fetch(id).catch(() => null) : null });
-    }
-    groups.push({ group, channel, items });
+// Menünün gösterdiği güncel durum: her kategorinin alt başlığı var mı, panel mesajı yerinde mi
+async function setupView(guild, note) {
+  const rows = [];
+  for (const category of categories) {
+    const id = store.getThreadId(category.key);
+    const thread = id ? await guild.channels.fetch(id).catch(() => null) : null;
+    rows.push({ category, thread });
   }
   const saved = data.panels.log;
   const panelChannel = saved ? await fetchTextChannel(guild, saved.channelId) : null;
@@ -79,16 +70,15 @@ async function setupView(client, guild, note) {
   return ui.setupView({
     mainId: config.channels.main,
     panelId: config.channels.panel,
-    groups,
+    rows,
     panelUrl: message ? core.messageUrl(guild.id, panelChannel.id, message.id) : null,
-    orphans: await engine.orphanThreads(client),
     note,
   });
 }
 
 async function handleLog(interaction) {
   await interaction.deferReply({ flags: core.CV2 });
-  return respond(interaction, await setupView(interaction.client, interaction.guild));
+  return respond(interaction, await setupView(interaction.guild));
 }
 
 // Menü butonları: logkur:<eylem> (setup, panel, reset, resetyes, refresh)
@@ -104,31 +94,21 @@ async function handleSetupButton(interaction) {
 
   if (action === 'setup') {
     await engine.ensureAllThreads(client);
-    note = '**Eksik grup kanalları ve alt başlıklar** kuruldu.';
+    note = '**Eksik alt başlıklar** kuruldu.';
   } else if (action === 'resetyes') {
     for (const { key } of categories) await engine.resetThread(client, key).catch((err) => console.error(`[log] "${key}" sıfırlanamadı:`, err.message));
-    note = '**Tüm alt başlıklar** silinip grup kanallarının altında yeniden açıldı.';
+    note = '**Tüm alt başlıklar** silinip yeniden açıldı.';
   } else if (action === 'panel') {
     await syncLogPanel(client, true);
     note = '**Panel**, log paneli kanalına gönderildi.';
   }
 
-  return interaction.editReply({ components: [await setupView(client, guild, note)], flags: core.CV2 });
+  return interaction.editReply({ components: [await setupView(guild, note)], flags: core.CV2 });
 }
 
-// Panelden grup sekmesine basınca panel mesajı kendi yerinde o grubun kategorilerine döner: sekmeler kalıcı
-// panelde herkes için aynı görünür. Kategori seçiminin getirdiği alt başlık bağlantısı ise yalnızca seçene
-// görünür — kalıcı olsaydı panelin altı "şuraya git" mesajlarıyla dolardı.
-async function handlePanel(interaction) {
-  if (interaction.isButton() && interaction.customId.startsWith(`${ui.IDS.tab}:`)) {
-    const key = interaction.customId.slice(ui.IDS.tab.length + 1);
-    if (!GROUPS.some((g) => g.key === key)) return interaction.deferUpdate();
-    return interaction.update({ components: [ui.panel(key)] });
-  }
-  return handleSelect(interaction);
-}
-
-// Panelden kategori seçilince o kategorinin alt başlığına giden bağlantı gönderilir
+// Panelden kategori seçilince o kategorinin alt başlığına giden bağlantı gönderilir.
+// SABİT PANEL KURALI: log paneli kanalda kalıcı ve seçime herkes dokunuyor — bağlantı sadece seçene görünür,
+// kalıcı olsaydı panelin altı "şuraya git" mesajlarıyla dolardı.
 async function handleSelect(interaction) {
   const category = categories.find((c) => c.key === interaction.values[0]);
   if (!category) return interaction.deferUpdate();
@@ -137,7 +117,7 @@ async function handleSelect(interaction) {
   const thread = await engine.ensureThread(interaction.client, category.key);
   if (!thread) {
     return interaction.editReply({
-      components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun log kanalında **alt başlık açma** ve **kanalları yönetme** yetkisi olduğundan emin ol.', 'danger')],
+      components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun ana log kanalında **alt başlık açma yetkisi** olduğundan emin ol.', 'danger')],
       flags: core.EPHEMERAL_CV2,
     });
   }
@@ -167,7 +147,7 @@ module.exports = {
   // Herhangi bir kategoriye log yazar: write(client, 'bot', { color, title, lines }); yeni sistemler logları buradan atar
   write: (client, key, { color, title, lines }) => engine.send(client, key, ui.entry(color, title, lines)),
   prefixed: [
-    [ui.IDS.select, handlePanel],
+    [ui.IDS.select, handleSelect],
     [ui.IDS.setup, handleSetupButton],
     [ui.IDS.detail, handleDetail],
   ],
