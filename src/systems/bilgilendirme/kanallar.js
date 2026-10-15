@@ -79,7 +79,7 @@ const yetkiliKurallari = {
     },
     {
       title: 'Gizlilik',
-      sub: 'Yetkili gördüğü bilgiyi taşımaz. Gizlilik ihlali, yanlış verilen bir cezadan daha ağır sonuç doğurur.',
+      sub: 'Yetkili gördüğü bilgiyi taşımaz; gizlilik ihlali, yanlış verilen bir cezadan daha ağır sonuç doğurur. Sana gelen şikayet de kanıt da yalnızca ekip içinde kalır.',
       blocks: [
         {
           items: [
@@ -114,7 +114,7 @@ const yetkiliKurallari = {
     },
     {
       title: 'Bu Kurallara Uymadığında',
-      sub: 'Yetki bir ayrıcalık değil sorumluluktur; kuralı çiğneyen yetkili de cezalandırılır ve yetkisi geri alınabilir.',
+      sub: 'Yetki bir ayrıcalık değil sorumluluktur: kuralı çiğneyen yetkili de aynı ceza basamaklarından geçer, gerekirse yetkisi geri alınır ve görev alanı boş sayılır.',
       blocks: [
         {
           items: [
@@ -138,7 +138,7 @@ const yetkiliBilgisi = {
   sections: [
     {
       title: 'Yetkili Kanalları',
-      sub: 'Her işin bir kanalı var; doğru kanalda yapılan işlem hem hızlı çözülür hem de üye önünde tartışma üretmez.',
+      sub: 'Her işin bir kanalı var; doğru kanalda yapılan işlem daha hızlı çözülür ve üye önünde tartışma üretmez. Yanlış kanala yazılan kayıt, sonradan düzeltilmesi zor bir iz bırakır.',
       blocks: [
         {
           items: [
@@ -156,7 +156,7 @@ const yetkiliBilgisi = {
     },
     {
       title: 'Rütbeler ve Yetkiler',
-      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; ceza yetkisi kademeli açılır.',
+      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; ceza yetkisi kademeli açılır. Rütbe yalnızca ne yapabileceğini değil, kimin kararına uyacağını da belirler.',
       blocks: [
         {
           items: [
@@ -171,7 +171,7 @@ const yetkiliBilgisi = {
     },
     {
       title: 'Görev Alanları',
-      sub: 'Yetki verilirken seçilen alan ne iş yapacağını belirler; bir alanda duran üye başka alanın işine sırf boşta diye atlamaz.',
+      sub: 'Yetki verilirken seçilen alan ne iş yapacağını belirler; bir alanda duran üye, başka alanın işine sırf o an boşta diye atlamaz. Alanın rolü de yetkiyle birlikte verilir.',
       blocks: [
         {
           items: [
