@@ -6,9 +6,12 @@ const config = require('../config');
 const engine = require('../engine');
 const ui = require('../ui');
 
-const MAX_LEN = 500;
+const MAX_LEN = 240; // kartta görünecek içerik uzunluğu; mesajın tamamı "Detaylı Bilgi" cevabında durur
 const stamp = (ms) => `<t:${Math.floor(ms / 1000)}:D> <t:${Math.floor(ms / 1000)}:T>`; // tarih + saniyeli saat
 const trim = (value) => (value && value.length > MAX_LEN ? `${value.slice(0, MAX_LEN)}…` : value);
+// Ekler tek satıra sıkıştırılmaz: her dosya kendi satırına yazılır, yoksa üç-dört ek iç içe okunmaz hâle gelir.
+const attachments = (list, withUrl) =>
+  `**Ekler:**\n${list.map((a) => `- ${a.name}${withUrl ? `: ${a.url}` : ''}`).join('\n')}`;
 
 // Botun kendi log/panel mesajlarını loglamaya çalışıp döngüye girmesin
 const ignorable = (channel) => channel?.id === config.channels.main || channel?.id === config.channels.panel;
@@ -38,7 +41,7 @@ async function handleMessageDelete(message) {
       `**Kullanıcı:** ${message.author ? `<@${message.author.id}>` : 'bilinmiyor'}`,
       `**Kanal:** <#${message.channelId}>`,
       content ? `**İçerik:**\n${core.quote(trim(content))}` : '**İçerik:** önbellekte yoktu, gösterilemiyor.',
-      message.attachments?.size ? `**Ekler:** ${message.attachments.map((a) => a.name).join(', ')}` : null,
+      message.attachments?.size ? attachments(message.attachments) : null,
       by,
     ], [
       `**Mesaj sahibi:** ${message.author ? `<@${message.author.id}>` : 'bilinmiyor'}`,

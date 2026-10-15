@@ -116,9 +116,9 @@ async function handleSetupButton(interaction) {
   return interaction.editReply({ components: [await setupView(client, guild, note)], flags: core.CV2 });
 }
 
-// Panelden grup sekmesine basınca panel mesajı kendi yerinde o grubun kategorilerine döner.
-// SEKME KURALI: sekme kalıcı paneli değiştirir (herkes için aynı panel), kategori seçimi ise sadece seçene
-// görünür gizli bir cevap getirir; kalıcı olsaydı panelin altı "şuraya git" mesajlarıyla dolardı.
+// Panelden grup sekmesine basınca panel mesajı kendi yerinde o grubun kategorilerine döner: sekmeler kalıcı
+// panelde herkes için aynı görünür. Kategori seçiminin getirdiği alt başlık bağlantısı ise yalnızca seçene
+// görünür — kalıcı olsaydı panelin altı "şuraya git" mesajlarıyla dolardı.
 async function handlePanel(interaction) {
   if (interaction.isButton() && interaction.customId.startsWith(`${ui.IDS.tab}:`)) {
     const key = interaction.customId.slice(ui.IDS.tab.length + 1);
@@ -127,6 +127,8 @@ async function handlePanel(interaction) {
   }
   return handleSelect(interaction);
 }
+
+// Panelden kategori seçilince o kategorinin alt başlığına giden bağlantı gönderilir
 async function handleSelect(interaction) {
   const category = categories.find((c) => c.key === interaction.values[0]);
   if (!category) return interaction.deferUpdate();
@@ -135,7 +137,7 @@ async function handleSelect(interaction) {
   const thread = await engine.ensureThread(interaction.client, category.key);
   if (!thread) {
     return interaction.editReply({
-      components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun ana log kanalında **alt başlık açma yetkisi** olduğundan emin ol.', 'danger')],
+      components: [core.alert('Bu log kategorisinin alt başlığı açılamadı.', 'Botun log kanalında **alt başlık açma** ve **kanalları yönetme** yetkisi olduğundan emin ol.', 'danger')],
       flags: core.EPHEMERAL_CV2,
     });
   }
@@ -165,7 +167,7 @@ module.exports = {
   // Herhangi bir kategoriye log yazar: write(client, 'bot', { color, title, lines }); yeni sistemler logları buradan atar
   write: (client, key, { color, title, lines }) => engine.send(client, key, ui.entry(color, title, lines)),
   prefixed: [
-    [ui.IDS.select, handleSelect],
+    [ui.IDS.select, handlePanel],
     [ui.IDS.setup, handleSetupButton],
     [ui.IDS.detail, handleDetail],
   ],
