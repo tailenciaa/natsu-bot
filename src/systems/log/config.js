@@ -2,9 +2,7 @@
 
 module.exports = {
   channels: {
-    // Grup log kanallarının açılacağı yer: bot, bu kanalın bulunduğu kategori klasöründe ve bu kanalın
-    // izinleriyle her grubun kendi kanalını oluşturur (groups.js). Eski alt başlıklar burada arşivde kalır;
-    // bir grubun kanalı açılamazsa (yetki yoksa) logları doğrudan bu kanala yazar.
+    // Tüm log kategorilerinin alt başlık (thread) olarak açıldığı ana log kanalı
     main: '1538944713103515789',
     // Log paneli (kategori seçim menüsü) bu kanala gönderilir
     panel: '1538944642685468702',
