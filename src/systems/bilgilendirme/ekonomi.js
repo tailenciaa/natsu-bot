@@ -94,7 +94,7 @@ module.exports = {
         },
         {
           heading: 'Kumarhane',
-          text: '**Rulet**te kırmızı ya da siyah **%47** tutar ve **2 katı** verir, yeşil **%7** tutar ve **14 katı** verir. **Şans Merdiveni** **8 basamak**, tepeden çekilirse kazanç **182 katına** çıkar. Bahis **50 / 100 / 250 / 500 / 1000 coin** butonlarından seçilir, elle coin yazdırılmaz. Masa her elden **%5-%7** pay alır: burası para basan yer değil, para yakan yer.',
+          text: 'Rulette kırmızı ya da siyah **%47** tutar ve **2 katı** verir, yeşil **%7** tutar ve **14 katı** verir. **Şans Merdiveni** **8 basamak**, tepeden çekilirse kazanç **182 katına** çıkar. Bahis **50 / 100 / 250 / 500 / 1000 coin** butonlarından seçilir, elle coin yazdırılmaz. Masa her elden **%5-%7** pay alır: burası para basan yer değil, para yakan yer.',
         },
       ],
     },
