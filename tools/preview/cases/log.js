@@ -1,8 +1,7 @@
-// Log sistemi (src/systems/log/ui.js): log girdi kutuları, detay cevabı, grup sekmeli kategori paneli ve /log kurulum menüsü
+// Log sistemi (src/systems/log/ui.js): log girdi kutuları, detay cevabı, kategori seçim paneli ve /log kurulum menüsü
 module.exports = ({ mock, src }) => {
   const d = src('systems/log/ui');
   const categories = src('systems/log/categories');
-  const { GROUPS } = src('systems/log/groups');
   // Panellerde Discord CDN afişi üretimde yerel eke döner (core/banner.js + core/panel.js syncPanel);
   // önizleme de aynı kapıdan geçsin ki attachment:// adı ile gönderilen dosya hep birbirini tutsun.
   const bannerFiles = (container) =>
