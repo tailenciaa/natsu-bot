@@ -710,9 +710,213 @@ const partnerMetnimiz = {
   ],
 };
 
+// 10) Yönetim kuralları: Yönetim Ekibi ve üstünü bağlayan maddeler. Yetkili kurallarının yerine değil üstüne geçer;
+// kadro hareketi, karar, kaldırma ve temsil işleri burada durur. Buradan konuşulan hiçbir konu üye önüne çıkmaz.
+const yonetimKurallari = {
+  key: 'yonetim-kurallar',
+  name: 'Yönetim Kuralları Paneli',
+  title: 'Yönetim Kuralları',
+  intro: 'Yönetim kademesindekileri bağlayan kurallar. Yetkili kurallarının **yerine** değil **üstüne** geçer.',
+  channel: '1560418893397360740',
+  sections: [
+    {
+      title: 'Kimleri Bağlar',
+      sub: 'Yetkili kurallarını zaten kabul ettin; bu kanal yönetime geçen işleri, onayı ve devri yazıyor. Kademe yükselmek kuralı gevşetmez, üstüne bağlandığın madde sayısını artırır.',
+      blocks: [
+        {
+          items: [
+            '<@&1554237340321448038>, <@&1554237339671208077>, <@&1554237339100774490> ve <@&1554237337993486377>: <@&1555890044768624662> kadrosunu dolduran dört rütbe, hepsi aynı maddelere uyar.',
+            '<@&1538946630370332692>, <@&1538519682552692856> ve <@&1538519594501931109>: üst kademe; burada yazmayan bir anlaşmazlıkta son kararı <@&1538519594501931109> verir.',
+            'Yetkili kurallarını kabul etmemiş biri yönetime geçmez: bu maddeler, kademe verildiği an senin için de bağlayıcı olur.',
+          ],
+          note: 'Görevden çıkan ya da kademesi düşürülen kişi için bu maddeler, elinde kalan bilgi ve kanıtlar üzerinde de geçerlidir.',
+        },
+      ],
+    },
+    {
+      title: 'Karar Verirken',
+      sub: 'Yönetimde tek imzayla yürüyen iş azdır: kadro, kural ve kaldırma gibi işler konuşulmadan uygulanmaz. Alınan kararı kim uyguladıysa takip izi de odur; gerekçesiz karar, sonradan savunulamayan karardır.',
+      blocks: [
+        {
+          items: [
+            'Kural değişikliği, kadro hareketi ve sunucuyu ilgilendiren her duyuru önce ekibin içine yazılır, sonra uygulanır.',
+            'Kendi başına uygulayabileceğin iş, kendi görev alanının içindeki işlerdir; başka bir alanın kararını uygulamak o alanın liderine aittir.',
+            'İki yönetici farklı şeyi söylüyorsa üye neye uyacağını bilemez: konu <#1560418973684862976> içinde kapanır, üye önüne çelişki çıkmaz.',
+            'Kararın gerekçesini tek cümle ve somut yaz; "uygun gördük" gibi bir gerekçe ne üyeye ne denetime açıklama sayılır.',
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Yetki Verirken',
+      sub: 'Rütbe ve görev alanı vermek yönetimin en çok sorulan işidir: elle rol vererek değil, botun yetki komutuyla yürür. Yetki verilen kişi o kademeyle sunucunun anahtarını da alır, bu yüzden kararın izi kayıttadır.',
+      blocks: [
+        {
+          items: [
+            'Tek yol `/yetki-ver`: rütbe seçilir, bot yetki ve görev rollerini birlikte verir. Elle rol vermek yasaktır ve denetimde görünür.',
+            'Yanlış ya da yetkisiz rol vermek, verilmiş bir yetkiyi geri almaktan ağır bir kusurdur; `/yetki-al` ile düzeltilir ama izi kalır.',
+            'Oryantasyonu tamamlanmamış kimseye kademe verilmez; adayın mülakat ve oryantasyon kaydı <@&1553398951816863844> ekibindedir.',
+            'Yetki verdiğin kişinin sonraki hataları senin de kaydına işler: kademe kararını verirken kimi önerdiysen denetimde o sorulur.',
+          ],
+          note: '`/yetki-ver` ve `/yetki-al` yalnızca yönetici iznine açık komutlardır ve <#1538535501420826794> kanalında çalışır.',
+        },
+      ],
+    },
+    {
+      title: 'Cezayı Kaldırırken',
+      sub: 'Ceza vermek alt kademelerin de işidir, kaldırmak istisnadır ve istisnanın tek dayanağı kanıttır. Kanıtsız bir cezayı kaldırmak, üyenin siciline ikinci bir haksızlık yazmaktır.',
+      blocks: [
+        {
+          items: [
+            'Kendi verdiğin cezayı kendi başına kaldıramazsın; kaldırma kararı başka bir yönetime aittir.',
+            'Kaldırma gerekçesi tek cümle ve somut olur: "üye pişman" gibi bir sebep kayıtta durmaz, itirazı büyütür.',
+            'Sicilden kayıt silme, cezayı kaldırmaktan ağır bir işlemdir ve üst kademe onayını gerektirir; tek başına yapıldığında denetimde geri alınır.',
+            'Sen de kanıtsız işlem yapamazsın: <#1538535676000211034> kanalındaki kanıt ve `Ceza #12` numarası, kaldırmada da kararın dayanağıdır.',
+            'Bot, kademenin üstü ya da aynı kademedeki birine ceza vermeni engeller; bu kuralı delmenin yolu kademe değil, üst kademe kararıdır.',
+          ],
+          note: 'Ceza puanı kısıtlamaları puana göre kendiliğinden işler; yönetimin elle açıp kapatmadığı tek kalem budur.',
+        },
+      ],
+    },
+    {
+      title: 'Temsil ve Gizlilik',
+      sub: 'Yönetimde her cümlen sunucunun cümlesi sayılır: üye adını değil rolünü duyar. Ekip içinde kalan bilgi üçüncü kişiye anlatıldığı anda bilgi olmaktan çıkar, sunucunun aleyhine döner.',
+      blocks: [
+        {
+          items: [
+            'Sunucu adına söz söyleme yetkisi <@&1538519594501931109> ve <@&1538519682552692856> kademesindedir; dışarı yazan, içeride onayını aldığı işi yazar.',
+            'Bir üyenin sicili, cezası, DM içeriği ve şikayeti sohbette anlatılmaz; ekran görüntüsü yönetim kademesinin dışına çıkmaz.',
+            'Dış sunucu ve partner ilişkileri <@&1554237785416794202> ekibi üzerinden yürür; yönetim bireysel olarak söz vermez.',
+            'Sunucunun davet bağlantısı, adı ve görseli yönetim onayı olmadan başka platformlarda paylaşılmaz.',
+          ],
+          note: 'İçeride kalmak zorunda olan tek şey bilgi değil: tartışmalar, redler ve karar değişiklikleri de üye önüne taşınmaz.',
+        },
+      ],
+    },
+    {
+      title: 'Bu Kurallara Uymadığında',
+      sub: 'Yönetici olmak ceza basamaklarının dışında olmak demek değildir: kademe yükseldikçe hata daha görünür olur ve kayda daha ağır işler. Yetki nasıl verildiyse öyle geri de alınabilir.',
+      blocks: [
+        {
+          items: [
+            'Görevi kötüye kullanma kaydı doğrudan siciline işler; <@&1554237780736090112> ekibi işlemi kaydından denetler.',
+            'Aynı hatayı ikinci kez yapan yönetimin kademesi düşürülür; bu kararı üst kademe verir.',
+            'Kademesi düşürülen kişi yeniden yetkili kurallarına tabi olur; geri dönüş mülakat ve oryantasyondan geçer.',
+            'Denetimdeki bir bulguyu görmezden gelmek, bulguyu kendin üretmek kadar ağır sayılır.',
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+// 11) Yönetim bilgilendirmesi: kademe sırası, işlemin kimde olduğu, botun yönetim araçları ve haftanın düzeni.
+// Kanal dizini yazılmaz; geçiş kuralı taşımayan hiçbir "şu kanal şuradadır" satırı buraya girmeden bırakılır.
+const yonetimBilgisi = {
+  key: 'yonetim-bilgi',
+  name: 'Yönetim Bilgilendirme Paneli',
+  title: 'Yönetim Bilgisi',
+  intro: 'Yönetim kademesinin işleyişi: kademeler kim, hangi işlem kimde, botun yönetim araçları ve haftanın düzeni.',
+  channel: '1560418919217635408',
+  sections: [
+    {
+      title: 'Kademe Sırası',
+      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; Yönetim Ekibi en üst dört rütbede durur. Kademe yalnızca ne yapabileceğini değil, kime danışacağını da belirler.',
+      blocks: [
+        {
+          items: [
+            '**Shōzen, Daichi, Ryūsei, Tenshi**: moderatör, üst moderatör, asistan yönetici ve yönetici. Dört rütbe de yasaklama yetkisiyle birlikte <@&1555890044768624662> rolünü alır.',
+            '**Kyōrin ve Kaizen**: üst ve deneyimli yetkili. Yasaklama Kyōrin ile açılır; Yönetim Ekibi rolü verilmedikçe bu kademe yönetim sayılmaz.',
+            '**Shido ve Tsukai**: yetkili. Üyeyi sunucudan çıkarma Shido ile açılır, görev alanı rolü yetkiyle birlikte verilir.',
+            '**Genin, Kōhai, Chūrai**: deneme, yeni ve orta seviye yetkili. Uyarı en alttan, susturma Kōhai\'den, jail ve ses yönetimi Chūrai\'den geçer.',
+            '**Kami, Shiro, Tenshu**: kıdemli yönetici, üst yönetici ve kurucu. Bu üç kademe botun yetki listesinde durmaz, elle verilir.',
+          ],
+          note: 'Rütbe, yetki ve görev rolleri tek yerden verilir: `/yetki-ver`. Elle rol vermek kurallar gereği yasaktır.',
+        },
+      ],
+    },
+    {
+      title: 'Hangi İşlem Kimde',
+      sub: 'Bazı işler kademe, bazıları üst onay ister. Buradaki sıralama botun kendi kontrolünden alınmadır: hangi komut hangi kapıyı açıyor ve hangi işlem kimin imzasıyla geçer, kayıtta böyle durur.',
+      blocks: [
+        {
+          items: [
+            'Ceza vermek kademeli açılır: uyarı en alt rütbeden, susturma Kōhai\'den, jail ve ses yönetimi Chūrai\'den, atma Shido\'dan, yasaklama Kyōrin\'den.',
+            '`/yetki-ver`, `/yetki-al`, `/log`, `/cekilis` ve `/vip-ver` yalnızca yönetici iznine açık komutlardır; yetkili kademesinde görünmez.',
+            'Değerlendirmeyi kaldırma yetkisi <@&1553133497781325954> ve yöneticilerdedir; üyenin bıraktığı yıldız oradan silinir.',
+            'Kendinden üst ya da aynı kademedeki birine ceza verilemez; bot işlemi baştan engeller.',
+            'Kademe kararı, alım süreci ve kadro hareketi yönetimde kapanır; etkinlik ve partner kararları kendi liderlerinde yürür.',
+          ],
+        },
+      ],
+    },
+    {
+      title: 'İşlem Nerede Yapılır',
+      sub: 'Yönetimin işi iki yerde yürür: komut kanalı ve ekip sohbeti. Doğru yerde yapılan işlem temiz kayıt bırakır; üye önünde alınan karar hem üyeyi hem ekibi zor durumda bırakır.',
+      blocks: [
+        {
+          items: [
+            'Bot tek komut kanalını tanır: <#1538535501420826794> dışında yazılan yetki ve ceza komutu çalışmaz.',
+            'Ceza kanıtı <#1538535676000211034> kanalına **ceza numarasıyla** düşer; denetim o numaradan arar.',
+            'Kadro ve kural değişikliği, üst kademe onayı alındıktan sonra <#1560418946702643240> kanalından duyurulur.',
+            'Üye sonucu özel mesaj ya da panel üzerinden görür: yönetim işi <#1560418973684862976> içinde kapanır.',
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Botun Yönetim Araçları',
+      sub: 'Bot, yönetimin işini kayıtlı ve tek yerden yapması için kuruldu: yetki, ceza, sicil, log ve haftalık derece birbiriyle konuşur. Elle yapılan hiçbir işlem bu kayıtlarda görünmez.',
+      blocks: [
+        {
+          items: [
+            '**Yetki** `/yetki-ver` ve `/yetki-al`: rütbe seçilir, bot yetki ve görev rollerini birlikte verir ya da geri alır.',
+            '**Sicil** `/sicil`: üyenin puanlarını, taleplerini ve geçmişini gösterir; **Ceza Ver** butonu da aynı karttadır.',
+            '**Log** `/log`: silinen ve düzenlenen mesajlar, ses hareketleri, giriş-çıkış ve ceza kayıtları tek panelde toplanır.',
+            '**Haftalık derece** `/haftalik`: pazartesi beklenmeden geçen haftanın ses, yazı ve yayın birincileriyle saygınlık lideri duyurulur.',
+            '**Çekiliş** `/cekilis`: çekiliş buradan kurulur; katılım koşulu ve ödül duyuruda yazılı gelir.',
+          ],
+          note: 'Discord\'un yerleşik "Zaman Aşımı / At / Yasakla" menüleri kullanılmaz; işlemin sicile işlemesi bot komutuna bağlıdır.',
+        },
+      ],
+    },
+    {
+      title: 'Haftanın Düzeni',
+      sub: 'Pazartesi geçen haftanın birincileri rol değiştirir, program kurulur ve açık kalan işler gözden geçirilir. Haftalık kalemler kendiliğinden yürümez; yönetimin takvimi bu dört satır üzerinde döner.',
+      blocks: [
+        {
+          items: [
+            'Ses, yazı ve yayın birincileri <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir; rol önceki sahibinden alınır.',
+            'Etkinlik programını <@&1554240000529539083> kurar, <@&1554239995412488304> onaylar; takvim değişkendir.',
+            'Açık kalan talepler <@&1553133497781325954> tarafından gözden geçirilir; bekletilen talep yönetimin kusuru sayılır.',
+            'Yetkili alım sürecinin takibi <@&1553398951816863844> ekibindedir; kadro kararı yönetim onayıyla kapanır.',
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Denetim ve Devir',
+      sub: 'Yönetimin işi kayıt üzerinden denetlenir; devredilmemiş iş, sahibi olmayan iş sayılır. Haber verilmiş bir yokluk kusur değildir, verilmemiş olan kusurdur.',
+      blocks: [
+        {
+          items: [
+            '<@&1554237780736090112> ekibi verilen ve kaldırılan cezaları kanıtıyla karşılaştırır; kanıtsız işlem geri alınır.',
+            'Yokluk ve izin <@&1538946630370332692> ya da <@&1554237337993486377> kademesine bildirilir; elinde kalan iş devredilir.',
+            'Devir mesajı tek satır olur: hangi talep ya da ceza, hangi aşamada, kim üstleniyor.',
+            'Kararını değiştiren yönetici değişikliğini gerekçesiyle yazar; sessiz düzeltme ikinci bir hata sayılır.',
+          ],
+          note: 'Toplantı ve istişare <#1538945273378639913> içinde yürür; yönetim içi anlaşmazlık üye önüne taşınmaz.',
+        },
+      ],
+    },
+  ],
+};
+
 module.exports = [
   yetkiliKurallari,
   yetkiliBilgisi,
+  yonetimKurallari,
+  yonetimBilgisi,
   etkinlikKurallari,
   etkinlikBilgisi,
   oyunKurallari,
