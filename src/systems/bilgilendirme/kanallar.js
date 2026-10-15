@@ -684,7 +684,7 @@ const sorunCozmeBilgisi = {
           items: [
             '`1.` <#1538544966282911884>, <#1538545004920971284> ya da <#1538545038751965265> odalarından boş olanına gir, mikrofonu aç.',
             '`2.` Odada yetkili yoksa <#1538544350185914389> sohbetinde <@&1544337671340433569> rolünü etiketle; yardım istemek ihlal değildir.',
-            '`3.` Tek cümleyle anlat: kim, ne oldu, ne istiyorsun. Ekran görüntüsü ya da klip istiyorsan sohbete bırak.',
+            '`3.` Tek cümleyle anlat: kim, ne oldu, ne istiyorsun. Elinde ekran görüntüsü ya da klip varsa sohbete bırak.',
             '`4.` Yetkili odaya gelir, konu sesli çözülür; uzayacaksa <#1538535372588326973> içindeki **Talep Oluştur** ile yazılı kayıt açılır.',
           ],
         },
@@ -696,130 +696,6 @@ const sorunCozmeBilgisi = {
             'Görüşmenin sonucu <#1538942392613208164> rapor kanalına işlenir, yani yardım isteğinin izi kalır.',
           ],
           note: 'Rol, ödül ve ceza itirazı gibi tek taraflı işler sesli görüşmenin değil destek talebinin konusudur.',
-        },
-      ],
-    },
-  ],
-};
-    {
-      title: 'Görüşme Nasıl Yürür',
-      sub: 'Arabulucu tarafsızdır, kimse tek başına karar vermez ve iki taraf da eşit söz hakkı alır. Görüşme bir duruşma değildir; amaç suçlu bulmak değil, iki tarafın uyacağı bir sonuç çıkarmaktır.',
-      blocks: [
-        {
-          items: [
-            'Sırayla konuşulur; söz kesme, bağırma ve hakaret görüşmeyi bitirir.',
-            'Arabulucu olan <@&1544337671340433569> üyesi çözüm önerir, kararı taraflar birlikte onaylar.',
-            'Karar bağlayıcı değilse de kayda geçer; çözümsüzlükte <@&1553133497781325954> devreye girer.',
-            'Görüşme sırasında yeni ceza pazarlığı yapılmaz; ceza konusu ayrı dosyadır.',
-            'Taraflardan biri gelmezse görüşme ertelenir, üçüncü yoklamada dosya kapanır.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Kanallar',
-      sub: 'Bu alanın yazılı, sesli ve kayıt tarafı ayrı ayrı duruyor; hepsi yetkili gözetiminde. Konuyu doğru kanala taşımak görüşmenin uzamasını değil, kısalmasını sağlar.',
-      blocks: [
-        {
-          items: [
-            '<#1538544294388961300>: bilgilendirme, yani bu kanal.',
-            '<#1538544350185914389>: sorun çözme sohbeti; yazılı yürüyen konular.',
-            '<#1538544966282911884> / <#1538545004920971284> / <#1538545038751965265>: görüşme ses kanalları.',
-            '<#1538942392613208164>: sonuç raporlarının tutulduğu kanal.',
-            '<#1538941536094519316>: üyelerin bıraktığı memnuniyet bildirimleri.',
-            '<#1538941597301997700>: itiraz edilen değerlendirmelerin kaydı.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Gizlilik',
-      sub: 'Görüşme odada kalır; kayıt yalnızca ekip içinde dolaşır. Taraflardan biri konuşulanları sohbete taşırsa bu ayrı bir ihlal olarak kayda geçer ve dosyayı yeniden açar.',
-      blocks: [
-        {
-          items: [
-            'Görüşmede konuşulanlar sohbette anlatılmaz, ekran görüntüsü dışarı taşınmaz.',
-            'Karşı tarafın kişisel bilgisi ifşa edilmez; ifşa ayrıca ihlaldir.',
-            'Kayıtlar yalnızca <#1538942392613208164> ve log kanalında durur.',
-            'Görüşmeyi izlemek serbest değildir; taraf olmayan üye çağrılmaz.',
-          ],
-          note: 'Yetkili de sana aynı gizlilikle davranır; "ben kimseye söylemem" diyerek bilgi toplamaz.',
-        },
-      ],
-    },
-    {
-      title: 'Sonuç ve İtiraz',
-      sub: 'Açılan dosya kapanmadan sonucu öğrenirsin; kapanan dosyaya itiraz yolu da kapalı değildir. Kararı beğenmediğini söylemek yerine elinde yeni bir bulgu olduğunu göster.',
-      blocks: [
-        {
-          items: [
-            'Çözüm uygulandıysa talep kapatılır ve sana kısa bir sonuç yazılır.',
-            'Anlaşmazlıkta karar lider kademesindedir; itirazın <@&1553133497781325954> tarafından incelenir.',
-            'Memnun kalmadıysan değerlendirme kartındaki yıldızı kullan ya da <#1538941597301997700> kaydına taşınan itirazı bekle.',
-            'Aynı konuyu ısrarla yeniden açmak yerine yeni bir bulgu getir.',
-          ],
-        },
-      ],
-    },
-  ],
-};
-    {
-      title: 'Görüşme Nasıl Yürür',
-      sub: 'Arabulucu tarafsızdır, kimse tek başına karar vermez ve iki taraf da eşit söz hakkı alır. Görüşme bir duruşma değildir; amaç suçlu bulmak değil, iki tarafın uyacağı bir sonuç çıkarmaktır.',
-      blocks: [
-        {
-          items: [
-            'Sırayla konuşulur; söz kesme, bağırma ve hakaret görüşmeyi bitirir.',
-            'Arabulucu olan <@&1544337671340433569> üyesi çözüm önerir, kararı taraflar birlikte onaylar.',
-            'Karar bağlayıcı değilse de kayda geçer; çözümsüzlükte <@&1553133497781325954> devreye girer.',
-            'Görüşme sırasında yeni ceza pazarlığı yapılmaz; ceza konusu ayrı dosyadır.',
-            'Taraflardan biri gelmezse görüşme ertelenir, üçüncü yoklamada dosya kapanır.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Kanallar',
-      sub: 'Bu alanın yazılı, sesli ve kayıt tarafı ayrı ayrı duruyor; hepsi yetkili gözetiminde. Konuyu doğru kanala taşımak görüşmenin uzamasını değil, kısalmasını sağlar.',
-      blocks: [
-        {
-          items: [
-            '<#1538544294388961300>: bilgilendirme, yani bu kanal.',
-            '<#1538544350185914389>: sorun çözme sohbeti; yazılı yürüyen konular.',
-            '<#1538544966282911884> / <#1538545004920971284> / <#1538545038751965265>: görüşme ses kanalları.',
-            '<#1538942392613208164>: sonuç raporlarının tutulduğu kanal.',
-            '<#1538941536094519316>: üyelerin bıraktığı memnuniyet bildirimleri.',
-            '<#1538941597301997700>: itiraz edilen değerlendirmelerin kaydı.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Gizlilik',
-      sub: 'Görüşme odada kalır; kayıt yalnızca ekip içinde dolaşır. Taraflardan biri konuşulanları sohbete taşırsa bu ayrı bir ihlal olarak kayda geçer ve dosyayı yeniden açar.',
-      blocks: [
-        {
-          items: [
-            'Görüşmede konuşulanlar sohbette anlatılmaz, ekran görüntüsü dışarı taşınmaz.',
-            'Karşı tarafın kişisel bilgisi ifşa edilmez; ifşa ayrıca ihlaldir.',
-            'Kayıtlar yalnızca <#1538942392613208164> ve log kanalında durur.',
-            'Görüşmeyi izlemek serbest değildir; taraf olmayan üye çağrılmaz.',
-          ],
-          note: 'Yetkili de sana aynı gizlilikle davranır; "ben kimseye söylemem" diyerek bilgi toplamaz.',
-        },
-      ],
-    },
-    {
-      title: 'Sonuç ve İtiraz',
-      sub: 'Açılan dosya kapanmadan sonucu öğrenirsin; kapanan dosyaya itiraz yolu da kapalı değildir. Kararı beğenmediğini söylemek yerine elinde yeni bir bulgu olduğunu göster.',
-      blocks: [
-        {
-          items: [
-            'Çözüm uygulandıysa talep kapatılır ve sana kısa bir sonuç yazılır.',
-            'Anlaşmazlıkta karar lider kademesindedir; itirazın <@&1553133497781325954> tarafından incelenir.',
-            'Memnun kalmadıysan değerlendirme kartındaki yıldızı kullan ya da <#1538941597301997700> kaydına taşınan itirazı bekle.',
-            'Aynı konuyu ısrarla yeniden açmak yerine yeni bir bulgu getir.',
-          ],
         },
       ],
     },
