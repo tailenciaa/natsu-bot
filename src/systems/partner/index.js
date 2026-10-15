@@ -40,7 +40,9 @@ async function serverOfInvite(client, text) {
   return url ? client.fetchInvite(url).then((invite) => invite.guild ?? null, () => null) : null;
 }
 
-// Puanlama yalnızca DM üzerinden (teklif/Partner Paneli) ya da elle yapılan partnerlikte gider; oto talep ve ret puanlatılmaz
+// Puanlama yalnızca **bir yetkilimiz paylaşım kanalına partner metnini elle attığında** gider (güvenilir listeye
+// eklerken karşı yetkililere sorulur). Oto onay ve partner yenileme paylaşımlarında bot kendi kendine paylaşır,
+// ortada emek veren bir yetkili olmadığı için üye puanlamaya çağrılmaz.
 const rateStaff = (client, request, staffId, userId) =>
   ratings.requestForPartner(client, request, staffId, userId).catch((err) => console.error('[partner] Değerlendirme gönderilemedi:', err.message));
 
@@ -529,8 +531,6 @@ async function handleReviewDecision(interaction) {
   // Onayda sonuç DM'i paylaşımın ardından gider: mesajdaki buton talebin sahibini paylaşılan ilana götürsün
   let sharedUrl = null;
   if (sonuc === 'onayla') {
-    // Düz oto talep puanlatılmaz (yetkili sadece onaylıyor); DM'deki Partner Paneli'nden gelen teklif puanlatılır
-    if (request.renewalOf) await rateStaff(interaction.client, updated, interaction.user.id);
     // Onayda güvenilir listeye otomatik eklemiyoruz; yetkili karttaki "Güvenilir Partnerler Listesine Al"
     // butonuna basarak elle ekler. Kart bu yüzden "güvenilir değil" (buton aktif) durumuyla paylaşılır.
     // Güvenilir partnerin Partner Paneli'nden gelen tekliflerde kayıt yeni metinle güncellenir (yenileme gibi)
@@ -1123,14 +1123,14 @@ async function handleRenewalCancelSubmit(interaction) {
 // içlerinden biri zaten kabul etmişse direkt onun adına paylaşılır
 async function handleRenewalApprove(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalApprove.length + 1);
-  const { error, offer, entry } = renewalOfferError(interaction, trustedId);
+  const { error, entry } = renewalOfferError(interaction, trustedId);
   if (error) return replyError(interaction, error);
 
   await interaction.deferUpdate();
 
   const acceptedContactId = entry.contactIds.find((id) => store.hasAcceptedTerms(id));
   if (acceptedContactId) {
-    // Paylaşım, teklifi kabul eden karşı yetkili adına yapılır; puanı ise süreci başlatan yetkilimiz alır
+    // Paylaşım, teklifi kabul eden karşı yetkili adına yapılır
     const result = await postRenewal(interaction.client, entry, interaction.user.id);
     // Paylaşım başarısız olursa teklif açık kalır, onay yeniden denenebilir
     if (!result) {
@@ -1140,7 +1140,6 @@ async function handleRenewalApprove(interaction) {
     }
     store.deleteRenewalOffer(trustedId);
     await sendOurTextDm(interaction.client, interaction.user.id, result, entry);
-    await rateStaff(interaction.client, result.request, offer.startedBy);
     return interaction.editReply({ components: [core.alert('Teklif onaylandı.', 'Partner metni paylaşıldı.', 'success')] });
   }
 
@@ -1185,7 +1184,6 @@ async function handleRenewalTermsAccept(interaction) {
   await sendOurTextDm(interaction.client, interaction.user.id, result, entry);
 
   if (offer) {
-    await rateStaff(interaction.client, result.request, offer.startedBy);
     const staffUser = await interaction.client.users.fetch(offer.startedBy).catch(() => null);
     await staffUser?.send({ components: [core.alert('Karşı taraf şartları kabul etti, metin paylaşıldı.', null, 'success')], flags: core.CV2 }).catch(() => {});
   }
