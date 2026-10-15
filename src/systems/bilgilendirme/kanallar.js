@@ -505,7 +505,6 @@ const oyunKurallari = {
             'Takım arkadaşın hata yapınca bağırma, hakaret etme; düzeltmek istiyorsan oyun sonunda söyle.',
             'Kasıtlı kaybetme, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama yasaktır.',
             'Rapor butonunu misilleme için kullanmak kural ihlalidir; gerçek ihlalde ise kanıt senin oyun kaydındır.',
-            'Oyuncu aramak için <#1538542760506822656>, kurulan lobiler için <#1538542814680453281> kanalı kullanılır.',
           ],
         },
       ],
@@ -520,7 +519,6 @@ const oyunKurallari = {
             'Sıra ve ekonomi konuşulur, suçlama edilmez.',
             'Rakibin konumunu kanal dışına taşımak (info sızdırma) oyunun tadını bozar; şikayetini hakeme bildir.',
             'Eklenti ve script: yalnızca oyunun izin verdikleri kullanılır.',
-            'Retake ve özel lobiler <#1538542814680453281> üzerinden duyurulur.',
           ],
         },
         {
@@ -534,7 +532,7 @@ const oyunKurallari = {
         {
           heading: 'Brawlhalla ve 1v1',
           items: [
-            'Turneya eşleşmeleri <#1538541416387448944> kanalındaki gibi duyurulur; saatte olmayan üye elenmiş sayılır.',
+            'Eşleşme duyurulduktan sonra saatte hazır olmayan üye elenmiş sayılır.',
             'Rakip bağlantı koparsa maç **bir kez** baştan alınır, sonraki denemeler kura ile yürür.',
             'Karakter ve arenayı seçerken rakiple pazarlık yapılır, tek taraflı dayatma olmaz.',
           ],
@@ -549,7 +547,7 @@ const oyunKurallari = {
           items: [
             'Kayıt, saat ve format **duyuruda** yazılır; duyuruda olmayan bir kural sonradan eklenmez.',
             'Kura ve eşleşme <@&1554240000529539083> tarafından çekilir ve kanalda gösterilir.',
-            'Maç sonucu ekran görüntüsü ile kayda geçer; itiraz <#1538535372588326973> kanalından talep açılarak yapılır.',
+            'Maç sonucu ekran görüntüsü ile kayda geçer; itiraz kanalda değil talep üzerinden yürür.',
             'Etkinlik maçında karar **hakemlik yapan yetkilinindir**; tartışmayı maç sırasında yapmak her iki takımın da aleyhinedir.',
           ],
         },
