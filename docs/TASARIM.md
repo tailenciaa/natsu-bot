@@ -209,7 +209,7 @@ Görevlerde **ilerleme sayılmaz, okunur**: mesaj ve ses sayısı sıralamadan, 
 | Yetkili oda yönetimi: oda panelindeki **Odaları Yönet** düğmesinin açtığı liste, oda kartı, devir ve kapatma sonucu | Sadece basana — yönetici aracı kanalı doldurmaz. Komutun odasız yöneticide doğrudan açtığı oda listesi ise **/kalici-oda** sayfasıdır: kalıcı ve açık |
 | Çekilişin bitir/iptal **onay penceresi** | Sadece kullanana; onay sonrası sonuç kartı kanala düşer |
 | Özel oda kontrol paneli düğme ve menüleri | `update` ile panelin kendisi yeniden çizilir, yeni mesaj atmaz |
-| Modallar (formlar) | Discord gereği zaten sadece açana görünür |
+| Modallar (formlar) | Formun kendisi Discord gereği sadece açana görünür. **Formu gönderince çıkan cevap ayrı bir mesajdır** ve birikme testine tabidir: panel kanalından açılan formun cevabı gizlidir (`destek` red ve kapatma kartları), yoksa her red panelin altına bir mesaj ekler |
 
 - Görünürlük **defer anında kilitlenir**: `deferReply({ flags: core.CV2 })` ile açılan bir akışın sonundaki `{ ephemeral: true }` cevap Discord tarafından gizli yapılamaz; o uyarı kanalda görünür. Akışın yarısı gizli yarısı açık kalamaz; bu yüzden gizli bir akış baştan `core.EPHEMERAL_CV2` ile ertelenir, açık akış baştan açık.
 - Tam tersi de geçerli: `deferReply({ flags: core.EPHEMERAL_CV2 })` ile açılan akışın **her** cevabı `{ ephemeral: true }` taşımak zorunda; bayraklar uyuşmazsa Discord son düzenlemeyi reddeder. Buton/menü cevapları `followUp` ile gittiği için görünürlükleri defer'den bağımsızdır.
