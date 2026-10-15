@@ -58,9 +58,11 @@ const yetkiliKurallari = {
         {
           heading: 'Kanıt ve kayıt',
           items: [
-            'Ceza öncesi **ekran görüntüsü** al ve <#1538535676000211034> kanalına bırak.',
+            'Verdiğin **her ceza** (uyarı, susturma, jail, yasaklama) kanıtıyla birlikte <#1538535676000211034> kanalına bırakılır; bu son adım atılmadıysa ceza tamamlanmış sayılmaz.',
+            'Mesajın ilk satırı ceza numarası olsun: bot işlem sonrası sana `Ceza #12` biçiminde numara verir, kanala da aynen öyle yazarsın.',
+            'Kanıt cezanın sebebidir: yazılı ihlalde mesaj ekran görüntüsü, seste klip ya da tanık adı, yayında alınan ekran görüntüsü.',
+            'Numarayla düşen kayıt denetimde o numaradan bulunur; aynı ceza için iki ayrı mesaj atılmaz.',
             'Sebebi tek cümle ve **somut** yaz; "kural ihlali" gibi belirsiz sebep itirazda seni savunmaz.',
-            'Sesli ihlallerde mümkünse tanık adı ya da kayıt göster.',
             'Verdiğin her ceza üyenin siciline işler; `/sicil` kartından görülebilir.',
           ],
         },
