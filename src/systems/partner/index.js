@@ -710,7 +710,10 @@ async function handlePanelStatus(interaction) {
 
   const updated = store.updateTrusted(entry.id, { contactStatus: interaction.values[0] === 'mesgul' ? 'mesgul' : 'aktif', contactStatusAt: Date.now() });
   const guildName = interaction.client.guilds.cache.get(entry.guildId)?.name ?? 'Sunucu';
-  return interaction.update({ components: [ui.partnerPanel(updated, guildName)] });
+  await interaction.update({ components: [ui.partnerPanel(updated, guildName)] });
+  // Durum yalnızca DM'de kalmaz: güvenilir partnerler paneli (kart görseli dâhil) aynı bilgiden çizilir ve
+  // yenilenmezse yetkililer hâlâ eski durumu görür
+  await refreshTrustedPanel(interaction.client, entry.guildId);
 }
 
 const OFFER_COOLDOWN = 24 * 60 * 60 * 1000; // aynı sunucu günde en fazla bir teklif gönderebilir
