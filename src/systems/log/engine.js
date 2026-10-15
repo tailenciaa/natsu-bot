@@ -1,18 +1,22 @@
-// Log motoru: her kategorinin ana log kanalının altında bir alt başlığı olur, ilk ihtiyaç anında (ya da bot
-// açılışında, sendPanel ile) açılır. Alt başlık silinmişse ya da arşivdeyse otomatik düzeltilir.
-// Alt başlıklar "herkese açık" (PublicThread) türünde açılır: böylece ana log kanalını görebilen (yani sadece
-// yetkililerin erişebildiği bir kanal olarak ayarlanmış) herkes alt başlıkları da görebilir; "özel" alt başlık
-// (PrivateThread) sunucunun 2. seviye takviye olmasını gerektirdiği için burada kullanılmıyor.
+// Log motoru: kategoriler kendi gruplarının (groups.js) kanalında, o kanalın altında bir alt başlığa yazar.
+// Alt başlık ilk ihtiyaç anında (ya da bot açılışında, sendPanel ile) açılır; silinmişse ya da arşivdeyse
+// otomatik düzeltilir.
+// Alt başlıklar "herkese açık" (PublicThread) türünde açılır: böylece grubun log kanalını görebilen (yani ana
+// log kanalı gibi sadece yetkililerin erişebildiği bir kanalda tutulan) herkes alt başlıkları da görebilir;
+// "özel" alt başlık (PrivateThread) sunucunun 2. seviye takviye olmasını gerektirdiği için burada kullanılmıyor.
 const { ChannelType, ThreadAutoArchiveDuration } = require('discord.js');
 const { guildId } = require('../../core/config');
 const { fetchTextChannel } = require('../../core/helpers');
 const core = require('../../core/ui');
 const categories = require('./categories');
 const config = require('./config');
+const { GROUPS, groupOf } = require('./groups');
 const store = require('./store');
 
 const UNKNOWN_CHANNEL = 10003;
-const creating = new Map(); // kategori anahtarı -> oluşturma Promise'i (aynı anda iki kez açılmasın diye)
+const FALLBACK_MS = 10 * 60 * 1000; // grup kanalı açılamazsa yeniden denemeden önce beklenecek süre
+const creating = new Map(); // kategori/grup anahtarı -> oluşturma Promise'i (aynı anda iki kez açılmasın diye)
+const fallbackUntil = new Map(); // grup anahtarı -> kanal kurulumu denenmeyecek zaman
 
 function categoryOf(key) {
   const category = categories.find((c) => c.key === key);
@@ -28,25 +32,85 @@ async function findExistingThread(parent, name) {
   return archived?.threads.find((t) => t.name === name) ?? null;
 }
 
-// Kategorinin alt başlığını getirir, yoksa açar. Aynı anda birden fazla çağrı gelirse tek sefer oluşturulur.
-async function ensureThread(client, key) {
-  const category = categoryOf(key);
+// Kanalın erişim izinleri kopyalanır: log grupları da ana log kanalı gibi sadece yetkililere görünür.
+const cloneOverwrites = (channel) =>
+  [...channel.permissionOverwrites.cache.values()].map((o) => ({ id: o.id, type: o.type, allow: o.allow, deny: o.deny }));
+
+// Grubun log kanalını getirir, yoksa ana kanalın bulunduğu klasörde ve onun izinleriyle açar.
+// Ana log kanalı (config.channels.main) her zaman son sığınaktır: grup kanalı açılamazsa loglar orada akmaya
+// devam eder, yoksa bütün log yazımları sessizce düşer.
+async function ensureGroupChannel(client, groupKey) {
+  const group = groupOf(groupKey);
   const guild = client.guilds.cache.get(guildId);
-  const parent = await fetchTextChannel(guild, config.channels.main);
-  if (!parent) {
+  const main = await fetchTextChannel(guild, config.channels.main);
+  if (!main) {
     console.error(`[log] Ana log kanalı bulunamadı (${config.channels.main}).`);
     return null;
   }
 
+  const savedId = store.getGroupChannel(group.key);
+  if (savedId) {
+    const channel = await guild.channels.fetch(savedId).catch((err) => (err.code === UNKNOWN_CHANNEL ? null : undefined));
+    if (channel) {
+      if (channel.name !== group.channelName) await channel.setName(group.channelName, 'Log grubu kanalı yeniden adlandırıldı').catch(() => {});
+      return channel;
+    }
+    if (channel === null) store.setGroupChannel(group.key, null);
+  }
+
+  if (fallbackUntil.get(group.key) > Date.now()) return main;
+  if (creating.has(group.key)) return creating.get(group.key);
+
+  const promise = (async () => {
+    const existing = guild.channels.cache.find((c) => c.type === ChannelType.GuildText && c.name === group.channelName);
+    if (existing) {
+      store.setGroupChannel(group.key, existing.id);
+      return existing;
+    }
+    try {
+      const channel = await guild.channels.create({
+        name: group.channelName,
+        type: ChannelType.GuildText,
+        parent: main.parentId ?? undefined,
+        permissionOverwrites: cloneOverwrites(main),
+        reason: `${group.label} log grubu kanalı`,
+      });
+      store.setGroupChannel(group.key, channel.id);
+      console.log(`[log] "${group.label}" grubunun log kanalı açıldı: #${channel.name}`);
+      return channel;
+    } catch (err) {
+      fallbackUntil.set(group.key, Date.now() + FALLBACK_MS);
+      console.error(`[log] "${group.label}" log kanalı açılamadı, loglar ana log kanalına yazılıyor:`, err.message);
+      return main;
+    }
+  })();
+
+  creating.set(group.key, promise);
+  try {
+    return await promise;
+  } finally {
+    creating.delete(group.key);
+  }
+}
+
+// Kategorinin alt başlığını getirir, yoksa grubunun kanalında açar. Aynı anda birden fazla çağrı gelirse tek sefer oluşturulur.
+async function ensureThread(client, key) {
+  const category = categoryOf(key);
+  const guild = client.guilds.cache.get(guildId);
+  const parent = await ensureGroupChannel(client, category.group);
+  if (!parent) return null;
+
   const savedId = store.getThreadId(key);
   if (savedId) {
     const thread = await guild.channels.fetch(savedId).catch((err) => (err.code === UNKNOWN_CHANNEL ? null : undefined));
-    if (thread) {
+    // Alt başlık başka bir kanalın altındaysa (eski tek kanal düzeni) taşınmaz: yerinde arşiv olarak kalır,
+    // kaydı bırakılır ve yenisi grubunun kanalında açılır. Kayıt artık yoksa da bırakılır.
+    if (thread && thread.parentId === parent.id) {
       if (thread.archived) await thread.setArchived(false).catch(() => {});
       if (thread.name !== category.threadName) await thread.setName(category.threadName, 'Log alt başlığı yeniden adlandırıldı').catch(() => {});
       return thread;
     }
-    if (thread === null) store.setThreadId(key, null);
+    if (thread !== undefined) store.setThreadId(key, null);
   }
 
   if (creating.has(key)) return creating.get(key);
@@ -78,11 +142,11 @@ async function ensureThread(client, key) {
   }
 }
 
-// Kategorinin alt başlığını (içindeki eski loglarla birlikte) siler ve yenisini açar
+// Kategorinin alt başlığını (içindeki eski loglarla birlikte) siler ve grubunun kanalında yenisini açar
 async function resetThread(client, key) {
   const category = categoryOf(key);
   const guild = client.guilds.cache.get(guildId);
-  const parent = await fetchTextChannel(guild, config.channels.main);
+  const parent = await ensureGroupChannel(client, category.group);
   if (!parent) return null;
 
   const savedId = store.getThreadId(key);
@@ -94,11 +158,24 @@ async function resetThread(client, key) {
   return ensureThread(client, key);
 }
 
-// Bot açılırken tüm kategorilerin alt başlıklarını önceden açar; böylece log paneli ilk andan itibaren kullanılabilir.
+// Bot açılırken grup kanallarını ve tüm kategorilerin alt başlıklarını önceden hazırlar; böylece log paneli ilk
+// andan itibaren kullanılabilir.
 async function ensureAllThreads(client) {
+  for (const group of GROUPS) await ensureGroupChannel(client, group.key).catch(() => null);
   for (const { key } of categories) {
     await ensureThread(client, key).catch((err) => console.error(`[log] "${key}" alt başlığı hazırlanamadı:`, err.message));
   }
+}
+
+// Ana log kanalında kalan, artık hiçbir kategorinin kullanmadığı alt başlık sayısı (eski düzenin arşivi).
+// Silinmez, sadece kurulum menüsünde gösterilir.
+async function orphanThreads(client) {
+  const guild = client.guilds.cache.get(guildId);
+  const main = await fetchTextChannel(guild, config.channels.main);
+  if (!main) return 0;
+  const used = new Set(categories.map((c) => store.getThreadId(c.key)).filter(Boolean));
+  const active = await main.threads.fetchActive().catch(() => null);
+  return [...(active?.threads.values() ?? [])].filter((thread) => !used.has(thread.id)).length;
 }
 
 async function send(client, key, container) {
@@ -113,4 +190,4 @@ async function send(client, key, container) {
   return message;
 }
 
-module.exports = { ensureThread, resetThread, ensureAllThreads, send, categoryOf };
+module.exports = { ensureThread, ensureGroupChannel, resetThread, ensureAllThreads, orphanThreads, send, categoryOf };
