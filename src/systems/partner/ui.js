@@ -651,18 +651,26 @@ function contactSelect(trustedId, members) {
     );
 }
 
-// Karşı sunucunun partner yetkilisine giden, teklifi kabul edip etmeyeceğini soran ilk DM. startedBy: teklifi başlatan yetkili
-function assignedOfferDm(entry, startedBy) {
+// Karşı sunucunun partner yetkilisine giden, teklifi kabul edip etmeyeceğini soran ilk DM.
+// startedBy: teklifi başlatan bizim yetkilimiz, ourServerName: metnin yayınlanacağı bizim sunucumuzun adı
+function assignedOfferDm(entry, startedBy, ourServerName = null) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
       head(
         'Partner Yenileme Teklifi',
-        'Bir yetkilimiz, sunucunun partner metnini yeniden paylaşmak için **sana teklifte bulunuyor**. Kabul edersen metnini görüp onaylayabilir, istersen güncelleyebilir ya da teklifi reddedebilirsin.',
+        'Bir yetkilimiz, kayıtlı partner metnini **bizim sunucumuzda yeniden paylaşmak** için sana teklifte bulunuyor. Kabul edersen metnini görüp onaylayabilir, istersen güncelleyebilir ya da teklifi reddedebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
     .addTextDisplayComponents(
-      text(fields(['### Teklif Bilgileri', field('Partner Sunucu', serverTitle(entry)), startedBy ? field('Teklif Eden', `<@${startedBy}>`) : null])),
+      text(
+        fields([
+          '### Teklif Bilgileri',
+          field('Teklif Eden Yetkili', startedBy ? `<@${startedBy}>` : 'Bilinmiyor'),
+          field('Metnin Yayınlanacağı Sunucu', ourServerName ?? 'Sunucumuz'),
+          field('Senin Sunucun', serverTitle(entry)),
+        ]),
+      ),
     )
     .addSeparatorComponents(divider())
     .addActionRowComponents(
@@ -672,31 +680,52 @@ function assignedOfferDm(entry, startedBy) {
     );
 }
 
-// Karşı yetkili "Kabul Ediyorum" deyince aynı DM mesajı bu haline güncellenir: metnini görür, onaylar, günceller ya da reddeder
-function renewalReviewDm(entry) {
+// Karşı yetkili "Kabul Ediyorum" deyince aynı DM mesajı bu haline güncellenir. Kart karşı tarafın kendi
+// sunucusundan değil **bizim taraftan** söz eder: metnin hangi sunucumuzda ve hangi yetkilimizin isteğiyle
+// yayımlanacağı yazar; kendi metni ve daveti "onaylayacağı şey" olarak etiketlenir.
+// Sunucusuna giden davet bağlantısı buton yapılmaz: adam zaten kendi sunucusundadır, buton anlamsız olurdu.
+function renewalReviewDm(entry, { serverName = null, startedBy = null } = {}) {
   const url = inviteUrl(entry.content);
   const container = new ContainerBuilder()
     .addTextDisplayComponents(
       head(
-        serverTitle(entry),
-        '**Teklifi kabul ettin.** Kayıtlı partner metnin bu; olduğu gibi onaylayabilir, istersen güncelleyebilir ya da bir sebep belirterek teklifi reddedebilirsin.',
+        'Partnerlik Yenileme Onayı',
+        'Metnin, **onay verirsen** bizim paylaşım kanalımızda yeniden yayımlanacak. Olduğu gibi onaylayabilir, istersen güncelleyebilir ya da bir sebep belirterek reddedebilirsin.',
       ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`### Partner Metni\n${quote(shorten(sanitize(entry.content), 1500))}`));
+    .addTextDisplayComponents(
+      text(
+        fields([
+          '### Paylaşım Bilgisi',
+          field('Metnin Yayınlanacağı Sunucu', serverName ?? 'Sunucumuz'),
+          field('Teklif Eden Yetkili', startedBy ? `<@${startedBy}>` : 'Bilinmiyor'),
+          field('Senin Sunucun', serverTitle(entry)),
+        ]),
+      ),
+    )
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text(`### Onaylayacağın Metin\n${quote(shorten(sanitize(entry.content), 1500))}`));
 
   if (url) {
     container
       .addSeparatorComponents(divider())
-      .addTextDisplayComponents(text(fields(['### Davet', field('Bağlantı', chip(inviteLabel(url))), 'Onaylamadan önce sunucuyu **Sunucuya Katıl** ile görebilirsin.'])));
+      .addTextDisplayComponents(
+        text(
+          fields([
+            '### Metindeki Davet',
+            field('Bağlantı', chip(inviteLabel(url))),
+            'Onayladığında bu bağlantı bizim kanalımızda da görünür olur. Davetin adresi değiştiyse onaylamadan önce **Metni Güncelle** ile yenisini yapıştır.',
+          ]),
+        ),
+      );
   }
 
   const buttons = [
     new ButtonBuilder().setCustomId(`${IDS.renewalApprove}:${entry.id}`).setLabel('Onayla').setStyle(ButtonStyle.Success),
     new ButtonBuilder().setCustomId(`${IDS.renewalEdit}:${entry.id}`).setLabel('Metni Güncelle').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('Reddet').setStyle(ButtonStyle.Danger),
   ];
-  if (url) buttons.push(new ButtonBuilder().setURL(url).setLabel('Sunucuya Katıl').setStyle(ButtonStyle.Link));
-  buttons.push(new ButtonBuilder().setCustomId(`${IDS.renewalCancel}:${entry.id}`).setLabel('Reddet').setStyle(ButtonStyle.Danger));
   return withActions(container.addSeparatorComponents(divider()), buttons, { danger: true });
 }
 
