@@ -634,6 +634,26 @@ async function refreshTrustedCards(guild, entry, trusted) {
   }
 }
 
+// Kart, çizildiği andaki güvenilirlik durumuyla kalır. Bot kapalıyken liste değişirse ya da bir çıkarma eski
+// bir karta yansımamışsa kart yanlış durur; açılışta yalnızca durumu şaşmış kartlar gerçek duruma çekilir.
+async function syncTrustedCards(guild) {
+  const channel = await fetchTextChannel(guild, config.channels.posts);
+  if (!channel) return;
+  const entries = store.trustedOf(guild.id);
+
+  for (const request of store.postedRequests(guild.id)) {
+    if (!request.postId) continue;
+    const entry = entries.find((e) => e.sourceRequestId === request.id || (request.serverId && e.serverId === request.serverId)) ?? null;
+    const message = await channel.messages.fetch(request.postId).catch(() => null);
+    if (!message) continue;
+    const kartListede = JSON.stringify(message.components ?? []).includes('"label":"Güvenilir Listede"');
+    if (kartListede === Boolean(entry)) continue;
+    await channel.messages
+      .edit(request.postId, { components: [ui.postCard(request, entry, store.isBanned(request.requesterId), statsOf(request))], allowedMentions: { parse: [] } })
+      .catch(() => {});
+  }
+}
+
 // Formdaki kullanıcı menüsünden seçilen partner yetkilileri; botlar elenir
 const selectedContacts = (interaction) =>
   [...(interaction.fields.getSelectedUsers(ui.IDS.contactId)?.values() ?? [])].filter((u) => !u.bot).map((u) => u.id);
@@ -1229,6 +1249,7 @@ function handleReady(client) {
   syncPostsChannelPermissions(guild).catch((err) => console.error('[partner] Hazırlık hatası:', err.message));
   refreshTrustedPanel(client, guild.id).catch((err) => console.error('[partner] Güvenilir partnerler paneli güncellenemedi:', err.message));
   sweepOrphanPosts(guild).catch((err) => console.error('[partner] Yarım kalan partner mesajları temizlenemedi:', err.message));
+  syncTrustedCards(guild).catch((err) => console.error('[partner] Güvenilir liste kartları düzeltilemedi:', err.message));
 }
 
 module.exports = {
