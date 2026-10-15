@@ -126,23 +126,12 @@ module.exports = ({ mock, src }) => {
     },
     {
       id: 'panel',
-      title: 'Log paneli: İletişim sekmesi',
-      where: '#log-paneli kanalına gönderilen kalıcı panel, açılışta ilk grup',
+      title: 'Log paneli: kategori seçimi',
+      where: '#log-paneli kanalına gönderilen kalıcı panel',
       visibility: 'panel',
       kind: 'message',
       build: () => {
         const container = d.panel();
-        return { components: [container], files: bannerFiles(container), ...noMentions };
-      },
-    },
-    {
-      id: 'panel-sekme',
-      title: 'Log paneli: Moderasyon sekmesi',
-      where: 'Sekmeye basınca panel mesajı kendi yerinde o grubun kategorilerine döner',
-      visibility: 'panel',
-      kind: 'message',
-      build: () => {
-        const container = d.panel('moderasyon');
         return { components: [container], files: bannerFiles(container), ...noMentions };
       },
     },
@@ -165,9 +154,8 @@ module.exports = ({ mock, src }) => {
           d.setupView({
             mainId: anaKanal.id,
             panelId: panelKanal.id,
-            groups: setupGroups(15),
+            rows: setupRows(categories.length),
             panelUrl: `https://discord.com/channels/${guild.id}/${panelKanal.id}/1539000000000000002`,
-            orphans: 12,
             note: '**Panel**, log paneli kanalına gönderildi.',
           }),
         ],
@@ -176,8 +164,8 @@ module.exports = ({ mock, src }) => {
     },
     {
       id: 'kurulum-eksik',
-      title: '/log kurulum menüsü: eksikler ve yetki sorunu var',
-      where: '/log komutunun cevabı, ilk açılışta ya da kanal açılamadığında',
+      title: '/log kurulum menüsü: eksik alt başlıklar var',
+      where: '/log komutunun cevabı, ilk açılışta ya da alt başlık açılamadığında',
       visibility: 'public',
       kind: 'message',
       build: () => ({
@@ -185,7 +173,7 @@ module.exports = ({ mock, src }) => {
           d.setupView({
             mainId: anaKanal.id,
             panelId: panelKanal.id,
-            groups: setupGroups(4, 1),
+            rows: setupRows(4),
             panelUrl: null,
           }),
         ],
