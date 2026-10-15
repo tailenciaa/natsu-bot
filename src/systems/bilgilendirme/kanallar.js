@@ -484,7 +484,7 @@ const oyunKurallari = {
         {
           items: [
             'Lobiye **çağrılmadan** girmek ve başkasının slotunu almak yasaktır.',
-            'Sıran gelmeden oynamaya başlama, AFK kalma; gelmeyeceksen <@&1555890043992940614> ekibinden birine yaz.',
+            'Sıran gelmeden oynamaya başlama, AFK kalma; gelmeyeceksen <@&1554240000529539083> ekibinden birine yaz.',
             'Takım arkadaşın hata yapınca bağırma, hakaret etme; düzeltmek istiyorsan oyun sonunda söyle.',
             'Kasıtlı kaybetme, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama yasaktır.',
             'Rapor butonunu misilleme için kullanmak kural ihlalidir; gerçek ihlalde ise kanıt senin oyun kaydındır.',
@@ -524,14 +524,14 @@ const oyunKurallari = {
     },
     {
       title: 'Turnuva ve Etkinlik Maçları',
-      sub: 'Ödül olan her maçta ölçü şeffaflıktır: kurayı, eşleşmeyi ve sonucu yetkili ilan eder. Kendi maçının hakemi ya da kaydedeni olmak yasaktır; itiraz her zaman talep üzerinden yürür.',
+      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu yetkili ilan eder. Kendi maçının hakemi ya da kaydedeni olmak yasaktır; itiraz her zaman talep üzerinden yürür.',
       blocks: [
         {
           items: [
             'Kayıt, saat ve format **duyuruda** yazılır; duyuruda olmayan bir kural sonradan eklenmez.',
-            'Kura ve eşleşme <@&1554240000529539083> tarafından çekilir ve kanalda gösterilir.',
+            'Takımlar ve eşleşme <@&1554240000529539083> tarafından kurulur, kanalda gösterilir.',
             'Maç sonucu ekran görüntüsü ile kayda geçer; itiraz kanalda değil talep üzerinden yürür.',
-            'Etkinlik maçında karar **hakemlik yapan yetkilinindir**; tartışmayı maç sırasında yapmak her iki takımın da aleyhinedir.',
+            'Etkinlik maçında karar **maçı yöneten yetkilinindir**; tartışmayı maç sırasında yapmak her iki takımın da aleyhinedir.',
           ],
         },
       ],
@@ -552,22 +552,25 @@ const oyunKurallari = {
   ],
 };
 
-// 6) 5v5 bilgilendirmesi: sunucunun takım etkinliklerinin işleyişi
+// 6) 5v5 bilgilendirmesi: iç takım maçları. Turnuva değil: takımları etkinlik yetkilisi sesli odada karma ve
+// dengeli kurar, üye kendi beşlisini aramak zorunda değildir. Muhatap her zaman <@&1554240000529539083> ekibidir,
+// genel yetkili kadrosu değil.
 const besVBesBilgisi = {
   key: 'bes-v-bes-bilgi',
   name: '5v5 Bilgilendirme Paneli',
   title: '5v5 Bilgilendirmesi',
-  intro: 'Sunucunun **takım oyunları**: iki beşli, tek maç, tek kazanan. Nasıl kurulur, nasıl yürür, ödülü kim alır.',
+  intro: 'Sunucunun **takım oyunları**: iki beşli, tek maç, tek kazanan. Takımları etkinlik yetkilisi kurar, sen duyuruyu bekleyip odaya girersin.',
   channel: '1538541416387448944',
   sections: [
     {
       title: '5v5 Nedir',
-      sub: 'Beşe beş oynanan takım etkinliklerimiz: Valorant, League of Legends ve Counter-Strike 2 tarafında açılır. İki takım, tek maç, tek kazanan; sıradan bir ranked değil, duyurulmuş bir programdır.',
+      sub: 'Beşe beş oynanan iç maçlarımız: Valorant, League of Legends ve Counter-Strike 2 tarafında açılır. İki takım, tek maç, tek kazanan; sıradan bir ranked değil, duyurulup saati belli olan bir programdır.',
       blocks: [
         {
           items: [
-            'İki takım, beşer üye; maç **etkinlik yetkilisinin** kurduğu saatte oynanır.',
-            'Takımlar ya kendi kurduğun beşliyle ya da <#1538542760506822656> kanalından çağrı yaparak dolar.',
+            'Duyuru <#1538538618468040714> kanalından gelir; <@&1554240000529539083> ekibi saati kurar, odayı yönetir ve sonucu ilan eder.',
+            'Takımları etkinlik yetkilisi kurar: kimse kendi beşlisini aramak zorunda değildir, oyun rolün ve kademen ne olursa odaya gelirsin.',
+            'Eksik kalan tarafa aynı odada üye bulunur; takım yüzünden dışarıda kalan üye olmaz.',
             'Maç öncesi format (harita, taraf, uzatma) duyuruda yazılı gelir.',
             'Kazanan takıma <@&1555890043250282496> rolü verilir.',
           ],
@@ -575,34 +578,15 @@ const besVBesBilgisi = {
       ],
     },
     {
-      title: 'Takım Nasıl Kurulur',
-      sub: 'Beş kişi bulmak zor değil; sırayı bilince lobiler kendi kendine doluyor.',
-      blocks: [
-        {
-          heading: 'Adımlar',
-          items: [
-            '`1.` <#1538538618468040714> kanalındaki duyuruyu bekle ya da <@&1554240000529539083> ekibine "5v5 çıkar mı" diye yaz.',
-            '`2.` <#1538542760506822656> kanalında oyun rolünle birlikte arayışını yaz; <@&1555890043221049355> gibi oyun rolleri seni bulunur kılar.',
-            '`3.` Beşli olunca <#1538542814680453281> kanalında lobi kur; saat ve tarafı yaz.',
-            '`4.` Maçtan önce <#1538543237940117586> kanalında toplan, takım odasına oradan geç.',
-          ],
-        },
-        {
-          heading: 'Takım kaptanı',
-          text: 'Her takımın bir kaptanı olur: üye listesini yetkiliye bildirir, eksik ya da geç kalanı **oyundan önce** söyler, itirazı maç içinde değil maç sonunda kaptan taşır.',
-          note: 'Kaptan ceza vermeye yetkili değildir; kural dışı davranışı yetkiliye iletir.'
-        },
-      ],
-    },
-    {
       title: 'Maç Günü',
-      sub: 'Saat, kanal, taraf: karışan şeyler değil, takipte geciken şeyler maçı uzatır.',
+      sub: 'Saat, kanal, taraf: karışan şeyler değil, takipte geciken şeyler maçı uzatır. Odaya geç gelen yalnızca kendi sırasını değil, iki takımın da maçını bekletir.',
       blocks: [
         {
           heading: 'Sıra',
           items: [
-            'Duyurudan **10 dakika önce** <#1538543237940117586> kanalında toplanılır.',
-            'Eksik varsa sıradan önce <@&1555890043992940614> ekibinden birine yazılır.',
+            'Duyurudan **10 dakika önce** <#1538543237940117586> kanalında toplanılır; sesli katılım beklenir.',
+            'Takımlar sesli odada kurulur: <@&1554240000529539083> ekibi karma yapar ve iki beşliyi dengeli tutar.',
+            'Geleceğin saatte belli olursa sıradan önce <@&1554240000529539083> ekibine yazılır; yerin boşa gitmez.',
             'Takım odaları: mavi taraf <#1538938368141041664> ve <#1538942533319786546>, kırmızı taraf <#1538938411589566554> ve <#1538942550038282280>.',
             'Maç bittikten sonra skor ekran görüntüsü yetkiliye gösterilir; sonuç kanalda ilan edilir.',
           ],
@@ -616,15 +600,15 @@ const besVBesBilgisi = {
     },
     {
       title: 'Kurallar ve İtiraz',
-      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir. Oyuncu maç durduramaz, itirazını maç sonunda kaptan ya da destek talebi üzerinden taşır.',
+      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir. Oyuncu maç durduramaz, itirazını maç sonunda destek talebi üzerinden taşır.',
       blocks: [
         {
           items: [
             'Hile, makro ve izinsiz eklenti: anında maçtan ve etkinlikten çıkarılma.',
-            'AFK kalma ve kasıtlı kaybetme: kaptan ya da yetkili uyarır, tekrarında takım eksik oynar.',
-            'Saatte hazır olmayan üye yerine yedek alınabilir; yedek bulanamazsa maç ertelenir.',
+            'AFK kalma ve kasıtlı kaybetme: yetkili uyarır, tekrarında yerine yedek alınır.',
+            'Saatte hazır olmayan üye yerine yedek bulunabilir; yedek de çıkmazsa maç ertelenir.',
             'Skor tartışması, itiraz ve ceza isteği <#1538535372588326973> kanalından talep açılarak yürür.',
-            'Karar hakemlik yapan yetkilinindir; kanalda bağırarak değiştiremezsin.',
+            'Karar maçı yöneten yetkilinindir; kanalda bağırarak değiştiremezsin.',
           ],
           note: 'Ayrıntılı maddeler <#1538541309634285678> kanalında.',
         },
@@ -639,7 +623,7 @@ const besVBesBilgisi = {
             'Birinci takıma <@&1555890043250282496> rolü verilir; başka ödül varsa duyuruda yazan kadardır.',
             'Sonuç <#1538538618468040714> kanalından ilan edilir, katılımcılara teşekkür edilir.',
             'Klip ve skorlar <#1538542919084941333> kanalında paylaşılır.',
-            'Sürekli aynı takımla oynanmaması için sonraki etkinlikte eşleşme yeniden kurulur.',
+            'Sürekli aynı takımla oynanmaması için sonraki 5v5\'te takımlar baştan kurulur.',
           ],
         },
       ],
