@@ -89,7 +89,7 @@ function panel(activeGroup = GROUPS[0].key) {
   // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, afiş, çizgi, sekmeler, çizgi, menü
   return page({
     title: `${botName} Log Paneli`,
-    sub: 'Loglar **dört grubun** kendi kanalında, kategori kategori ayrılmış alt başlıklarda tutulur: önce bir **grup sekmesine**, sonra alttaki menüden **kategoriye** bas; seçimin seni doğrudan o alt başlığa götürür.',
+    sub: 'Loglar **dört grubun** kendi kanalında, kategori kategori ayrılmış alt başlıklarda tutulur: önce bir **grup sekmesine**, sonra **kategori menüsünden** bir kategoriye bas; seçimin seni doğrudan o alt başlığa götürür.',
   })
     .addMediaGalleryComponents(bannerGallery(config.banner))
     .addSeparatorComponents(divider())

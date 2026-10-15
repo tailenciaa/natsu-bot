@@ -36,13 +36,31 @@ module.exports = ({ mock, src }) => {
     { name: 'kilavuz.pdf', url: 'https://cdn.discordapp.com/attachments/1/2/kilavuz.pdf' },
     { name: 'kayit.mp4', url: 'https://cdn.discordapp.com/attachments/1/2/kayit.mp4' },
   ];
-  const silinen = d.entry('danger', 'Mesaj Silindi', [
-    `**Kullanıcı:** <@${uye.id}>`,
-    `**Kanal:** <#${kanal.id}>`,
-    '**İçerik:**\n> yarın buluşuyor muyuz?',
-    `**Ekler:**\n${ekler.map((a) => `- ${a.name}`).join('\n')}`,
-    `**Silen:** <@${yetkili.id}>`,
-  ]);
+  // events/message.js'in "Mesaj Silindi" girdisinin birebir karşılığı: kartta kısa, detayda tam hâli
+  const zaman = (at, style) => `<t:${Math.floor(at / 1000)}:${style}>`;
+  const olusum = Date.now() - 3600_000;
+  const silinme = Date.now();
+  const silinen = d.entry(
+    'danger',
+    'Mesaj Silindi',
+    [
+      `**Kullanıcı:** <@${uye.id}>`,
+      `**Kanal:** <#${kanal.id}>`,
+      '**İçerik:**\n> yarın buluşuyor muyuz?',
+      `**Ekler:**\n${ekler.map((a) => `- ${a.name}`).join('\n')}`,
+      `**Silen:** <@${yetkili.id}>`,
+    ],
+    [
+      `**Mesaj sahibi:** <@${uye.id}>`,
+      `**Gönderildiği zaman:** ${zaman('D')} ${zaman('T')}`,
+      `**Silindiği zaman:** ${zaman('D')} ${zaman('T')}`,
+      `**Kanal:** <#${kanal.id}>`,
+      '**Mesaj ID:** `1539000000000000001`',
+      '**İçerik:**\n> yarın buluşuyor muyuz?',
+      `**Ekler:**\n${ekler.map((a) => `- ${a.name}: ${a.url}`).join('\n')}`,
+      `**Silen yetkili:** <@${yetkili.id}>`,
+    ],
+  );
 
   return [
     {
