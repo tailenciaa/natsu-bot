@@ -197,7 +197,7 @@ const yetkiliBilgisi = {
             '**Değerlendirme** <#1538941536094519316>: üyenin talep kapandıktan sonra bıraktığı yıldızlar burada; **Yorum Ekle** ile yanıtlar, haksız bulursan **İtiraz Et** ile lidere taşırsın.',
             '**İtiraz kaydı** <#1538941597301997700>: itiraz edilen değerlendirmeler burada toplanır, kararı <@&1553133497781325954> verir.',
             '**Log paneli** <#1538944642685468702>: silinen ve düzenlenen mesajlar, ses hareketleri, giriş-çıkış ve ceza kayıtları; `/log` ile kategori seçilir.',
-            '**Görüşme kanalları** <#1538544966282911884> / <#1538545004920971284> / <#1538545038751965265>: itiraz ve mülakat sesleri.',
+            '**Görüşme odaları** <#1538544966282911884> / <#1538545004920971284> / <#1538545038751965265>: üyeyle sesli görüşme ve yetkili mülakatı burada yürür.',
           ],
         },
       ],
@@ -504,8 +504,8 @@ const oyunKurallari = {
       ],
     },
     {
-      title: 'Turnuva ve Etkinlik Maçları',
-      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu yetkili ilan eder. Kendi maçının hakemi ya da kaydedeni olmak yasaktır; konu maçın içinde, sesli odada kapanır.',
+      title: 'Etkinlik Maçları',
+      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu maçı yöneten yetkili ilan eder. Kendi maçının kararını kendin veremezsin; konu maçın içinde, sesli odada kapanır.',
       blocks: [
         {
           items: [
