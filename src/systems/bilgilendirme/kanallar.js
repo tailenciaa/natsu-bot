@@ -119,7 +119,7 @@ const yetkiliKurallari = {
         {
           items: [
             'Üyeyle aynı ceza basamaklarına tabisin, üstelik **görevi kötüye kullanma** kaydı siciline işlenir.',
-            'Tekrarlanan ya da ağır durumlarda yetki geri alınır; <#1538945093921153206> kanalındaki işleyiş yeniden kurulur.',
+            'Tekrarlanan ya da ağır durumlarda yetki geri alınır ve görev alanın boş sayılır.',
             'Yetkiyi geri almak için yeni başvuru, mülakat ve oryantasyon gerekir.',
           ],
         },
@@ -231,7 +231,7 @@ const yetkiliBilgisi = {
             'Devir: <#1538945273378639913> kanalında "bende şu talep var, şu aşamada" diye yaz, başka bir yetkili üstlensin.',
             'İzin ya da yoğunluk dönemini <@&1555890044768624662> ekibinden birine bildir.',
             'Yanıtsız kalan talepler için hatırlatma otomatik düşer; hatırlatmayı görmezden gelmek kaydına işler.',
-            'Yetkili olarak puanın `<@&1555890043992940614>` ekibinde değil sicillinde görünür; haftalık derece tabloları seni de kapsar.',
+            'Puanın ve geçmişin sicil kartında durur: `/sicil`. Haftalık derece tabloları yetkilileri de kapsar.',
           ],
         },
       ],
@@ -253,7 +253,7 @@ const etkinlikKurallari = {
       blocks: [
         {
           items: [
-            'Duyuru <#1538538618468040714> kanalından gelir; saatten **5 dakika önce** toplanma kanalında hazır bulun.',
+            'Duyuru <#1538538618468040714> kanalından gelir; duyurulan saatte etkinlik sesli kanalında hazır bulun.',
             'Yer ayırtıp gelmemek, etkinliğin ortasında kalkmak yerine **etkinliği yöneten yetkiliye** haber verilir.',
             'Aynı etkinlikte ikinci şans için **ikinci hesap** kullanmak yasaktır; tek hesap, tek ödül.',
             'Sunucudan çıkarılan ya da cezalı durumdaki üye etkinliğe alınmaz; cezalı kanaldayken etkinlik çağırmak da yasaktır.',
@@ -323,7 +323,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Etkinlik Kanalları',
-      sub: 'Her kanalın bir işi var; kuralları okumak için buradasın, geri kalanı aşağıda değil bu listede.',
+      sub: 'Her kanalın bir işi var; kurallar bu kanalda, oynanış bilgisi ve duyuru yan kanallarda.',
       blocks: [
         {
           items: [
@@ -483,7 +483,7 @@ const oyunKurallari = {
         {
           items: [
             'Hakaret, küfür, ayrımcılık ve tehdit **rakibe de takım arkadaşına da** yasaktır.',
-            'Kendi takım arkadaşını Susturma / oyundan atma tehdidiyle sıkıştırmak tacizdir.',
+            'Takım arkadaşını susturma ya da oyundan atma tehdidiyle sıkıştırmak tacizdir.',
             'Hesap, şifre, e-posta ve kişisel bilgi paylaşılmaz; "oynayıp hesap vereyim" teklifi kabul edilmez.',
             'Gerçek para ile bahis, hesap satışı ve ödül takası yasaktır.',
             'Hile, makro, izinsiz eklenti ve spoof yasaktır; tespit edilen ceza alır, etkinlikten çıkarılır.',
@@ -502,7 +502,7 @@ const oyunKurallari = {
             'Lobiye **çağrılmadan** girmek ve başkasının slotunu almak yasaktır.',
             'Sıran gelmeden oynamaya başlama, AFK kalma; gelmeyeceksen <@&1555890043992940614> ekibinden birine yaz.',
             'Takım arkadaşın hata yapınca bağırma, hakaret etme; düzeltmek istiyorsan oyun sonunda söyle.',
-            'Kasıtlı kaybetme, kendi kuleyi/objeyi vurma ve teslim alma (aggro) yasaktır.',
+            'Kasıtlı kaybetme, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama yasaktır.',
             'Rapor butonunu misilleme için kullanmak kural ihlalidir; gerçek ihlalde ise kanıt senin oyun kaydındır.',
             'Oyuncu aramak için <#1538542760506822656>, kurulan lobiler için <#1538542814680453281> kanalı kullanılır.',
           ],
@@ -600,7 +600,7 @@ const besVBesBilgisi = {
         {
           heading: 'Adımlar',
           items: [
-            '`1.` <#1538538618468040714> kanalındaki duyuruyu bekle ya da kendin "5v5 çıkar mı" diye <@&1555890045175595128> ekibine haber ver.',
+            '`1.` <#1538538618468040714> kanalındaki duyuruyu bekle ya da <@&1554240000529539083> ekibine "5v5 çıkar mı" diye yaz.',
             '`2.` <#1538542760506822656> kanalında oyun rolünle birlikte arayışını yaz; <@&1555890043221049355> gibi oyun rolleri seni bulunur kılar.',
             '`3.` Beşli olunca <#1538542814680453281> kanalında lobi kur; saat ve tarafı yaz.',
             '`4.` Maçtan önce <#1538543237940117586> kanalında toplan, takım odasına oradan geç.',
@@ -812,7 +812,7 @@ const partnerSartlari = {
         {
           heading: 'Pratikte neye bakarız',
           items: [
-            'Sunucu Türkçe ve kurallara uyumlu olsun: +18 içerik, taciz, ayrımcılık ya da yasa dışı paylaşık olmamalı.',
+            'Sunucu Türkçe ve kurallara uyumlu olsun: +18 içerik, taciz, ayrımcılık ya da yasa dışı paylaşım olmamalı.',
             'Davet bağlantısı **kalıcı** olmalı ve gerçekten o sunucuya gitmeli.',
             'Metin okunabilir olsun: sunucunun adı, ne vaat ettiği ve davet bağlantısı tek mesajda.',
             'Karşı tarafta iletişime geçilebilir bir **yetkili** bulunsun; muhatapsız kayıtlar yenilenmez.',
@@ -912,7 +912,7 @@ const partnerMetnimiz = {
         {
           items: [
             'Onaylanan partnerliklerde karşı sunucunun yetkilisine **DM** olarak bu metin gönderilir.',
-            'Kendi üyelerimiz partner paylaşí yaparken <#1538943593665007696> kanalına bu metni koyar.',
+            'Kendi üyelerimiz partner paylaşımı yaparken <#1538943593665007696> kanalına bu metni koyar.',
             '<#1538536775956566117> kanalında **partner** ya da **dm** yazan her üyeye bot bu metni teklif olarak sunar.',
           ],
         },
