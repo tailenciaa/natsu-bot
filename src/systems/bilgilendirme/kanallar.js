@@ -295,20 +295,6 @@ const etkinlikKurallari = {
       ],
     },
     {
-      title: 'Sonuç ve İtiraz',
-      sub: 'Karara itiraz edilir, tartışma çıkarılmaz. İtirazın yolu kapalı değildir ama sıra kanalda değil destek talebindedir; kanalda büyüyen tartışma ayrı bir ihlale dönüşür.',
-      blocks: [
-        {
-          items: [
-            'Kazananı etkinlik yetkilisi belirler; sonuç ilan edilir ve kayda geçer.',
-            'İtirazını **talep açarak** yap; kanalda bağırarak değil.',
-            'İtirazı, o etkinliği yöneten yetkili sonuçlandırmaz; dosyayı başka bir yetkili yürütür.',
-            'Kazanmadığın bir ödülü kazandım diye iddia etmek ceza sebebidir.',
-          ],
-        },
-      ],
-    },
-    {
       title: 'Ödüller',
       sub: 'Ödül listesi duyuruda yazan kadardır; kural çiğneyen, oyunun ödülünü de kaybeder. Kazandığını sen değil, etkinliği yöneten yetkili ilan eder; ilan edilmemiş şey ödül sayılmaz.',
       blocks: [
@@ -317,6 +303,7 @@ const etkinlikKurallari = {
             'Ödül **etkinlik bitiminde** ve tek seferde dağıtılır; eksik kaldığını düşündüğün ödül için <@&1554240000529539083> ekibine yazılır.',
             'Ödül devredilemez ve başkasına satılamaz; takas ya da satış girişimi yasaktır.',
             'Etkinlik bitişine kadar kalmayan, ödül anında bulunmayan üye hakkını sıradakine bırakır.',
+            'Kazanmadığın bir ödülü kazandım diye iddia etmek ceza sebebidir.',
           ],
           note: 'Haftalık dereceler ve saygınlık ödülleri etkinlik ödülünden ayrıdır; o roller her pazartesi yenilenir.',
         },
@@ -524,14 +511,14 @@ const oyunKurallari = {
     },
     {
       title: 'Turnuva ve Etkinlik Maçları',
-      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu yetkili ilan eder. Kendi maçının hakemi ya da kaydedeni olmak yasaktır; itiraz her zaman talep üzerinden yürür.',
+      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu yetkili ilan eder. Kendi maçının hakemi ya da kaydedeni olmak yasaktır; konu maçın içinde, sesli odada kapanır.',
       blocks: [
         {
           items: [
             'Kayıt, saat ve format **duyuruda** yazılır; duyuruda olmayan bir kural sonradan eklenmez.',
             'Takımlar ve eşleşme <@&1554240000529539083> tarafından kurulur, kanalda gösterilir.',
-            'Maç sonucu ekran görüntüsü ile kayda geçer; itiraz kanalda değil talep üzerinden yürür.',
-            'Etkinlik maçında karar **maçı yöneten yetkilinindir**; tartışmayı maç sırasında yapmak her iki takımın da aleyhinedir.',
+            'Maç sonucu ekran görüntüsü ile kayda geçer.',
+            'Karar maçı yöneten yetkilinindir: itirazını maçın içinde, odada edersin; kanalda uzatılan tartışma her iki takımın da aleyhinedir.',
           ],
         },
       ],
@@ -599,16 +586,15 @@ const besVBesBilgisi = {
       ],
     },
     {
-      title: 'Kurallar ve İtiraz',
-      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir. Oyuncu maç durduramaz, itirazını maç sonunda destek talebi üzerinden taşır.',
+      title: 'Kurallar',
+      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir. Konu maçın içinde, sesli odada kapanır: skor ekran görüntüsü yetkilidedir ve tartışma uzatılmaz.',
       blocks: [
         {
           items: [
             'Hile, makro ve izinsiz eklenti: anında maçtan ve etkinlikten çıkarılma.',
             'AFK kalma ve kasıtlı kaybetme: yetkili uyarır, tekrarında yerine yedek alınır.',
             'Saatte hazır olmayan üye yerine yedek bulunabilir; yedek de çıkmazsa maç ertelenir.',
-            'Skor tartışması, itiraz ve ceza isteği <#1538535372588326973> kanalından talep açılarak yürür.',
-            'Karar maçı yöneten yetkilinindir; kanalda bağırarak değiştiremezsin.',
+            'Karar maçı yöneten yetkilinindir; itiraz odada, maçın içinde edilir, kanalda bağırarak sonuç değişmez.',
           ],
           note: 'Ayrıntılı maddeler <#1538541309634285678> kanalında.',
         },
