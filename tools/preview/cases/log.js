@@ -48,12 +48,12 @@ module.exports = ({ mock, src }) => {
       `**Kanal:** <#${kanal.id}>`,
       '**İçerik:**\n> yarın buluşuyor muyuz?',
       `**Ekler:**\n${ekler.map((a) => `- ${a.name}`).join('\n')}`,
-      `**Silen:** <@${yetkili.id}>`,
+      `**Silen yetkili:** <@${yetkili.id}>`,
     ],
     [
       `**Mesaj sahibi:** <@${uye.id}>`,
-      `**Gönderildiği zaman:** ${zaman('D')} ${zaman('T')}`,
-      `**Silindiği zaman:** ${zaman('D')} ${zaman('T')}`,
+      `**Gönderildiği zaman:** ${zaman(olusum, 'D')} ${zaman(olusum, 'T')}`,
+      `**Silindiği zaman:** ${zaman(silinme, 'D')} ${zaman(silinme, 'T')}`,
       `**Kanal:** <#${kanal.id}>`,
       '**Mesaj ID:** `1539000000000000001`',
       '**İçerik:**\n> yarın buluşuyor muyuz?',
@@ -130,12 +130,7 @@ module.exports = ({ mock, src }) => {
       where: 'Log girdisindeki Detaylı Bilgi butonuna basınca sadece basana görünür',
       visibility: 'ephemeral',
       kind: 'message',
-      build: () => ({
-        components: [
-          d.detail({ ...silinen.logMeta, details: [...silinen.logMeta.details, `**Ekler:**\n${ekler.map((a) => `- ${a.name}: ${a.url}`).join('\n')}`] }, mesajKategorisi.label),
-        ],
-        ...noMentions,
-      }),
+      build: () => ({ components: [d.detail(silinen.logMeta, mesajKategorisi.label)], ...noMentions }),
     },
     {
       id: 'panel',
