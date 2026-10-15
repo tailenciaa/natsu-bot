@@ -2,9 +2,12 @@
 // logları alt başlığa mesaj olarak atılır. Yeni bir kategori eklemek için buraya bir satır eklemek ve ilgili
 // Discord olayını dinleyen kodu events/ altındaki uygun dosyaya (ya da yeni bir dosyaya) yazmak yeterli.
 // threadName değişirse mevcut alt başlık (içindeki loglarla birlikte) otomatik yeniden adlandırılır.
+// group: kategorinin hangi log grubuna (groups.js) ait olduğu — grubun kanalında alt başlık açılır ve panelde o
+// sekmenin altında gösterilir. Yeni bir kategori grupsuz bırakılırsa ilk gruba düşer.
 module.exports = [
   {
     key: 'mesaj',
+    group: 'iletisim',
     label: 'Mesaj Logları',
     emoji: '📝',
     threadName: '📝・mesaj-logları',
@@ -12,6 +15,7 @@ module.exports = [
   },
   {
     key: 'ses',
+    group: 'iletisim',
     label: 'Ses Logları',
     emoji: '🔊',
     threadName: '🔊・ses-logları',
@@ -19,6 +23,7 @@ module.exports = [
   },
   {
     key: 'uye',
+    group: 'uye',
     label: 'Giriş / Çıkış Logları',
     emoji: '👋',
     threadName: '👋・giriş-çıkış',
@@ -26,6 +31,7 @@ module.exports = [
   },
   {
     key: 'isim',
+    group: 'uye',
     label: 'İsim Logları',
     emoji: '📛',
     threadName: '📛・isim-logları',
@@ -33,6 +39,7 @@ module.exports = [
   },
   {
     key: 'rol',
+    group: 'uye',
     label: 'Rol Logları',
     emoji: '🏷️',
     threadName: '🏷️・rol-logları',
@@ -40,6 +47,7 @@ module.exports = [
   },
   {
     key: 'kanal',
+    group: 'sunucu',
     label: 'Kanal Logları',
     emoji: '📂',
     threadName: '📂・kanal-logları',
@@ -47,6 +55,7 @@ module.exports = [
   },
   {
     key: 'ban',
+    group: 'moderasyon',
     label: 'Ban Logları',
     emoji: '🔨',
     threadName: '🔨・ban-logları',
@@ -54,6 +63,7 @@ module.exports = [
   },
   {
     key: 'kick',
+    group: 'moderasyon',
     label: 'Kick Logları',
     emoji: '👢',
     threadName: '👢・kick-logları',
@@ -61,6 +71,7 @@ module.exports = [
   },
   {
     key: 'susturma',
+    group: 'moderasyon',
     label: 'Susturma Logları',
     emoji: '🔇',
     threadName: '🔇・susturma-logları',
@@ -68,6 +79,7 @@ module.exports = [
   },
   {
     key: 'jail',
+    group: 'moderasyon',
     label: 'Jail Logları',
     emoji: '⛓️',
     threadName: '⛓️・jail-logları',
@@ -75,6 +87,7 @@ module.exports = [
   },
   {
     key: 'uyari',
+    group: 'moderasyon',
     label: 'Uyarı Logları',
     emoji: '⚠️',
     threadName: '⚠️・uyarı-logları',
@@ -82,6 +95,7 @@ module.exports = [
   },
   {
     key: 'automod',
+    group: 'moderasyon',
     label: 'AutoMod Logları',
     emoji: '🛡️',
     threadName: '🛡️・automod-logları',
@@ -89,6 +103,7 @@ module.exports = [
   },
   {
     key: 'sunucu',
+    group: 'sunucu',
     label: 'Sunucu Logları',
     emoji: '⚙️',
     threadName: '⚙️・sunucu-logları',
@@ -96,6 +111,7 @@ module.exports = [
   },
   {
     key: 'boost',
+    group: 'sunucu',
     label: 'Takviye Logları',
     emoji: '💎',
     threadName: '💎・boost-logları',
@@ -103,6 +119,7 @@ module.exports = [
   },
   {
     key: 'bot',
+    group: 'sunucu',
     label: 'Bot Logları',
     emoji: '🤖',
     threadName: '🤖・bot-logları',
