@@ -446,11 +446,12 @@ async function handleCloseSubmit(interaction) {
 
   // closeTicket kilidini (closing) ilk await'ten önce eşzamanlı alır; aynı anda gelen ikinci form kapatmayı tekrarlamaz
   const closed = closeTicket(interaction.channel, interaction.user, closeReason);
-  await interaction.deferReply({ flags: core.CV2 });
+  // Kapanışın sonucu işlemi yapan yetkiliye özeldir: panel kanalına/alt başlığa ayrı bir mesaj düşmesin, gizli cevap verilir
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   await closed;
   await interaction.editReply({
     components: [core.alert('Talep kapatıldı.', 'Alt başlık kilitlendi ve arşivlendi.', 'success')],
-    flags: core.CV2,
+    flags: core.EPHEMERAL_CV2,
     allowedMentions: { parse: [] },
   });
 }
@@ -494,11 +495,12 @@ async function handleRejectSubmit(interaction) {
 
   // closeTicket kilidini (closing) ilk await'ten önce eşzamanlı alır; aynı anda gelen ikinci form reddi tekrarlamaz
   const closed = closeTicket(thread, interaction.user, closeReason, { rejected: true });
-  await interaction.deferReply({ flags: core.CV2 });
+  // Reddin sonucu sadece butona basan yetkilidir: panel kanalında yeni bir mesaj bırakmasın, gizli cevap verilir
+  await interaction.deferReply({ flags: core.EPHEMERAL_CV2 });
   await closed;
   await interaction.editReply({
     components: [core.alert('Talep reddedildi.', 'Alt başlık kilitlendi, üyeye reddin sebebi bildirildi.', 'success')],
-    flags: core.CV2,
+    flags: core.EPHEMERAL_CV2,
     allowedMentions: { parse: [] },
   });
 }
