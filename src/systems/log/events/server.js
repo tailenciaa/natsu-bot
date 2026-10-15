@@ -1,4 +1,5 @@
-// Sunucu, kanal ve rol logları: kanal/alt başlık, rol, sunucu ayarı, emoji, çıkartma ve davet değişiklikleri.
+// Sunucu, kanal ve rol logları: kanal/alt başlık ve rol değişiklikleri kendi alt başlıklarına, sunucu ayarı
+// "sunucu", emoji ve çıkartma "emoji", davet değişiklikleri "davet" alt başlığına yazılır.
 // Mümkün olduğunda işlemi yapan yetkili denetim kaydından bulunup eklenir.
 const { AuditLogEvent, ChannelType } = require('discord.js');
 const { shorten } = require('../../../core/ui');
@@ -184,7 +185,7 @@ async function handleGuildUpdate(oldGuild, newGuild) {
 async function handleEmojiCreate(emoji) {
   await engine.send(
     emoji.client,
-    'sunucu',
+    'emoji',
     ui.entry('success', 'Emoji Eklendi', [`**Emoji:** ${emoji} \`:${emoji.name}:\``, await audit.by(emoji.guild, AuditLogEvent.EmojiCreate, emoji.id)]),
   );
 }
@@ -192,7 +193,7 @@ async function handleEmojiCreate(emoji) {
 async function handleEmojiDelete(emoji) {
   await engine.send(
     emoji.client,
-    'sunucu',
+    'emoji',
     ui.entry('danger', 'Emoji Silindi', [`**Emoji:** \`:${emoji.name}:\``, await audit.by(emoji.guild, AuditLogEvent.EmojiDelete, emoji.id)]),
   );
 }
@@ -201,7 +202,7 @@ async function handleEmojiUpdate(oldEmoji, newEmoji) {
   if (oldEmoji.name === newEmoji.name) return;
   await engine.send(
     newEmoji.client,
-    'sunucu',
+    'emoji',
     ui.entry('warning', 'Emoji Düzenlendi', [
       `**Emoji:** ${newEmoji} \`:${oldEmoji.name}:\` → \`:${newEmoji.name}:\``,
       await audit.by(newEmoji.guild, AuditLogEvent.EmojiUpdate, newEmoji.id),
@@ -212,7 +213,7 @@ async function handleEmojiUpdate(oldEmoji, newEmoji) {
 async function handleStickerCreate(sticker) {
   await engine.send(
     sticker.client,
-    'sunucu',
+    'emoji',
     ui.entry('success', 'Çıkartma Eklendi', [`**Çıkartma:** ${sticker.name}`, await audit.by(sticker.guild, AuditLogEvent.StickerCreate, sticker.id)]),
   );
 }
@@ -220,7 +221,7 @@ async function handleStickerCreate(sticker) {
 async function handleStickerDelete(sticker) {
   await engine.send(
     sticker.client,
-    'sunucu',
+    'emoji',
     ui.entry('danger', 'Çıkartma Silindi', [`**Çıkartma:** ${sticker.name}`, await audit.by(sticker.guild, AuditLogEvent.StickerDelete, sticker.id)]),
   );
 }
@@ -229,7 +230,7 @@ async function handleInviteCreate(invite) {
   invites.add(invite);
   await engine.send(
     invite.client,
-    'sunucu',
+    'davet',
     ui.entry('success', 'Davet Oluşturuldu', [
       `**Kod:** ${invite.code}`,
       `**Kanal:** <#${invite.channelId}>`,
@@ -243,7 +244,7 @@ async function handleInviteCreate(invite) {
 async function handleInviteDelete(invite) {
   await engine.send(
     invite.client,
-    'sunucu',
+    'davet',
     ui.entry('danger', 'Davet Silindi', [
       `**Kod:** ${invite.code}`,
       `**Kanal:** <#${invite.channelId}>`,
