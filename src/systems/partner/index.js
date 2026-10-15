@@ -1026,7 +1026,7 @@ async function handleRenewalAssign(interaction) {
 
   const contact = await interaction.client.users.fetch(contactId).catch(() => null);
   const sent = await contact
-    ?.send({ components: [ui.assignedOfferDm(entry, interaction.user.id)], flags: core.CV2 })
+    ?.send({ components: [ui.assignedOfferDm(entry, interaction.user.id, ourServerName(interaction.client, interaction.guildId ?? entry.guildId))], flags: core.CV2 })
     .catch(() => null);
   if (!sent) {
     return interaction.editReply({
@@ -1057,13 +1057,17 @@ function renewalOfferError(interaction, trustedId) {
   return { offer, entry };
 }
 
+// Karşı taraf DM'de karar verirken bizim sunucunun adını görür: hangi sunucusuyla partnerliğinin yenilendiğini
+// DM kartından anlaması gerekir, kendi sunucusunun adını zaten biliyor
+const ourServerName = (client, guildId) => client.guilds.cache.get(guildId)?.name ?? 'Sunucumuz';
+
 // Karşı yetkili "Kabul Ediyorum" deyince aynı DM, metnini gösterip karar isteyen hale güncellenir
 async function handleRenewalAssignedAccept(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalAssignedAccept.length + 1);
-  const { error, entry } = renewalOfferError(interaction, trustedId);
+  const { error, offer, entry } = renewalOfferError(interaction, trustedId);
   if (error) return replyError(interaction, error);
 
-  return interaction.update({ components: [ui.renewalReviewDm(entry)] });
+  return interaction.update({ components: [ui.renewalReviewDm(entry, { serverName: ourServerName(interaction.client, offer.guildId), startedBy: offer.startedBy })] });
 }
 
 async function handleRenewalEditButton(interaction) {
@@ -1076,7 +1080,7 @@ async function handleRenewalEditButton(interaction) {
 
 async function handleRenewalEditSubmit(interaction) {
   const trustedId = interaction.customId.slice(ui.IDS.renewalEditModal.length + 1);
-  const { error } = renewalOfferError(interaction, trustedId);
+  const { error, offer } = renewalOfferError(interaction, trustedId);
   if (error) return replyError(interaction, error);
 
   const content = interaction.fields.getTextInputValue(ui.IDS.renewalEditInput).trim();
@@ -1085,7 +1089,9 @@ async function handleRenewalEditSubmit(interaction) {
   }
   const updated = store.updateTrusted(trustedId, { content });
 
-  return interaction.update({ components: [ui.renewalReviewDm(updated)] });
+  return interaction.update({
+    components: [ui.renewalReviewDm(updated, { serverName: ourServerName(interaction.client, offer.guildId), startedBy: offer.startedBy })],
+  });
 }
 
 async function handleRenewalCancelButton(interaction) {
