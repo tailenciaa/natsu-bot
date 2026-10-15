@@ -86,10 +86,6 @@ const inviteLabel = (url) => url.slice('https://'.length);
 // Standart başlık: büyük başlık ve iki satıra yayılan uzun normal yazılı açıklama (bütün mesajlar aynı genişlikte görünsün)
 const head = (title, sub) => text(`## ${title}\n${sub}`);
 
-// Kopyalanıp kendi sunucusunda paylaşılacak metinler kod bloğuna konur; bloğun içindeki üçlü tırnak
-// sırasına küçük bir boşluk karakteri eklenir, yoksa bloğun tamamı bozulur
-const copyBlock = (value) => '```\n' + String(value ?? '').replace(/```/g, '`\u200b``') + '\n```';
-
 const serverLabel = (entry) => entry.serverId ?? 'bilinmiyor';
 const serverTitle = (entry) => (entry.serverName ? shorten(inert(entry.serverName), 60) : `Sunucu ${serverLabel(entry)}`);
 const contactsText = (entry) => (entry.contactIds?.length ? entry.contactIds.map((id) => `<@${id}>`).join(', ') : 'Bilinmiyor');
@@ -770,7 +766,6 @@ function renewalCancelModal(trustedId) {
 }
 
 // Onaydan sonra karşı sunucunun partner yetkilisine giden ikinci mesaj: bizim sunucumuzu tanıtan metin.
-// Metin kod bloğunda verilir ki olduğu gibi kopyalanıp karşı tarafın kendi sunucusunda paylaşılabilsin.
 // sharedUrl biliniyorsa tek buton eklenir: karşı tarafın metninin paylaşıldığı mesaja gider.
 function ourTextDm(entry, sharedUrl = null) {
   const kimlik = entry?.serverName ? `**${shorten(inert(entry.serverName), 60)}** sunucunun` : 'Sunucunun';
@@ -782,7 +777,7 @@ function ourTextDm(entry, sharedUrl = null) {
   );
 
   container.addSeparatorComponents(divider()).addTextDisplayComponents(
-    text(`### Bizim Sunucumuz\n${copyBlock(config.ourAdText)}`),
+    text(`### Bizim Sunucumuz\n${config.ourAdText}`),
   );
 
   if (sharedUrl) {
