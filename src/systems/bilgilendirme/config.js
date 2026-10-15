@@ -193,19 +193,10 @@ const anaPanel = {
           ]
         },
         {
-          "heading": "Daha fazla bilgi",
-          "items": [
-            "<#1538940282895208518>: Özel oda rehberi",
-            "<#1538941087195074702>: Kalıcı odalar",
-            "<#1538940522469662721>: Sesli kanallar hakkında bilgi",
-            "<#1538940642892324864>: Yayın izni"
-          ]
-        },
-        {
           "note": "**Sesli kanallarda da sunucu kuralları geçerlidir.**"
         }
       ],
-      "sub": "Kendi özel sesli odanı nasıl açabileceğini, oda sahibi olarak neler yapabileceğini ve sesli kanallarla ilgili daha fazla bilgiyi nereden bulabileceğini öğrenebilirsin."
+      "sub": "Kendi özel sesli odanı nasıl açabileceğini, oda sahibi olarak kimi içeri alıp kimi dışarı atabileceğini ve sesli kanallarda hangi hakların olduğunu buradan görebilirsin."
     },
     {
       "title": "Destek ve Ceza Sistemi",
@@ -247,68 +238,6 @@ const anaPanel = {
         }
       ],
       "sub": "Sunucunla partner olmak istiyorsan izlemen gereken adımları, partner teklifinin nasıl onaylandığını ve partner kanallarına nasıl erişebileceğini buradan öğrenebilirsin."
-    },
-    {
-      "title": "Kanallar",
-      "sub": "Sunucudaki önemli kanalların hangi kategoride yer aldığını ve her birinin ne işe yaradığını kısaca özetledik; bir kanalı bulamazsan buraya bakabilirsin.",
-      "blocks": [
-        {
-          "heading": "Başlangıç",
-          "items": [
-            "<#1538533642832318517>: Sunucu kuralları",
-            "<#1538533720590516274>: Resmi duyurular",
-            "<#1538533822940061706>: Sunucu hakkında bilgi (burası)",
-            "<#1558968836420665615>: Coin ve ekonomi sisteminin rehberi",
-            "<#1538533903130828851>: Güncel çekilişler",
-            "<#1538535372588326973>: Destek talebi",
-            "<#1538535566172229672>: Cezalar ve bitiş süreleri"
-          ]
-        },
-        {
-          "heading": "Sohbet",
-          "items": [
-            "<#1538536247138590801>: Genel sohbet",
-            "<#1538536351119446127>: Bot komutları",
-            "<#1538536448674766878>: Medya, link ve edit paylaşımı",
-            "<#1538536951395913759>: Çizimlerini paylaşabileceğin kanal",
-            "<#1538537038792630293>: Evcil hayvan paylaşımları",
-            "<#1538536775956566117>: Partner sohbeti"
-          ]
-        },
-        {
-          "heading": "Oyun",
-          "items": [
-            "<#1538541309634285678>: Oyun kuralları",
-            "<#1538541416387448944>: 5v5 etkinlik bilgilendirmesi",
-            "<#1538542760506822656>: Oyun arkadaşı arama",
-            "<#1538542814680453281>: Lobiler",
-            "<#1538542919084941333>: Oyun klipleri",
-            "<#1538543035346849913>: Oyun tartışmaları",
-            "<#1538537529035202642> <#1538537611554201650>: OwO ve Mudae botları"
-          ]
-        },
-        {
-          "heading": "Etkinlik",
-          "items": [
-            "<#1538540261737758850>: Etkinlik kuralları",
-            "<#1538538532958638160>: Etkinlik bilgilendirmesi",
-            "<#1538538618468040714>: Etkinlik duyuruları",
-            "<#1538538736189571133>: Etkinlik sohbeti",
-            "<#1538540051028381696>: Etkinlik önerileri"
-          ]
-        },
-        {
-          "heading": "Topluluk ve ödüller",
-          "items": [
-            "<#1538534603902554182>: Seviye atlayanlar",
-            "<#1538538279627132999>: Haftanın aktifleri",
-            "<#1538538325521080391>: Haftanın en saygın üyesi",
-            "<#1538944779298275368>: Sunucu etiketi takanlar",
-            "<#1538534176276619264>: Takviye edenlere teşekkür",
-            "<#1538534459836473366>: Booster işlemleri"
-          ]
-        }
-      ]
     },
     {
       "title": "Sık Sorulan Sorular",
