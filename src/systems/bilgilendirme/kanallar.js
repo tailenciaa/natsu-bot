@@ -254,7 +254,7 @@ const etkinlikKurallari = {
       blocks: [
         {
           items: [
-            'Duyuru <#1538538618468040714> kanalından gelir; duyurulan saatte etkinlik sesli kanalında hazır bulun.',
+            'Duyurulan saatte etkinlik sesli kanalında hazır bulun.',
             'Yer ayırtıp gelmemek, etkinliğin ortasında kalkmak yerine **etkinliği yöneten yetkiliye** haber verilir.',
             'Aynı etkinlikte ikinci şans için **ikinci hesap** kullanmak yasaktır; tek hesap, tek ödül.',
             'Sunucudan çıkarılan ya da cezalı durumdaki üye etkinliğe alınmaz; cezalı kanaldayken etkinlik çağırmak da yasaktır.',
@@ -271,7 +271,7 @@ const etkinlikKurallari = {
           items: [
             'Moderatör konuşurken **söz kesme**; soruların için el kaldır ya da sohbet kanalından yaz.',
             'Bağırma, mikrofon spamı, ses efekti ve müzik açmak yasaktır; kurallar sesli kanallarda da geçerlidir.',
-            'Etkinlik dışı konu açma: sohbet <#1538538736189571133> kanalında, öneri <#1538540051028381696> kanalında.',
+            'Etkinlik dışı konuyu etkinlik kanalında açma.',
             'Yayın açtığında gösterdiğin her şey sunucu kurallarına tabidir; +18, kanlı ya da rahatsız edici içerik anında kapatılır.',
             'Rahatsız olduğun bir davranışı kanalda tartışma; yetkiliye bildir, o çözer.',
           ],
@@ -299,8 +299,8 @@ const etkinlikKurallari = {
       blocks: [
         {
           items: [
-            'Sonuç <#1538538618468040714> kanalından ilan edilir; kazananı etkinlik yetkilisi belirler ve kayda geçer.',
-            'İtirazını <#1538535372588326973> kanalından **talep açarak** yap; kanalda bağırarak değil.',
+            'Kazananı etkinlik yetkilisi belirler; sonuç ilan edilir ve kayda geçer.',
+            'İtirazını **talep açarak** yap; kanalda bağırarak değil.',
             'İtirazı, o etkinliği yöneten yetkili sonuçlandırmaz; dosyayı başka bir yetkili yürütür.',
             'Kazanmadığın bir ödülü kazandım diye iddia etmek ceza sebebidir.',
           ],
@@ -316,27 +316,8 @@ const etkinlikKurallari = {
             'Kazananlara <@&1555890043250282496> rolü verilir; başka ödül varsa **duyuruda yazan** kadardır.',
             'Ödül devredilemez ve başkasına satılamaz; takas ya da satış girişimi yasaktır.',
             'Etkinlik bitişine kadar kalmayan, ödül anında bulunmayan üye hakkını sıradakine bırakır.',
-            'Çekilişler ayrı yürür: güncel çekilişler <#1538533903130828851> kanalındadır.',
           ],
           note: 'Haftalık dereceler ve saygınlık ödülleri etkinlik ödülünden ayrıdır; o roller her pazartesi yenilenir.',
-        },
-      ],
-    },
-    {
-      title: 'Etkinlik Kanalları',
-      sub: 'Her kanalın bir işi var: kurallar bu kanalda, oynanış bilgisi ve duyuru yan kanallarda durur. Doğru kanalı bilmek, sorunu yetkiliye yazmadan önce kendi başına çözmek demektir.',
-      blocks: [
-        {
-          items: [
-            '<#1538540261737758850>: etkinlik kuralları, yani bu kanal.',
-            '<#1538538532958638160>: hangi etkinlikler var, nasıl oynanır.',
-            '<#1538538618468040714>: etkinlik duyuruları ve sonuç ilanları.',
-            '<#1538538736189571133>: etkinlik sohbeti.',
-            '<#1538540051028381696>: etkinlik önerileri; hangi etkinliği istiyorsan buraya yaz.',
-            '<#1538540812986744842>: Kırmızı Koltuk sahnesi.',
-            '<#1538540926186815560>: etkinlik sesli kanalı.',
-            '<@&1555890045175595128> rolünü alırsan etkinlikler senden habersiz geçmez.',
-          ],
         },
       ],
     },
@@ -554,12 +535,11 @@ const oyunKurallari = {
       ],
     },
     {
-      title: 'Klip ve Sohbet',
+      title: 'Klip ve Tartışma',
       sub: 'Oynadıklarını paylaşabilirsin; paylaşırken de kurallar seninle gelir. Klipte görünen isim, ses ve yazı da birer kişisel veridir; izinsiz gösterilen hiçbir şey geri alınamaz.',
       blocks: [
         {
           items: [
-            'Klipler <#1538542919084941333>, oyun sohbeti ve tartışma <#1538543035346849913> kanalındadır.',
             'Klipte arkadaşının yüzünü, sesini ya da kişisel bilgisini izinsiz gösterme.',
             'Oyun tartışmasında rakip takımın üyelerini hedef gösterme, isim vererek suçlama.',
             'OwO ve Mudae gibi topluluk botları yalnızca kendi kanallarında kullanılır.',
