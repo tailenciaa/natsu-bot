@@ -98,24 +98,11 @@ async function resetThread(client, key) {
   return ensureThread(client, key);
 }
 
-// Bot açılırken grup kanallarını ve tüm kategorilerin alt başlıklarını önceden hazırlar; böylece log paneli ilk
-// andan itibaren kullanılabilir.
+// Bot açılırken tüm kategorilerin alt başlıklarını önceden açar; böylece log paneli ilk andan itibaren kullanılabilir.
 async function ensureAllThreads(client) {
-  for (const group of GROUPS) await ensureGroupChannel(client, group.key).catch(() => null);
   for (const { key } of categories) {
     await ensureThread(client, key).catch((err) => console.error(`[log] "${key}" alt başlığı hazırlanamadı:`, err.message));
   }
-}
-
-// Ana log kanalında kalan, artık hiçbir kategorinin kullanmadığı alt başlık sayısı (eski düzenin arşivi).
-// Silinmez, sadece kurulum menüsünde gösterilir.
-async function orphanThreads(client) {
-  const guild = client.guilds.cache.get(guildId);
-  const main = await fetchTextChannel(guild, config.channels.main);
-  if (!main) return 0;
-  const used = new Set(categories.map((c) => store.getThreadId(c.key)).filter(Boolean));
-  const active = await main.threads.fetchActive().catch(() => null);
-  return [...(active?.threads.values() ?? [])].filter((thread) => !used.has(thread.id)).length;
 }
 
 async function send(client, key, container) {
@@ -130,4 +117,4 @@ async function send(client, key, container) {
   return message;
 }
 
-module.exports = { ensureThread, ensureGroupChannel, resetThread, ensureAllThreads, orphanThreads, send, categoryOf };
+module.exports = { ensureThread, resetThread, ensureAllThreads, send, categoryOf };
