@@ -1,4 +1,4 @@
-// Log sisteminin mesajları: tek tek log girdileri, grup sekmeli kategori paneli ve kurulum menüsü.
+// Log sisteminin mesajları: tek tek log girdileri, kategori seçim paneli ve kurulum menüsü.
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -9,12 +9,11 @@ const {
   StringSelectMenuOptionBuilder,
 } = require('discord.js');
 const { botName, guildId } = require('../../core/config');
-const { colors, text, divider, unix, page, tabRow, bannerGallery } = require('../../core/ui');
+const { colors, text, divider, unix, page, bannerGallery } = require('../../core/ui');
 const categories = require('./categories');
 const config = require('./config');
-const { GROUPS, groupOf } = require('./groups');
 
-const IDS = { select: 'logpanel', tab: 'logpanel:tab', setup: 'logkur', detail: 'logdetay' }; // logpanel:sec, logpanel:tab:<grup>, logkur:<eylem>
+const IDS = { select: 'logpanel', setup: 'logkur', detail: 'logdetay' }; // logpanel:sec, logkur:<eylem>
 
 // Bir log girdisinin kutusu: başlık, uzun gri açıklama, çizgiyle ayrılmış kalın başlıklı bilgi bloğu (null/boş satırlar
 // atlanır) ve en altta zaman damgası. Bütün log girdileri aynı genişlikte görünsün diye açıklama bilerek uzun tutulur.
@@ -71,36 +70,29 @@ function detail(meta, categoryLabel) {
   });
 }
 
-// #log-paneli kanalına gönderilen panel: üstte log gruplarının sekmeleri, altta seçili grubun kategori menüsü.
-// Sekmeye basınca panel kendi yerinde o grubun menüsüne döner; 15 kategori tek menüde birbirine karışmaz.
-function panel(activeGroup = GROUPS[0].key) {
-  const group = groupOf(activeGroup);
-  const tabs = tabRow(Object.fromEntries(GROUPS.map((g) => [g.key, g.label])), group.key, (key) => `${IDS.tab}:${key}`);
-
+// #log-paneli kanalına gönderilen, kategori seçim menülü panel
+function panel() {
   const select = new StringSelectMenuBuilder()
     .setCustomId(`${IDS.select}:sec`)
-    .setPlaceholder(`${group.label} kategorisi seç`)
+    .setPlaceholder('Log kategorisi seç')
     .addOptions(
-      categories
-        .filter((c) => c.group === group.key)
-        .map((c) => new StringSelectMenuOptionBuilder().setLabel(c.label).setDescription(c.description).setValue(c.key)),
+      categories.map((c) =>
+        new StringSelectMenuOptionBuilder().setLabel(c.label).setDescription(c.description).setValue(c.key),
+      ),
     );
 
-  // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, afiş, çizgi, sekmeler, çizgi, menü
+  // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, afiş, çizgi, menü
   return page({
     title: `${botName} Log Paneli`,
-    sub: 'Loglar **dört grubun** kendi kanalında, kategori kategori ayrılmış alt başlıklarda tutulur: önce bir **grup sekmesine**, sonra **kategori menüsünden** bir kategoriye bas; seçimin seni doğrudan o alt başlığa götürür.',
+    sub: 'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
   })
     .addMediaGalleryComponents(bannerGallery(config.banner))
-    .addSeparatorComponents(divider())
-    .addActionRowComponents(tabs)
     .addSeparatorComponents(divider())
     .addActionRowComponents(new ActionRowBuilder().addComponents(select));
 }
 
 // Panelden kategori seçilince gelen, alt başlığa giden bağlantı butonlu kısa cevap
 function jumpLink(category, thread) {
-  const group = groupOf(category.group);
   return new ContainerBuilder()
     .setAccentColor(colors.primary)
     .addSectionComponents(
@@ -119,48 +111,38 @@ function jumpLink(category, thread) {
         ),
     )
     .addSeparatorComponents(divider())
-    .addTextDisplayComponents(text(`### Kategori Açıklaması\n${category.description}\n**Log grubu:** ${group.label} · ${group.description}`));
+    .addTextDisplayComponents(text(`### Kategori Açıklaması\n${category.description}`));
 }
 
 const button = (action, label, style, disabled = false) =>
   new ButtonBuilder().setCustomId(`${IDS.setup}:${action}`).setLabel(label).setStyle(style).setDisabled(disabled);
 
-// /log menüsü: kanallar, panelin ve her kategorinin alt başlığının durumu grup grup gösterilir.
-// groups: [{ group, channel, items: [{ category, thread }] }] (thread/channel yoksa kurulu değil),
-// panelUrl: gönderilmiş panel mesajının bağlantısı, orphans: ana log kanalında kalan eski alt başlık sayısı
-function setupView({ mainId, panelId, groups, panelUrl, note, orphans = 0 }) {
-  const items = groups.flatMap((g) => g.items);
-  const ready = items.filter((item) => item.thread).length;
-  const fallback = groups.filter((g) => !g.channel || g.channel.id === mainId).length;
-  const complete = ready === items.length && groups.every((g) => g.channel) && Boolean(panelUrl);
+// /log menüsü: kanallar, panelin ve her kategorinin alt başlığının durumu ve işlem butonları
+// rows: [{ category, thread }] (thread yoksa o kategori kurulu değil), panelUrl: gönderilmiş panel mesajının bağlantısı
+function setupView({ mainId, panelId, rows, panelUrl, note }) {
+  const ready = rows.filter((r) => r.thread).length;
+  const complete = ready === rows.length && Boolean(panelUrl);
 
   const blocks = [
-    `### Kurulum Durumu\n**${ready}/${items.length} log alt başlığı kurulu**${panelUrl ? '.' : ', panel gönderilmemiş.'}` +
-      (fallback ? `\n**${fallback} grubun kanalı açılamadı**, logları ana log kanalına yazılıyor.` : ''),
+    `### Kurulum Durumu\n**${ready}/${rows.length} log alt başlığı kurulu**${panelUrl ? '.' : ', panel gönderilmemiş.'}`,
     '### Kanallar\n' +
       `**Ana log kanalı:** <#${mainId}>\n` +
       `**Log paneli kanalı:** <#${panelId}>\n` +
       `**Panel:** ${panelUrl ? `[Mesaja git](${panelUrl})` : 'gönderilmemiş'}`,
-    ...groups.map(
-      ({ group, channel, items: list }) =>
-        `### ${group.label} grubu\n` +
-        `**Kanal:** ${channel ? `<#${channel.id}>` : 'açılamadı'}\n` +
-        list.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n'),
-    ),
+    `### Log Alt Başlıkları\n${rows.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n')}`,
   ];
-  if (orphans) blocks.push(`### Eski Alt Başlıklar\nAna log kanalında eski düzeninden kalan **${orphans}** alt başlık var. Silinmedi, orada arşiv olarak duruyor.`);
   if (note) blocks.push(`### Son İşlem\n${note}`);
 
   return page({
     title: 'Log Kurulumu',
-    sub: 'Log sisteminin kanal ve alt başlıklarını grup grup buradan görebilir; butonlarla eksikleri kurabilir, paneli yenileyebilir ya da hepsini sıfırlayabilirsin.',
+    sub: 'Log sisteminin kanallarını, panelini ve her kategorinin alt başlığını buradan görebilir; butonlarla eksikleri kurabilir, paneli yenileyebilir ya da hepsini sıfırlayabilirsin.',
     accent: complete ? colors.success : colors.warning,
     blocks,
   })
     .addSeparatorComponents(divider())
     .addActionRowComponents(
       new ActionRowBuilder().addComponents(
-        button('setup', 'Eksikleri Kur', ButtonStyle.Primary, ready === items.length),
+        button('setup', 'Eksikleri Kur', ButtonStyle.Primary, ready === rows.length),
         button('panel', panelUrl ? 'Paneli Yenile' : 'Paneli Gönder', ButtonStyle.Secondary),
         button('refresh', 'Yenile', ButtonStyle.Secondary),
       ),
