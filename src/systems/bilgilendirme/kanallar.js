@@ -776,33 +776,21 @@ const sorunCozmeBilgisi = {
   ],
 };
 
-// 8) Partner şartları: karşı sunucuya kabul ettirdiğimiz maddeler ve teklifin yürüdüğü yol
+// 8) Partner şartları: kanalın tamamı tek kart ve yalnızca şartlar. Buraya "nasıl teklif verilir" gibi süreç
+// anlatımı girmez; kanala şartlar nedir diye bakılır. Maddeler partner DM kartındaki (partner/ui.js termsDm)
+// dört bağlayıcı şartla aynı metinledir, yani kanalda okunan ile kabul edilen aynıdır.
 const partnerSartlari = {
   key: 'partner-sartlari',
   name: 'Partner Şartları Paneli',
   title: 'Partner Şartları',
-  intro: 'Sunucular arası **karşılıklı tanıtım**: dört bağlayıcı madde, tek bir başvuru yolu ve şeffaf bir kayıt.',
+  intro: 'Partnerlik için kabul ettiğin **dört bağlayıcı madde** ve kaydı incelerken baktığımız ölçütler.',
   channel: '1538943458864005150',
   sections: [
     {
-      title: 'Partnerlik Nedir',
-      sub: 'İki sunucu birbirinin tanıtım metnini kendi kanalında paylaşır: karşılıklı, kayıtlı ve her iki yandan geri çekilebilir. Partnerlik üyelik, rol ya da ayrıcalık taşımaz.',
+      hideTitle: true,
       blocks: [
         {
-          items: [
-            'Paylaşım <#1538943593665007696> kanalımızda görünür; bizim metnimiz <#1538943528225476810> kanalındadır.',
-            'Süreci <@&1554237785416794202> yürütür, ağır kararlar <@&1554239996058411068> tarafından verilir.',
-            'Partnerlik rol vermez, yetki vermez, sunucular arasında hiçbir taahhüt içermez.',
-            'Kayıtlı partnerler <#1555293036026658957>, dost partnerler <#1538943785344704562>, yasaklılar <#1538944004148957244> kanallarında durur.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Şartlar',
-      sub: 'Teklif kabul edilmeden önce bu dört madde onaylatılır; onaylamayan tarafın metni paylaşılmaz. Şartlar DM kartında da aynı metinle çıkar, yani kanalda okuduğun ile kabul ettiğin aynıdır.',
-      blocks: [
-        {
+          heading: 'Bağlayıcı maddeler',
           items: [
             'Reklam metni **Discord kurallarına** aykırı içerik barındıramaz.',
             'Sunucular karşılıklı olarak **aynı gün içinde** birbirini paylaşır.',
@@ -811,7 +799,7 @@ const partnerSartlari = {
           ],
         },
         {
-          heading: 'Pratikte neye bakarız',
+          heading: 'İncelemede bakılanlar',
           items: [
             'Sunucu Türkçe ve kurallara uyumlu olsun: +18 içerik, taciz, ayrımcılık ya da yasa dışı paylaşım olmamalı.',
             'Davet bağlantısı **kalıcı** olmalı ve gerçekten o sunucuya gitmeli.',
@@ -820,69 +808,6 @@ const partnerSartlari = {
             'Sunucu ya da yetkilisi daha önce yasaklı listeye girmemiş olsun.',
           ],
           note: 'Üye sayısı gibi ölçütler sabit bir eşikle değil, kaydı inceleyen yetkilinin değerlendirmesiyle yürür.',
-        },
-      ],
-    },
-    {
-      title: 'Teklif Nasıl Verilir',
-      sub: 'Dört adım, hepsi botun içinde: numara yazılmaz, ID sorulmaz, sonuç DM ile gelir.',
-      blocks: [
-        {
-          items: [
-            '`1.` <#1538536775956566117> kanalına mesajında **partner** ya da **dm** yaz; bot sana teklif kartı gönderir.',
-            '`2.` Karttan **Evet** de, açılan forma partner metnini yapıştır; sunucun davetten tanınır.',
-            '`3.` Sana DM\'den **şartlar** gelir, **Şartları Kabul Et** butonuna basarsın.',
-            '`4.` Talebin <#1538943678926557205> kanalında incelemeye düşer; onaylanınca metnin <#1538943593665007696> kanalımızda paylaşılır.',
-          ],
-          note: 'Onaylayan yetkiliye bastığında sunucun güvenilir partnerler listesine alınır; listeye giren partnerin yetkililerine DM\'den Partner Paneli gider.',
-        },
-      ],
-    },
-    {
-      title: 'Partner Olduktan Sonra',
-      sub: 'Ortaklık tek seferlik bir ilan değildir: yenileme, müsaitlik ve karşılıklı saygı ile yürür. Paylaşımdan sonra iki tarafın da kanalda görünür kalması ortaklığın sürdüğü anlamına gelir.',
-      blocks: [
-        {
-          items: [
-            'Metnin zamanı geçerse partner yetkilimiz sana **"Partner Yenile"** teklifi gönderir; kabul eder, metni onaylar, günceller ya da reddedersin.',
-            'Onayladığın metin bizim kanalımızda yeniden yayımlanır; bizim metnimiz de senin yetkiline DM olarak gider.',
-            '<#1538943369089126553> kanalındaki butonla <@&1555327703882928168> rolünü alıp partner kanallarımızı görebilirsin.',
-            'Yetkililer <#1538536775956566117> sohbetinde muhataplarını bulur; meşgul olan için teklif bekletilmez.',
-            'Karşı tarafın metnini ya da üyelerini kendi kanalında kötülemek ortaklığı bitiren bir davranıştır.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Sonlandırma ve Yasak',
-      sub: 'Kayıt tek taraflı düşürülebilir; ağır ihlalde ise sunucu yasaklı listeye geçer. Yasaklı listesi kişisel bir karar değil, gerekçesi kayıtta duran bir işlemdir.',
-      blocks: [
-        {
-          items: [
-            '**Partneri Sil** kaydın sahibine ve lidere, **İptal Et** ve **Yasaklıya Al** yalnızca lidere açıktır.',
-            'İptal ve yasaklama, paylaşım kanalındaki bütün mesajları kaldırır, kaydı güvenilir listeden düşürür ve karşı tarafın yetkililerine DM gider.',
-            'Yasaklı sunuculara yeniden teklif açılmaz; itiraz <@&1554239996058411068> tarafından değerlendirilir.',
-            'Karar gerekçesi kayıtta durur; sebepsiz düşürme yapılmaz.',
-          ],
-          note: 'Metnini kaldırmak istiyorsan tek yapman gereken partner yetkilisine yazmak; ortaklık zorla yürütülmez.',
-        },
-      ],
-    },
-    {
-      title: 'Partner Kanallarımız',
-      sub: 'Nereye bakacağını bilirsen bekleme süren kısalır: talebin nerede incelenip nerede yayımlandığını bilmek, yetkiliye sormadan işini kendi başına bitirmek demektir.',
-      blocks: [
-        {
-          items: [
-            '<#1538943458864005150>: şartlar, yani bu kanal.',
-            '<#1538943528225476810>: bizim partner metnimiz.',
-            '<#1538943593665007696>: onaylanan partner paylaşımları.',
-            '<#1538943678926557205>: oto partner taleplerinin incelemesi.',
-            '<#1555293036026658957>: güvenilir partnerler listesi.',
-            '<#1538943785344704562>: dost partnerler.',
-            '<#1538944004148957244>: yasaklı partnerler.',
-            '<#1538536775956566117>: teklifin başladığı sohbet.',
-          ],
         },
       ],
     },
