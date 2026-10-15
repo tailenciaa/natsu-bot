@@ -240,7 +240,8 @@ const yetkiliBilgisi = {
   ],
 };
 
-// 3) Etkinlik kuralları: etkinlik düzenini ve adil oyunu koruyan maddeler
+// 3) Etkinlik kuralları: etkinlik düzenini ve adil oyunu koruyan maddeler. Kural kanalında yalnızca bağlayıcı
+// maddeler durur; "hangi kanal ne işe yarar" listesi etkinlik bilgilendirme panelinin işidir.
 const etkinlikKurallari = {
   key: 'etkinlik-kurallar',
   name: 'Etkinlik Kuralları Paneli',
@@ -450,7 +451,8 @@ const etkinlikBilgisi = {
   ],
 };
 
-// 5) Oyun kuralları: ortak davranış kuralları ve oyuna özel maddeler
+// 5) Oyun kuralları: ortak davranış kuralları ve oyuna özel maddeler. Kanal listesine ve "nerede ne var" bilgilerine
+// yer yok: 5v5 bilgilendirme paneli kanal tarafını zaten anlatıyor, burada sadece uyulacak maddeler durur.
 const oyunKurallari = {
   key: 'oyun-kurallar',
   name: 'Oyun Kuralları Paneli',
