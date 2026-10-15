@@ -50,7 +50,7 @@ async function handleMessageDelete(message) {
       `**Kanal:** <#${message.channelId}>`,
       `**Mesaj ID:** \`${message.id}\``,
       content ? `**İçerik:**\n${core.quote(content.slice(0, 1200))}` : '**İçerik:** önbellekte yoktu, gösterilemiyor.',
-      message.attachments?.size ? `**Ekler:** ${message.attachments.map((a) => a.url).join('\n')}` : null,
+      message.attachments?.size ? attachments(message.attachments, true) : null,
       by,
     ]),
   );

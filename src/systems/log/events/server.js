@@ -1,6 +1,7 @@
 // Sunucu, kanal ve rol logları: kanal/alt başlık, rol, sunucu ayarı, emoji, çıkartma ve davet değişiklikleri.
 // Mümkün olduğunda işlemi yapan yetkili denetim kaydından bulunup eklenir.
 const { AuditLogEvent, ChannelType } = require('discord.js');
+const { shorten } = require('../../../core/ui');
 const audit = require('../audit');
 const engine = require('../engine');
 const ui = require('../ui');
