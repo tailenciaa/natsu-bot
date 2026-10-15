@@ -49,7 +49,7 @@ const yetkiliKurallari = {
     },
     {
       title: 'Ceza Verirken',
-      sub: 'Cezanın sırası, kanıtı ve kaydı vardır: her ceza numarasıyla <#1538535676000211034> kanalına düşer. Kanıtsız ya da ölçüsüz verilen her işlem üye tarafından itiraz edilebilir hâle gelir.',
+      sub: 'Cezanın sırası, kanıtı ve kaydı vardır: her ceza numarasıyla <#1538535676000211034> kanalına düşer. Kanıtsız ceza uygulanmaz; ölçüsüz ya da kanıtsız verilen her işlem üye tarafından itiraz edilebilir hâle gelir.',
       blocks: [
         {
           heading: 'Sıra ve ölçü',
@@ -70,6 +70,7 @@ const yetkiliKurallari = {
         {
           heading: 'Yapamayacakların',
           items: [
+            'Kanıtı olmayan ya da üst onayı alınmamış cezayı uygulamak.',
             'Kişisel bir mesele için ceza vermek.',
             'Başka bir yetkilinin verdiği cezayı kendi başına kaldırmak.',
             'Kendi verdiğin cezanın itirazını sonuçlandırmak.',
