@@ -75,7 +75,7 @@ function detail(meta, categoryLabel) {
 // Sekmeye basınca panel kendi yerinde o grubun menüsüne döner; 15 kategori tek menüde birbirine karışmaz.
 function panel(activeGroup = GROUPS[0].key) {
   const group = groupOf(activeGroup);
-  const tabs = tabRow(Object.fromEntries(GROUPS.map((g) => [g.key, `${g.emoji} ${g.label}`])), group.key, (key) => `${IDS.tab}:${key}`);
+  const tabs = tabRow(Object.fromEntries(GROUPS.map((g) => [g.key, g.label])), group.key, (key) => `${IDS.tab}:${key}`);
 
   const select = new StringSelectMenuBuilder()
     .setCustomId(`${IDS.select}:sec`)
@@ -143,7 +143,7 @@ function setupView({ mainId, panelId, groups, panelUrl, note, orphans = 0 }) {
       `**Panel:** ${panelUrl ? `[Mesaja git](${panelUrl})` : 'gönderilmemiş'}`,
     ...groups.map(
       ({ group, channel, items: list }) =>
-        `### ${group.emoji} ${group.label}\n` +
+        `### ${group.label} grubu\n` +
         `**Kanal:** ${channel ? `<#${channel.id}>` : 'açılamadı'}\n` +
         list.map(({ category, thread }) => `**${category.label}:** ${thread ? `<#${thread.id}>` : 'kurulu değil'}`).join('\n'),
     ),
