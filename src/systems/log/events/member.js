@@ -14,6 +14,12 @@ async function findKickExecutor(guild, userId) {
   return logs?.entries.find((e) => e.target?.id === userId && Date.now() - e.createdTimestamp < 10_000) ?? null;
 }
 
+// Az sayıda rol yan yana okunur; fazlası tek satıra sıkıştığı için alt alta liste olur
+const roleList = (roles) => {
+  const mentions = roles.map((r) => `<@&${r.id}>`);
+  return mentions.length > 3 ? `\n${mentions.map((m) => `- ${m}`).join('\n')}` : mentions.join(', ');
+};
+
 // Katılanın hangi davetle geldiği (botlar davetle değil, bir yetkili tarafından eklenir)
 async function joinSource(member) {
   if (member.user.bot) return await audit.by(member.guild, AuditLogEvent.BotAdd, member.id);
@@ -86,8 +92,8 @@ async function handleMemberUpdate(oldMember, newMember) {
       ui.entry('primary', 'Üye Rolleri Değişti', [
         `**Kullanıcı:** <@${newMember.id}>`,
         await audit.by(newMember.guild, AuditLogEvent.MemberRoleUpdate, newMember.id),
-        added.size ? `**Eklenen:** ${added.map((r) => `<@&${r.id}>`).join(', ')}` : null,
-        removed.size ? `**Alınan:** ${removed.map((r) => `<@&${r.id}>`).join(', ')}` : null,
+        added.size ? `**Eklenen:** ${roleList(added)}` : null,
+        removed.size ? `**Alınan:** ${roleList(removed)}` : null,
       ]),
     );
   }

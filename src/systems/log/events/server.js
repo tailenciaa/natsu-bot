@@ -61,7 +61,8 @@ async function handleChannelUpdate(oldChannel, newChannel) {
     changes.push(`**Kategori:** ${oldChannel.parent?.name ?? 'yok'} → ${newChannel.parent?.name ?? 'yok'}`);
   }
   if ((oldChannel.topic ?? '') !== (newChannel.topic ?? '')) {
-    changes.push(`**Konu:** ${oldChannel.topic || '(boş)'} → ${newChannel.topic || '(boş)'}`);
+    // Uzun konular kartı basmasın: tam hâli "Detaylı Bilgi"de durur
+    changes.push(`**Konu:** ${shorten(oldChannel.topic || '(boş)', 60)} → ${shorten(newChannel.topic || '(boş)', 60)}`);
   }
   if (oldChannel.nsfw !== newChannel.nsfw && newChannel.nsfw !== undefined) changes.push(`**Yaş sınırı:** ${bool(newChannel.nsfw)}`);
   if (oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser && newChannel.rateLimitPerUser !== undefined) {
