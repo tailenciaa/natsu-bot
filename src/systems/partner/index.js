@@ -616,6 +616,24 @@ async function refreshTrustedPanel(client, guildId_) {
   if (message) store.setTrustedPanelMessageId(guildId_, message.id);
 }
 
+// Kart butonunun "Güvenilir Listede" hâli, kart çizilirken eldeki kayıttan okunur; liste sonradan değişince
+// eski kart kendi kendine güncellenmez. Güvenilirlik durumu değiştiğinde sunucunun paylaşım kanalındaki kartlar
+// (yenilemelerden kalan eski kartlar dâhil) yeniden çizilir, yoksa yetkili listeden çıkardığı partneri hâlâ
+// listede sanır. trusted: kartta gösterilecek güvenilir kaydı; liste değişmediyse olduğu gibi geri verilir.
+async function refreshTrustedCards(guild, entry, trusted) {
+  const channel = await fetchTextChannel(guild, config.channels.posts);
+  if (!channel) return;
+
+  const cards = store
+    .requestsOfGuild(guild.id)
+    .filter((r) => r.postId && (r.id === entry.sourceRequestId || (entry.serverId && r.serverId === entry.serverId)));
+  for (const request of cards) {
+    await channel.messages
+      .edit(request.postId, { components: [ui.postCard(request, trusted, store.isBanned(request.requesterId), statsOf(request))], allowedMentions: { parse: [] } })
+      .catch(() => {});
+  }
+}
+
 // Formdaki kullanıcı menüsünden seçilen partner yetkilileri; botlar elenir
 const selectedContacts = (interaction) =>
   [...(interaction.fields.getSelectedUsers(ui.IDS.contactId)?.values() ?? [])].filter((u) => !u.bot).map((u) => u.id);
@@ -891,6 +909,7 @@ async function handleTrustedAction(interaction) {
     if (!isLead(interaction)) return replyError(interaction, 'Bu işlemi sadece partner lideri yapabilir.');
     store.removeTrusted(id);
     store.deleteRenewalOffer(id); // sürmekte olan yenileme teklifi de düşer
+    await refreshTrustedCards(interaction.guild, entry, null);
     await refreshTrustedPanel(interaction.client, interaction.guildId);
     return respond(interaction, core.alert('Partner güvenilir listeden çıkarıldı.', null, 'danger'), { ephemeral: true });
   }
