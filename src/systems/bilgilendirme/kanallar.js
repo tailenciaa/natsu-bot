@@ -310,7 +310,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Ödüller',
-      sub: 'Ödül etkinliğin sonunda verilir; kural çiğneyen, oyunun ödülünü de kaybeder. Ödül listesi duyuruda yazan kadardır, sonradan ödül beklemek ya da ödülü devretmek mümkün değildir.',
+      sub: 'Ödül listesi duyuruda yazan kadardır; kural çiğneyen, oyunun ödülünü de kaybeder. Kazandığını sen değil, etkinliği yöneten yetkili ilan eder; ilan edilmemiş şey ödül sayılmaz.',
       blocks: [
         {
           items: [
