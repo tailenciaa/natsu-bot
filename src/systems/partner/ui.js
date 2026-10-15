@@ -698,8 +698,8 @@ function renewalReviewDm(entry, { serverName = null, startedBy = null } = {}) {
       text(
         fields([
           '### Paylaşım Bilgisi',
-          field('Metnin Yayınlanacağı Sunucu', serverName ?? 'Sunucumuz'),
           field('Teklif Eden Yetkili', startedBy ? `<@${startedBy}>` : 'Bilinmiyor'),
+          field('Metnin Yayınlanacağı Sunucu', serverName ?? 'Sunucumuz'),
           field('Senin Sunucun', serverTitle(entry)),
         ]),
       ),
