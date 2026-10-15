@@ -16,17 +16,10 @@ module.exports = ({ mock, src }) => {
   const panelKanal = mock.channel({ guild, name: 'log-paneli' });
   const noMentions = { allowedMentions: { parse: [] } };
 
-  // Kurulum menüsünün verisi: her grubun kanalı ve o gruptaki kategorilerin alt başlıkları.
-  // ready: kaçı kurulu olsun; fallback: son N grubun kanalı açılmamış gibi görünsün.
-  const setupGroups = (ready, fallback = 0) => {
+  // Kurulum menüsünün verisi: kategorilerin ana log kanalındaki alt başlıkları. ready: kaçı kurulu olsun.
+  const setupRows = (ready) => {
     let n = 0;
-    return GROUPS.map((group, index) => ({
-      group,
-      channel: index < GROUPS.length - fallback ? mock.channel({ guild, name: group.channelName }) : null,
-      items: categories
-        .filter((c) => c.group === group.key)
-        .map((category) => ({ category, thread: n++ < ready ? mock.thread({ guild, name: category.threadName }) : null })),
-    }));
+    return categories.map((category) => ({ category, thread: n++ < ready ? mock.thread({ guild, name: category.threadName }) : null }));
   };
 
   const mesajKategorisi = categories.find((c) => c.key === 'mesaj');
@@ -65,7 +58,7 @@ module.exports = ({ mock, src }) => {
     {
       id: 'girdi-mesaj-silindi',
       title: 'Log girdisi: mesaj silindi',
-      where: 'İletişim grubunun log kanalındaki alt başlık, olay oldukça otomatik yazılır',
+      where: 'Ana log kanalının alt başlığı, olay oldukça otomatik yazılır',
       visibility: 'log',
       kind: 'message',
       build: () => ({ components: [silinen], ...noMentions }),
@@ -73,7 +66,7 @@ module.exports = ({ mock, src }) => {
     {
       id: 'girdi-uye-katildi',
       title: 'Log girdisi: üye katıldı',
-      where: 'Üye & rol grubunun giriş/çıkış alt başlığı',
+      where: 'Giriş / çıkış alt başlığı',
       visibility: 'log',
       kind: 'message',
       build: () => ({
