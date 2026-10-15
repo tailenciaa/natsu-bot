@@ -58,6 +58,7 @@ const yetkiliKurallari = {
         {
           heading: 'Kanıt ve kayıt',
           items: [
+            '**Kanıtı olmayan ceza uygulanmaz:** bu kesin yasaktır. Tek istisna ağır ve acil bir durum ya da <@&1555890044768624662> onayıdır; istisnada onayı kimin verdiğini kanıt mesajının içine yazarsın.',
             'Verdiğin **her ceza** (uyarı, susturma, jail, yasaklama) kanıtıyla birlikte <#1538535676000211034> kanalına bırakılır; bu son adım atılmadıysa ceza tamamlanmış sayılmaz.',
             'Mesajın ilk satırı ceza numarası olsun: bot işlem sonrası sana `Ceza #12` biçiminde numara verir, kanala da aynen öyle yazarsın.',
             'Kanıt cezanın sebebidir: yazılı ihlalde mesaj ekran görüntüsü, seste klip ya da tanık adı, yayında alınan ekran görüntüsü.',
