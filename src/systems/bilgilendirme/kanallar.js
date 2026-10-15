@@ -314,7 +314,7 @@ const etkinlikKurallari = {
       blocks: [
         {
           items: [
-            'Kazananlara <@&1555890043250282496> rolü verilir; başka ödül varsa **duyuruda yazan** kadardır.',
+            'Ödül **etkinlik bitiminde** ve tek seferde dağıtılır; eksik kaldığını düşündüğün ödül için <@&1554240000529539083> ekibine yazılır.',
             'Ödül devredilemez ve başkasına satılamaz; takas ya da satış girişimi yasaktır.',
             'Etkinlik bitişine kadar kalmayan, ödül anında bulunmayan üye hakkını sıradakine bırakır.',
           ],
