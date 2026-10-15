@@ -3,7 +3,7 @@
 // Discord olayını dinleyen kodu events/ altındaki uygun dosyaya (ya da yeni bir dosyaya) yazmak yeterli.
 // threadName değişirse mevcut alt başlık (içindeki loglarla birlikte) otomatik yeniden adlandırılır.
 // Sıra hem panel menüsünde hem /log kartında bu sıradır: iletişim (mesaj, ses), üye (giriş/çıkış, isim, rol),
-// moderasyon (ban, kick, susturma, jail, uyarı, automod), sunucu (kanal, sunucu, takviye, bot).
+// moderasyon (ban, kick, susturma, jail, uyarı, automod), sunucu (kanal, sunucu, emoji, davet, takviye, bot).
 module.exports = [
   {
     key: 'mesaj',
@@ -94,7 +94,21 @@ module.exports = [
     label: 'Sunucu Logları',
     emoji: '⚙️',
     threadName: '⚙️・sunucu-logları',
-    description: 'Sunucu ayarları, emoji, çıkartma ve davet değişiklikleri',
+    description: 'Sunucu adı, ikon, afiş, doğrulama seviyesi ve sahip değişiklikleri',
+  },
+  {
+    key: 'emoji',
+    label: 'Emoji Logları',
+    emoji: '🎭',
+    threadName: '🎭・emoji-logları',
+    description: 'Emoji ve çıkartma ekleme, silme ve ad düzenleme',
+  },
+  {
+    key: 'davet',
+    label: 'Davet Logları',
+    emoji: '🔗',
+    threadName: '🔗・davet-logları',
+    description: 'Davet oluşturma ve silme: kodu, kanalı, oluşturan yetkili ve kullanım sınırı',
   },
   {
     key: 'boost',

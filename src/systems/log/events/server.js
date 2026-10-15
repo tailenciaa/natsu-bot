@@ -161,7 +161,7 @@ async function handleRoleUpdate(oldRole, newRole) {
   );
 }
 
-// ── Sunucu ───────────────────────────────────────────────────────────────────
+// ── Sunucu, emoji ve davet ───────────────────────────────────────────────────
 
 async function handleGuildUpdate(oldGuild, newGuild) {
   const changes = [];
