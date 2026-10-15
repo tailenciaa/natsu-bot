@@ -4,6 +4,7 @@
 // Dosyalar: categories.js (kategori listesi), engine.js (alt başlık açma ve gönderme), events/ (olay dinleyicileri).
 const { Events, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } = require('discord.js');
 const core = require('../../core/ui');
+const { guildId } = require('../../core/config');
 const { data, save } = require('../../core/db');
 const { respond, replyError, isStaff, fetchTextChannel } = require('../../core/helpers');
 const { syncPanel } = require('../../core/panel');
@@ -37,6 +38,26 @@ function syncLogPanel(client, force = false) {
     build: ui.panel,
     image: '',
   });
+}
+
+// Kısa süreli denenip geri alınan grup kanalı düzeninden kalan kanallar: bot kendi açtığı kanalı kendiliğinden
+// silmez, o yüzden kayıtlı ID'ler tek seferliğine temizlenir. Yalnızca adı aşağıdakilerden biri olan kanal
+// silinir; sunucuda elle açılmış aynı görevdeki bir kanala dokunulmaz.
+const GROUP_CHANNEL_NAMES = ['💬・log-iletişim', '👥・log-üye-rol', '🔨・log-moderasyon', '⚙️・log-sunucu-bot'];
+
+async function dropGroupChannels(client) {
+  const saved = data.logGroupChannels;
+  if (!saved) return;
+  const guild = client.guilds.cache.get(guildId);
+
+  for (const id of Object.values(saved)) {
+    const channel = (id && guild ? await guild.channels.fetch(id).catch(() => null) : null) ?? null;
+    if (!channel || !GROUP_CHANNEL_NAMES.includes(channel.name)) continue;
+    await channel.delete('Log grup kanalı düzeni geri alındı').catch((err) => console.error(`[log] "${channel.name}" silinemedi:`, err.message));
+  }
+
+  delete data.logGroupChannels;
+  save();
 }
 
 // Bot açılınca alt başlıkları hazırlar, grup kanalı düzeninden kalan kanalları siler ve paneli gönderir
