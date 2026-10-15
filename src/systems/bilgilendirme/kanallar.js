@@ -15,14 +15,13 @@ const yetkiliKurallari = {
   channel: '1538944989432774746',
   sections: [
     {
-      title: 'Bu Kanal Ne İçin',
+      title: 'Kimleri Bağlar',
       sub: 'Üye rolündeki herkes sunucu kurallarına uyar; yetkiliden beklenen aynı kuralları harfi harfine uygulaması ve bir adım önde durmasıdır.',
       blocks: [
         {
           text: '<#1538533642832318517> kanalındaki kuralları **yetkili olarak yeniden** okuman gerekir: çünkü ihlali sen değerlendireceksin ve maddeyi bilmediğinde verdiğin karar savunulamaz hâle gelir.',
         },
         {
-          heading: 'Kimleri bağlar',
           items: [
             '<@&1555890043992940614> rolünden başlayan her yetkili, rütbesi ne olursa olsun bu maddelere tabidir.',
             'Oryantasyonda bu kanal gezilir; yetki verilmesi bu kuralların **kabul edildiği** anlamına gelir.',

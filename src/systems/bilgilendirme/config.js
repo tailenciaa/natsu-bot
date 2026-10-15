@@ -224,20 +224,12 @@ const anaPanel = {
           "items": [
             "`1.` <#1538943458864005150> kanalında şartları oku.",
             "`2.` <#1538536775956566117> kanalına gel ve mesajına **partner** ya da **dm** yaz, bot sana otomatik **teklif** sunar.",
-            "`3.` Teklif <@&1554237785416794202> yetkililerine düşer, **onaylanırsa** tanıtım metnin <#1538943593665007696> kanalında paylaşılır."
+            "`3.` Teklifin incelenir; **onaylanırsa** tanıtım metnin <#1538943593665007696> kanalında paylaşılır."
           ],
           "plain": true
-        },
-        {
-          "heading": "Partner kanalları",
-          "items": [
-            "<#1538943369089126553>: Butona basıp <@&1555327703882928168> rolünü alırsın",
-            "<#1555293036026658957>: Güvenilir partnerler",
-            "<#1538943785344704562>: Dost partnerler"
-          ]
         }
       ],
-      "sub": "Sunucunla partner olmak istiyorsan izlemen gereken adımları, partner teklifinin nasıl onaylandığını ve partner kanallarına nasıl erişebileceğini buradan öğrenebilirsin."
+      "sub": "Partnerlik iki sunucunun karşılıklı tanıtımıdır; tek gereken bu üç adımı sırayla uygulamak. Teklifi <@&1554237785416794202> ekibi inceler ve onaylar, şartların tamamı <#1538943458864005150> kanalında yazar."
     },
     {
       "title": "Sık Sorulan Sorular",
