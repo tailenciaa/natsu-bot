@@ -10,7 +10,7 @@ module.exports = {
   sections: [
     {
       title: 'Coin Nedir',
-      sub: 'Kazuki\'nin kendi parası: kazanmak için sunucuda vakit geçirmen, harcamak için üç raftan birini seçmen gerekiyor.',
+      sub: 'Kazuki\'nin kendi parası: kazanmak için sunucuda vakit geçirmen, harcamak için üç raftan birini seçmen gerekiyor. Cüzdan kendi kendine büyümüyor: coin komutla gelir, harcayınca da aynı hızla çıkar.',
       blocks: [
         {
           text: 'Coin **mesaj sayısıyla ya da spamle üretilmez**; günlük ödülden, görevlerden, oyunlardan ve etkinliklerden gelir. Yani cüzdanı dolu üye gerçekten burada vakit geçirmiş üyedir.',
@@ -67,7 +67,7 @@ module.exports = {
     },
     {
       title: 'Kazanmanın Diğer Yolları',
-      sub: 'Keşif ücretsiz, şakalaşma karşılıklı, sokak riskli. Kumarhane ise coin **yakar**: iki masada da kasa uzun vadede kazanır.',
+      sub: 'Keşif ücretsiz, şakalaşma karşılıklı, sokak riskli. Kumarhane ise coin **yakar**: iki masada da kasa uzun vadede kazanır. Bahis ve üye→üye transfer günlük sayıya girmediği için burası kazanma kapısı değil, harcama kapısıdır.',
       blocks: [
         {
           heading: 'Keşif gezileri',

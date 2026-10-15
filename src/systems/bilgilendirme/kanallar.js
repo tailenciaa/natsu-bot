@@ -208,7 +208,7 @@ const yetkiliBilgisi = {
     },
     {
       title: 'Bir Talebi Yürütme',
-      sub: 'Beş adım: üstlen, dinle, karar ver, kapat, puanı izle. Aradaki hiçbir adım üyeye DM üzerinden yürütülmez.',
+      sub: 'Beş adım: üstlen, dinle, karar ver, kapat, puanı izle. Aradaki hiçbir adım üyeye DM üzerinden yürütülmez; talep alt başlığı dışında yazılan mesaj kayda geçmez.',
       blocks: [
         {
           items: [
@@ -224,7 +224,7 @@ const yetkiliBilgisi = {
     },
     {
       title: 'Aktiflik, Devir ve İzin',
-      sub: 'Sessiz kaybolmak talebi sahipsiz bırakır; yoğun dönemi önceden haber ver, işi yarım bırakırsan devret.',
+      sub: 'Sessiz kaybolmak talebi sahipsiz bırakır: yoğun dönemi önceden haber ver, işi yarım bırakacaksan devret. Haber verilmiş bir yokluk kusur sayılmaz, verilmemiş olan sayılır.',
       blocks: [
         {
           items: [
@@ -249,7 +249,7 @@ const etkinlikKurallari = {
   sections: [
     {
       title: 'Etkinliğe Katılırken',
-      sub: 'Katılım bir söz vermektir: saatinde gel, yer kapma, katılamayacaksan haber ver ki sıra başkaya geçsin.',
+      sub: 'Katılım bir söz vermektir: saatinde gel, yer kapma, gelemeyeceksen önceden haber ver ki sıra başkasına geçsin. Listede tutulan bir yer, gelinmediğinde sıradakine yazılır.',
       blocks: [
         {
           items: [
@@ -264,7 +264,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Sesli Kanalda Düzen',
-      sub: 'Etkinliğin sesi de sözü de sırayla alınır; mikrofonu domine eden kişi etkinliği bitirmiş olur.',
+      sub: 'Etkinliğin sesi de sözü de sırayla alınır; mikrofonu domine eden kişi etkinliği kendi başına bitirmiş olur. Sessiz kalmak da bir seçimdir, söz almadan dinlemek rahatsızlık sayılmaz.',
       blocks: [
         {
           items: [
@@ -279,7 +279,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Adil Oyun',
-      sub: 'Ödül olan her etkinlikte ölçü aynı: hile yok, bilgi sızdırma yok, kasıtlı kaybetme yok.',
+      sub: 'Ödül olan her etkinlikte ölçü aynıdır: hile yok, bilgi sızdırma yok, kasıtlı kaybetme yok. Adil sayılan oyun, kazananı kadar kaybedeni de rahatsız etmeyen oyundur.',
       blocks: [
         {
           items: [
@@ -294,7 +294,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Sonuç ve İtiraz',
-      sub: 'Karara itiraz edilir, tartışma çıkarılmaz. İtirazın yolu kapalı değil, ama sıra kanalda değil talepte.',
+      sub: 'Karara itiraz edilir, tartışma çıkarılmaz. İtirazın yolu kapalı değildir ama sıra kanalda değil destek talebindedir; kanalda büyüyen tartışma ayrı bir ihlale dönüşür.',
       blocks: [
         {
           items: [
@@ -308,7 +308,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Ödüller',
-      sub: 'Ödül etkinliğin sonunda verilir; kural çiğneyen, etkinliğin ödülünü de kaybeder.',
+      sub: 'Ödül etkinliğin sonunda verilir; kural çiğneyen, oyunun ödülünü de kaybeder. Ödül listesi duyuruda yazan kadardır, sonradan ödül beklemek ya da ödülü devretmek mümkün değildir.',
       blocks: [
         {
           items: [
@@ -323,7 +323,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Etkinlik Kanalları',
-      sub: 'Her kanalın bir işi var; kurallar bu kanalda, oynanış bilgisi ve duyuru yan kanallarda.',
+      sub: 'Her kanalın bir işi var: kurallar bu kanalda, oynanış bilgisi ve duyuru yan kanallarda durur. Doğru kanalı bilmek, sorunu yetkiliye yazmadan önce kendi başına çözmek demektir.',
       blocks: [
         {
           items: [
@@ -352,7 +352,7 @@ const etkinlikBilgisi = {
   sections: [
     {
       title: 'Nasıl Bir Etkinlik?',
-      sub: 'Etkinlikler <@&1554240000529539083> ekibi tarafından kurulur, duyurulur ve yönetilir; hepsi ücretsiz ve Discord üzerinden.',
+      sub: 'Etkinlikler <@&1554240000529539083> ekibi tarafından kurulur, duyurulur ve yönetilir; hepsi ücretsiz ve Discord üzerinden yürür. Katılmak için oyun satın almana ya da bir şey indirmene gerek yok.',
       blocks: [
         {
           items: [
@@ -387,7 +387,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'Kırmızı Koltuk',
-      sub: 'Sırayla doğruluk ya da cesaret seçilen sohbet etkinliği; sahne kanalda, izleyen çok, oynayan az.',
+      sub: 'Sırayla doğruluk ya da cesaret seçilen sohbet etkinliği: sahne kanalda, izleyen çok, oynayan az. Koltuğa oturmak zorunda değilsin; izleyici olmak da tam bir katılım sayılır.',
       blocks: [
         {
           items: [
@@ -401,7 +401,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'Çizim ve Kelime Oyunları',
-      sub: 'Gartic Phone ve Spyfall: tarayıcıdan girilen, indirme gerektirmeyen, kalabalık grup oyunlarımız.',
+      sub: 'Gartic Phone ve Spyfall: tarayıcıdan girilen, indirme gerektirmeyen kalabalık grup oyunlarımız. İkisinde de rekabetten çok kahkaha hedeflenir; iyi çizmek ya da hızlı konuşmak şart değildir.',
       blocks: [
         {
           heading: 'Gartic Phone',
@@ -424,7 +424,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'İndirilmesi Gereken Oyunlar',
-      sub: 'Aynı etkinliklerin masa oyunu tarafı: Among Us, Goose Goose Duck, Crab Game ve Brawlhalla.',
+      sub: 'Aynı etkinliklerin indirilen tarafı: Among Us, Goose Goose Duck, Crab Game ve Brawlhalla. Dördü de ücretsizdir ve tartışma kısmı yine bizim sesli kanallarımızda yürür.',
       blocks: [
         {
           items: [
@@ -438,7 +438,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'Discord İçi Etkinlikler',
-      sub: 'Ses kanalının içinden açılan hazır etkinlikler: izleme, çizme ve kart oyunları.',
+      sub: 'Ses kanalının içinden açılan hazır etkinlikler: ortak izleme, çizme ve kart oyunları. Hiçbir şey indirmen, hesap açman ya da bağlantı kurman gerekmez; kanala girip katılman yeter.',
       blocks: [
         {
           items: [
@@ -452,7 +452,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'Hangi Etkinlik Olsun İstersin',
-      sub: 'Etkinlik listesi üyelerden büyür; <#1538540051028381696> kanalı tam bu iş için var.',
+      sub: 'Etkinlik listesi üyelerden gelen önerilerle büyür; <#1538540051028381696> kanalı tam bu iş için var. Daha önce oynanmamış bir oyunu ya da bir izleme partisini yazarsan program oradan kurulur.',
       blocks: [
         {
           items: [
@@ -478,7 +478,7 @@ const oyunKurallari = {
   sections: [
     {
       title: 'Her Oyunda Geçerli',
-      sub: 'Oyun fark etmez; takım arkadaşı da rakip de üyedir ve saygı sırayı beklemez.',
+      sub: 'Oyun fark etmez: takım arkadaşı da rakip de önce sunucunun üyesidir ve saygı sırayı beklemez. Maçın gerilimi dinlendiğinde yazdıkların ve söylediklerin hâlâ kayıttadır.',
       blocks: [
         {
           items: [
@@ -495,7 +495,7 @@ const oyunKurallari = {
     },
     {
       title: 'Takım ve Lobi Düzeni',
-      sub: 'Yerini, sıranı ve sözünü koru: takım oyunlarıda en çok tartışma çıkaran şeyler bunlar.',
+      sub: 'Yerini, sıranı ve sözünü koru: takım oyunlarında en çok tartışma çıkaran şeyler bunlardır. Bir kişi yerini bildirmeden boşalttığında maç herkes için uzar.',
       blocks: [
         {
           items: [
@@ -511,7 +511,7 @@ const oyunKurallari = {
     },
     {
       title: 'Oyunlara Özel',
-      sub: 'Kısa hatırlatmalar: her oyunun kendi içinde tartışma çıkaran yerleri ve bizim oradaki duruşumuz.',
+      sub: 'Kısa hatırlatmalar: her oyunun kendi içinde tartışma çıkaran yerleri ve bizim o yerlerdeki duruşumuz. Bu maddeler sunucu kurallarının yerine değil, yanına geçer.',
       blocks: [
         {
           heading: 'Valorant ve Counter-Strike 2',
@@ -542,7 +542,7 @@ const oyunKurallari = {
     },
     {
       title: 'Turnuva ve Etkinlik Maçları',
-      sub: 'Ödül olan her maçta ölçü şeffaflıktır; kurayı, eşleşmeyi ve sonucu yetkili ilan eder.',
+      sub: 'Ödül olan her maçta ölçü şeffaflıktır: kurayı, eşleşmeyi ve sonucu yetkili ilan eder. Kendi maçının hakemi ya da kaydedeni olmak yasaktır; itiraz her zaman talep üzerinden yürür.',
       blocks: [
         {
           items: [
@@ -556,7 +556,7 @@ const oyunKurallari = {
     },
     {
       title: 'Klip ve Sohbet',
-      sub: 'Oynadıklarını paylaşabilirsin; paylaşırken de kurallar seninle gelir.',
+      sub: 'Oynadıklarını paylaşabilirsin; paylaşırken de kurallar seninle gelir. Klipte görünen isim, ses ve yazı da birer kişisel veridir; izinsiz gösterilen hiçbir şey geri alınamaz.',
       blocks: [
         {
           items: [
@@ -581,7 +581,7 @@ const besVBesBilgisi = {
   sections: [
     {
       title: '5v5 Nedir',
-      sub: 'Beşe beş oynanan takım etkinliklerimiz: Valorant, League of Legends ve Counter-Strike 2 tarafında açılır.',
+      sub: 'Beşe beş oynanan takım etkinliklerimiz: Valorant, League of Legends ve Counter-Strike 2 tarafında açılır. İki takım, tek maç, tek kazanan; sıradan bir ranked değil, duyurulmuş bir programdır.',
       blocks: [
         {
           items: [
@@ -635,7 +635,7 @@ const besVBesBilgisi = {
     },
     {
       title: 'Kurallar ve İtiraz',
-      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir.',
+      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir. Oyuncu maç durduramaz, itirazını maç sonunda kaptan ya da destek talebi üzerinden taşır.',
       blocks: [
         {
           items: [
@@ -651,7 +651,7 @@ const besVBesBilgisi = {
     },
     {
       title: 'Ödül ve Sonrası',
-      sub: 'Kazanan rolü alır, kaybeden tekrar ister; ikisi de sohbette kalır.',
+      sub: 'Kazanan rolü alır, kaybeden rövanşı ister; ikisi de sohbette kalır. Maç bittiğinde skor kayda geçer, takım odaları boşalır ve gecenin izi sohbet kanalında durur.',
       blocks: [
         {
           items: [
@@ -676,7 +676,7 @@ const sorunCozmeBilgisi = {
   sections: [
     {
       title: 'Bu Alan Ne İşe Yarar',
-      sub: 'Sorun çözme, tek kişinin derdini anlattığı yer değil; iki tarafın yüz yüze geldiği arabuluculuk alanıdır.',
+      sub: 'Sorun çözme, tek kişinin derdini anlattığı yer değil; iki tarafın karşılıklı geldiği arabuluculuk alanıdır. Yalnızca anlatmak istiyorsan duracağın yer destek talebidir.',
       blocks: [
         {
           heading: 'Buraya gelir',
@@ -700,7 +700,7 @@ const sorunCozmeBilgisi = {
     },
     {
       title: 'Nasıl Başvurulur',
-      sub: 'Numara ya da ID yazılmaz; buton ve talep üzerinden yürür, sıra kendiliğinden kurulur.',
+      sub: 'Numara ya da ID yazılmaz; buton ve talep üzerinden yürür, sıra kendiliğinden kurulur. Talebini açtıktan sonra ayrıca DM atmana ya da yetkili etiketlemene gerek yoktur.',
       blocks: [
         {
           items: [
@@ -714,7 +714,7 @@ const sorunCozmeBilgisi = {
     },
     {
       title: 'Görüşme Nasıl Yürür',
-      sub: 'Arabulucu tarafsızdır, kimse tek başına karar vermez ve iki taraf da söz hakkı alır.',
+      sub: 'Arabulucu tarafsızdır, kimse tek başına karar vermez ve iki taraf da eşit söz hakkı alır. Görüşme bir duruşma değildir; amaç suçlu bulmak değil, iki tarafın uyacağı bir sonuç çıkarmaktır.',
       blocks: [
         {
           items: [
@@ -729,7 +729,7 @@ const sorunCozmeBilgisi = {
     },
     {
       title: 'Kanallar',
-      sub: 'Bu alanın yazılı, sesli ve kayıt tarafı ayrı ayrı duruyor; hepsi yetkili gözetiminde.',
+      sub: 'Bu alanın yazılı, sesli ve kayıt tarafı ayrı ayrı duruyor; hepsi yetkili gözetiminde. Konuyu doğru kanala taşımak görüşmenin uzamasını değil, kısalmasını sağlar.',
       blocks: [
         {
           items: [
@@ -745,7 +745,7 @@ const sorunCozmeBilgisi = {
     },
     {
       title: 'Gizlilik',
-      sub: 'Görüşme odada kalır; kayıt yalnızca ekip içinde dolaşır.',
+      sub: 'Görüşme odada kalır; kayıt yalnızca ekip içinde dolaşır. Taraflardan biri konuşulanları sohbete taşırsa bu ayrı bir ihlal olarak kayda geçer ve dosyayı yeniden açar.',
       blocks: [
         {
           items: [
@@ -760,7 +760,7 @@ const sorunCozmeBilgisi = {
     },
     {
       title: 'Sonuç ve İtiraz',
-      sub: 'Açılan dosya kapanmadan sonuç öğrenilir; kapanan dosyaya itiraz yolu kapalı değil.',
+      sub: 'Açılan dosya kapanmadan sonucu öğrenirsin; kapanan dosyaya itiraz yolu da kapalı değildir. Kararı beğenmediğini söylemek yerine elinde yeni bir bulgu olduğunu göster.',
       blocks: [
         {
           items: [
@@ -785,7 +785,7 @@ const partnerSartlari = {
   sections: [
     {
       title: 'Partnerlik Nedir',
-      sub: 'İki sunucu birbirinin tanıtım metnini kendi kanalında paylaşır; karşılıklı, kayıtlı ve geri çekilebilir.',
+      sub: 'İki sunucu birbirinin tanıtım metnini kendi kanalında paylaşır: karşılıklı, kayıtlı ve her iki yandan geri çekilebilir. Partnerlik üyelik, rol ya da ayrıcalık taşımaz.',
       blocks: [
         {
           items: [
@@ -799,7 +799,7 @@ const partnerSartlari = {
     },
     {
       title: 'Şartlar',
-      sub: 'Teklif kabul edilmeden önce bu maddeler onaylatılır; kabul etmeyen metni paylaşamaz.',
+      sub: 'Teklif kabul edilmeden önce bu dört madde onaylatılır; onaylamayan tarafın metni paylaşılmaz. Şartlar DM kartında da aynı metinle çıkar, yani kanalda okuduğun ile kabul ettiğin aynıdır.',
       blocks: [
         {
           items: [
@@ -839,7 +839,7 @@ const partnerSartlari = {
     },
     {
       title: 'Partner Olduktan Sonra',
-      sub: 'Ortaklık tek seferlik ilan değildir: yenileme, müsaitlik ve karşılıklı saygı ile yürür.',
+      sub: 'Ortaklık tek seferlik bir ilan değildir: yenileme, müsaitlik ve karşılıklı saygı ile yürür. Paylaşımdan sonra iki tarafın da kanalda görünür kalması ortaklığın sürdüğü anlamına gelir.',
       blocks: [
         {
           items: [
@@ -854,7 +854,7 @@ const partnerSartlari = {
     },
     {
       title: 'Sonlandırma ve Yasak',
-      sub: 'Kayıt tek taraflı düşürülebilir; ağır ihlalde sunucu yasaklı listeye geçer.',
+      sub: 'Kayıt tek taraflı düşürülebilir; ağır ihlalde ise sunucu yasaklı listeye geçer. Yasaklı listesi kişisel bir karar değil, gerekçesi kayıtta duran bir işlemdir.',
       blocks: [
         {
           items: [
@@ -869,7 +869,7 @@ const partnerSartlari = {
     },
     {
       title: 'Partner Kanallarımız',
-      sub: 'Nereye bakacağını bilirsen bekleme süren kısalır.',
+      sub: 'Nereye bakacağını bilirsen bekleme süren kısalır: talebin nerede incelenip nerede yayımlandığını bilmek, yetkiliye sormadan işini kendi başına bitirmek demektir.',
       blocks: [
         {
           items: [
@@ -898,7 +898,7 @@ const partnerMetnimiz = {
   sections: [
     {
       title: 'İlanımız',
-      sub: 'Partner yetkililerimiz bu metni karşı sunucunun yetkilisine DM olarak iletir; kanalda gördüğün hali de budur.',
+      sub: 'Partner yetkililerimiz bu metni karşı sunucunun yetkilisine DM olarak iletir; kanalda gördüğün hali de budur. Metin tek yerden yönetilir, böylece her sunucuya aynı tanıtım gider.',
       blocks: [
         {
           text: partnerConfig.ourAdText,
@@ -907,7 +907,7 @@ const partnerMetnimiz = {
     },
     {
       title: 'Nerede Kullanılır',
-      sub: 'Metin tek yerde durur, iki yolda gider: karşı tarafa DM ve bizim paylaşım kanalımız.',
+      sub: 'Metin tek yerde durur ve iki yoldan gider: karşı tarafa DM olarak, bizim üyelerimize de paylaşım kanalında. Kopyalayıp kendi cümlenle birleştirdiğin hali bizim ilanımız sayılmaz.',
       blocks: [
         {
           items: [
@@ -920,7 +920,7 @@ const partnerMetnimiz = {
     },
     {
       title: 'Metni Değiştirme',
-      sub: 'İlan sunucunun yüzüdür; değişiklik kararını yetki kademesi verir, metin tek yerden yenilenir.',
+      sub: 'İlan sunucunun yüzüdür: değişiklik kararını yetki kademesi verir ve metin tek yerden yenilenir. Yayınlanmış haliyle oynanmış bir sürüm, karşı tarafta yanlış bilgi bırakır.',
       blocks: [
         {
           items: [
@@ -935,7 +935,7 @@ const partnerMetnimiz = {
     },
     {
       title: 'Soru ve Muhatap',
-      sub: 'Partnerlikle ilgili her konu tek kapıdan yürür.',
+      sub: 'Partnerlikle ilgili her konu tek kapıdan yürür: muhatap partner yetkilisi, üst karar lider kademesidir. Kanalın dışına taşan konuşma, kaydın kendisi kadar geçersiz sayılır.',
       blocks: [
         {
           items: [
