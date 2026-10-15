@@ -39,9 +39,10 @@ function syncLogPanel(client, force = false) {
   });
 }
 
-// Bot açılınca alt başlıkları hazırlar ve paneli gönderir
+// Bot açılınca alt başlıkları hazırlar, grup kanalı düzeninden kalan kanalları siler ve paneli gönderir
 async function sendPanel(client) {
   await engine.ensureAllThreads(client);
+  await dropGroupChannels(client);
   return syncLogPanel(client);
 }
 
