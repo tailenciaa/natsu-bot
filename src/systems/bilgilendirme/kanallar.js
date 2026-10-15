@@ -32,7 +32,7 @@ const yetkiliKurallari = {
     },
     {
       title: 'Yetkilinin Davranışı',
-      sub: 'Beş ilke: tarafsızlık, sakinlik, örneklik, gizlilik ve yetkinin ölçülü kullanımı. Bunların hiçbiri rütbeyle büyümez, hepsi herkese aynı geçer.',
+      sub: 'Beş ilke: tarafsızlık, sakinlik, örneklik, gizlilik ve yetkinin ölçülü kullanımı. Hiçbiri rütbeyle büyümez: en üst rütbe de en alt rütbe de aynı ölçüyle değerlendirilir.',
       blocks: [
         {
           heading: 'Beş ilke',
