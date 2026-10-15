@@ -137,19 +137,15 @@ const yetkiliBilgisi = {
   channel: '1538945093921153206',
   sections: [
     {
-      title: 'Yetkili Kanalları',
+      title: 'İşlem Nerede Yapılır',
       sub: 'Her işin bir kanalı var; doğru kanalda yapılan işlem daha hızlı çözülür ve üye önünde tartışma üretmez. Yanlış kanala yazılan kayıt, sonradan düzeltilmesi zor bir iz bırakır.',
       blocks: [
         {
           items: [
-            '<#1538944989432774746>: bağlayıcı **yetkili kuralları**.',
-            '<#1538945093921153206>: işleyiş rehberi, yani bu kanal.',
-            '<#1538945164394106990>: kadro ve kural değişikliklerinin duyurulduğu yer.',
-            '<#1538945273378639913>: istişare, devir ve ekip içi sohbet.',
-            '<#1538535501420826794>: ceza ve yetki komutlarının **tek** çalıştığı kanal.',
-            '<#1538535676000211034>: ceza kanıtları ve ekran görüntüleri.',
-            '<#1538945636085268580>: genel yetkili toplantısı ses kanalı.',
-            '<#1538536351119446127>: üye komutlarının kanalı; burada düzen tutulur, yetkili işi yazılmaz.',
+            'Ceza ve yetki komutları **yalnızca** <#1538535501420826794> kanalında çalışır; başka kanalda yazılan komut işlemez.',
+            'Ceza kanıtı ve ekran görüntüsü <#1538535676000211034> kanalına bırakılır, üye önünde gösterilmez.',
+            'Danışma, devir ve ekip içi sohbet <#1538945273378639913> kanalında yürür.',
+            '<#1538536351119446127> üye komutlarının kanalıdır; yetkili işi orada yazılmaz.',
           ],
         },
       ],
@@ -428,7 +424,6 @@ const etkinlikBilgisi = {
             'Öneri kanalına ne izlemek, ne oynamak ya da ne yarışmak istediğini yaz.',
             'Aynı öneri tekrar tekrar yazılmasın diye öneriler tek mesajda toplanır.',
             'Programı <@&1554240000529539083> kurar, <@&1554239995412488304> onaylar.',
-            'Kuralları merak ediyorsan <#1538540261737758850> kanalı burada.',
           ],
           note: 'Etkinlik takvimi değişkendir; duyurusu olmayan bir gün için "neden etkinlik yok" baskısı kurallara göre yaptırım sebebidir.',
         },
@@ -501,8 +496,8 @@ const oyunKurallari = {
         {
           heading: 'Brawlhalla ve 1v1',
           items: [
-            'Eşleşme duyurulduktan sonra saatte hazır olmayan üye elenmiş sayılır.',
-            'Rakip bağlantı koparsa maç **bir kez** baştan alınır, sonraki denemeler kura ile yürür.',
+            'Eşleşme duyurulduktan sonra saatte hazır olmayan üye sırasını kaybeder.',
+            'Rakip bağlantı koparsa maç **bir kez** baştan alınır; tekrar koparsa kararı maçı yöneten yetkili verir.',
             'Karakter ve arenayı seçerken rakiple pazarlık yapılır, tek taraflı dayatma olmaz.',
           ],
         },
