@@ -74,16 +74,14 @@ async function syncAllRoles(guild) {
   console.log(`[seviye] Seviye rolleri eşitlendi (${done} üye).`);
 }
 
-// Duyuru: ana seviyelerde (5, 10, 15...) üyeyi etiketleyen kısa satır ve altında seviye atlama kartı; ara
-// seviyelerde etiket atılmaz, kart sessiz gider (kart çizilemezse eski metin duyurusu düşer).
-// Gönderildiyse true döner.
-async function sendLevelUp(channel, user, kind, level, role) {
-  const milestone = config.milestones.includes(level);
-  const allowedMentions = milestone ? { users: [user.id] } : { users: [] };
+// Ses seviyesi duyurusu: kart her zaman sabit duyuru kanalına gider, üye hiçbir seviyede etiketlenmez
+// (kart çizilemezse metin kartı düşer). Gönderildiyse true döner.
+async function sendVoiceCard(channel, user, level, role) {
+  const allowedMentions = { users: [], roles: [] };
   try {
     const member = await channel.guild.members.fetch(user.id).catch(() => null);
     const image = await buildLevelUpCard(user, {
-      kind,
+      kind: 'ses',
       from: level - 1,
       to: level,
       custom: profileStore.get(user.id),
@@ -93,23 +91,36 @@ async function sendLevelUp(channel, user, kind, level, role) {
       coinReward: coinConfig.awards.levelUp,
     });
     await channel.send({
-      content: milestone ? `<@${user.id}>` : '',
-      files: [{ attachment: image, name: 'seviye-atladi.png', description: `${user.username}, ${level}. seviyeye ulaştı` }],
+      files: [{ attachment: image, name: 'seviye-atladi.png', description: `${user.username}, ${level}. ses seviyesine ulaştı` }],
       allowedMentions,
     });
     return true;
   } catch (err) {
-    console.error('[seviye] Duyuru kartı gönderilemedi:', err.message);
-    return channel.send({ components: [ui.levelUpAnnounce(user, kind, level, role)], flags: core.CV2, allowedMentions }).then(
+    console.error('[seviye] Ses kartı gönderilemedi:', err.message);
+    return channel.send({ components: [ui.levelUpAnnounce(user, 'ses', level, role)], flags: core.CV2, allowedMentions }).then(
       () => true,
       () => false,
     );
   }
 }
 
-// XP ekler; atlanan her seviye duyurulur ve coin ödülü verilir. Üye yalnızca ana seviyelerde (5, 10, 15...)
-// etiketlenir; ara seviyelerde kart bildirimsiz düşer. Rol verme de sadece ana seviyelerde olur.
-async function grantXp(guild, userId, kind, amount) {
+// Mesaj seviyesi duyurusu: düz metin olarak üyenin XP kazandıran mesajını attığı kanala gider ve üye etiketlenir.
+async function sendTextNotice(channel, user, level, role) {
+  const lines = [`<@${user.id}> **${level}. mesaj seviyesine** yükseldi · cüzdana **${coinConfig.awards.levelUp} coin** eklendi.`];
+  if (role) lines.push(`**${role.name}** rolü de hesabına verildi.`);
+  return channel.send({ content: lines.join('\n'), allowedMentions: { users: [user.id], roles: [] } }).then(
+    () => true,
+    (err) => {
+      console.error('[seviye] Mesaj duyurusu gönderilemedi:', err.message);
+      return false;
+    },
+  );
+}
+
+// XP ekler; atlanan her seviye duyurulur ve coin ödülü verilir. Seviyeler 1, 2, 3... sırayla atlar; rol verme
+// sadece ana seviyelerde (5, 10, 15...) olur. Mesaj seviyesi üyenin yazdığı kanala, ses seviyesi sabit duyuru
+// kanalına gider.
+async function grantXp(guild, userId, kind, amount, sourceChannel = null) {
   const before = levelFromXp(store.xpOf(kind, userId));
   const after = levelFromXp(store.addXp(kind, userId, amount));
   if (after <= before) return;
@@ -132,12 +143,12 @@ async function grantXp(guild, userId, kind, amount) {
       role = roleId && given === roleId ? (guild.roles.cache.get(roleId) ?? (await guild.roles.fetch(roleId).catch(() => null))) : null;
     }
 
-    channel ??= await fetchTextChannel(guild, config.channel);
     user ??= await guild.client.users.fetch(userId).catch(() => null);
-
-    if (user && channel) {
-      await sendLevelUp(channel, user, kind, level, role);
-    }
+    // Mesaj seviyesi üyenin yazdığı kanala düz metin, ses seviyesi sabit duyuru kanalına etiketsiz kart olarak gider
+    let target = kind === 'mesaj' ? sourceChannel : null;
+    if (!target) target = (channel ??= await fetchTextChannel(guild, config.channel));
+    if (!user || !target) continue;
+    await (kind === 'mesaj' ? sendTextNotice(target, user, level, role) : sendVoiceCard(target, user, level, role));
   }
 }
 
@@ -206,7 +217,9 @@ function handleMessage(message) {
 
   const { xpMin, xpMax } = config.message;
   const amount = xpMin + Math.floor(Math.random() * (xpMax - xpMin + 1));
-  grantXp(message.guild, message.author.id, 'mesaj', amount).catch((err) => console.error('[seviye] Mesaj XP verilemedi:', err.message));
+  grantXp(message.guild, message.author.id, 'mesaj', amount, message.channel).catch((err) =>
+    console.error('[seviye] Mesaj XP verilemedi:', err.message),
+  );
 }
 
 // /seviye [kullanici]: mesaj ve ses seviyesi tek görsel kartta
