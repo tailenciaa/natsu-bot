@@ -83,7 +83,7 @@ const yetkiliKurallari = {
     },
     {
       title: 'Gizlilik',
-      sub: 'Yetkili gördüğü bilgiyi taşımaz; gizlilik ihlali, yanlış verilen bir cezadan daha ağır sonuç doğurur. Sana gelen şikayet de kanıt da yalnızca ekip içinde kalır.',
+      sub: 'Yetkili gördüğü bilgiyi taşımaz; gizlilik ihlali, yanlış verilen bir cezadan daha ağır sonuç doğurur. Sana gelen şikayet de kanıt da **yalnızca ekip içinde** kalır.',
       blocks: [
         {
           items: [
@@ -93,7 +93,7 @@ const yetkiliKurallari = {
             'İsim, adres, fotoğraf, hesap bilgisi gibi kişisel veri ne üyeyle ne ekip dışıyla paylaşılır.',
             'Ekran görüntülerini yetkili kanalının dışında kullanma.',
           ],
-          note: 'İzinsiz kayıt almak ve sunucu adına dış platformlarda paylaşmak kurallar gereği yasaktır.',
+          note: 'İzinsiz kayıt almak ve sunucu adına dış platformlarda paylaşmak kurallar gereği **yasaktır**.',
         },
       ],
     },
@@ -105,7 +105,7 @@ const yetkiliKurallari = {
           items: [
             'Kararından emin değilsen önce <#1538945273378639913> kanalında danış.',
             'Uzun süre ortada olmayacaksan <@&1555890044768624662> ekibinden birine haber ver.',
-            'Görev alanın dışındaki işe, o alanında biri dururken el atma.',
+            'Görev alanın dışındaki işe, o alanında biri dururken **el atma**.',
             'Yetki isteyen üyeyi DM\'e çekme; tek yolun <#1538544076910104636> kanalı olduğunu yaz.',
             'Başka bir yetkilinin kararını kanalda düzeltme; eleştirini yetkili sohbetinde yap.',
           ],
@@ -156,7 +156,7 @@ const yetkiliBilgisi = {
     },
     {
       title: 'Rütbeler ve Yetkiler',
-      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; ceza yetkisi kademeli açılır. Rütbe yalnızca ne yapabileceğini değil, kimin kararına uyacağını da belirler.',
+      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; **ceza yetkisi kademeli açılır**. Rütbe yalnızca ne yapabileceğini değil, kimin kararına uyacağını da belirler.',
       blocks: [
         {
           items: [
@@ -224,7 +224,7 @@ const yetkiliBilgisi = {
     },
     {
       title: 'Aktiflik, Devir ve İzin',
-      sub: 'Sessiz kaybolmak talebi sahipsiz bırakır: yoğun dönemi önceden haber ver, işi yarım bırakacaksan devret. Haber verilmiş bir yokluk kusur sayılmaz, verilmemiş olan sayılır.',
+      sub: 'Sessiz kaybolmak talebi sahipsiz bırakır: yoğun dönemi önceden haber ver, işi yarım bırakacaksan devret. Haber verilmiş bir yokluk **kusur sayılmaz**, verilmemiş olan sayılır.',
       blocks: [
         {
           items: [
@@ -257,7 +257,7 @@ const etkinlikKurallari = {
             'Duyurulan saatte etkinlik sesli kanalında hazır bulun.',
             'Yer ayırtıp gelmemek, etkinliğin ortasında kalkmak yerine **etkinliği yöneten yetkiliye** haber verilir.',
             'Aynı etkinlikte ikinci şans için **ikinci hesap** kullanmak yasaktır; tek hesap, tek ödül.',
-            'Sunucudan çıkarılan ya da cezalı durumdaki üye etkinliğe alınmaz; cezalı kanaldayken etkinlik çağırmak da yasaktır.',
+            'Sunucudan çıkarılan ya da cezalı durumdaki üye etkinliğe **alınmaz**; cezalı kanaldayken etkinlik çağırmak da **yasaktır**.',
             'Kontenjan dolmadan önce **çıkacağını yazmayan** üye yerini korumuş sayılır.',
           ],
         },
@@ -265,14 +265,14 @@ const etkinlikKurallari = {
     },
     {
       title: 'Sesli Kanalda Düzen',
-      sub: 'Etkinliğin sesi de sözü de sırayla alınır; mikrofonu domine eden kişi etkinliği kendi başına bitirmiş olur. Sessiz kalmak da bir seçimdir, söz almadan dinlemek rahatsızlık sayılmaz.',
+      sub: 'Etkinliğin sesi de sözü de sırayla alınır; mikrofonu domine eden kişi etkinliği kendi başına bitirmiş olur. Sessiz kalmak da bir seçimdir, söz almadan dinlemek **rahatsızlık sayılmaz**.',
       blocks: [
         {
           items: [
             'Moderatör konuşurken **söz kesme**; soruların için el kaldır ya da sohbet kanalından yaz.',
-            'Bağırma, mikrofon spamı, ses efekti ve müzik açmak yasaktır; kurallar sesli kanallarda da geçerlidir.',
+            'Bağırma, mikrofon spamı, ses efekti ve müzik açmak **yasaktır**; kurallar sesli kanallarda da geçerlidir.',
             'Etkinlik dışı konuyu etkinlik kanalında açma.',
-            'Yayın açtığında gösterdiğin her şey sunucu kurallarına tabidir; +18, kanlı ya da rahatsız edici içerik anında kapatılır.',
+            'Yayın açtığında gösterdiğin her şey sunucu kurallarına tabidir; +18, kanlı ya da rahatsız edici içerik **anında kapatılır**.',
             'Rahatsız olduğun bir davranışı kanalda tartışma; yetkiliye bildir, o çözer.',
           ],
         },
@@ -286,7 +286,7 @@ const etkinlikKurallari = {
           items: [
             'Hile, makro, izinsiz eklenti ve oyunun dosyalarını değiştirmek **kesin yasak**; tespit edilirse etkinlikten ve sunucudan atılma sebebi.',
             'Gizli rol ve bilgi sızdırma: rolünü, ipucunu ya da cevabı kanal dışında paylaşmak oyunun tamamını bozar.',
-            'Kasıtlı kaybetme, takım arkadaşını engelleme, slot ve yer çalma yasaktır.',
+            'Kasıtlı kaybetme, takım arkadaşını engelleme, slot ve yer çalma **yasaktır**.',
             'AFK kalma: aktif etkinlikte sıran geldiğinde hazır ol, yoksa sıra geçilir.',
             'Sonucu etkileyecek bir kural tartışması çıkarsa karar **etkinliği yöneten yetkilinindir**; maç oynanmaya devam eder.',
           ],
@@ -295,12 +295,12 @@ const etkinlikKurallari = {
     },
     {
       title: 'Ödüller',
-      sub: 'Ödül her etkinlikte olmaz; varsa listesi duyuruda yazar. Kural çiğneyen ödülünü de kaybeder. Kazandığını etkinliği yöneten yetkili ilan eder, ilan edilmemiş şey ödül sayılmaz.',
+      sub: 'Ödül her etkinlikte olmaz; varsa listesi duyuruda yazar. Kural çiğneyen ödülünü de kaybeder. Kazandığını etkinliği yöneten yetkili ilan eder, ilan edilmemiş şey **ödül sayılmaz**.',
       blocks: [
         {
           items: [
-            'Ödül devredilemez ve başkasına satılamaz; takas ya da satış girişimi yasaktır.',
-            'Etkinlik bitişine kadar kalmayan, ödül anında bulunmayan üye hakkını sıradakine bırakır.',
+            'Ödül **devredilemez** ve başkasına **satılamaz**; takas ya da satış girişimi yasaktır.',
+            'Etkinlik bitişine kadar kalmayan, ödül anında bulunmayan üye **hakkını sıradakine bırakır**.',
             'Kazanmadığın bir ödülü kazandım diye iddia etmek ceza sebebidir.',
           ],
           note: 'Haftalık dereceler ve saygınlık ödülleri etkinlik ödülünden ayrıdır; o roller her pazartesi yenilenir.',
@@ -361,7 +361,7 @@ const etkinlikBilgisi = {
           items: [
             'Oyuncular <#1538540812986744842> sahne kanalında sırayla oturur, sıradaki kişi **doğruluk** ya da **cesaret** seçer.',
             'Soru ve isteği sıradaki oyuncu ya da yetkili verir; **istememe hakkın saklıdır**, hiçbir cezası yoktur.',
-            'Cinsellik, aşağılama ve kişisel sır içeren istekler yasaktır; +18 içerik kuralı burada da geçerlidir.',
+            'Cinsellik, aşağılama ve kişisel sır içeren istekler **yasaktır**; +18 içerik kuralı burada da geçerlidir.',
             'İzleyici rolü de serbest: sahnedekini rahatsız edici biçimde sıkıştıramazsın.',
           ],
         },
