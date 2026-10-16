@@ -295,11 +295,10 @@ const etkinlikKurallari = {
     },
     {
       title: 'Ödüller',
-      sub: 'Ödül listesi duyuruda yazan kadardır; kural çiğneyen, oyunun ödülünü de kaybeder. Kazandığını sen değil, etkinliği yöneten yetkili ilan eder; ilan edilmemiş şey ödül sayılmaz.',
+      sub: 'Ödül her etkinlikte olmak zorunda değildir: varsa listesi ve miktarı duyuruda yazan kadardır. Kural çiğneyen, oyunun ödülünü de kaybeder. Kazandığını sen değil, etkinliği yöneten yetkili ilan eder; ilan edilmemiş şey ödül sayılmaz.',
       blocks: [
         {
           items: [
-            'Ödül **etkinlik bitiminde** ve tek seferde dağıtılır; eksik kaldığını düşündüğün ödül için <@&1554240000529539083> ekibine yazılır.',
             'Ödül devredilemez ve başkasına satılamaz; takas ya da satış girişimi yasaktır.',
             'Etkinlik bitişine kadar kalmayan, ödül anında bulunmayan üye hakkını sıradakine bırakır.',
             'Kazanmadığın bir ödülü kazandım diye iddia etmek ceza sebebidir.',
