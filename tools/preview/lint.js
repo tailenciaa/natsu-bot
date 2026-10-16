@@ -297,26 +297,20 @@ function lint(norm) {
     const bold = (noCode.replace(/\\\*/g, '').match(/\*\*/g) ?? []).length;
     if (bold % 2) warn('kalin-dengesiz', s.path, 'Kalın işareti (**) dengesiz');
 
-    // Dil ve tipografi denetimleri: noktalama boşluğu, kalın içinde nokta, satırda kalın kalabalığı,
-    // bitişik ve cümle içi kelime yinelemesi
-    if (/[.,;:!?][\p{L}]/u.test(noCode.replace(/(<t:[^>]+>)/g, '§').replace(/§/g, ' ')))
-      warn('noktalama-bosluk', s.path, 'Noktalamadan hemen sonra boşluk yok');
-    for (const m of noCode.matchAll(/\*\*[^*\n]*[.,;:!?]\s*\*\*/g)) warn('kalin-nokta', s.path, `Nokta kalın işaretinin içinde kalmasın: "${m[0]}"`);
-    for (const line of noCode.split('\n')) {
-      const spans = (line.match(/\*\*[^*\n]+\*\*/g) ?? []).length;
-      if (spans > config.MAX_BOLD_PER_LINE) warn('kalin-cok', s.path, `Satırda ${spans} kalın bölüm var (en çok ${config.MAX_BOLD_PER_LINE}): "${line.trim().slice(0, 60)}..."`);
+    // Dil denetimleri: noktalamadan sonra boşluk, noktanın kalın işaretinin içinde kalması,
+    // yan yana iki kez yazılan aynı kelime (ikilemeler hariç)
+    const prose = noCode.replace(/<t:[^>]+>/g, '§').replace(/§/g, ' ');
+    for (const m of prose.matchAll(/(?<![\d\p{Lu}])([.,;:!?])(?=\p{Ll})/gu)) {
+      const at = m.index;
+      warn('noktalama-bosluk', s.path, `Noktalamadan sonra boşluk yok: "...${prose.slice(Math.max(0, at - 25), at + 15)}..."`);
+    }
+    for (const m of prose.matchAll(/\*\*[^*\n]*[.!?]\*\*\s+\p{Ll}/gu))
+      warn('kalin-nokta', s.path, `Nokta kalın işaretinin içinde kalmasın: "${m[0].trim().slice(0, 60)}"`);
+    for (const line of prose.split('\n')) {
       const words = lower(line).replace(/\*\*|[#_~]/g, ' ').split(/[^\p{L}]+/u).filter((w) => w.length >= 4);
       for (let i = 1; i < words.length; i++)
         if (words[i] === words[i - 1] && !config.IKILEME.includes(words[i]))
-          warn('kelime-bitisik', s.path, `Aynı kelime yan yana iki kez: "${words[i]}"`);
-    }
-    for (const sentence of plain.split(/(?<=[.!?])\s+/)) {
-      const counts = new Map();
-      for (const w of lower(sentence).split(/[^\p{L}]+/u)) {
-        if (w.length < 5) continue;
-        counts.set(w, (counts.get(w) ?? 0) + 1);
-      }
-      for (const [w, n] of counts) if (n >= 3) warn('kelime-cok', s.path, `"${w}" tek cümlede ${n} kez geçiyor`);
+          warn('kelime-bitisik', s.path, `Aynı kelime yan yana iki kez: "${words[i]}" — ${line.trim().slice(0, 70)}`);
     }
 
     const bangText = stripTokens(s.value);
