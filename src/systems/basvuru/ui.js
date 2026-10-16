@@ -207,7 +207,7 @@ function applicationNotice(app, applicantUser) {
   const container = card(
     pending ? `Yeni Başvuru #${pad(app.number)}` : `Başvuru #${pad(app.number)}`,
     pending
-      ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip başvuranı **Görüşmeye Çağır** ile sesli mülakata alabilir ya da **Reddet** ile başvuruyu sonuçlandırabilirsin; ilk çağıran yetkili başvuruyu üstlenir.'
+      ? 'Başvuranın bilgileri ve cevapları bu mesajda yer alıyor. Cevapları inceleyip **Görüşmeye Çağır** ile sesli mülakata alabilir ya da **Reddet** ile başvuruyu sonuçlandırabilirsin; ilk çağıran yetkili işi üstlenir.'
       : 'Bu başvurunun bilgileri, cevapları ve güncel durumu burada listelenir. Başvuru sonuçlandıktan sonra da süreç boyunca bu mesaj güncellenir ve son durumu gösterir.',
     [
       `### Başvuran\n${pending ? role : ''}<@${app.userId}> ekibe katılmak için başvurdu.\n${info}`,
@@ -371,7 +371,7 @@ function decisionPanel(app, state = 'open', remindDisabled) {
   if (state === 'resumed') {
     return card(
       'Görüşme Üstlenildi',
-      'Beklemedeki görüşmeyi bir yetkili üstlendi ve başvuranı yeniden görüşmeye çağırdı. Yetkili bu kanala bağlandığında görüşme başlar ve karar paneli yeniden gelir.',
+      'Beklemedeki mülakatı bir yetkili üstlendi ve başvuranı yeniden sesli odaya çağırdı. Yetkili bu kanala bağlandığında görüşme başlar ve karar paneli yeniden gelir.',
       [`${head}\n**<@${app.meetingBy}> görüşmeyi üstlendi.**`],
       'success',
     );
@@ -466,10 +466,10 @@ function meetingHoldNotice(app, state = 'open') {
     status = `**<@${h.by}> görüşmeyi beklemeye aldı.**\n<@${app.userId}> yetkili bekliyor, bu süre içinde yetkililer etiketlenmez.`;
     buttons.push(new ButtonBuilder().setCustomId(`${IDS.transfer}:${app.id}:iste`).setStyle(ButtonStyle.Secondary).setLabel('Devralma İste'));
   } else if (state === 'remind') {
-    sub = 'Görüşmesi beklemeye alınan başvuran hâlâ kanalda bekliyor ve **Hatırlat** butonuyla haber verdi. **Görüşmeye Çağır** butonuna ilk basan yetkili görüşmeyi sürdürür.';
+    sub = 'Görüşmesi beklemeye alınan başvuran hâlâ kanalda ve **Hatırlat** butonuyla haber verdi. **Görüşmeye Çağır** butonuna ilk basan yetkili süreci sürdürür.';
     status = `${roles}**<@${app.userId}> hâlâ yetkili bekliyor.**`;
   } else {
-    sub = 'Beklemedeki görüşmeyi **Görüşmeye Çağır** butonuna ilk basan yetkili sürdürür ve başvuranla ilgilenmek zorundadır.';
+    sub = 'Beklemedeki mülakatı **Görüşmeye Çağır** butonuna ilk basan yetkili sürdürür ve başvuranla ilgilenmek zorundadır.';
     status = `${roles}**<@${app.userId}> görüşme için yetkili bekliyor.**\n${h.auto ? `<@${h.by}> kanaldan uzun süre ayrıldığı için görüşme otomatik olarak beklemeye alındı.` : `<@${h.by}> görüşmeyi beklemeye almıştı, geri alma süresi doldu.`}`;
   }
   buttons.push(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Başvuruya Git').setURL(messageUrl(app.guildId, app.channelId, app.messageId)));

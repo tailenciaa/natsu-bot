@@ -24,7 +24,7 @@ function pickPanel(emojis) {
   if (emojis.length > MAX_PICK) notes.push(`Bir seferde en fazla ${MAX_PICK} emoji eklenebilir.`);
   const container = page({
     title: 'Emojileri Sunucuya Ekle',
-    sub: 'Seçtiğin mesajdaki özel emojileri sunucuna ekleyebilirsin; eklemek istediklerini menüden seç, seçtiğin anda emojiler sunucuya eklenir ve hemen kullanılabilir.',
+    sub: 'Seçtiğin mesajdaki özel emojileri sunucuna ekleyebilirsin; istediklerini menüden seçtiklerinde anında sunucuya geçer ve hemen kullanılabilir.',
     blocks: [`**Mesajda ${emojis.length} emoji bulundu.**${notes.length ? `\n${notes.map((n) => `${n}`).join('\n')}` : ''}`],
   });
   return container

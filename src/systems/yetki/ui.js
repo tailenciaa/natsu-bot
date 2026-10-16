@@ -59,7 +59,7 @@ function staffPanel({ user, levelId, permIds, dutyIds = [], done, missingRoles, 
   const container = page({
     title: done ? 'Yetki Verildi' : 'Yetki Ver',
     sub: done
-      ? 'Rütbe, yetkiler ve görev rolleri üyeye tanımlandı. Bu mesaj, yetkilendirme işleminin kaydı olarak kanalda kalır.'
+      ? 'Rütbe, yetkiler ve görev rolleri üyeye tanımlandı. Bu mesaj, işlemin kaydı olarak kanalda kalır.'
       : 'Rütbe seçince o rütbenin yetkileri ve görev rolleri otomatik işaretlenir; istersen bunları tek tek düzenleyebilir, sonunda **Yetkiyi Ver** butonuyla seçimini onaylayabilirsin.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     accent: done ? colors.success : colors.primary,

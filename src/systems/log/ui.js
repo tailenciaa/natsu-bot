@@ -84,7 +84,7 @@ function panel() {
   // Panel yalnızca bu mesaj için: başlık ve hemen altında açıklama, afiş, çizgi, menü
   return page({
     title: `${botName} Log Paneli`,
-    sub: 'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi kategorilere ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
+    sub: 'Menüden **bir log kategorisi seç**; loglar mesaj, ses, üye, moderasyon, sunucu ve takviye gibi gruplara ayrılmış alt başlıklarda tutulur ve seçimin seni doğrudan oraya yönlendirir.',
   })
     .addMediaGalleryComponents(bannerGallery(config.banner))
     .addSeparatorComponents(divider())
@@ -155,7 +155,7 @@ function setupView({ mainId, panelId, rows, panelUrl, note }) {
 function resetConfirm() {
   return page({
     title: 'Loglar Sıfırlansın mı?',
-    sub: 'Bu işlem bütün log alt başlıklarını silip yeniden açar; alt başlıkların içindeki eski loglar da silineceği için devam etmeden önce ne yapacağından emin olmalısın.',
+    sub: 'Bu işlem bütün log alt başlıklarını silip yeniden açar; içlerindeki eski loglar da gideceği için devam etmeden önce ne yapacağından emin olmalısın.',
     accent: colors.danger,
     blocks: [
       '### Uyarı\n**Tüm eski loglar kalıcı olarak silinir** ve bu işlem **geri alınamaz.**\n' +

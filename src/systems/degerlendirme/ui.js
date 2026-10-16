@@ -269,7 +269,7 @@ function replyModal(rating) {
 function replyDm(rating, guildName) {
   return page({
     title: 'Değerlendirmene Yorum Geldi',
-    sub: 'Verdiğin değerlendirmeyi alan yetkili bu değerlendirmeye **bir yorum ekledi**; yorumu ve hangi hizmet için kaç puan verdiğini bu mesajda görebilirsin.',
+    sub: 'Verdiğin değerlendirmeyi alan yetkili **bir yorum ekledi**; yorumu ve hangi hizmet için kaç puan verdiğini bu mesajda görebilirsin.',
     accent: colors.success,
     blocks: [
       `### Yorum Bilgileri\n<@${rating.staffId}> verdiğin değerlendirmeye yorum ekledi.\n${refText(rating)} için verdiğin puan: ${stars(rating.score)}`,

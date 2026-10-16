@@ -22,7 +22,7 @@ const commands = [
     .setName('profil')
     .setDescription('Seviye, sıralama, rozet ve istatistiklerinle sunucu profilini gösterir.')
     .setContexts(InteractionContextType.Guild)
-    .addUserOption((o) => o.setName('kullanici').setDescription('Profiline bakılacak üyeyi seçer, boş bırakırsan kendi profilin gösterilir.')),
+    .addUserOption((o) => o.setName('kullanici').setDescription('Kartına bakılacak üyeyi seç, boş bırakırsan kendi profilin gösterilir.')),
 ];
 
 const number = (n) => Number(n).toLocaleString('tr-TR');

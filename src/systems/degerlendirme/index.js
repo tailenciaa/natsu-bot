@@ -196,7 +196,7 @@ async function handleReplyButton(interaction) {
   const rating = store.getRating(interaction.customId.slice(ui.IDS.reply.length + 1));
   if (!rating?.score || rating.reportStatus === 'approved' || rating.removedAt) return replyError(interaction, 'Bu değerlendirme bulunamadı.');
   if (interaction.user.id !== rating.staffId) {
-    return replyError(interaction, 'Bu değerlendirmeye sadece değerlendirilen yetkili yorum ekleyebilir.');
+    return replyError(interaction, 'Yorumu yalnızca puanlanan yetkili ekleyebilir.');
   }
   if (rating.repliedAt) return replyError(interaction, 'Bu değerlendirmeye zaten yorum ekledin.');
 
@@ -240,7 +240,7 @@ async function handleReportButton(interaction) {
   const rating = store.getRating(interaction.customId.slice(ui.IDS.report.length + 1));
   if (!rating?.score || rating.removedAt) return replyError(interaction, 'Bu değerlendirme bulunamadı.');
   if (interaction.user.id !== rating.staffId) {
-    return replyError(interaction, 'Bu değerlendirmeye sadece değerlendirilen yetkili itiraz edebilir.');
+    return replyError(interaction, 'İtiraz etme hakkı yalnızca puanlanan yetkilide.');
   }
   if (rating.reportedAt) return replyError(interaction, 'Bu değerlendirmeye zaten itiraz edildi.');
 

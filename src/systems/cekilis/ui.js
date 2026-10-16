@@ -137,7 +137,7 @@ function confirm(action, g) {
 function winners(g, ids, reroll = false) {
   return page({
     title: 'Çekiliş Sona Erdi!',
-    sub: 'Kazananlar çekilişe katılanlar arasından rastgele seçildi. Katılan herkese teşekkürler, yeni çekilişleri bu kanaldan takip edebilirsin.',
+    sub: 'Kazananlar katılanlar arasından rastgele seçildi. Herkese teşekkürler, yeni çekilişleri bu kanaldan takip edebilirsin.',
     accent: colors.success,
     blocks: [
       `**Tebrikler ${mentions(ids)}!**`,

@@ -41,7 +41,7 @@ const ACIKLAMA = {
   mesaj: 'sıra mesaj sayına göre belirlenir. Genel, Haftalık ya da son X gün seçilebilir.',
   ses: 'sıra sesli kanallarda geçen süreye göre belirlenir. Genel, Haftalık ya da son X gün seçilebilir.',
   yayin: 'sıra ekran paylaşımında geçen süreye göre belirlenir. Genel, Haftalık ya da son X gün seçilebilir.',
-  saygi: 'sıra üyenin toplam saygınlığına göre belirlenir. Saygınlık hiç düşmediği için tek dönem vardır.',
+  saygi: 'sıra üyenin toplam saygınlığına göre belirlenir. Bu puan hiç düşmediği için tek dönem vardır.',
   coin: 'sıra üyenin şu anki cüzdanına göre belirlenir. Harcayan geri düştüğü için tek dönem vardır.',
   vip: 'sıra VIP rolünü alma tarihine göre belirlenir. Satırın sağındaki tarih VIP olunan gündür.',
 };
