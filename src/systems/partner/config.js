@@ -35,7 +35,7 @@ module.exports = {
   // Süslemeli ilan dili bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına yapıştırılıyor.
   // Kutu çizgileri (│ ╭ ╰) ve ✦ ・ ➤ gerçek emoji değil; bot metinlerindeki emoji yasağı bu yüzden bozulmuyor.
   ourAdText: '**Kazuki Anime & Public**\n' +
-    'Türkçe anime, oyun ve sohbet sunucusu: sessiz durulan değil, girince konuşulan bir yer.\n' +
+    '﹒⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
     '\n' +
     '╭ ୧ ︰ʚ **Bizde neler var?**\n' +
     '│ ✦ ・ **Sesli odanı** kendin açarsın; ismi, limiti ve devri senin\n' +
