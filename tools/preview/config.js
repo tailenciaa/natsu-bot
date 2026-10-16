@@ -8,6 +8,10 @@ module.exports = {
   DIRECTION_WORDS: ['aşağıdaki', 'yukarıdaki', 'sağdaki', 'soldaki', 'üstteki', 'alttaki', 'aşağıdan', 'yukarıdan'],
   // "tekrar" uyarısından muaf tutulan satırlar (listelerde her kayıtta yinelenen kalıplar)
   REPEAT_IGNORE: [],
+  // Bitişik yineleme uyarısından (kelime kelime) muaf ikilemeler: "ağır ağır", "bir bir" gibi doğru kalıplar
+  IKILEME: ['ağır', 'yavaş', 'bir', 'birer', 'ikişer', 'şöyle', 'böyle', 'uzun', 'güneş', 'yeşil'],
+  // Bir satırda bu kadar kalın bölümden fazlası gürültü sayılır
+  MAX_BOLD_PER_LINE: 4,
   // Zaman damgalarının gösterileceği saat dilimi
   TIMEZONE: 'Europe/Istanbul',
   // Önizleme genişlikleri (px)
