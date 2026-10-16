@@ -421,100 +421,76 @@ const etkinlikBilgisi = {
   ],
 };
 
-// 5) Oyun kuralları: ortak davranış kuralları ve oyuna özel maddeler. Kanal listesine ve "nerede ne var" bilgilerine
-// yer yok: 5v5 bilgilendirme paneli kanal tarafını zaten anlatıyor, burada sadece uyulacak maddeler durur.
+// 5) Oyun kuralları: 5v5 programında oynadığımız oyunların (Valorant, Counter-Strike 2, League of Legends)
+// kuralları. Sunucu kurallarının tekrar yazılmaz; yalnızca maça ve oyuna ait maddeler durur. Oyunların nasıl
+// oynanacağı ve günün akışı bilgisi 5v5 bilgilendirme panelindedir.
 const oyunKurallari = {
   key: 'oyun-kurallar',
   name: 'Oyun Kuralları Paneli',
   title: 'Oyun Kuralları',
-  intro: 'Birlikte oynadığımız oyunlarda uyulacak kurallar. **Sunucu kuralları** oyun içinde de olduğu gibi geçerlidir.',
+  intro: '5v5 programında oynadığımız oyunların kuralları: **Valorant**, **Counter-Strike 2** ve **League of Legends**. **Sunucu kuralları** maç içinde de olduğu gibi geçerlidir; burada yalnızca oyunun ve maçın kendisine ait maddeler durur.',
   channel: '1538541309634285678',
   sections: [
     {
-      title: 'Her Oyunda Geçerli',
-      sub: 'Oyun fark etmez: takım arkadaşı da rakip de önce sunucunun üyesidir ve saygı sırayı beklemez. Maçın gerilimi dinlendiğinde yazdıkların ve söylediklerin hâlâ kayıttadır.',
+      title: 'Maçta Geçerli',
+      sub: 'Üç oyunda da aynı ölçü: maç bittiğinde gerilim bitmez, kayıtlar kalır. Takım arkadaşı da rakip de önce sunucunun üyesidir.',
       blocks: [
         {
           items: [
-            'Hakaret, küfür, ayrımcılık ve tehdit **rakibe de takım arkadaşına da** yasaktır.',
-            'Takım arkadaşını susturma ya da oyundan atma tehdidiyle sıkıştırmak tacizdir.',
-            'Hesap, şifre, e-posta ve kişisel bilgi paylaşılmaz; "oynayıp hesap vereyim" teklifi kabul edilmez.',
-            'Gerçek para ile bahis, hesap satışı ve ödül takası **yasaktır**.',
-            'Hile, makro, izinsiz eklenti ve spoof **yasaktır**; tespit edilen ceza alır, etkinlikten çıkarılır.',
-            'Oyun içi iletişimimiz Discord\'tur: dış platforma çağırma, Discord etiketi vererek reklam yapma **yasaktır**.',
+            'Takım arkadaşını susturma, oyundan atmakla tehdit etme ve hatadan sonra üstüne gitme **tacizdir**; düzeltmen gerekiyorsa maç sonunda söyle.',
+            'Hile, makro, izinsiz eklenti ve spoof: tespit edildiğin an maçtan ve etkinlikten çıkarılırsın, cezaya işlenir.',
+            'Rakibin konumunu ya da tur sesini kendi takımın dışına taşımak **bilgi sızdırma**dır; şikayetini odada yetkiliye bildir.',
+            'Kasıtlı kaybetme, AFK kalma, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama **yasaktır**.',
+            'Maç üzerine gerçek para ile bahis ve ödül takası **yasaktır**; "oynayıp hesap vereyim" teklifi kabul edilmez.',
+            'Rapor butonu misilleme aracı değildir; gerçek ihlalde kanıt senin oyun kaydındır.',
+            'Maçı **durdurma yetkisi yalnızca** maçı yöneten yetkilidedir; sen ancak odada durumu bildirirsin.',
           ],
           note: 'Oyun sırasında gösterdiğin her şey (yayın, isim, avatar, sohbet) sunucu kurallarına tabidir.',
         },
       ],
     },
     {
-      title: 'Takım ve Lobi Düzeni',
-      sub: 'Yerini, sıranı ve sözünü koru: takım oyunlarında en çok tartışma çıkaran şeyler bunlardır. Bir kişi yerini bildirmeden boşalttığında maç herkes için uzar.',
+      title: 'Oyunlara Özel',
+      sub: 'Her oyunun kendi içinde tartışma çıkaran yerleri var: sıra, seçim ve mola. Formatın tamamı duyuruda yazılı gelir, duyuruda olmayan kural sonradan eklenmez.',
       blocks: [
         {
+          heading: 'Valorant',
           items: [
-            'Lobiye **çağrılmadan** girmek ve başkasının slotunu almak yasaktır.',
-            'Sıran gelmeden oynamaya başlama, AFK kalma; gelmeyeceksen <@&1554240000529539083> ekibinden birine yaz.',
-            'Takım arkadaşın hata yapınca bağırma, hakaret etme; düzeltmek istiyorsan oyun sonunda söyle.',
-            'Kasıtlı kaybetme, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama **yasaktır**.',
-            'Rapor butonunu misilleme için kullanmak kural ihlalidir; gerçek ihlalde ise kanıt senin oyun kaydındır.',
+            'Harita ve taraf seçimi duyurudaki vetoya göre yürür; seçim bittikten sonra sıraya itiraz edilmez.',
+            'Ajan ve pozisyon pazarlığı kendi takım odanda yapılır, tek taraflı dayatma olmaz.',
+            'Tur aralarında takım sesli odası dışında konuşma yapılmaz; rakip tur sesini yayına taşımak bilgi sızdırmadır.',
+            'Bağlantısı kopan oyuncu için maç **bir kez** durdurulur; devamında kararı maçı yöneten yetkili verir.',
           ],
         },
-      ],
-    },
-    {
-      title: 'Oyunlara Özel',
-      sub: 'Kısa hatırlatmalar: her oyunun kendi içinde tartışma çıkaran yerleri ve bizim o yerlerdeki duruşumuz. Bu maddeler sunucu kurallarının yerine değil, yanına geçer.',
-      blocks: [
         {
-          heading: 'Valorant ve Counter-Strike 2',
+          heading: 'Counter-Strike 2',
           items: [
-            'Sıra ve ekonomi konuşulur, suçlama edilmez.',
-            'Rakibin konumunu kanal dışına taşımak (info sızdırma) oyunun tadını bozar; şikayetini hakeme bildir.',
-            'Eklenti ve script: **yalnızca oyunun izin verdikleri** kullanılır.',
+            'Tur sayısı, uzatma ve harita vetosu duyuruda yazılı gelir.',
+            'Teknik mola yalnızca maçını etkileyen arıza için kullanılır; rakibi bekletmek için mola alınmaz.',
+            'Sunucu ayarları ve konsol komutları maçı yöneten yetkilinin onayına bağlıdır.',
           ],
         },
         {
           heading: 'League of Legends',
           items: [
-            'Draft ve sıra dışı kademeler için önceden anons yap; tanımadığın üyeyle özelden anlaşma yapma.',
-            'Kasıtlı ölme, AFK kalma ve "int" **yasaktır**; takımda biri yaparsa oyun sonunda yetkiliye bildir.',
-            'Takım içi sesli iletişim bizim ses kanallarımızda kalır, orada da kurallar geçerlidir.',
-          ],
-        },
-        {
-          heading: 'Brawlhalla ve 1v1',
-          items: [
-            'Eşleşme duyurulduktan sonra saatte hazır olmayan üye sırasını kaybeder.',
-            'Rakip bağlantı koparsa maç **bir kez** baştan alınır; tekrar koparsa kararı maçı yöneten yetkili verir.',
-            'Karakter ve arenayı seçerken rakiple pazarlık yapılır, tek taraflı dayatma olmaz.',
+            'Draft sırasında pozisyon ve şampiyon paylaşımı takım odasında yapılır; kimse istemediği pozisyona zorlanmaz.',
+            'Kasıtlı ölme, AFK kalma ve "int" **yasaktır**; takım arkadaşın yaparsa oyun sonunda yetkiliye bildirilir.',
+            'Yeniden oynama (remake) sınırındaki durumların kararını maçı yöneten yetkili verir.',
+            'Kademe ve rün sınırı yoktur: hesabın hangi kademede olursa odaya geldiğin gibi girersin.',
           ],
         },
       ],
     },
     {
-      title: 'Etkinlik Maçları',
-      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu maçı yöneten yetkili ilan eder. Kendi maçının kararını kendin veremezsin; konu maçın içinde, sesli odada kapanır.',
+      title: 'Karar ve İtiraz',
+      sub: 'Ödül olan her maçta ölçü şeffaflıktır: takımı, eşleşmeyi ve sonucu maçı yöneten yetkili ilan eder. Konu maçın içinde, sesli odada kapanır.',
       blocks: [
         {
           items: [
-            'Kayıt, saat ve format **duyuruda** yazılır; duyuruda olmayan bir kural sonradan eklenmez.',
             'Takımlar ve eşleşme <@&1554240000529539083> tarafından kurulur, kanalda gösterilir.',
-            'Maç sonucu ekran görüntüsü ile kayda geçer.',
-            'Karar maçı yöneten yetkilinindir: itirazını maçın içinde, odada edersin; kanalda uzatılan tartışma her iki takımın da aleyhinedir.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Klip ve Tartışma',
-      sub: 'Oynadıklarını paylaşabilirsin; paylaşırken de kurallar seninle gelir. Klipte görünen isim, ses ve yazı da birer kişisel veridir; izinsiz gösterilen hiçbir şey geri alınamaz.',
-      blocks: [
-        {
-          items: [
-            'Klipte arkadaşının yüzünü, sesini ya da kişisel bilgisini izinsiz gösterme.',
-            'Oyun tartışmasında rakip takımın üyelerini hedef gösterme, isim vererek suçlama.',
-            'OwO ve Mudae gibi topluluk botları **yalnızca kendi kanallarında** kullanılır.',
+            'Kendi maçının kararını kendin veremezsin; itirazın maçın içinde, odada edilir.',
+            'Skor ekran görüntüsü maçı yöneten yetkilidedir ve sonuç kanalda ilan edilir.',
+            'Sonuç ilan edildikten sonra aynı maç için tartışma yeniden açılmaz; tekrar eden tartışma iki takımı da yorar.',
           ],
         },
       ],
@@ -569,17 +545,35 @@ const besVBesBilgisi = {
       ],
     },
     {
-      title: 'Kurallar',
-      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi **yalnızca yetkilidedir**. Konu maçın içinde, sesli odada kapanır: skor ekran görüntüsü yetkilidedir ve tartışma uzatılmaz.',
+      title: 'Hangi Oyunlar',
+      sub: 'Üç oyunla döner: **Valorant**, **Counter-Strike 2** ve **League of Legends**. Hangisinin oynanacağı, haritası ve formatı duyuruda yazılı gelir; aşağıdaki satırlar o oyunların bizde nasıl yürüdüğünü anlatır.',
       blocks: [
         {
+          heading: 'Valorant',
           items: [
-            'Hile, makro ve izinsiz eklenti: **anında** maçtan ve etkinlikten çıkarılma.',
-            'AFK kalma ve kasıtlı kaybetme: yetkili uyarır, tekrarında yerine yedek alınır.',
-            'Saatte hazır olmayan üye yerine yedek bulunabilir; yedek de çıkmazsa maç ertelenir.',
-            'Karar maçı yöneten yetkilinindir; itiraz odada, maçın içinde edilir, kanalda bağırarak sonuç değişmez.',
+            'Beşli iki takım, tek maç; harita ve taraf duyurudaki vetoyla belirlenir.',
+            'Rol ya da kademe sınırı yoktur: istediğin ajanı seçer, kompozisyonu kendi takım odanda konuşursun.',
+            'Takım içi iletişim kendi sesli odandan yürür, tur aralarında diğer takımın odasına girilmez.',
           ],
-          note: 'Ayrıntılı maddeler <#1538541309634285678> kanalında.',
+        },
+        {
+          heading: 'Counter-Strike 2',
+          items: [
+            'Beşli iki takım, klasik tur düzeni; tur sayısı ve uzatma duyuruda yazılır.',
+            'Maç sunucusunu etkinlik yetkilisi kurar, ayarlar duyuruda belirtilir.',
+            'İzlemek isteyenler yayın açılrsa oradan, açılmazsa sohbet kanallarından takip eder.',
+          ],
+        },
+        {
+          heading: 'League of Legends',
+          items: [
+            'Beşli iki takım, draft ile şampiyon seçimi; pozisyonlar takım odasında paylaşılır.',
+            'Tek maç usulü oynanır, yeniden oynama kararını maçı yöneten yetkili verir.',
+            'Hesabın hangi kademede olursa olsun odaya gelirsin: kademe ya da rün şartı aranmaz.',
+          ],
+        },
+        {
+          note: 'Maçta uyulacak maddeler <#1538541309634285678> kanalında yazar.'
         },
       ],
     },
