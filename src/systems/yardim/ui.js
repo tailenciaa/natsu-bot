@@ -22,7 +22,7 @@ function helpPanel({ botName, avatarUrl, categories, total = 0 }) {
   // ayrı bloğa yazılırsa yanındaki avatar kadar yükselir ve başlığın altında kocaman boşluk oluşur.
   return page({
     title: 'Yardım Menüsü',
-    sub: `Menüden **bir komut kategorisi seç**; ${botName} komutları profil, sıralama ve partner gibi kategorilere ayrılmış durumda ve seçtiğin kategorinin komutları bu panelin yerini alır. Bu menüde **${total}** komut var, komutun adına basarak hemen kullanabilirsin.`,
+    sub: `Menüden **bir komut kategorisi seç**; ${botName} komutları profil, sıralama ve partner gibi gruplara ayrılmış durumda ve seçtiğin grubun komutları bu panelin yerini alır. Bu menüde **${total}** komut var, komutun adına basarak hemen kullanabilirsin.`,
     thumbnail: avatarUrl,
     accent: colors.primary,
   })

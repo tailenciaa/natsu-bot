@@ -57,7 +57,7 @@ function blocks() {
 function panel() {
   const container = page({
     title: TITLE,
-    sub: 'Sesli kanalların nasıl kullanıldığını, ses seviyesinin ve rollerinin neler kazandırdığını, yayın açmayı ve sesli kanallardaki kuralları bu kanalda öğrenebilirsin.',
+    sub: 'Sesli kanalların nasıl kullanıldığını, ses seviyesinin ve rollerinin neler kazandırdığını, yayın açmayı ve buralarda uyulacak kuralları bu kanalda öğrenebilirsin.',
   });
   container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(config.banner)));
   for (const block of blocks()) container.addSeparatorComponents(divider()).addTextDisplayComponents(text(block));

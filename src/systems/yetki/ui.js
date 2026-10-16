@@ -223,7 +223,7 @@ function revokeDm(guildName, { taken, by, all }) {
     title: all ? 'Yetkili Ekibinden Çıkarıldın' : 'Bazı Yetkilerin Kaldırıldı',
     sub: all
       ? `${guildName} sunucusundaki yetkili ekibi üyeliğin sona erdi ve bütün yetkilerin kaldırıldı; bugüne kadarki emeğin için teşekkür ederiz.`
-      : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; kaldırılan yetkileri ve işlemi yapan yetkiliyi bu mesajda görebilirsin.`,
+      : `${guildName} sunucusunda bazı yetkilerin kaldırıldı; hangilerinin gittiğini ve işlemi yapan yetkiliyi bu mesajda görebilirsin.`,
     accent: colors.danger,
     blocks: [
       `### Kaldırılan Yetkiler\n${rows([

@@ -631,7 +631,7 @@ async function handleClaim(interaction, app) {
     return replyError(
       interaction,
       `Bu işlemi <@${o.holdBy}> beklemeye aldı, <t:${Math.floor(o.holdUntil / 1000)}:R> kadar yalnızca o geri alabilir.`,
-      'Devralmak için bildirimdeki **Devralma İste** butonuyla ondan devir isteyebilirsin; süre dolunca herkes üstlenebilir.',
+      'Bildirimdeki **Devralma İste** butonuna bas; süre dolunca işi herkes üstlenebilir.',
     );
   }
 

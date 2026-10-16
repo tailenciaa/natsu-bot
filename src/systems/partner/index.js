@@ -940,7 +940,7 @@ async function handleTrustedAction(interaction) {
   if (!isStaff(interaction, config.roles.staff)) return replyError(interaction, 'Bu işlemi sadece partner yetkilileri yapabilir.');
 
   if (activeOffer(id)) {
-    return replyError(interaction, 'Bu sunucu için zaten sürmekte olan bir teklif var.', 'O süreç sonuçlanmalı; 3 gün içinde sonuçlanmazsa yeniden teklif edebilirsin.');
+    return replyError(interaction, 'Bu sunucu için zaten sürmekte olan bir teklif var.', 'O süreç sonuçlanmalı; 3 gün içinde haber gelmezse yeniden teklif edebilirsin.');
   }
   if (ui.isBusy(entry)) {
     return replyError(interaction, 'Bu partnerin yetkilisi şu an meşgul.', 'Müsait olduğunu bildirince ya da 7 gün sonra otomatik olarak tekrar teklif gönderebilirsin.');
@@ -1043,7 +1043,7 @@ async function handleRenewalAssign(interaction) {
   });
 
   return interaction.editReply({
-    components: [core.alert(`<@${contactId}> yetkilisine teklif gönderildi.`, 'Kabul ederse kendi metnini onaylayacak; onaylayınca partner kanalında paylaşılır.', 'success')],
+    components: [core.alert(`<@${contactId}> yetkilisine teklif gönderildi.`, 'Kabul ederse kendi metnini onaylayacak, ardından metin partner kanalında paylaşılır.', 'success')],
   });
 }
 

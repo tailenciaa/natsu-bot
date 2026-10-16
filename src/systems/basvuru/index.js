@@ -365,7 +365,7 @@ async function callToMeeting(interaction, app) {
     return replyError(
       interaction,
       `Bu görüşmeyi <@${app.onHold.by}> beklemeye aldı, <t:${Math.floor(app.onHold.until / 1000)}:R> kadar yalnızca o geri alabilir.`,
-      'Devralmak için bildirimdeki **Devralma İste** butonuyla ondan devir isteyebilirsin; süre dolunca herkes üstlenebilir.',
+      'Bildirimdeki **Devralma İste** butonuna bas; süre dolunca işi herkes üstlenebilir.',
     );
   }
   await interaction.deferUpdate();
@@ -382,7 +382,7 @@ async function callToConnect(interaction, app) {
     return replyError(
       interaction,
       `Bu görüşmeyi <@${app.onHold.by}> beklemeye aldı, <t:${Math.floor(app.onHold.until / 1000)}:R> kadar yalnızca o geri alabilir.`,
-      'Devralmak için bildirimdeki **Devralma İste** butonuyla ondan devir isteyebilirsin; süre dolunca herkes üstlenebilir.',
+      'Bildirimdeki **Devralma İste** butonuna bas; süre dolunca işi herkes üstlenebilir.',
     );
   }
   await interaction.deferUpdate();

@@ -230,7 +230,7 @@ const yetkiliBilgisi = {
           items: [
             'Devir: <#1538945273378639913> kanalında "bende şu talep var, şu aşamada" diye yaz, başka bir yetkili üstlensin.',
             'İzin ya da yoğunluk dönemini <@&1555890044768624662> ekibinden birine bildir.',
-            'Yanıtsız kalan talepler için hatırlatma otomatik düşer; hatırlatmayı görmezden gelmek kaydına işler.',
+            'Yanıtsız kalan talepler için hatırlatma otomatik düşer; onu görmezden gelmek kaydına işler.',
             'Puanın ve geçmişin sicil kartında durur: `/sicil`. Haftalık derece tabloları yetkilileri de kapsar.',
           ],
         },

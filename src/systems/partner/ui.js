@@ -343,7 +343,7 @@ function requesterResult(sonuc, request, by, sharedUrl = null) {
       head(
         sonuc === 'onayla' ? 'Partner Talebin Onaylandı' : 'Partner Talebin Reddedildi',
         sonuc === 'onayla'
-          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Partner metnin paylaşım kanalımıza **paylaşıldı**, partnerlik başladı.\nMetninin paylaşıldığı mesaja bu karttaki butondan ulaşabilirsin; bizim sunucumuzu tanıtan metin ise bir sonraki mesajda kopyalaman için geliyor.'
+          ? 'Oto partner talebin yetkililer tarafından incelendi ve **onaylandı**. Partner metnin paylaşım kanalımıza **düştü**, partnerlik başladı.\nMetninin göründüğü mesaja bu karttaki butondan ulaşabilirsin; bizim sunucumuzu tanıtan metin ise bir sonraki mesajda kopyalaman için geliyor.'
           : 'Oto partner talebin yetkililer tarafından incelendi ve **reddedildi**. Talebin paylaşım kanalına gönderilmedi; ayrıntılar için yetkililerle iletişime geçebilirsin.',
       ),
     )
@@ -404,7 +404,7 @@ const partnerRevokedDm = (serverId, { kind, by, removed, reason = null }) =>
   noticeCard(
     kind === 'yasak' ? 'Sunucun Yasaklandı' : 'Partnerliğin İptal Edildi',
     kind === 'yasak'
-      ? 'Sunucun partner sisteminden **yasaklandı**, paylaşım kanalındaki tüm ilanların kaldırıldı. Yasak kaldırılana kadar bizimle yeniden partner olamazsın.'
+      ? 'Sunucun partner sisteminden **yasaklandı**, paylaşım kanalındaki tüm ilanların silindi. Yasak kaldırılana kadar bizimle yeniden partner olamazsın.'
       : 'Partnerliğimiz **iptal edildi**, paylaşım kanalındaki tüm ilanların kaldırıldı ve sunucun güvenilir partner listesinden çıkarıldı. İsterseniz yeni bir taleple tekrar başvurabilirsiniz.',
     [
       '### İşlem Bilgileri',
@@ -525,7 +525,7 @@ function trustedListPanel(entries, page = 0, cardName = null) {
     container.addTextDisplayComponents(
       head(
         'Güvenilir Partnerler',
-        'Bu kanalda sürekli partner olduğumuz sunucular ve o sunucuların partner yetkilileri listelenir. Liste her ekleme ya da çıkarmada **bu mesaj düzenlenerek güncel tutulur**.',
+        'Bu kanalda sürekli partner olduğumuz sunucular ve onların partner yetkilileri listelenir. Liste her ekleme ya da çıkarmada **bu mesaj düzenlenerek güncel tutulur**.',
       ),
     );
   }
