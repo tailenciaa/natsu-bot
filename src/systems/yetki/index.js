@@ -181,7 +181,7 @@ async function handleTakeCommand(interaction) {
   const user = interaction.options.getUser('kullanici', true);
   if (user.bot) return replyError(interaction, 'Botlardan yetki alınamaz.');
   const member = interaction.options.getMember('kullanici');
-  if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki kaldırmak için üyenin sunucuda olması gerekir.');
+  if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki kaldırmak için üyenin sunucuda bulunması gerekir.');
   const held = heldOf(member);
   const isStaff = member.roles.cache.has(basvuruConfig.roles.accept) || [held.levelIds, held.permIds, held.dutyIds].some((list) => list.length);
   if (!isStaff) return replyError(interaction, 'Bu üyenin kaldırılacak yetkisi yok.', 'Üyede yetkili rolü bulunmuyor.');
@@ -217,7 +217,7 @@ const takeRoles = (all) => async (interaction) => {
     await interaction.deferUpdate();
 
     const member = await interaction.guild.members.fetch(userId).catch(() => null);
-    if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki kaldırmak için üyenin sunucuda olması gerekir.');
+    if (!member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki kaldırmak için üyenin sunucuda bulunması gerekir.');
 
     const { held, taken, roleIds } = rolesToTake(member, all ? { levelIds: [], permIds: [], dutyIds: [] } : takeState(parts), all);
     if (!roleIds.length) return replyError(interaction, 'Kaldırılacak rol kalmadı.', 'Üyenin bu rolleri zaten yok; paneli yeniden aç.');

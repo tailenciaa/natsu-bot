@@ -48,9 +48,9 @@ function daily({ user, amount, streak, base, bonus, balance, nextAt }) {
 function wallet({ user, balance, earned, spent, streak, readyAt, now = Date.now() }) {
   const container = page({
     title: 'Coin Cüzdanım',
-    sub: 'Coinler **günlük giriş**, **seviye atlama**, **haftalık derece**, **saygınlık** ve **görevlerden** birikir; ' +
-      '**keşif**, **eğlence**, **suç** ve **kumarhane** de coin verir ama günlük tavanı vardır. Harcama yerleri ' +
-      'üçe ayrılır: **Mağaza** kartının çerçeve, tema, kapak ve rozetlerini; **Butik** evlilik yüzüğü ile ek ' +
+    sub: 'Coinler **günlük giriş**, seviye atlama, haftalık derece, saygınlık ve görevlerden birikir; keşif, eğlence, ' +
+      'suç ve kumarhane de coin verir ama bunların **günlük tavanı** vardır. Harcama yerleri üçe ayrılır: ' +
+      '**Mağaza** kartının çerçeve, tema, kapak ve rozetlerini; **Butik** evlilik yüzüğü ile ek ' +
       'saygınlık hakkını ve adını renklendiren rolü; **kumarhane** masaya koyduğun bahsi satar — kumarhanede ' +
       'masa uzun vadede daima kazanır.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
