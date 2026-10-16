@@ -143,7 +143,7 @@ async function rulet(interaction, renk) {
   const bahis = store.bahis(userId);
   if (!config.rulet.renkler[renk]) return replyError(interaction, 'Bu renk masada yok.', '/oyun ile sayfayı yeniden aç.');
   if (coinStore.balance(userId) < bahis) {
-    return replyError(interaction, 'Bahsini karşılayacak coinin yok.', `Masaya ${number(bahis)} coin konuyor; cüzdanında ${number(coinStore.balance(userId))} coin var.`);
+    return replyError(interaction, 'Bahsini karşılayacak coinin yok.', `Masaya ${number(bahis)} coin konuluyor; cüzdanında ${number(coinStore.balance(userId))} coin var.`);
   }
   if (!coinStore.spend(userId, bahis)) return replyError(interaction, 'Bahis alınamadı.', 'Birkaç saniye sonra tekrar dene.');
 
@@ -179,7 +179,7 @@ async function merdivenBaslat(interaction) {
   const bahis = store.bahis(userId);
   if (store.merdiven(userId)) return replyError(interaction, 'Masada zaten bir tırmanışın duruyor.', 'Önce "Parayı Çek" ya da "Bir Basamak Çık" ile sürdür.');
   if (coinStore.balance(userId) < bahis) {
-    return replyError(interaction, 'Bahsini karşılayacak coinin yok.', `Masaya ${number(bahis)} coin konuyor; cüzdanında ${number(coinStore.balance(userId))} coin var.`);
+    return replyError(interaction, 'Bahsini karşılayacak coinin yok.', `Masaya ${number(bahis)} coin konuluyor; cüzdanında ${number(coinStore.balance(userId))} coin var.`);
   }
   if (!coinStore.spend(userId, bahis)) return replyError(interaction, 'Bahis alınamadı.', 'Birkaç saniye sonra tekrar dene.');
 

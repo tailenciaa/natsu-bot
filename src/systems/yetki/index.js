@@ -44,7 +44,7 @@ async function handleCommand(interaction) {
   const user = interaction.options.getUser('kullanici', true);
   if (user.bot) return replyError(interaction, 'Botlara yetki verilemez.');
   if (!interaction.options.getMember('kullanici')) {
-    return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuya girmiş olması gerekir.');
+    return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuda bulunması gerekir.');
   }
   return respond(interaction, ui.staffPanel({ user, levelId: null, permIds: [], dutyIds: [] }));
 }
@@ -105,7 +105,7 @@ async function handleGive(interaction) {
     await interaction.deferUpdate();
 
     const member = await interaction.guild.members.fetch(userId).catch(() => null);
-    if (!level || !member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuya girmiş olması gerekir.');
+    if (!level || !member) return replyError(interaction, 'Üye sunucuda değil.', 'Yetki vermek için üyenin sunucuda bulunması gerekir.');
 
     const wanted = [level, ...config.perms.filter((p) => permIds.includes(p.id)), ...config.duties.filter((d) => dutyIds.includes(d.id))];
     // Yetkili Ekibi rolü de verilir: yetkili komutlarını görmek ve sicile bakmak için gerekir
