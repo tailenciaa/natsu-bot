@@ -1,4 +1,4 @@
-// Seviye atlama duyurusunun yedeği (kart çizilemezse gider) ve /seviye cevabının kart görseli
+// Seviye duyuru metinleri: mesaj seviyesinin düz metni, ses kartının yedeği (kart çizilemezse gider) ve /seviye cevabının kart görseli
 const { MediaGalleryBuilder, MediaGalleryItemBuilder, ContainerBuilder } = require('discord.js');
 const { page } = require('../../core/ui');
 const coinConfig = require('../coin/config');
@@ -20,10 +20,17 @@ function levelUpAnnounce(user, kind, level, role) {
   });
 }
 
+// Mesaj seviyesi duyurusunun düz metni: üyenin yazdığı kanala gider, yalnızca o üye etiketlenir
+function textLevelNotice(user, level, role) {
+  const lines = [`<@${user.id}> **${level}. mesaj seviyesine** yükseldi · cüzdana **${coinConfig.awards.levelUp} coin** eklendi.`];
+  if (role) lines.push(`**${role.name}** rolü de hesabına verildi.`);
+  return lines.join('\n');
+}
+
 // /seviye cevabı: sadece kart görseli (description ekran okuyucular için)
 const levelImage = (imageName, description = 'Seviye kartı') =>
   new ContainerBuilder().addMediaGalleryComponents(
     new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(`attachment://${imageName}`).setDescription(description)),
   );
 
-module.exports = { levelUpAnnounce, levelImage };
+module.exports = { levelUpAnnounce, textLevelNotice, levelImage };

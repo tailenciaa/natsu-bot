@@ -108,9 +108,7 @@ async function sendVoiceCard(channel, user, level, role) {
 
 // Mesaj seviyesi duyurusu: düz metin olarak üyenin XP kazandıran mesajını attığı kanala gider ve üye etiketlenir.
 async function sendTextNotice(channel, user, level, role) {
-  const lines = [`<@${user.id}> **${level}. mesaj seviyesine** yükseldi · cüzdana **${coinConfig.awards.levelUp} coin** eklendi.`];
-  if (role) lines.push(`**${role.name}** rolü de hesabına verildi.`);
-  return channel.send({ content: lines.join('\n'), allowedMentions: { users: [user.id], roles: [] } }).then(
+  return channel.send({ content: ui.textLevelNotice(user, level, role), allowedMentions: { users: [user.id], roles: [] } }).then(
     () => true,
     (err) => {
       console.error('[seviye] Mesaj duyurusu gönderilemedi:', err.message);

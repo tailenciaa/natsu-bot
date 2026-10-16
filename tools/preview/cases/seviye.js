@@ -6,6 +6,7 @@ module.exports = ({ mock, ui, src }) => {
 
   const member = level('mehmet');
   const role = mock.role({ name: 'Mesaj Seviye 15', color: '#57f287' });
+  const sesRole = mock.role({ name: 'Ses Seviyesi 15', color: '#fee75c' });
   const noMentions = { allowedMentions: { parse: [] } };
   const card = (name, width, height, label) => mock.pngFile(name, { width, height, label });
 
@@ -20,33 +21,49 @@ module.exports = ({ mock, ui, src }) => {
     },
     {
       id: 'duyuru-karti',
-      title: 'Seviye atlama duyurusu (kart)',
-      where: 'Duyuru kanalı, ana seviyelerde; sadece seviye atlayan üye etiketlenir',
+      title: 'Ses seviyesi duyurusu (kart)',
+      where: 'Duyuru kanalı, her seviyede; üye etiketlenmez',
       visibility: 'public',
       kind: 'message',
       build: () => ({
         components: [],
-        content: `<@${member.id}>`,
+        content: '',
         flags: 0,
-        files: [card('seviye-atladi.png', 900, 310, 'Seviye atlama kartı')],
-        allowedMentions: { users: [member.id] },
+        files: [card('seviye-atladi.png', 900, 310, 'Ses seviyesi atlama kartı')],
+        allowedMentions: { users: [], roles: [] },
       }),
     },
     {
-      id: 'duyuru-yedek-rol',
-      title: 'Seviye atlama duyurusu (yedek metin, rollü)',
-      where: 'Duyuru kanalı, kart çizilemezse',
+      id: 'metin-duyurusu-rol',
+      title: 'Mesaj seviyesi duyurusu (rollü)',
+      where: 'Üyenin yazdığı kanal, ana seviyede; sadece o üye etiketlenir',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [s.levelUpAnnounce(member, 'mesaj', 15, role)], allowedMentions: { users: [member.id] } }),
+      build: () => ({ content: s.textLevelNotice(member, 15, role), allowedMentions: { users: [member.id], roles: [] } }),
+    },
+    {
+      id: 'metin-duyurusu',
+      title: 'Mesaj seviyesi duyurusu',
+      where: 'Üyenin yazdığı kanal, ara seviyede; sadece o üye etiketlenir',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ content: s.textLevelNotice(member, 7, null), allowedMentions: { users: [member.id], roles: [] } }),
+    },
+    {
+      id: 'duyuru-yedek-rol',
+      title: 'Ses duyurusu (kart çizilemezse, rollü)',
+      where: 'Duyuru kanalı, üye etiketlenmez',
+      visibility: 'public',
+      kind: 'message',
+      build: () => ({ components: [s.levelUpAnnounce(member, 'ses', 15, sesRole)], allowedMentions: { users: [], roles: [] } }),
     },
     {
       id: 'duyuru-yedek-rolsuz',
-      title: 'Seviye atlama duyurusu (yedek metin, rolsüz)',
-      where: 'Duyuru kanalı, kart çizilemezse ve rol verilemediyse',
+      title: 'Ses duyurusu (kart çizilemezse, rolsüz)',
+      where: 'Duyuru kanalı, rol verilemediyse; üye etiketlenmez',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ components: [s.levelUpAnnounce(member, 'ses', 20, null)], allowedMentions: { users: [member.id] } }),
+      build: () => ({ components: [s.levelUpAnnounce(member, 'ses', 20, null)], allowedMentions: { users: [], roles: [] } }),
     },
     {
       id: 'hata-bot-seviye',
@@ -55,14 +72,6 @@ module.exports = ({ mock, ui, src }) => {
       visibility: 'ephemeral',
       kind: 'message',
       build: () => ({ components: [ui.alert('Botların seviyesi bulunmaz.', undefined, 'danger')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
-    },
-    {
-      id: 'test-onay',
-      title: 'Test duyurusu: gönderildi',
-      where: '/seviye test:True, yöneticiye',
-      visibility: 'ephemeral',
-      kind: 'message',
-      build: () => ({ components: [ui.alert('Örnek duyuru <#1538534603902554182> kanalına gönderildi.')], flags: ui.EPHEMERAL_CV2, ...noMentions }),
     },
   ];
 };
