@@ -848,7 +848,7 @@ async function handleAdminTransfer(interaction) {
   const exOwner = await interaction.client.users.fetch(previousId).catch(() => null);
   await exOwner
     ?.send({
-      components: [core.alert('Kalıcı odanın sahipliği devredildi.', `<@${targetId}> artık <#${updated.voiceChannelId}> odasının sahibi.`, 'warning')],
+      components: [core.alert('Kalıcı odanın sahipliği devredildi.', `<@${targetId}> odanın yeni sahibi: <#${updated.voiceChannelId}>`, 'warning')],
       flags: core.CV2,
       allowedMentions: { parse: [] },
     })

@@ -52,7 +52,7 @@ module.exports = ({ mock, ui, src }) => {
   const long = punishment({ number: 16, reason: longReason });
   const many = (n) =>
     Array.from({ length: n }, (_, i) =>
-      punishment({ number: 100 + i, type: i % 2 ? 'mute' : 'ban', expiresAt: Date.now() + (i + 1) * mock.HOUR, reason: `Örnek sebep ${i + 1}: ${'ayrıntı '.repeat(8)}`.trim() }),
+      punishment({ number: 100 + i, type: i % 2 ? 'mute' : 'ban', expiresAt: Date.now() + (i + 1) * mock.HOUR, reason: `Örnek sebep ${i + 1}: üye iletişimi, etkinlik düzeni, duyuru akışı ve kayıt notları burada örnek olarak sıralanır` }),
     );
   const objection = 'Bu mesajı ben yazmadım, hesabım çalınmıştı. Şifremi hemen değiştirdim ve yetkililere haber verdim.';
 

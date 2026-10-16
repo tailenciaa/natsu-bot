@@ -327,20 +327,20 @@ function presenceText(app) {
   const lines = [];
   if (o.applicantAwaySince) {
     lines.push(
-      `**<@${app.userId}> kanaldan ayrıldı.** <t:${unix(o.applicantAwaySince + p.applicantGraceMinutes * MINUTE)}:R> dönmezse oryantasyon iptal edilecek.\n` +
+      `**<@${app.userId}> kanaldan ayrıldı**, <t:${unix(o.applicantAwaySince + p.applicantGraceMinutes * MINUTE)}:R> dönmezse oryantasyon iptal edilecek.\n` +
         `**Ayrılma:** ${chip(`${o.applicantLeaves}/${p.maxApplicantLeaves}`)} - ${p.maxApplicantLeaves}. ayrılışta başvuru iptal edilir ve ${p.penaltyDays} gün başvuru cezası verilir.`,
     );
   }
   if (o.staffNeeded) {
     lines.push(
-      `**Yetkili bekleniyor.** <@${o.staffId}> kanaldan ayrıldı ve geri dönmedi.\n` +
+      `**Yetkili bekleniyor**, <@${o.staffId}> kanaldan ayrıldı ve geri dönmedi.\n` +
         'Başvurular kanalındaki mesajdan başka bir yetkili oryantasyonu devralabilir.',
     );
   } else if (o.staffAwaySince && o.staffJoining) {
     lines.push(`**<@${o.staffId}> oryantasyonu devraldı, kanala gelmesi bekleniyor.**`);
   } else if (o.staffAwaySince) {
     lines.push(
-      `**<@${o.staffId}> kanaldan ayrıldı.** <t:${unix(o.staffAwaySince + p.staffGraceMinutes * MINUTE)}:R> dönmezse başka bir yetkili çağrılacak.`,
+      `**<@${o.staffId}> kanaldan ayrıldı**, <t:${unix(o.staffAwaySince + p.staffGraceMinutes * MINUTE)}:R> dönmezse başka bir yetkili çağrılacak.`,
     );
   }
   return lines.length ? lines.join('\n') : null;

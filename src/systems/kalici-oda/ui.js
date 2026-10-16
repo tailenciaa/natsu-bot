@@ -373,7 +373,7 @@ function weekMissedCard(room, week, seconds) {
 function inactivityCard(room, stat) {
   return page({
     title: 'Kalıcı Oda Kapatıldı',
-    sub: `${room.name} odası ay sonu şartını karşılamadığı için kapatıldı ve kanalları silindi.`,
+    sub: `${room.name} ay sonu şartını karşılamadığı için kapatıldı ve kanalları silindi.`,
     accent: colors.danger,
     blocks: [
       rows([
@@ -537,7 +537,7 @@ function submitted({ user, app, memberCount }) {
 function openedNotice(room) {
   return receipt({
     title: 'Kalıcı Oda Açıldı',
-    sub: `<@${room.ownerId}> için **${room.name}** odası açıldı; sohbeti ses kanalının içinde.`,
+    sub: `<@${room.ownerId}> için **${room.name}** açıldı; sohbeti ses kanalının içinde.`,
     accent: 'success',
     pairs: [
       ['Oda', chip(`#${pad(room.no)} · ${room.name}`)],
@@ -551,7 +551,7 @@ function openedNotice(room) {
 function closedNotice(room, reason) {
   return receipt({
     title: 'Kalıcı Oda Kapatıldı',
-    sub: `**${room.name}** odası kapatıldı, kanalları silindi.`,
+    sub: `**${room.name}** kapatıldı, kanalları silindi.`,
     accent: 'danger',
     pairs: [
       ['Oda', chip(`#${pad(room.no)} · ${room.name}`)],
