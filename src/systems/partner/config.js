@@ -39,7 +39,7 @@ module.exports = {
     'Düzenli etkinlikleri, aktif sohbeti ve seste anında çözülen destek ekibiyle neden sen de Kazuki’de değilsin?',
     '﹒' + '⎯'.repeat(46),
     '',
-    '╭ ୧ ʚ **Bizde neler var?**',
+    '╭ ୧ ︰ʚ **Bizde neler var?**',
     '│ ✦ ・ **Sesli odanı** kendin açarsın; ismi, limiti ve devri senin',
     '│ ✦ ・ **Mesaj ve ses seviyesi** ayrı yürür, her 5 seviyede yeni rol',
     '│ ✦ ・ **Coin ekonomisi:** günlük giriş, görev kutuları, Keşif Yolu',
