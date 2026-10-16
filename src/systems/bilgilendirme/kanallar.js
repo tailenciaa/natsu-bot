@@ -288,6 +288,7 @@ const etkinlikKurallari = {
             'Gizli rol ve bilgi sızdırma: rolünü, ipucunu ya da cevabı kanal dışında paylaşmak oyunun tamamını bozar.',
             'Kasıtlı kaybetme, takım arkadaşını engelleme, slot ve yer çalma **yasaktır**.',
             'AFK kalma: aktif etkinlikte sıran geldiğinde hazır ol, yoksa sıra geçilir.',
+            'Bağlantı kopması: sonucu etkilediyse maçı yöneten yetkili **bir kez** yeniden oynatır, tekrarında karar yine onundur.',
             'Sonucu etkileyecek bir kural tartışması çıkarsa karar **etkinliği yöneten yetkilinindir**; maç oynanmaya devam eder.',
           ],
         },
@@ -498,9 +499,10 @@ const oyunKurallari = {
   ],
 };
 
-// 6) 5v5 bilgilendirmesi: iç takım maçları. Turnuva değil: takımları etkinlik yetkilisi sesli odada karma ve
-// dengeli kurar, üye kendi beşlisini aramak zorunda değildir. Muhatap her zaman <@&1554240000529539083> ekibidir,
-// genel yetkili kadrosu değil.
+// 6) 5v5 bilgilendirmesi: iç takım maçlarının bilgisi — hangi oyunlar, günün akışı, ödüller. Turnuva değil:
+// takımları etkinlik yetkilisi sesli odada karma ve dengeli kurar, üye kendi beşlisini aramak zorunda değildir.
+// Maçta uyulacak maddeler oyun kuralları panelindedir, burada tekrar yazılmaz.
+// Muhatap her zaman <@&1554240000529539083> ekibidir, genel yetkili kadrosu değil.
 const besVBesBilgisi = {
   key: 'bes-v-bes-bilgi',
   name: '5v5 Bilgilendirme Paneli',
@@ -510,15 +512,13 @@ const besVBesBilgisi = {
   sections: [
     {
       title: '5v5 Nedir',
-      sub: 'Beşe beş oynanan iç maçlarımız: Valorant, League of Legends ve Counter-Strike 2 tarafında açılır. İki takım, tek maç, tek kazanan; sıradan bir ranked değil, duyurulup saati belli olan bir programdır.',
+      sub: 'Beşe beş oynanan iç maçlarımız: iki takım, tek maç, tek kazanan. Sıradan bir ranked değil, duyurulup saati belli olan bir programdır.',
       blocks: [
         {
           items: [
             'Duyuru <#1538538618468040714> kanalından gelir; <@&1554240000529539083> ekibi saati kurar, odayı yönetir ve sonucu ilan eder.',
             'Takımları etkinlik yetkilisi kurar: kimse kendi beşlisini aramak zorunda değildir, oyun rolün ve kademen ne olursa odaya gelirsin.',
             'Eksik kalan tarafa aynı odada üye bulunur; takım yüzünden dışarıda kalan üye olmaz.',
-            'Maç öncesi format (harita, taraf, uzatma) duyuruda yazılı gelir.',
-            'Kazanan takıma <@&1555890043250282496> rolü verilir.',
           ],
         },
       ],
