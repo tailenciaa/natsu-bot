@@ -1,8 +1,10 @@
-// Seviye sistemi: mesaj ve ses aktivitesiyle ayrı ayrı XP kazanılır, her seviye atlamada kanala kart duyurusu gider
-// ve üye etiketlenir; rol verme sadece ana seviyelerde (5'in katları, 100'e kadar) olur. Kartın sağ kutusu her
-// seviyede çizilir: ana seviyede kazanılan rol, her seviyede de coin ödülü yazar. Üyede her türden (mesaj/ses)
-// sadece ulaştığı en yüksek ana seviyenin rolü durur (düşük olanlar alınır); bot açılırken ve üye sunucuya
-// (tekrar) girince roller XP'ye göre otomatik eşitlenir.
+// Seviye sistemi: mesaj ve ses aktivitesiyle ayrı ayrı XP kazanılır. Seviyeler 1, 2, 3... sırayla atlar, her
+// atlamada coin ödülü düşer; rol verme sadece ana seviyelerde (5'in katları, 100'e kadar) olur. Duyurunun iki
+// yolu var: mesaj seviyesi, üyenin XP kazandıran mesajını attığı kanala düz metin gider ve üyeyi etiketler;
+// ses seviyesi sabit duyuru kanalına görsel kart olarak düşer ve hiçbir seviyede etiket atmaz. Kartın sağ
+// kutusu her seviyede çizilir: ana seviyede kazanılan rol, her seviyede de coin ödülü yazar. Üyede her türden
+// (mesaj/ses) sadece ulaştığı en yüksek ana seviyenin rolü durur (düşük olanlar alınır); bot açılırken ve üye
+// sunucuya (tekrar) girince roller XP'ye göre otomatik eşitlenir.
 // XP kalıcıdır; sıralama sistemindeki günlük istatistiklerden bağımsızdır ama ses süresi aynı yöntemle sayılır:
 // botlar ve AFK kanalı sayılmaz, dakikada bir kredi verilir.
 const { AttachmentBuilder, Events, InteractionContextType, SlashCommandBuilder } = require('discord.js');
