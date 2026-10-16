@@ -4,12 +4,17 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, MediaGal
 const { text, divider } = require('../../core/ui');
 const { botName, panelTitle } = require('../../core/config');
 
+// Madde listesi: işaretsiz maddeler alt alta dizilince birbirine karışıyor, bu yüzden kendiliğinden işaret
+// konur. Zaten etiketli olanlara (`1.`, "1)", "· ", "— ") ikinci bir işaret eklenmez.
+const ISARETLI = /^\s*(?:`[^`]+`|\d+[.)]|[·•‣⁃\-–—>»])/u;
+const maddeListesi = (items) => items.map((i) => (ISARETLI.test(i) ? i : `· ${i}`)).join('\n');
+
 // Bir bloğun metni: kalın alt başlık, açıklama, madde listesi ve küçük not
 function blockText(block) {
   const parts = [];
   if (block.heading) parts.push(`**${block.heading}**`);
   if (block.text) parts.push(block.text);
-  if (block.items) parts.push(block.items.join('\n'));
+  if (block.items) parts.push(maddeListesi(block.items));
   if (block.note) parts.push(`${block.note}`);
   return parts.join('\n');
 }
