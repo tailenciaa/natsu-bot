@@ -102,7 +102,7 @@ function accessBlock({ invited, banned }) {
   const parts = [];
   if (invited.length) parts.push(line('Davetli', invited));
   if (banned.length) parts.push(line('Yasaklı', banned));
-  return `### Odadaki İzinler\n${parts.length ? parts.join('\n') : 'Davet ettiğin ya da yasakladığın üye yok. Oda kilitliyken içeri girebilmesi için birini **Üye Ekle**.'}`;
+  return `### Odadaki İzinler\n${parts.length ? parts.join('\n') : 'Davet ettiğin ya da yasakladığın üye yok. Oda kilitliyken içeri girebilmesi için aşağıdaki menüden bir üye ekleyebilirsin.'}`;
 }
 
 function limitModal(current) {
@@ -151,7 +151,7 @@ function guidePanel() {
     [
       '### Oda Sahibi Neler Yapabilir?',
       '1. Odayı **kilitleyerek** yeni girişleri durdurur, **gizleyerek** kanal listesinden saklar.',
-      '2. **Üye Ekle** ile seçtiği üyeler oda kilitliyken de girebilir; **Üye Çıkar** o izni geri alır.',
+      '2. Odaya **üye ekler**: eklediği üyeler oda kilitliyken de girebilir; izni kaldırınca dışarıda kalır.',
       '3. Kişi limitini ve odanın adını değiştirir; odadakileri **atar**, **yasaklar** ya da sahipliği **devreder**.',
     ].join('\n'),
     [
