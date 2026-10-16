@@ -40,7 +40,7 @@ module.exports = {
   ourAdText: [
     "**Kazuki Anime & Public**",
     "",
-    "˖ ʚ ˖ *Türkçe anime & public topluluğu* ʚ ˖",
+    "˖ ʚ ˖ *Türkçe anime & public topluluğu* ˖ ɞ",
     "",
     "──────────── ˖ ❖ ˖ **Neden Kazuki?** ˖ ❖ ˖ ────────────",
     "",
