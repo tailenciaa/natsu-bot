@@ -320,7 +320,7 @@ const etkinlikBilgisi = {
   sections: [
     {
       title: 'Nasıl Bir Etkinlik?',
-      sub: 'Etkinlikler <@&1554240000529539083> ekibi tarafından kurulur, duyurulur ve yönetilir; hepsi ücretsiz ve Discord üzerinden yürür. Katılmak için oyun satın almana ya da bir şey indirmene gerek yok.',
+      sub: 'Etkinlikler <@&1554240000529539083> ekibi tarafından kurulur, duyurulur ve yönetilir. Katılım her zaman ücretsizdir; oyun satın alman ya da hesap açman istenmez.',
       blocks: [
         {
           items: [
