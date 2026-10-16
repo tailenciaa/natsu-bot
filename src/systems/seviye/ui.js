@@ -10,7 +10,7 @@ const KIND_TITLE = { mesaj: 'Mesaj', ses: 'Ses' };
 function levelUpAnnounce(user, kind, level, role) {
   return page({
     title: 'Seviye Atladı',
-    sub: 'Sohbette ve sesli kanallarda aktif oldukça XP kazanırsın; her seviye atlamada bu duyuru gelir ve coin ödülü cüzdana eklenir. Rol ise sadece her 5. seviyede verilir.',
+    sub: 'Sohbette ve sesli kanallarda aktif oldukça XP kazanırsın; her seviye atlamada bu duyuru gelir ve coin ödülü cüzdana eklenir. Rol **yalnızca her 5. seviyede** verilir.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
       `### Yeni Seviye\n**Üye:** <@${user.id}>\n**Tür:** ${KIND_TITLE[kind]}\n**Seviye:** ${level}`,

@@ -80,7 +80,7 @@ function controlPanel(room, channel, state = {}, access = { invited: [], banned:
   };
 
   group('### Üye Ekle\nSeçtiğin üye odana katılabilir; oda kilitli ya da gizliyken de girebilir.', [IDS.add]);
-  group('### Üye Çıkar\nSeçtiğin üyenin odadaki ayrı izni silinir, odadaysa dışarı alınır. Yasaklı bir üyeyi seçersen yasağı kalkar.', [IDS.drop]);
+  group('### Üye Çıkar\nSeçtiğin üyenin odadaki ayrı izni **silinir**, odadaysa dışarı alınır. Yasaklı bir üyeyi seçersen yasağı kalkar.', [IDS.drop]);
   group('### Üye İşlemleri\nOdandaki bir üye seç: **At** odadan çıkarır ama izni kalır, **Yasakla** bu oda silinene kadar içeri almaz, **Devret** sahipliği o üyeye verir.', [IDS.kick, IDS.ban, IDS.transfer]);
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(room.createdAt)));

@@ -35,7 +35,7 @@ function panel() {
       text(
         [
           '### Yayın Kuralları',
-          '1. **+18, kan, şiddet** ve rahatsız edici içerik yayınlamak yasaktır.',
+          '1. **+18, kan, şiddet** ve rahatsız edici içerik yayınlamak **yasaktır**.',
           '2. Ekranında senin ya da başkalarının **kişisel bilgileri** görünmesin.',
           `3. Yayında da <#${kurallarConfig.channel}> kuralları geçerlidir; uymayanın yetkisi geri alınır.`,
         ].join('\n'),

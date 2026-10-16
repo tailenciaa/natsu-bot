@@ -25,7 +25,7 @@ function kart({ eylem, saldirgan, hedef, girisimNo, sonAt }) {
   return core
     .page({
       title: e.baslik,
-      sub: `${cumle(e.kart, saldirgan, hedef)} Karşılık gelmezse kart havada kalır, gelirse ödül iki tarafa birden yatar.`,
+      sub: `${cumle(e.kart, saldirgan, hedef)} Karşılık gelmezse kart havada kalır, gelirse ödül **iki tarafa birden** yatar.`,
       blocks: [
         `### Taraflar\n${core.rows([
           ['Şakayı Yapan', `<@${saldirgan.id}>`],
@@ -52,7 +52,7 @@ function karsilikSonuc({ eylem, saldirgan, hedef, odenenSaldirgan, odenenHedef, 
   const e = config.eylemler[eylem];
   return core.receipt({
     title: config.sonucBaslik,
-    sub: `${cumle(e.karsilik, saldirgan, hedef)} Şaka yerini buldu; iki taraf da karşılığını aldı.`,
+    sub: `${cumle(e.karsilik, saldirgan, hedef)} Şaka yerini buldu; **iki taraf da** karşılığını aldı.`,
     user,
     accent: 'success',
     pairs: [

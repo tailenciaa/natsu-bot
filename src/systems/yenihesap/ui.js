@@ -12,7 +12,7 @@ const IDS = {
 const panel = () =>
   standardPanel({
     title: `${botName} Hesap Doğrulama`,
-    sub: `Hesabı ${config.thresholdDays} günden yeni olanlar güvenlik için sunucuda yalnızca bu kanalı görebilir. **Süreyi Öğren** butonuyla kısıtlamanın ne zaman kalkacağını kendi hesabın için öğrenebilirsin.`,
+    sub: `Hesabı ${config.thresholdDays} günden yeni olanlar güvenlik için sunucuda **yalnızca bu kanalı** görebilir. **Süreyi Öğren** butonuyla kısıtlamanın ne zaman kalkacağını kendi hesabın için öğrenebilirsin.`,
     button: { id: IDS.sure, label: 'Süreyi Öğren', style: ButtonStyle.Secondary },
   });
 

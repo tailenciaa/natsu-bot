@@ -153,7 +153,7 @@ function ratingNotice(rating, staffUser) {
   let status;
   if (removed) {
     title = 'Değerlendirme Kaldırıldı';
-    sub = 'Bu değerlendirme geçersiz sayılarak yetkilinin sicilinden çıkarıldı; kayıt bilgi amaçlı olarak burada duruyor ve artık yetkilinin puan ortalamasına hiçbir etkisi bulunmuyor.';
+    sub = 'Bu değerlendirme **geçersiz sayılarak** yetkilinin sicilinden çıkarıldı; kayıt bilgi amaçlı olarak burada duruyor ve artık yetkilinin puan ortalamasına hiçbir etkisi bulunmuyor.';
     status =
       `### Durum\n<@${rating.staffId}> yetkilisinin aldığı değerlendirme geçersiz sayıldı.\n` +
       (rating.removedAt

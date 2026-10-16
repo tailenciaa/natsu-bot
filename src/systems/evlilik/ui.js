@@ -69,7 +69,7 @@ function teklif({ oneren, hedef, no, sonAt, rol }) {
 function evlilikKarti({ oneren, hedef, user, rolId, uyari = null, at = Date.now() }) {
   return core.receipt({
     title: config.basliklar.evlilik,
-    sub: `${çift(oneren, hedef)} evlendi. Yüzük kabul anında yakıldı; ikili artık sunucuda çift olarak duruyor.`,
+    sub: `${çift(oneren, hedef)} evlendi. Yüzük **kabul anında yakıldı**; ikili artık sunucuda çift olarak duruyor.`,
     user,
     accent: 'success',
     pairs: [
@@ -218,7 +218,7 @@ function bekleyenBloku(state) {
 }
 
 function sartBloku(state) {
-  const yuzuk = state.yuzuk > 0 ? `Elinde ${core.chip(`${state.yuzuk} yüzük`)} var.` : `Yüzüğün yok; Butikte ${coin(butikConfig.yuzuk.price)} ve tek şart o.`;
+  const yuzuk = state.yuzuk > 0 ? `Elinde ${core.chip(`${state.yuzuk} yüzük`)} var.` : `Yüzüğün yok; Butik rafında ${coin(butikConfig.yuzuk.price)} fiyatına satılır ve **tek şart o**.`;
   const seviye = state.seviye >= config.teklif.minSeviye
     ? `Seviyen ${core.chip(state.seviye)}, kapı açılmış.`
     : `Teklif için seviye ${core.chip(config.teklif.minSeviye)} gerekir, senin seviyen ${core.chip(state.seviye)}.`;

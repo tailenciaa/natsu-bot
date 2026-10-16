@@ -94,7 +94,7 @@ function kurallarBloku() {
     `2. Kurban **Diren** düğmesine basarsa yüksek olasılıkla yakalanırsın: ceza kasaya yatar, hapis sana.\n` +
     `3. Kurban dokunmazsa bakiyesinin **${yuzde(config.uye.oran.min)}-${yuzde(config.uye.oran.max)}** arası el değiştirir.\n` +
     `4. **/çal kasa** daha büyük oyun: kartı gören herkes müdahale edebilir, ilk basan polistir.\n` +
-    `5. Seviyen her iki tarafta da ağırlık taşır: yüksek seviye daha az yakalanır, daha çok yakalatır.\n` +
+    `5. Seviyen her iki tarafta da ağırlık taşır: yüksek seviye **daha az yakalanır, daha çok yakalatır**.\n` +
     `6. Kapılar seviyeyle açılır: suç için **${config.minSeviye}**, kasa için **${config.kasaMinSeviye}** seviye gerekir; ` +
     `hedef seçtiğin üyenin de en az **${config.korumaSeviye}** seviyede olması şart.`;
 }
