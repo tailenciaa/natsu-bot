@@ -217,6 +217,8 @@ function page({ title, sub, thumbnail, blocks = [], accent }) {
 //  3) bir bloğun sonundaki küçük açıklama (-#) kalın/normal satırlardan çizgiyle ayrılır (başlık satırı "#" ile başlayanlara dokunulmaz).
 const SEP = { type: 14, divider: true, spacing: 1 };
 const isSep = (c) => c?.type === 14;
+// Sayfa gezme satırı: tek başına « ve » butonları taşıyan satıra "sayfa satırı" denir
+const isPager = (c) => c?.type === 1 && c.components?.length === 2 && c.components.every((b, i) => b.type === 2 && b.label === ['«', '»'][i]);
 function splitNote(component) {
   const content = component?.type === 10 ? component.content : null;
   if (!content || content.startsWith('#') || content.startsWith('-#')) return [component];
@@ -237,7 +239,7 @@ function tidy(components) {
   for (const raw of components) {
     for (const c of splitNote(raw)) {
       if (c.type === 12) sepBefore();
-      else if (c.type === 1 && prev?.type !== 1) sepBefore();
+      else if (c.type === 1 && (prev?.type !== 1 || isPager(c))) sepBefore();
       else if (prev?.type === 12 && !isSep(c)) push(SEP);
       push(c);
       prev = c;
