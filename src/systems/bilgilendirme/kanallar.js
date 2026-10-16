@@ -239,13 +239,15 @@ const yetkiliBilgisi = {
   ],
 };
 
-// 3) Etkinlik kuralları: etkinlik düzenini ve adil oyunu koruyan maddeler. Kural kanalında yalnızca bağlayıcı
-// maddeler durur; "hangi kanal ne işe yarar" listesi etkinlik bilgilendirme panelinin işidir.
+// 3) Etkinlik kuralları: birlikte oynadığımız etkinlik oyunlarının (Vampir Köylü, Kırmızı Koltuk, Among Us,
+// Goose Goose Duck, Gartic Phone, Spyfall ve diğerleri) bağlayıcı maddeleri. Sunucu kuralları tekrar yazılmaz;
+// oyunların nasıl oynandığı ve hangi kanalda yürüdüğü bilgisi etkinlik bilgilendirme panelindedir. 5v5
+// programındaki oyunların kuralları ayrıdır: oyun kuralları paneli.
 const etkinlikKurallari = {
   key: 'etkinlik-kurallar',
   name: 'Etkinlik Kuralları Paneli',
   title: 'Etkinlik Kuralları',
-  intro: 'Etkinlikler ortak vakit geçirdiğimiz yerler; bu kurallar **etkinliği bozan** davranışları engellemek için var.',
+  intro: 'Etkinliklerde birlikte oynadığımız oyunların bağlayıcı maddeleri: **Vampir Köylü**, **Kırmızı Koltuk**, **Among Us**, **Goose Goose Duck**, **Gartic Phone**, **Spyfall** ve diğerleri. Bu kurallar **etkinliği bozan** davranışları engellemek için var; oyunları nasıl oynadığımız <#1538538532958638160> kanalında anlatılır.',
   channel: '1538540261737758850',
   sections: [
     {
@@ -275,6 +277,47 @@ const etkinlikKurallari = {
             'Yayın açtığında gösterdiğin her şey sunucu kurallarına tabidir; +18, kanlı ya da rahatsız edici içerik **anında kapatılır**.',
             'Rahatsız olduğun bir davranışı kanalda tartışma; yetkiliye bildir, o çözer.',
           ],
+        },
+      ],
+    },
+    {
+      title: 'Oyunlara Özel',
+      sub: 'Etkinlikte hangi oyun oynanıyorsa onun maddeleri de geçerlidir. Oyunun kendisini tanıtan taraf <#1538538532958638160> kanalı; burada yalnızca uyman gerekenler durur.',
+      blocks: [
+        {
+          heading: 'Vampir Köylü',
+          items: [
+            'Rolünü, gecenin sonucunu ve sana verilen bilgiyi oyun bitene kadar **hiçbir yerde** paylaşma.',
+            'Öldükten sonra gündüz tartışmasına katılmak, başkasının yerine konuşmak ve oylamayı senin yönetmen **yasaktır**; sonucu yalnızca yetkili ilan eder.',
+            'Gözünü kapatman gereken anda ekrana, mikrofona ya da yazılı kanala bakarak rol öğrenmeye çalışmak hile sayılır.',
+          ],
+        },
+        {
+          heading: 'Kırmızı Koltuk',
+          items: [
+            'Cinsellik, aşağılama, kişisel sır ve gerçek hayattan bilgi içeren soru ya da istek **sorulamaz**; +18 içerik burada da yasaktır.',
+            '**İstememe hakkın vardır** ve cezası yoktur; kimse seni oynamaya zorlayamaz, korkaklık baskısı yapamaz.',
+            'Sahnedeki üyeyi izleyicinin sıkıştırması, laf atması ve susturması katılım hakkı değildir.',
+          ],
+        },
+        {
+          heading: 'Among Us ve Goose Goose Duck',
+          items: [
+            'Ölüyken bilgi vermek yasaktır: ölünün sözü **bizim sesli kanalımızda** biter, oyun içi sohbet ayrı yürür.',
+            'İhbar ve acil toplantı butonunu sırf tartışma çıkarmak için spamlamak **kasıtlı kaybetmedir**.',
+            'İzinsiz eklenti, harita ve konum paylaşımı hile sayılır; görevini bilerek yapmadan beklemek de öyle.',
+          ],
+        },
+        {
+          heading: 'Gartic Phone ve Spyfall',
+          items: [
+            'Yazdığın ve çizdiğin her şey sunucu kurallarına tabidir: +18, hakaret ve gerçek kişi ya da üye adı **yasaktır**.',
+            'Roller ve mekanlar oyun bitmeden kanal dışında konuşulmaz; DM\'den bilgi paylaşmak oyunu bitirir.',
+            'Sıra sendeyken hiç yazmamak oyunu durdurur; süren dolunca tur geçer ve bu bir bahane sayılmaz.',
+          ],
+        },
+        {
+          note: 'Crab Game, Brawlhalla ve burada adı geçmeyen her oyunda etkinlik başında yöneten yetkilinin anlattığı maddeler de bu panel kadar bağlayıcıdır.',
         },
       ],
     },
@@ -311,12 +354,13 @@ const etkinlikKurallari = {
   ],
 };
 
-// 4) Etkinlik bilgilendirmesi: Discord üzerinden oynanabilen etkinliklerin tanıtımı
+// 4) Etkinlik bilgilendirmesi: birlikte oynadığımız etkinlik oyunlarının tanıtımı ve bizde nasıl yürüdüğü.
+// Bağlayıcı maddeler etkinlik kuralları panelinde durur; burada kural yazılmaz.
 const etkinlikBilgisi = {
   key: 'etkinlik-bilgi',
   name: 'Etkinlik Bilgilendirme Paneli',
   title: 'Etkinlik Bilgisi',
-  intro: 'Sunucumuzda dönen etkinlikler ve **nasıl oynandıkları**: tarayıcıdan girilen de indirilen de aynı düzenle yürür, hiçbiri para ya da kayıt istemez.',
+  intro: 'Sunucumuzda dönen etkinlikler ve **nasıl oynandıkları**: tarayıcıdan girilen de indirilen de aynı düzenle yürür, hiçbiri para ya da kayıt istemez. Uyulacak maddeler <#1538540261737758850> kanalında yazar.',
   channel: '1538538532958638160',
   sections: [
     {
@@ -343,7 +387,6 @@ const etkinlikBilgisi = {
           items: [
             'Gece herkes gözünü kapatır, yetkili sırayla rolleri uyandırır; gündüz ise konuşarak kimi şüphelendiğini anlatırsın.',
             'Amaç köylü tarafındaysa gün sonunda **bir kişiyi linç etmek**, vampir tarafındaysa köylüleri eşitleyip geçmek.',
-            'Rolünü kimseye söylemezsin; söylemek oyunun sonunu getirir ve kural ihlalidir.',
             'En az yedi kişiyle açılır, sesli kanalda oynanır, metinden değil **sesten** yürür.',
           ],
         },
@@ -361,9 +404,8 @@ const etkinlikBilgisi = {
         {
           items: [
             'Oyuncular <#1538540812986744842> sahne kanalında sırayla oturur, sıradaki kişi **doğruluk** ya da **cesaret** seçer.',
-            'Soru ve isteği sıradaki oyuncu ya da yetkili verir; **istememe hakkın saklıdır**, hiçbir cezası yoktur.',
-            'Cinsellik, aşağılama ve kişisel sır içeren istekler **yasaktır**; +18 içerik kuralı burada da geçerlidir.',
-            'İzleyici rolü de serbest: sahnedekini rahatsız edici biçimde sıkıştıramazsın.',
+            'Soru ve isteği ya sıradaki oyuncu ya da etkinliği yöneten yetkili verir.',
+            'Koltuk sırayla döner; kaç tur alınacağı o geceki kalabalığa göre belirlenir.',
           ],
         },
       ],
