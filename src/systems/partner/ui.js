@@ -112,7 +112,7 @@ function startPrompt(authorId) {
     .addTextDisplayComponents(
       head(
         'Partner Olmak mı İstiyorsun?',
-        'Sunucunla bizimle karşılıklı partner olmak istiyorsan **Oto Partner Yap** butonuyla oto partner talebi oluşturabilirsin. Yetkili onaylayınca metnin otomatik paylaşılır.',
+        'Bizim sunucuyla karşılıklı partner olmak istiyorsan **Oto Partner Yap** butonuyla oto partner talebi oluşturabilirsin. Yetkili onaylayınca metnin otomatik paylaşılır.',
       ),
     )
     .addSeparatorComponents(divider())
@@ -421,7 +421,7 @@ const partnerRevokedDm = (serverId, { kind, by, removed, reason = null }) =>
 const renewalCancelledLog = (entry, staffId, reason) =>
   noticeCard(
     'Teklif Reddedildi',
-    'Partner yenileme teklifi **karşı sunucunun partner yetkilisi** tarafından reddedildi. Partner kaydı aynen duruyor, istenirse yeni bir teklif başlatılabilir.',
+    'Yenileme teklifi **karşı sunucunun partner yetkilisi** tarafından reddedildi. Kayıt aynen duruyor; istediğinde yeni bir teklif başlatabilirsin.',
     ['### Teklif Bilgileri', rows([['Sunucu', serverTitle(entry)], ['Reddeden', `<@${staffId}>`]])],
     reason,
   );
@@ -772,7 +772,7 @@ function ourTextDm(entry, sharedUrl = null) {
   const container = new ContainerBuilder().setAccentColor(colors.success).addTextDisplayComponents(
     head(
       'Bizim Partner Metnimiz',
-      `${kimlik} partner metni paylaşım kanalımızda yayında. Bu mesajdaki metin bizim sunucumuzu tanıtan partner ilanımız; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
+      `${kimlik} partner ilanı paylaşım kanalımızda yayında. Bu mesajdaki metin bizim sunucumuzu tanıtıyor; **kopyalayıp kendi sunucunun partner kanalında** paylaşabilirsin.`,
     ),
   );
 
