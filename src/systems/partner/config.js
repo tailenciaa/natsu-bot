@@ -32,28 +32,32 @@ module.exports = {
 
   // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin.
   // İlk satır sunucunun adı: partner metni panelinde kartın başlığında durur, gövde ondan sonrasıdır.
-  // Süslemeli ilan dili bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına yapıştırılıyor.
-  // Kutu çizgileri (│ ╭ ╰) ile ✦ ・ ➤ gerçek emoji değil, bot metinlerindeki emoji yasağına takılmaz.
+  // Anlatılan şey oyun listesi değil (o oyunlar her sunucuda var): bizdeki fark sunucunun kendi botunun
+  // içinde yürüyen oda, evlilik, ekonomi ve sicil düzeni; bir de kurulduğundan beri tuttuğumuz söz.
+  // Süs dili örnek ilanlardan alındı ve bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına
+  // yapıştırılıyor. Kanat/elmas/çizgi glifleri (U+029A, U+029E, U+2756, U+02D6, U+2500, U+231E, U+27A4)
+  // gerçek emoji değil; bot metinlerindeki emoji yasağına takılmaz.
   ourAdText: [
-    '**Kazuki Anime & Public**',
-    'Düzenli etkinlikleri, aktif sohbeti ve seste anında çözülen destek ekibiyle neden sen de Kazuki’de değilsin?',
-    '﹒' + '⎯'.repeat(46),
-    '',
-    '╭ ୧ ︰ʚ **Bizde neler var?**',
-    '│ ✦ ・ **Sesli odanı** kendin açarsın; ismi, limiti ve devri senin',
-    '│ ✦ ・ **Mesaj ve ses seviyesi** ayrı yürür, her 5 seviyede yeni rol',
-    '│ ✦ ・ **Coin ekonomisi:** günlük giriş, görev kutuları, Keşif Yolu',
-    '│ ✦ ・ **Profil kartı**, rozetler ve sıralama tabloları',
-    '│ ✦ ・ **Vampir Köylü**, Kırmızı Koltuk, Gartic Phone, Among Us etkinlikleri',
-    '│ ✦ ・ **5v5 maçları:** Valorant, Counter-Strike 2, League of Legends',
-    '│ ✦ ・ **Oyun Salonu** ve Arka Sokaklar: rulet, şans merdiveni, soygun',
-    '│ ✦ ・ **Çekilişler**, haftanın şampiyonları ve saygınlık ödülleri',
-    '│ ✦ ・ **Yüzükle evlilik teklifi**, çift rolü ve açık yetkili alımı',
-    '│',
-    '╰ ୧ ︰ʚ **Kurallarımız net:** küfür, taciz, ayrımcılık ve +18 içerik yok.',
-    '﹒' + '⎯'.repeat(46),
-    '',
-    '➤ **Davet:** https://discord.gg/kazuki',
-    '➤ @everyone ┇ @here',
+    "**Kazuki Anime & Public**",
+    "",
+    "˖ ʚ ˖ *Türkçe anime & public topluluğu* ʚ ˖",
+    "",
+    "──────────── ˖ ❖ ˖ **Neden Kazuki?** ˖ ❖ ˖ ────────────",
+    "",
+    "˖ ❖ ˖ Sunucunun içinde **kendi botumuz** çalışır: odan, kasan, evliliğin ve sicilin tek yerden yürür.",
+    "˖ ❖ ˖ **Kendi ses odan** bir komutla açılır; ismi, limiti, kilidi ve davetleri tamamen senin.",
+    "˖ ❖ ˖ Haftanın ses şartını tutan oda **kalıcı** olur, seninle birlikte büyür.",
+    "˖ ❖ ˖ **Yüzükle evlilik teklifi** edersin: çift rolü ve tören dahil her şey burada.",
+    "˖ ❖ ˖ **Görev → kutu → anahtar:** her gün üç görev, üçü birden bitince günün demeti açılır.",
+    "˖ ❖ ˖ **Mesaj ve ses seviyesi ayrı** yürür, her 5 seviyede yeni rol; profil kartın çizilip gelir.",
+    "˖ ❖ ˖ **Kanıtsız ceza yok:** her ceza numarasıyla kanıt kanalına düşer, sicilin tek yerden görünür.",
+    "",
+    "──────────── ˖ ❖ ˖ **Sözümüz** ˖ ❖ ˖ ────────────",
+    "",
+    "˖ ❖ ˖ Küfür, taciz, ayrımcılık ve +18 içerik yok; anime izlememiş olman da sorun değil.",
+    "˖ ❖ ˖ Aktif olan görülür: rol, ödül ve yetki dağıtımı buna göre yürür.",
+    "",
+    "➤ **Davet:** https://discord.gg/kazuki",
+    "➤ @everyone ┇ @here",
   ].join('\n'),
 };
