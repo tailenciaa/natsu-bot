@@ -95,7 +95,7 @@ const requestsOfServer = (guildId_, key) =>
     .sort((a, b) => a.createdAt - b.createdAt);
 
 // Sunucunun güvenilir kaydı: kaydın hangi talepten üretildiği değil, sunucunun kendisi eşleşir. Elle atılan
-// yeni ilan de aynı kayda bağlanır; bir sunucu listeye bir kez girdi mi kart tekrar "Listede değil" olmaz.
+// yeni ilan da aynı kayda bağlanır; bir sunucu listeye bir kez girdi mi kart tekrar "Listede değil" olmaz.
 // Sunucu ID'si davetten çözülemediyse davet kodu, o da yoksa kaynak talep ID'si kullanılır.
 function trustedForRequest(guildId_, request) {
   const entries = store.trustedOf(guildId_);
