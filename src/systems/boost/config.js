@@ -16,7 +16,14 @@ module.exports = {
 
   // Boosterların seçebileceği hazır renk rolleri (tek seçimli, gradyanlar dahil). Her biri { roleId, label }.
   // Roller Discord'da oluşturulup buraya eklenene kadar liste boş kalır, panelde renk seçimi görünmez.
-  colorRoles: [],
+  colorRoles: [
+    { roleId: '1555890044231876648', label: 'Gri Beyaz Gradyam' },
+    { roleId: '1555890043787415613', label: 'Mor Pembe Gradyan' },
+    { roleId: '1554240784348479488', label: 'Yeşil Turuncu Gradyan' },
+    { roleId: '1554240783618670603', label: 'Turkuaz Kahverengi Gradyan' },
+    { roleId: '1555890044542386196', label: 'Mavi Sarı Gradyan' },
+    { roleId: '1554240783421284403', label: 'Siyah Gradyan' },
+  ],
 
   // Boosterların seçebileceği hazır simge (ikon) rolleri (tek seçimli). Her biri { roleId, label }.
   // Roller Discord'da oluşturulup buraya eklenene kadar liste boş kalır, panelde simge seçimi görünmez.
