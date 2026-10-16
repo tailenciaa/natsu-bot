@@ -426,7 +426,7 @@ function staffReport(title, access, sent) {
     access
       ? access.waitingIn
         ? `Ses kanallarının kilidi açıldı, başvurana seni <#${access.waitingIn}> kanalında beklediğin söylendi.`
-        : 'Ses kanallarının kilidi açıldı. Bir görüşme kanalında olmadığın için başvurana kanallardan birine geçmesi söylendi.'
+        : 'Ses kanallarının kilidi açıldı. Bir görüşme kanalında olmadığın için başvurana başka bir kanala geçmesi söylendi.'
       : 'Ses kanallarının kilidi açılamadı, başvuran sunucuda olmayabilir.',
     sent ? 'Başvurana DM üzerinden haber verildi.' : "Başvuranın DM'si kapalı, kendisine ayrıca ulaşman gerekiyor.",
   ];

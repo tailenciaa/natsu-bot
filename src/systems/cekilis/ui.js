@@ -190,7 +190,7 @@ function managementPanel({ active, ended, channelId }) {
     ].join('\n');
   const container = page({
     title: 'Çekiliş Yönetimi',
-    sub: 'Açık çekilişleri ve son sonuçlananları burada takip edebilirsin. Bir çekilişi süresini beklemeden bitirmek, iptal etmek ya da yeniden çekmek için çekilişin kendi kartındaki düğmeleri kullan; istersen numarasıyla **/cekilis** komutları da çalışır.',
+    sub: 'Açık çekilişleri ve son sonuçlananları burada takip edebilirsin. Süresini beklemeden bir çekilişi bitirmek, iptal etmek ya da yeniden çekmek için o çekilişin kendi kartındaki düğmeleri kullan; istersen numarasıyla **/cekilis** komutları da çalışır.',
     blocks: [
       active.length ? active.map(line).join('\n\n') : '-# Şu an açık çekiliş yok.',
       ended.length

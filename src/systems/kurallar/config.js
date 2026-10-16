@@ -17,7 +17,7 @@ module.exports = {
         'Oyun hesabı, ürün satışı ve her türlü **ticaret** yasaktır.',
         'Kanalları **amacı dışında** kullanmak yasaktır.',
         'Bot komutları **yalnızca ilgili kanallarda** kullanılır, eğlence botlarını normal komut kanalında kullanma.',
-        'Yetkilileri **gereksiz yere etiketlemek** yasaktır, sadece önemli durumlarda etiketle.',
+        'Yetkilileri **gereksiz yere etiketlemek** yasaktır; etiketi yalnızca önemli durumlarda kullan.',
         '**Yetki istemek** yasaktır.',
         '**Boş destek talebi** ya da satın alım talebi açmak yasaktır.',
       ],
@@ -79,7 +79,7 @@ module.exports = {
 
   // En alttaki not. Destek kanalı otomatik etiketlenir.
   note:
-    '**Kurallarda yazmıyor olması bir davranışı serbest kılmaz;** topluluk düzenini bozan her davranış cezalandırılabilir. ' +
+    '**Kurallarda yazmıyor olması bir davranışı serbest kılmaz;** topluluk düzenini bozan her hareket cezalandırılabilir. ' +
     'Sunucuya katılan herkes bu kuralları ve **Discord Hizmet Şartları**\'nı kabul etmiş sayılır. ' +
     `Bir sorun yaşarsan <#${destekConfig.channels.panel}> kanalından bize ulaşabilirsin.`,
 };

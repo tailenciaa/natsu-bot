@@ -18,7 +18,7 @@ const IDS = { select: 'logpanel', setup: 'logkur', detail: 'logdetay' }; // logp
 // Bir log girdisinin kutusu: başlık, uzun gri açıklama, çizgiyle ayrılmış kalın başlıklı bilgi bloğu (null/boş satırlar
 // atlanır) ve en altta zaman damgası. Bütün log girdileri aynı genişlikte görünsün diye açıklama bilerek uzun tutulur.
 const ENTRY_SUB =
-  'Sunucuda gerçekleşen bu olay ilgili log kategorisine otomatik olarak kaydedildi; olayı kimin yaptığını, nerede gerçekleştiğini ve diğer ayrıntıları bu bilgilerde görebilirsin.';
+  'Sunucuda olan bu olay ilgili log kategorisine otomatik olarak kaydedildi; kimin yaptığını, nerede geçtiğini ve diğer ayrıntıları bu bilgilerde görebilirsin.';
 
 // Bilgi satırları alt alta dizilir. Tek satırlar sıkışık kalsın; çok satırlı olanların (içerik, ekler gibi) önü ve
 // sonu boş satırla ayrılsın ki bloklar birbirine karışıp iç içe görünmesin.

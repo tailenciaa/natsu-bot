@@ -31,7 +31,7 @@ function weeklyAnnounce(guild, results) {
     title: 'Haftanın Aktifleri',
     thumbnail: guild?.iconURL({ size: 256 }),
     blocks: [
-      'Geçen haftanın **ses, mesaj ve yayın birincilerini** açıklıyoruz; her kategorinin birincisi **haftalık rolünü bir sonraki pazartesiye kadar taşır** ve rol **her hafta yenilenir.**',
+      'Geçen haftanın **ses, mesaj ve yayın birincilerini** açıklıyoruz; kategori kazananı **haftalık rolünü bir sonraki pazartesiye kadar taşır** ve rol **her hafta yenilenir**.',
       ...['ses', 'mesaj', 'yayin'].map((kind) => section(kind, results[kind])),
     ],
   });
@@ -60,7 +60,7 @@ function weeklyRunCard({ target, aktif, saygi, user, denemeler = {} }) {
     note: bos
       ? 'Kayıt olmadığı için coin ödülü de verilmedi. Hafta tüketilmedi: sayım biriktiği anda duyuru ve ödüller kendiliğinden gelir.'
       : aktif.pay
-        ? 'Coin ödülleri bu çalıştırmada yatırıldı. Aynı haftayı ikinci kez çalıştırırsan ödüller tekrar yatmaz.'
+        ? 'Coin ödülleri yatırıldı. Aynı haftayı ikinci kez açarsan ödüller tekrar yatmaz.'
         : 'Bu çalıştırmada coin ödülü yatırılmadı: ya bu hafta zaten duyuruldu ya da süren haftanın önizlemesini açtın.',
     user,
     accent: bos ? 'warning' : tamam ? 'success' : 'danger',

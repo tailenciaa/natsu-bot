@@ -523,7 +523,7 @@ function transferResultDm(app, holderId, stage, state) {
   return state === 'approved'
     ? card(
         'Devir Onaylandı',
-        'İstediğin işlemi beklemeye alan yetkili sana devretti. Başvuranla artık sen ilgileniyorsun; ayrıntılar başvuran ve yetkili için ayrıca gönderildi.',
+        'İstediğin işlemi beklemeye alan yetkili sana devretti. Başvuranla artık sen ilgileniyorsun; ayrıntılar taraflara ayrıca gönderildi.',
         [`${head}\n**<@${holderId}> işlemi sana devretti.**`],
         'success',
       )
