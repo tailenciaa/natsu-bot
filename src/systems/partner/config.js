@@ -33,23 +33,27 @@ module.exports = {
   // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin.
   // İlk satır sunucunun adı: partner metni panelinde kartın başlığında durur, gövde ondan sonrasıdır.
   // Süslemeli ilan dili bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına yapıştırılıyor.
-  // Kutu çizgileri (│ ╭ ╰) ve ✦ ・ ➤ gerçek emoji değil; bot metinlerindeki emoji yasağı bu yüzden bozulmuyor.
-  ourAdText: '**Kazuki Anime & Public**\n' +
-    '﹒⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-    '\n' +
-    '╭ ୧ ︰ʚ **Bizde neler var?**\n' +
-    '│ ✦ ・ **Sesli odanı** kendin açarsın; ismi, limiti ve devri senin\n' +
-    '│ ✦ ・ **Mesaj ve ses seviyesi** ayrı yürür, her 5 seviyede yeni rol\n' +
-    '│ ✦ ・ **Coin ekonomisi:** günlük giriş, görev kutuları, Keşif Yolu\n' +
-    '│ ✦ ・ **Profil kartı**, rozetler ve sıralama tabloları\n' +
-    '│ ✦ ・ **Vampir Köylü**, Kırmızı Koltuk, Gartic Phone, Among Us etkinlikleri\n' +
-    '│ ✦ ・ **5v5 maçları:** Valorant, Counter-Strike 2, League of Legends\n' +
-    '│ ✦ ・ **Oyun Salonu** ve Arka Sokaklar: rulet, şans merdiveni, soygun\n' +
-    '│ ✦ ・ **Çekilişler**, haftanın şampiyonları ve saygınlık ödülleri\n' +
-    '│ ✦ ・ **Yüzükle evlilik teklifi**, çift rolü ve açık yetkili alımı\n' +
-    '│\n' +
-    '╰ ୧ ︰ʚ **Kurallarımız net:** küfür, taciz, ayrımcılık ve +18 içerik yok.\n' +
-    '\n' +
-    '➤ **Davet:** https://discord.gg/kazuki\n' +
+  // Kutu çizgileri (│ ╭ ╰) ile ✦ ・ ➤ gerçek emoji değil, bot metinlerindeki emoji yasağına takılmaz.
+  ourAdText: [
+    '**Kazuki Anime & Public**',
+    'Düzenli etkinlikleri, aktif sohbeti ve seste anında çözülen destek ekibiyle neden sen de Kazuki’de değilsin?',
+    '﹒' + '⎯'.repeat(46),
+    '',
+    '╭ ୧ ʚ **Bizde neler var?**',
+    '│ ✦ ・ **Sesli odanı** kendin açarsın; ismi, limiti ve devri senin',
+    '│ ✦ ・ **Mesaj ve ses seviyesi** ayrı yürür, her 5 seviyede yeni rol',
+    '│ ✦ ・ **Coin ekonomisi:** günlük giriş, görev kutuları, Keşif Yolu',
+    '│ ✦ ・ **Profil kartı**, rozetler ve sıralama tabloları',
+    '│ ✦ ・ **Vampir Köylü**, Kırmızı Koltuk, Gartic Phone, Among Us etkinlikleri',
+    '│ ✦ ・ **5v5 maçları:** Valorant, Counter-Strike 2, League of Legends',
+    '│ ✦ ・ **Oyun Salonu** ve Arka Sokaklar: rulet, şans merdiveni, soygun',
+    '│ ✦ ・ **Çekilişler**, haftanın şampiyonları ve saygınlık ödülleri',
+    '│ ✦ ・ **Yüzükle evlilik teklifi**, çift rolü ve açık yetkili alımı',
+    '│',
+    '╰ ୧ ︰ʚ **Kurallarımız net:** küfür, taciz, ayrımcılık ve +18 içerik yok.',
+    '﹒' + '⎯'.repeat(46),
+    '',
+    '➤ **Davet:** https://discord.gg/kazuki',
     '➤ @everyone ┇ @here',
+  ].join('\n'),
 };
