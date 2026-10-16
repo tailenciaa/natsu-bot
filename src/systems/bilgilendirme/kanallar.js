@@ -600,35 +600,35 @@ const besVBesBilgisi = {
   ],
 };
 
-// 7) Sorun çözme: kanalın tek işi üyeye anlık sesli yardımın yolunu göstermek. Görüşmenin yürüyüşü, gizlilik ve
-// itiraz gibi süreç anlatımı bilerek burada değil; üye buraya "derdim var, şimdi ne yapacağım" diye giriyor.
+// 7) Sorun çözme: kanalın tek işi üyeyi sesli yardıma götürmek. Sorun çözme destek talebinden önce gelir: seste
+// ilgilenilen sorun talebe aktarılmaz, kanıt ekran paylaşımıyla gösterilir.
 const sorunCozmeBilgisi = {
   key: 'sorun-cozme-bilgi',
   name: 'Sorun Çözme Bilgilendirme Paneli',
   title: 'Sorun Çözme',
-  intro: 'Seste bir sorun mu oldu? Ses odasına gir, <@&1544337671340433569> çağır, konuşarak çöz: buranın işi **anlık yardım**.',
+  intro: 'Bir sorunun varsa destek talebi açmana gerek yok: Sorun Çözme odalarından birine gir, <@&1544337671340433569> ekibi seni **seste dinler** ve sorunu **anında** çözer.',
   channel: '1538544294388961300',
   sections: [
     {
       hideTitle: true,
       blocks: [
         {
-          heading: 'Şimdi ne yapacaksın',
+          heading: 'Nasıl yardım alırsın',
           items: [
-            '`1.` <#1538544966282911884>, <#1538545004920971284> ya da <#1538545038751965265> odalarından boş olanına gir, mikrofonu aç.',
-            '`2.` Odada yetkili yoksa <#1538544350185914389> sohbetinde <@&1544337671340433569> rolünü etiketle; yardım istemek ihlal değildir.',
-            '`3.` Tek cümleyle anlat: kim, ne oldu, ne istiyorsun. Elinde ekran görüntüsü ya da klip varsa sohbete bırak.',
-            '`4.` Yetkili odaya gelir, konu sesli çözülür; uzayacaksa <#1538535372588326973> içindeki **Talep Oluştur** ile yazılı kayıt açılır.',
+            '`1.` <#1538544966282911884>, <#1538545004920971284> ya da <#1538545038751965265> odalarından boş olanına gir ve mikrofonunu aç.',
+            '`2.` Odada yetkili yoksa <#1538544350185914389> kanalında <@&1544337671340433569> rolünü etiketle; ekipten biri odaya gelir.',
+            '`3.` Yetkili gelince sorununu anlat: ne oldu, kiminle oldu ve ne istiyorsun.',
+            '`4.` Kanıtın varsa **ekranını paylaş** ve göster: mesaj, ekran görüntüsü ya da video.',
           ],
         },
         {
-          heading: 'Kanıtla konuş',
+          heading: 'Seste çözmenin farkı',
           items: [
-            'İddianın arkasında ekran görüntüsü, klip ya da mesaj bağlantısı varsa yardım hızlanır; kanıtsız suçlama kayda girer ama ilerlemez.',
-            'Karşı taraf da dinlenir: sesli görüşmede tek anlatan sen olmazsın.',
-            'Görüşmenin sonucu <#1538942392613208164> rapor kanalına işlenir, yani yardım isteğinin izi kalır.',
+            'Yazıp cevap beklemezsin; sorun **aynı görüşmede** konuşulur ve çözülür.',
+            'Yetkili kanıtını ekranında canlı görür ve kararı orada verir; ayrıca dosya göndermen gerekmez.',
+            'Sorun başka bir üyeyle ilgiliyse o üye de dinlenir; karar iki taraf dinlendikten sonra verilir.',
+            'Görüşmenin sonucu <#1538942392613208164> kanalına yazılır, yani konunun kaydı yine tutulur.',
           ],
-          note: 'Rol, ödül ve ceza itirazı gibi tek taraflı işler sesli görüşmenin değil destek talebinin konusudur.',
         },
       ],
     },
