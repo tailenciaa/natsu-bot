@@ -74,10 +74,12 @@ async function syncAllRoles(guild) {
   console.log(`[seviye] Seviye rolleri eşitlendi (${done} üye).`);
 }
 
-// Duyuru: üyeyi etiketleyen kısa satır ve altında seviye atlama kartı (kart çizilemezse eski metin duyurusu gider).
+// Duyuru: ana seviyelerde (5, 10, 15...) üyeyi etiketleyen kısa satır ve altında seviye atlama kartı; ara
+// seviyelerde etiket atılmaz, kart sessiz gider (kart çizilemezse eski metin duyurusu düşer).
 // Gönderildiyse true döner.
 async function sendLevelUp(channel, user, kind, level, role) {
-  const allowedMentions = { users: [user.id] };
+  const milestone = config.milestones.includes(level);
+  const allowedMentions = milestone ? { users: [user.id] } : { users: [] };
   try {
     const member = await channel.guild.members.fetch(user.id).catch(() => null);
     const image = await buildLevelUpCard(user, {
@@ -91,7 +93,7 @@ async function sendLevelUp(channel, user, kind, level, role) {
       coinReward: coinConfig.awards.levelUp,
     });
     await channel.send({
-      content: `<@${user.id}>`,
+      content: milestone ? `<@${user.id}>` : '',
       files: [{ attachment: image, name: 'seviye-atladi.png', description: `${user.username}, ${level}. seviyeye ulaştı` }],
       allowedMentions,
     });
@@ -105,8 +107,8 @@ async function sendLevelUp(channel, user, kind, level, role) {
   }
 }
 
-// XP ekler; atlanan her seviye duyurulur, coin ödülü verilir ve üye etiketlenir. Rol verme sadece ana
-// seviyelerde (5, 10, 15...); ara seviyelerde duyuru kartında yalnızca coin ödülü yazar
+// XP ekler; atlanan her seviye duyurulur ve coin ödülü verilir. Üye yalnızca ana seviyelerde (5, 10, 15...)
+// etiketlenir; ara seviyelerde kart bildirimsiz düşer. Rol verme de sadece ana seviyelerde olur.
 async function grantXp(guild, userId, kind, amount) {
   const before = levelFromXp(store.xpOf(kind, userId));
   const after = levelFromXp(store.addXp(kind, userId, amount));
