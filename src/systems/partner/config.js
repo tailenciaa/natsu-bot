@@ -32,19 +32,7 @@ module.exports = {
 
   // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin.
   // İlk satır sunucunun adı: partner metni panelinde kartın başlığında durur, gövde ondan sonrasıdır.
+  // Süslemeli ilan dili bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına yapıştırılıyor.
   ourAdText: '**Kazuki Anime & Public**\n' +
-    'Türkçe anime, oyun ve sohbet sunucusu: seviye sistemi ödüllü, etkinlik haftada birkaç kez, destek ekibi seste anında yanında.\n' +
-    '\n' +
-    '**Neden Kazuki?**\n' +
-    '· Mesaj ve ses seviyesi ayrı yürür; her 5 seviyede yeni rol ve ayrıcalık gelir\n' +
-    '· Coin ekonomisi: günlük giriş, görev kutuları, Keşif Yolu ve sezon ödülleri\n' +
-    '· Profil kartı, rozetler ve sıralama tabloları: mesaj, ses, yayın, saygınlık, coin\n' +
-    '· Kendi sesli odanı açarsın; ismi, limiti ve devri sen yönetirsin\n' +
-    '· Vampir Köylü, Kırmızı Koltuk, Gartic Phone, Spyfall, Among Us, Brawlhalla ve 5v5 iç maçlar\n' +
-    '· Düzenli çekilişler, haftanın şampiyonları ve üyelerin verdiği saygınlık ödülleri\n' +
-    '· Oyun Salonu ve Arka Sokaklar: rulet, şans merdiveni, keşif gezileri ve soygun riski\n' +
-    '· Yüzükle evlilik teklifi et, çift rolünü al; yetkili alımı da her zaman açık\n' +
-    '\n' +
-    '**Kurallarımız net:** küfür, taciz, ayrımcılık ve +18 içerik yok; sorun seste anında çözülür.\n' +
-    'Davet: https://discord.gg/kazuki',
+    '﹒⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 };
