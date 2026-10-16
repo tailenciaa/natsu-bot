@@ -39,7 +39,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Üyenin yazdığı kanal, ana seviyede; sadece o üye etiketlenir',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ content: s.textLevelNotice(member, 15, role), allowedMentions: { users: [member.id], roles: [] } }),
+      build: () => ({ flags: 0, content: s.textLevelNotice(member, 15, role), allowedMentions: { users: [member.id], roles: [] } }),
     },
     {
       id: 'metin-duyurusu',
@@ -47,7 +47,7 @@ module.exports = ({ mock, ui, src }) => {
       where: 'Üyenin yazdığı kanal, ara seviyede; sadece o üye etiketlenir',
       visibility: 'public',
       kind: 'message',
-      build: () => ({ content: s.textLevelNotice(member, 7, null), allowedMentions: { users: [member.id], roles: [] } }),
+      build: () => ({ flags: 0, content: s.textLevelNotice(member, 7, null), allowedMentions: { users: [member.id], roles: [] } }),
     },
     {
       id: 'duyuru-yedek-rol',
