@@ -71,28 +71,25 @@ function controlPanel(room, channel, state = {}, access = { invited: [], banned:
       ),
     );
 
-  // Üye menüleri: her grubun üstünde ne yaptığı yazar, menünün kendisi kimi istediğini placeholderda söyler.
-  // Ekle/Çıkar yeni olduğu için tek tek anlatılır; at/yasakla/devret tek başlık altında yan yana durur
-  // (ard arda menü satırları arasına çizgi girmez) ve panel 40 bileşen sınırında nefes alanı kalsın diye böyle gruplanır.
-  const group = (caption, ids) => {
-    container.addSeparatorComponents(divider()).addTextDisplayComponents(text(caption));
-    for (const id of ids) container.addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${id}:0`, menuHint(id))));
-  };
-
-  group('### Üye Ekle\nSeçtiğin üye odana katılabilir; oda kilitli ya da gizliyken de girebilir.', [IDS.add]);
-  group('### Üye Çıkar\nSeçtiğin üyenin odadaki ayrı izni **silinir**, odadaysa dışarı alınır. Yasaklı bir üyeyi seçersen yasağı kalkar.', [IDS.drop]);
-  group('### Üye İşlemleri\nOdandaki bir üye seç: **At** odadan çıkarır ama izni kalır, **Yasakla** bu oda silinene kadar içeri almaz, **Devret** sahipliği o üyeye verir.', [IDS.kick, IDS.ban, IDS.transfer]);
+  // Üye menüleri tek başlık altında yan yana durur: her menünün üstüne ayrı başlık koymak paneli bölüm bölüm
+  // bölüyordu. Kimi istediği zaten menünün kendi satırında yazdığı için başlık yalnızca grubun adını taşır.
+  // Panel 40 bileşen sınırında nefes alanı kalsın diye menüler ard arda dizilir (arasına çizgi girmez).
+  container
+    .addSeparatorComponents(divider())
+    .addTextDisplayComponents(text('### Üye İşlemleri\nOdaya üye ekle, izni kaldır, odadan at, yasakla ya da sahipliği devret.'));
+  for (const id of [IDS.add, IDS.drop, IDS.kick, IDS.ban, IDS.transfer])
+    container.addActionRowComponents(new ActionRowBuilder().addComponents(userSelect(`${id}:0`, menuHint(id))));
 
   return container.addSeparatorComponents(divider()).addTextDisplayComponents(text(stamp(room.createdAt)));
 }
 
-// Menünün kimi istediği placeholderda yazar; ne olduğu üstündeki başlıkta anlatılır
+// Menünün kimi istediği kendi satırında yazar: başlıklar tek gruba inince işlemi anlatan taraf bu metin oldu
 const menuHint = (id) =>
   ({
     [IDS.add]: 'Odaya eklenecek üyeyi seç',
     [IDS.drop]: 'İzni kaldırılacak üyeyi seç',
     [IDS.kick]: 'Odadan atılacak üyeyi seç',
-    [IDS.ban]: 'Yasaklanacak üyeyi seç',
+    [IDS.ban]: 'Odaya yasaklanacak üyeyi seç',
     [IDS.transfer]: 'Sahipliği devredilecek üyeyi seç',
   })[id];
 
