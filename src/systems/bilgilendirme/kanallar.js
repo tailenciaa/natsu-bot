@@ -315,7 +315,7 @@ const etkinlikBilgisi = {
   key: 'etkinlik-bilgi',
   name: 'Etkinlik Bilgilendirme Paneli',
   title: 'Etkinlik Bilgisi',
-  intro: 'Sunucumuzda dönen etkinlikler ve **nasıl oynandıkları**: hiçbirini indirmek zorunda değilsin, hepsi Discord içinden yürür.',
+  intro: 'Sunucumuzda dönen etkinlikler ve **nasıl oynandıkları**: tarayıcıdan girilen de indirilen de aynı düzenle yürür, hiçbiri para ya da kayıt istemez.',
   channel: '1538538532958638160',
   sections: [
     {
@@ -400,20 +400,6 @@ const etkinlikBilgisi = {
             '**Crab Game**: yüz kişiye kadar eleme usulü mini oyunlar; ücretsizdir, tarayıcıdan da oynanır.',
             '**Brawlhalla**: ücretsiz dövüş oyunu; 1v1 ya da takım turnuvası olarak açılır.',
             'Bu oyunlar için sunucu hesabından başka bir kayıt ya da ödeme istenmez; isteyenler için <@&1555890043237826630> gibi oyun rolleri sohbeti kolaylaştırır.',
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Discord İçi Etkinlikler',
-      sub: 'Ses kanalının içinden açılan hazır etkinlikler: ortak izleme, çizme ve kart oyunları. Hiçbir şey indirmen, hesap açman ya da bağlantı kurman gerekmez; kanala girip katılman yeter.',
-      blocks: [
-        {
-          items: [
-            'Ses kanalının **Etkinlik Başlat** menüsünden açılır, indirme ve bağlantı gerekmez.',
-            '**Watch Together** ile ortak izleme: anime partileri bu şekilde yürür.',
-            '**Sketch Heads** ve benzeri çizme oyunları, kart ve masa oyunlarının birkaçı bu menüdedir.',
-            'Anime izleme partilerinde telifli yayın paylaşmak yerine ortak izleme etkinliği kullanılır.',
           ],
         },
       ],
