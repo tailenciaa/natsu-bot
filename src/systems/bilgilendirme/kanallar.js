@@ -320,7 +320,7 @@ const etkinlikBilgisi = {
   sections: [
     {
       title: 'Nasıl Bir Etkinlik?',
-      sub: 'Etkinlikler <@&1554240000529539083> ekibi tarafından kurulur, duyurulur ve yönetilir. Katılım her zaman ücretsizdir; oyun satın alman ya da hesap açman istenmez.',
+      sub: 'Etkinlikler <@&1554240000529539083> ekibi tarafından kurulur, duyurulur ve yönetilir. Katılım her zaman ücretsizdir; oyun satın alman, hesap açman ya da bir yere kayıt olman istenmez.',
       blocks: [
         {
           items: [
@@ -348,7 +348,7 @@ const etkinlikBilgisi = {
         },
         {
           heading: 'Roller',
-          text: 'Temel üçlü **Köylü**, **Vampir** ve **gece bir yetenek kullanan özel roller** (koruma, sorgulama, oy engelleme gibi). Tam rol listesi ve yetenekleri, oyunun başında yöneten yetkili tarafından sesli olarak anlatılır; oyunlar arasında rol seti değişebilir.',
+          text: 'Temel üçlü **Köylü**, **Vampir** ve **gece yetenek kullanan özel roller**: koruma, sorgulama, oy engelleme. Rol seti oyunlar arasında değişir, tamamını oyunun başında yöneten yetkili anlatır.',
           note: 'İlk kez katılacaksan köylü rolüyle başla: tek yapman gereken dinlemek, tartışmak ve şüpheni söylemek.',
         },
       ],
