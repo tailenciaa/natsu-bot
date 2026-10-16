@@ -197,10 +197,13 @@ function termsDm(acceptCustomId) {
     .addTextDisplayComponents(
       text(
         '### Şartlar\n' +
-          '1. Reklam metni **Discord kurallarına** aykırı içerik barındıramaz.\n' +
-          '2. Sunucular karşılıklı olarak **aynı gün içinde** birbirini paylaşır.\n' +
-          '3. Onaylanan reklam metni **değiştirilemez**; değişiklik için yeni talep açılması gerekir.\n' +
-          '4. Kurallara uymayan partnerlikler yetkililerce **tek taraflı sonlandırılabilir**.',
+          '1. Reklam metni **Discord kurallarına** aykırı içerik barındıramaz; sunucunun adı, ne vaat ettiği ve **kalıcı davet bağlantısı** tek mesajda hazır olur.\n' +
+          '2. Partnerlik kurulacak sunucu **Türkçe** konuşulan bir topluluktur; +18 ve cinsel içerik, taciz, ayrımcılık ya da yasa dışı paylaşımın serbest olduğu sunucularla partnerlik yapılmaz.\n' +
+          '3. İki sunucu birbirini **aynı gün içinde** paylaşır ve metinler **eşit süre** yayında kalır: bizdeki ne kadar duruyorsa karşı taraftaki de o kadar durur.\n' +
+          '4. Onaylanan reklam metni **değiştirilemez**, değişiklik için yeni talep açılır. Metin taraflardan birinde **kalıcı olarak silinirse** partnerlik sona erer.\n' +
+          '5. Her iki tarafta da iletişime geçilebilir bir **partner yetkilisi** bulunur; yetkili sunucudan ayrılırsa yeni biri belirlenene kadar kayıt **yenilenmez**.\n' +
+          '6. **@everyone** ve **@here** ile hitap edilen duyurular bizim kanallarımızda bildirim göndermez; bu etiketleri karşı taraftan şart koşan kayıtlar kabul edilmez.\n' +
+          '7. Şartlardan biri ihlal edilirse partnerlik **tek taraflı sonlandırılır** ve sunucu bir daha partnerlik yapılmamak üzere **yasaklı listeye** alınır. Bu kural yetkililerimize özel mesajdan hakaret ya da tehdit gelen sunucular için de geçerlidir.',
       ),
     )
     .addSeparatorComponents(divider())

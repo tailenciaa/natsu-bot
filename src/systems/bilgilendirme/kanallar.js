@@ -637,12 +637,12 @@ const sorunCozmeBilgisi = {
 
 // 8) Partner şartları: kanalın tamamı tek kart ve yalnızca şartlar. Buraya "nasıl teklif verilir" gibi süreç
 // anlatımı girmez; kanala şartlar nedir diye bakılır. Maddeler partner DM kartındaki (partner/ui.js termsDm)
-// dört bağlayıcı şartla aynı metinledir, yani kanalda okunan ile kabul edilen aynıdır.
+// yedi bağlayıcı maddeyle aynı metinledir, yani kanalda okunan ile kabul edilen aynıdır.
 const partnerSartlari = {
   key: 'partner-sartlari',
   name: 'Partner Şartları Paneli',
   title: 'Partner Şartları',
-  intro: 'Partnerlik için kabul ettiğin **dört bağlayıcı madde** ve kaydı incelerken baktığımız ölçütler.',
+  intro: 'Partnerlik için kabul ettiğin **yedi bağlayıcı madde** ve kaydı incelerken baktığımız ölçütler.',
   channel: '1538943458864005150',
   sections: [
     {
@@ -651,22 +651,24 @@ const partnerSartlari = {
         {
           heading: 'Bağlayıcı maddeler',
           items: [
-            'Reklam metni **Discord kurallarına** aykırı içerik barındıramaz.',
-            'Sunucular karşılıklı olarak **aynı gün içinde** birbirini paylaşır.',
-            'Onaylanan reklam metni **değiştirilemez**; değişiklik için yeni talep açılması gerekir.',
-            'Kurallara uymayan partnerlikler yetkililerce **tek taraflı sonlandırılabilir**.',
+            'Reklam metni **Discord kurallarına** aykırı içerik barındıramaz; sunucunun adı, ne vaat ettiği ve **kalıcı davet bağlantısı** tek mesajda hazır olur.',
+            'Partnerlik kurulacak sunucu **Türkçe** konuşulan bir topluluktur; +18 ve cinsel içerik, taciz, ayrımcılık ya da yasa dışı paylaşımın serbest olduğu sunucularla partnerlik yapılmaz.',
+            'İki sunucu birbirini **aynı gün içinde** paylaşır ve metinler **eşit süre** yayında kalır: bizdeki ne kadar duruyorsa karşı taraftaki de o kadar durur.',
+            'Onaylanan reklam metni **değiştirilemez**, değişiklik için yeni talep açılır. Metin taraflardan birinde **kalıcı olarak silinirse** partnerlik sona erer.',
+            'Her iki tarafta da iletişime geçilebilir bir **partner yetkilisi** bulunur; yetkili sunucudan ayrılırsa yeni biri belirlenene kadar kayıt **yenilenmez**.',
+            '**@everyone** ve **@here** ile hitap edilen duyurular bizim kanallarımızda bildirim göndermez; bu etiketleri karşı taraftan şart koşan kayıtlar kabul edilmez.',
+            'Şartlardan biri ihlal edilirse partnerlik **tek taraflı sonlandırılır** ve sunucu bir daha partnerlik yapılmamak üzere **yasaklı listeye** alınır. Bu kural yetkililerimize özel mesajdan hakaret ya da tehdit gelen sunucular için de geçerlidir.',
           ],
         },
         {
           heading: 'İncelemede bakılanlar',
           items: [
-            'Sunucu Türkçe ve kurallara uyumlu olsun: +18 içerik, taciz, ayrımcılık ya da yasa dışı paylaşım olmamalı.',
-            'Davet bağlantısı **kalıcı** olmalı ve gerçekten o sunucuya gitmeli.',
-            'Metin okunabilir olsun: sunucunun adı, ne vaat ettiği ve davet bağlantısı tek mesajda.',
-            'Karşı tarafta iletişime geçilebilir bir **yetkili** bulunsun; muhatapsız kayıtlar yenilenmez.',
-            'Sunucu ya da yetkilisi daha önce **yasaklı listeye girmemiş** olsun.',
+            'Karşı sunucunun kurucusu ya da yetkilisi bizim sunucumuzda **yasaklı** olmamalı.',
+            'Sahibine ulaşılamayan ve uzun süredir **boş kalan** sunucuların kaydı yenilenmez.',
+            'Tema uyumu ararız: konu olarak uzak sunucuların kaydı <@&1554237785416794202> değerlendirmesine bağlıdır.',
+            'Üye sayısı gibi ölçütler sabit bir eşikle değil, kaydı inceleyen yetkilinin değerlendirmesiyle yürür.',
           ],
-          note: 'Üye sayısı gibi ölçütler sabit bir eşikle değil, kaydı inceleyen yetkilinin değerlendirmesiyle yürür.',
+          note: 'Kuralın nasıl uygulanacağına ve itirazlara <@&1554237785416794202> karar verir.',
         },
       ],
     },
