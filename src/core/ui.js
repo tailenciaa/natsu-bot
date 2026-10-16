@@ -213,8 +213,9 @@ function page({ title, sub, thumbnail, blocks = [], accent }) {
 }
 
 // OTOMATİK DÜZENLEME: bütün container'lar gönderilirken (toJSON) tek yerden düzeltilir, böylece her mesaj aynı düzende olur:
-//  1) görsel/banner (media gallery) üstünde ve altında çizgi, 2) butonların/menülerin üstünde çizgi,
-//  3) bir bloğun sonundaki küçük açıklama (-#) kalın/normal satırlardan çizgiyle ayrılır (başlık satırı "#" ile başlayanlara dokunulmaz).
+//  1) görsel/banner (media gallery) üstünde ve altında çizgi, 2) butonların/menülerin üstünde çizgi; « » sayfa satırı
+//     üstündeki buton grubundan da çizgiyle ayrılır, 3) bir bloğun sonundaki küçük açıklama (-#) kalın/normal satırlardan
+//     çizgiyle ayrılır (başlık satırı "#" ile başlayanlara dokunulmaz).
 const SEP = { type: 14, divider: true, spacing: 1 };
 const isSep = (c) => c?.type === 14;
 // Sayfa gezme satırı: tek başına « ve » butonları taşıyan satıra "sayfa satırı" denir
@@ -253,7 +254,12 @@ function tidy(components) {
     if (!isNote(out[i]) || !isSep(out[i + 1]) || out[i + 2].type !== 1) continue;
     const note = out[i];
     let k = i + 2;
-    while (out[k + 1]?.type === 1) k++;
+    // Buton satırları aralarında çizgi olsa da tek grup sayılır; not en alttaki satırın altına gider
+    for (;;) {
+      if (out[k + 1]?.type === 1) k++;
+      else if (isSep(out[k + 1]) && out[k + 2]?.type === 1) k += 2;
+      else break;
+    }
     out.splice(i, 2); // not ve ardındaki çizgi çıkar
     k -= 2;
     if (!isSep(out[i - 1])) {
