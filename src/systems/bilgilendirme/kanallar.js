@@ -606,7 +606,7 @@ const sorunCozmeBilgisi = {
   key: 'sorun-cozme-bilgi',
   name: 'Sorun Çözme Bilgilendirme Paneli',
   title: 'Sorun Çözme',
-  intro: 'Bir sorunun varsa destek talebi açmana gerek yok: Sorun Çözme odalarından birine gir, <@&1544337671340433569> ekibi seni **seste dinler** ve sorunu **anında** çözer.',
+  intro: 'Bir sorunun varsa destek talebi açmana gerek yok: Sorun Çözme odalarından birine gir, <@&1544337671340433569> ekibi seni **seste dinler** ve sorununla **anında** ilgilenir.',
   channel: '1538544294388961300',
   sections: [
     {
@@ -625,9 +625,9 @@ const sorunCozmeBilgisi = {
           heading: 'Seste çözmenin farkı',
           items: [
             'Yazıp cevap beklemezsin; sorun **aynı görüşmede** konuşulur ve çözülür.',
-            'Yetkili kanıtını ekranında canlı görür ve kararı orada verir; ayrıca dosya göndermen gerekmez.',
-            'Sorun başka bir üyeyle ilgiliyse o üye de dinlenir; karar iki taraf dinlendikten sonra verilir.',
-            'Görüşmenin sonucu <#1538942392613208164> kanalına yazılır, yani konunun kaydı yine tutulur.',
+            'Yetkili kanıtını ekran paylaşımından canlı görür ve kararı orada verir; ayrıca dosya göndermen gerekmez.',
+            'Sorun başka bir üyeyle ilgiliyse karar verilmeden önce o üye de dinlenir.',
+            'Görüşmenin sonucu <#1538942392613208164> kanalına yazılır; talep açmasan da konunun kaydı tutulur.',
           ],
         },
       ],
