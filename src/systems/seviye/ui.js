@@ -5,12 +5,12 @@ const coinConfig = require('../coin/config');
 
 const KIND_TITLE = { mesaj: 'Mesaj', ses: 'Ses' };
 
-// Ana seviyeye ulaşılınca kanala giden yedek duyuru; kazanılan rol (varsa) ayrı bir blokta etiket olarak yazılır.
-// allowedMentions ile sadece seviye atlayan üye bildirim alır, rol etiketi bildirim göndermez.
+// Ses kartı çizilemezse sabit duyuru kanalına giden yedek duyuru. Bu kanalda üye hiçbir seviyede etiketlenmez;
+// allowedMentions boş tutulur, kazanılan rol (varsa) yalnızca blokta görünür, bildirim göndermez.
 function levelUpAnnounce(user, kind, level, role) {
   return page({
     title: 'Seviye Atladı',
-    sub: 'Sohbette ve sesli kanallarda aktif oldukça XP kazanırsın; her seviye atlamada bu duyuru gelir ve coin ödülü cüzdana eklenir. Rol **yalnızca her 5. seviyede** verilir.',
+    sub: 'Sesli kanallarda aktif oldukça XP kazanırsın; her seviye atlamada bu kanalda kart çıkar ve coin ödülü cüzdana eklenir. Mesaj seviyesi ise yazdığın kanalda duyurulur. Rol **yalnızca her 5. seviyede** verilir.',
     thumbnail: user.displayAvatarURL({ size: 256 }),
     blocks: [
       `### Yeni Seviye\n**Üye:** <@${user.id}>\n**Tür:** ${KIND_TITLE[kind]}\n**Seviye:** ${level}`,

@@ -133,7 +133,7 @@ const anaPanel = {
       "blocks": [
         {
           "heading": "Nasıl Çalışır?",
-          "text": "Sohbet ederek ve sesli kanallarda vakit geçirerek seviye atlarsın. Mesaj ve ses seviyen **ayrı ayrı** birikir, her **5 seviyede bir** yeni rol kazanırsın (5'ten 100'e). Seviye atladığında <#1538534603902554182> kanalında duyurulur.\nHer pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
+          "text": "Sohbet ederek ve sesli kanallarda vakit geçirerek seviye atlarsın; seviyeler **1, 2, 3 diye sırayla** yükselir. Mesaj ve ses seviyen **ayrı ayrı** birikir, her **5 seviyede bir** yeni rol kazanırsın (5'ten 100'e). **Mesaj seviyen** o an yazdığın kanalda düz metin olarak duyurulur ve etiketlenirsin; **ses seviyen** <#1538534603902554182> kanalında görsel kart olarak duyurulur, orada **etiketlenmezsin**.\nHer pazartesi geçen haftanın **ses, yazı ve yayın** şampiyonları <#1538538279627132999>, en saygın üye <#1538538325521080391> kanalında ilan edilir ve rollerini alır."
         },
         {
           "heading": "Metin Seviye Rolleri",
@@ -173,7 +173,7 @@ const anaPanel = {
           "note": "Seviye rolleri kendinden önceki rollerin haklarını da içerir. Ödüllerini <#1538535372588326973> kanalından **talep açarak** isteyebilirsin."
         }
       ],
-      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını ve **her seviyede kazanacağın metin ile ses rollerinin tam listesini** anlatıyoruz."
+      "sub": "Mesaj yazarak ve sesli kanallarda vakit geçirerek nasıl seviye atladığını, duyuruların **hangi kanala** gittiğini ve **5'in katlarındaki seviyelerde kazanacağın metin ile ses rollerinin tam listesini** anlatıyoruz."
     },
     {
       "title": "Sesli Kanallar ve Özel Oda",
