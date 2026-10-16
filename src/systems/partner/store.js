@@ -126,12 +126,6 @@ module.exports = {
       .sort((a, b) => b.addedAt - a.addedAt);
   },
 
-  trustedBySource(guildId, requestId) {
-    return (
-      Object.values(data.trustedPartners).find((p) => p.guildId === guildId && p.sourceRequestId === requestId) ?? null
-    );
-  },
-
   // Güvenilir partnerler listesi panelinin mesaj ID'si: liste her değiştiğinde aynı mesaj düzenlenir
   trustedPanelMessageId(guildId) {
     return guildData(guildId).trustedPanelMessageId ?? null;

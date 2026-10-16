@@ -638,9 +638,14 @@ async function refreshTrustedCards(guild, entry, trusted) {
   const channel = await fetchTextChannel(guild, config.channels.posts);
   if (!channel) return;
 
+  const code = ui.inviteKey(entry.content);
   const cards = store
     .requestsOfGuild(guild.id)
-    .filter((r) => r.postId && (r.id === entry.sourceRequestId || (entry.serverId && r.serverId === entry.serverId)));
+    .filter(
+      (r) =>
+        r.postId &&
+        (r.id === entry.sourceRequestId || (entry.serverId && r.serverId === entry.serverId) || (code && ui.inviteKey(r.text) === code)),
+    );
   for (const request of cards) {
     await channel.messages
       .edit(request.postId, { components: [ui.postCard(request, trusted, store.isBanned(request.requesterId), statsOf(request))], allowedMentions: { parse: [] } })
@@ -653,11 +658,10 @@ async function refreshTrustedCards(guild, entry, trusted) {
 async function syncTrustedCards(guild) {
   const channel = await fetchTextChannel(guild, config.channels.posts);
   if (!channel) return;
-  const entries = store.trustedOf(guild.id);
 
   for (const request of store.postedRequests(guild.id)) {
     if (!request.postId) continue;
-    const entry = entries.find((e) => e.sourceRequestId === request.id || (request.serverId && e.serverId === request.serverId)) ?? null;
+    const entry = trustedForRequest(guild.id, request);
     const message = await channel.messages.fetch(request.postId).catch(() => null);
     if (!message) continue;
     const kartListede = JSON.stringify(message.components ?? []).includes('"label":"Güvenilir Listede"');
@@ -861,7 +865,7 @@ async function handleUnban(interaction) {
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
 
   store.unbanUser(request.requesterId);
-  const trustedEntry = store.trustedBySource(interaction.guildId, requestId);
+  const trustedEntry = trustedForRequest(interaction.guildId, request);
   await interaction.update({ components: [ui.postCard(request, trustedEntry, false, statsOf(request))], allowedMentions: { parse: [] } });
 }
 
