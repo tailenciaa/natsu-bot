@@ -30,9 +30,21 @@ module.exports = {
   // Partner talebini tetikleyen kelimeler (mesaj küçük harfe çevrilip tam kelime olarak aranır)
   triggerWords: ['partner', 'dm'],
 
-  // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin
+  // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin.
+  // İlk satır sunucunun adı: partner metni panelinde kartın başlığında durur, gövde ondan sonrasıdır.
   ourAdText: '**Kazuki Anime & Public**\n' +
-    'Anime sohbetinden oyun odalarına, etkinliklerden çekilişlere kadar her şeyin olduğu Türkçe bir topluluk sunucusuyuz.\n' +
-    'Toksiklikten uzak, güvenli ve samimi bir ortam; aktif yetkili ekibi ve destek sistemi; seviye sistemi, özel odalar ve sürekli etkinlikler.\n' +
+    'Türkçe anime, oyun ve sohbet sunucusu: seviye sistemi ödüllü, etkinlik haftada birkaç kez, destek ekibi seste anında yanında.\n' +
+    '\n' +
+    '**Neden Kazuki?**\n' +
+    '· Mesaj ve ses seviyesi ayrı yürür; her 5 seviyede yeni rol ve ayrıcalık gelir\n' +
+    '· Coin ekonomisi: günlük giriş, görev kutuları, Keşif Yolu ve sezon ödülleri\n' +
+    '· Profil kartı, rozetler ve sıralama tabloları: mesaj, ses, yayın, saygınlık, coin\n' +
+    '· Kendi sesli odanı açarsın; ismi, limiti ve devri sen yönetirsin\n' +
+    '· Vampir Köylü, Kırmızı Koltuk, Gartic Phone, Spyfall, Among Us, Brawlhalla ve 5v5 iç maçlar\n' +
+    '· Düzenli çekilişler, haftanın şampiyonları ve üyelerin verdiği saygınlık ödülleri\n' +
+    '· Oyun Salonu ve Arka Sokaklar: rulet, şans merdiveni, keşif gezileri ve soygun riski\n' +
+    '· Yüzükle evlilik teklifi et, çift rolünü al; yetkili alımı da her zaman açık\n' +
+    '\n' +
+    '**Kurallarımız net:** küfür, taciz, ayrımcılık ve +18 içerik yok; sorun seste anında çözülür.\n' +
     'Davet: https://discord.gg/kazuki',
 };
