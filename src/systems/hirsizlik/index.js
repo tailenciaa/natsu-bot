@@ -97,7 +97,7 @@ async function uyeSoy(interaction) {
   if (!kap.ok) return replyError(interaction, kap.mesaj, kap.ipucu);
 
   const hedef = interaction.options.getUser('kullanici');
-  if (!hedef) return replyError(interaction, 'Hedef bir üye değil.', '/çal uye kullanici:... ile sunucudan bir üye seç.');
+  if (!hedef) return replyError(interaction, 'Hedef bir üye değil.', '/çal uye komutunda üye alanına sunucudan bir üye seç.');
   if (hedef.bot) return replyError(interaction, 'Botlar soyulmaz.', 'Bir üye seç.');
   if (hedef.id === interaction.user.id) return replyError(interaction, 'Kendi cebini soyamazsın.', 'Bir başkasını hedef al.');
 

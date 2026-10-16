@@ -812,7 +812,7 @@ function pendingNotice(app, state, channelId, reminder) {
     sub = 'Başvuran hâlâ bekliyor ve **Hatırlat** butonuyla haber verdi. **Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir.';
     status = `${roles}\n**<@${app.userId}> hâlâ üstlenecek yetkili bekliyor.**`;
   } else {
-    sub = 'Oryantasyonu **Oryantasyonu Üstlen** butonuna ilk basan yetkili verir ve başvuranla ilgilenmek zorundadır.';
+    sub = '**Oryantasyonu Üstlen** butonuna ilk basan yetkili oryantasyonu verir ve başvuranla ilgilenmek zorundadır.';
     const where = channelId ? `<#${channelId}> kanalında oryantasyon için yetkili bekliyor` : 'henüz bir görüşme kanalında değil';
     const why = o.holdBy
       ? `<@${o.holdBy}> oryantasyonu beklemeye almıştı, geri alma süresi doldu; kalınan adımdan devam edilecek.`

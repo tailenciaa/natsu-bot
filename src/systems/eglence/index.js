@@ -52,7 +52,7 @@ async function eylem(interaction, anahtar) {
   if (!interaction.guild) return replyError(interaction, 'Şakalar sunucuda atılır.', 'Komutu bir sunucu içinde tekrar dene.');
 
   const hedef = interaction.options.getMember('kullanici')?.user ?? null;
-  if (!hedef) return replyError(interaction, 'Seçtiğin üye bu sunucuda değil.', `/${e.komut} kullanici:... ile sunucudan bir üye seç.`);
+  if (!hedef) return replyError(interaction, 'Seçtiğin üye bu sunucuda değil.', `/${e.komut} komutunda üye alanına sunucudan bir üye seç.`);
   if (hedef.bot) return replyError(interaction, 'Botlar şaka hedefi olmaz.', 'Bir üye seç.');
   if (hedef.id === interaction.user.id) return replyError(interaction, 'Kendine şaka atamazsın.', 'Karşılık düğmesi başkasının kartındır; bir üye seç.');
 

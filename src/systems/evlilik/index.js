@@ -137,7 +137,7 @@ async function teklifEt(interaction) {
   if (!kap.ok) return replyError(interaction, kap.mesaj, kap.ipucu);
 
   const hedef = interaction.options.getUser('kullanici');
-  if (!hedef) return replyError(interaction, 'Hedef bir üye değil.', '/evlilik teklif kullanici:... ile sunucudan bir üye seç.');
+  if (!hedef) return replyError(interaction, 'Hedef bir üye değil.', '/evlilik teklif komutunda üye alanına sunucudan bir üye seç.');
   if (hedef.bot) return replyError(interaction, 'Botlarla evlenilmez.', 'Bir üye seç.');
   if (hedef.id === interaction.user.id) return replyError(interaction, 'Kendine teklif götüremezsin.', 'Bir başkasını seç.');
   if (store.evliMi(hedef.id)) return replyError(interaction, 'Bu üye zaten evli.', 'Sunucudaki çiftleri /evlilik liste ile görebilirsin.');

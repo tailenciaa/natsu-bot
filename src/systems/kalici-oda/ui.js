@@ -354,7 +354,7 @@ function memberMenus(container, roster) {
 function weekMissedCard(room, week, seconds) {
   return page({
     title: 'Kalıcı Oda Şartı Kaçtı',
-    sub: `${room.name} odasında geçen haftanın ses şartı tutmadı. Ay sonunda şartı karşılamayan oda silinir, o yüzden haftayı boş geçirme.`,
+    sub: `**${room.name}** geçen haftanın ses şartını karşılamadı. Ay sonunda şartı karşılamayan oda silinir, o yüzden haftayı boş geçirme.`,
     accent: colors.warning,
     blocks: [
       rows([
