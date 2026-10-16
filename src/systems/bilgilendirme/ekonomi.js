@@ -35,7 +35,7 @@ module.exports = {
         {
           heading: 'Günlük ödül',
           items: [
-            'Taban **40 coin**, her seri günü **+12** (en fazla **+72**), her seviye **+3** (en fazla **+180**): tek günde en fazla **292 coin**.',
+            'Taban **40 coin**, her seri günü **+12** (tavan **+72**), her seviye **+3** (tavan **+180**): bir günde en fazla **292 coin**.',
             'Bir gün kaçırırsan seri **1\'e** döner ama kaybettiğin coin geri istenmez. Her seri günü profil puanına **+5** yazılır.',
           ],
         },
@@ -56,7 +56,7 @@ module.exports = {
       blocks: [
         {
           heading: 'Kutu',
-          text: '**`/gorev`** panosundaki **Kutu** sekmesinde **Kutu Aç** üç, **3 Kutu Aç** dokuz anahtar harcar. Kutunun **%62\'si coin** (**120-900 coin**), kalanı anahtar, profil çerçevesi, tema veya rozet. Her **5 kutuda bir kozmetik garanti**; sıradaki kozmetik zaten sendeyse kutu **600 coin** verir, anahtar boşa yanmaz.'
+          text: '**`/gorev`** panosundaki **Kutu** sekmesinde **Kutu Aç** üç, **3 Kutu Aç** dokuz anahtar harcar. Ödülün **%62\'si coin** (**120-900**), kalanı anahtar, profil çerçevesi, tema ya da rozet. Her **5 kutuda bir** kozmetik garanti; sıradaki kozmetik zaten sendeyse kutu **600 coin** verir, anahtar boşa yanmaz.'
         },
         {
           heading: 'Sezon eşikleri',

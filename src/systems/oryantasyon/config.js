@@ -37,7 +37,7 @@ module.exports = {
       description: 'Destek taleplerini üstlenir ve üyelerin sorunlarını çözer.',
       roleName: 'Ticket Yetkilisi',
       info:
-        'Talep kanalına düşen **Yeni Destek Talebi** mesajındaki **Talebi Üstlen** ile talebi alırsın.\n' +
+        'Talep kanalına düşen **Yeni Destek Talebi** mesajında **Talebi Üstlen** butonuna bas.\n' +
         'Üyeye kısa sürede dönüş yap, kibar ve anlaşılır ol; teknik terimlerle boğma.\n' +
         'Çözemediğin bir konuda talebi bekletme, üst yetkiliye danış.\n' +
         'Sorun bitince **Talebi Kapat** ile doğru sebebi seçerek kapat.\n' +
@@ -136,7 +136,7 @@ module.exports = {
         '**Reklam:** Sunucu, sosyal medya ya da DM üzerinden reklam yasak.\n' +
         '**+18 içerik:** +18, kan ve vahşet içeren ya da rahatsız edici içerik yasak.\n' +
         '**Kişisel bilgi:** İsim, adres, fotoğraf gibi kişisel bilgi paylaşmak yasak.\n' +
-        '**Spoiler:** Anime spoiler\'ları sadece ilgili kanalda ve spoiler etiketiyle paylaşılır.\n\n' +
+        '**Spoiler:** Kaçırıcı sahneler **yalnızca** ilgili kanalda ve spoiler etiketiyle paylaşılır.\n\n' +
         '**Uygularken**\n' +
         'Kuralların tam metni kurallar kanalında; **oradaki her maddeyi bilmen gerekir.**\n' +
         'Kuralda açıkça yazılmayan durumlarda **sağduyunu kullan** ve üst yetkiliye danış.',
@@ -183,7 +183,7 @@ module.exports = {
       skippable: true,
       body:
         '**Destek Talepleri**\n' +
-        'Üye panelden talep açınca talep kanalına bildirim düşer; **Talebi Üstlen** ile talep senin olur.\n' +
+        'Üye panelden talep açınca bildirim düşer; **Talebi Üstlen** butonuna basan yetkili işi alır.\n' +
         'İş bitince **Talebi Kapat** ile sebep seçerek kapatırsın.\n' +
         '**Değerlendirme**\n' +
         'Talep kapanınca üye sana 1-5 yıldız verir, değerlendirme kanalına düşer ve siciline işlenir.\n' +

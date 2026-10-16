@@ -130,11 +130,11 @@ const BASLIK = {
   },
   haftalik: {
     title: 'Haftalık Görevler',
-    sub: 'Haftanın üç ağır görevi pazartesi günü yenilenir; o hafta biriken her şey aynı kendiliğinden sayım kuralıyla ilerlemeye yazılır. Anahtarlar asıl buradan düşer; üç anahtar bir kutu açar ve kutudan kartını süsleyen kozmetikler çıkar.',
+    sub: 'Haftanın üç ağır görevi **pazartesi** yenilenir; o hafta biriken her şey **aynı otomatik sayım** kuralıyla ilerlemeye yazılır. Anahtarlar asıl buradan düşer: **üç anahtar bir kutu** açar, kutudan kartını süsleyen kozmetikler çıkar.',
   },
   yol: {
     title: 'Keşif Yolu',
-    sub: `Botun sistemlerini sırayla gezdiren ${config.YOL.length} adım: profil kartından Oyun Salonuna, Arka Sokaklardan şakalaşmaya, butiğin rafından evliliğin sayfasına kadar. Bir adım bittiğinde ödülünü toplarsın, sıradaki adım kalın yazılır; son adımda büyük ödül ve kartına takılacak bir sergi rozeti var.`,
+    sub: `Botun sistemlerini sırayla gezdiren **${config.YOL.length} adım**: profil kartından Oyun Salonuna, Arka Sokaklardan şakalaşmaya, butiğin rafından evliliğin sayfasına kadar. Biten her basamağın ödülünü toplarsın, sıradaki **kalın** yazılır; son basamakta büyük ödül ve kartına takılacak bir sergi rozeti var.`,
   },
   kutu: {
     title: 'Kutu',
