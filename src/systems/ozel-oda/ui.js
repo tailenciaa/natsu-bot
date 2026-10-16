@@ -102,7 +102,7 @@ function accessBlock({ invited, banned }) {
   const parts = [];
   if (invited.length) parts.push(line('Davetli', invited));
   if (banned.length) parts.push(line('Yasaklı', banned));
-  return `### Odadaki İzinler\n${parts.length ? parts.join('\n') : 'Davet ettiğin ya da yasakladığın üye yok. Oda kilitliyken içeri girebilmesi için aşağıdaki menüden bir üye ekleyebilirsin.'}`;
+  return `### Odadaki İzinler\n${parts.length ? parts.join('\n') : 'Davet ettiğin ya da yasakladığın üye yok. Oda kilitliyken içeri girebilmesi için **Üye İşlemleri** menüsünden bir üye ekleyebilirsin.'}`;
 }
 
 function limitModal(current) {
