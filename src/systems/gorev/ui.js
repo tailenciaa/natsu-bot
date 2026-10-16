@@ -142,7 +142,7 @@ const BASLIK = {
   },
   sezon: {
     title: 'Sezon',
-    sub: 'Görevlerden toplanan sezon puanı ay boyunca birikir. Eşikleri geçtikçe ödüller açılır ve her eşik ayda yalnızca bir kez alınır; yeni ayda puan sıfırdan başlar.',
+    sub: 'Görevlerden toplanan sezon puanı ay boyunca birikir. Eşikleri geçtikçe ödüller açılır ve her eşik ayda **yalnızca bir kez** alınır; yeni ayda puan sıfırdan başlar.',
   },
 };
 

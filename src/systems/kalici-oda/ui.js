@@ -171,7 +171,7 @@ function decisionRow(app) {
 function applicationCard(app, room) {
   const container = page({
     title: 'Kalıcı Oda Başvurusu',
-    sub: 'Onay odayı açıp sahibine teslim eder; ret gerekçesi başvurana doğrudan mesaj olarak gider. Butonlar yalnızca yöneticilerde çalışır.',
+    sub: 'Onay odayı açıp sahibine teslim eder; ret gerekçesi başvurana doğrudan mesaj olarak gider. Butonlar **yalnızca yöneticilerde** çalışır.',
     accent: ACCENT[app.status],
     blocks: [
       `### Başvuru\n${rows([
@@ -273,7 +273,7 @@ function activityBlock(status) {
     measured,
     status
       ? `-# Ay sonu kontrolü <t:${unix(status.reviewAt)}:D>; hedefler tutmazsa oda şart yetersizliğinden silinir.`
-      : 'Bu hedefler ay sonunda kontrol edilir; karşılamayan oda silinir.',
+      : 'Bu hedefler ay sonunda kontrol edilir; karşılamayan oda **silinir**.',
   ]
     .filter(Boolean)
     .join('\n');
@@ -285,7 +285,7 @@ function activityBlock(status) {
 function roomPanel(room, status, roster = [], canManage = false) {
   const container = page({
     title: `Kalıcı Oda · ${room.name}`,
-    sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin. Sohbet, ses kanalının kendi yazısıdır; bu paneli sadece oda sahibi kullanabilir.',
+    sub: 'Odanın ismini ve kişi limitini buradan değiştirir, üye ekleyip çıkarır, sahipliği devredersin. Sohbet, ses kanalının kendi yazısıdır; bu paneli **yalnızca oda sahibi** kullanabilir.',
     blocks: [
       `### Oda\n${rows([
         ['Oda', roomTag(room)],
@@ -294,7 +294,7 @@ function roomPanel(room, status, roster = [], canManage = false) {
         ['Üye / Limit', usageLabel(room.members.length + 1, room.limit)],
       ])}`,
       activityBlock(status),
-      'Oda boş kalsa bile kapanmaz; odayı yalnızca ay sonu şartı ya da bir yönetici kapatabilir.',
+      'Oda boş kalsa bile kapanmaz; odayı **yalnızca ay sonu şartı** ya da bir yönetici kapatabilir.',
     ],
   });
 
@@ -466,7 +466,7 @@ function roomAdmin(rooms, owners = new Map(), pendingCount = 0) {
 function roomAdminCard(room, status, note) {
   const container = page({
     title: `Kalıcı Oda · ${room.name}`,
-    sub: 'Odayı buradan kapatır ya da sahipliğini bir üyeye devredersin. İsim, kişi limiti ve üye işlemleri sahibinin kendi panelinde; bu kartı yalnızca yöneticiler açabilir.',
+    sub: 'Odayı buradan kapatır ya da sahipliğini bir üyeye devredersin. İsim, kişi limiti ve üye işlemleri sahibinin kendi panelinde; bu kartı **yalnızca yöneticiler** açabilir.',
     accent: colors.warning,
     blocks: [
       note ? `### Son İşlem\n${note}` : null,

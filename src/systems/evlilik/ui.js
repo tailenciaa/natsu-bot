@@ -244,7 +244,7 @@ function kurallarBloku() {
 function durumPaneli(state) {
   const container = core.page({
     title: config.basliklar.durum,
-    sub: 'Evlilik yüzükle kurulur, kabul anında yüzük yakılır. Bu sayfa senin evlilik hâlini, bekleyen tekliflerini ' +
+    sub: 'Evlilik yüzükle kurulur, **kabul anında yüzük yakılır**. Bu sayfa senin evlilik hâlini, bekleyen tekliflerini ' +
       've yıl dönümü ödülünü gösterir.',
     thumbnail: state.user.displayAvatarURL({ size: 256 }),
     blocks: [

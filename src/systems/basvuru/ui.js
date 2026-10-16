@@ -529,7 +529,7 @@ function transferResultDm(app, holderId, stage, state) {
       )
     : card(
         'Devir Reddedildi',
-        'Beklemeye alan yetkili isteğini reddetti. Geri alma süresi dolunca herhangi bir yetkili işlemi üstlenebilir; o zamana kadar yalnızca o geri alabilir.',
+        'Beklemeye alan yetkili isteğini reddetti. Geri alma süresi dolunca herhangi bir yetkili işlemi üstlenebilir; o zamana kadar **yalnızca o geri alabilir**.',
         [`${head}\n**<@${holderId}> devir isteğini reddetti.**\n${until > Date.now() ? `<t:${unix(until)}:R> sonra işlemi üstlenebilirsin.` : 'Süre doldu, işlemi doğrudan üstlenebilirsin.'}`],
         'danger',
       );

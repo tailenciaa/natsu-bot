@@ -136,7 +136,7 @@ function kesifSekmesi(state) {
     ...state,
     tab: 'kesif',
     title: 'Keşif',
-    sub: 'Seviyen yükseldikçe yeni bölgeler açılır. Gezi ücretsizdir, tek sınırı bekleme süresi ile günlük kotadır: ' +
+    sub: 'Seviyen yükseldikçe yeni bölgeler açılır. Gezi **ücretsizdir**, tek sınırı bekleme süresi ile günlük kotadır: ' +
       'bölgenin masasından coin, kutu anahtarı ya da doğrudan mağazandaki bir kozmetik çıkar. Ölçülen seviyen: ' +
       `**${seviye}** (mesaj ve ses seviyenden büyük olanı).`,
     blocks: [
@@ -168,7 +168,7 @@ function ruletSekmesi(state) {
     tab: 'rulet',
     title: 'Rulet',
     sub: 'Fiyonuk durduğunda rengi tutturursan bahsin katlanarak geri döner. On beş cepten yedisi kırmızı, yedisi ' +
-      'siyah, biri yeşil; yeşil on dört kat öder ama ihtimali çok düşüktür. Bahis cüzdanından düşer, kazanç cüzdana yatar.',
+      'siyah, biri yeşil; yeşil **on dört kat** öder ama ihtimali çok düşüktür. Bahis cüzdanından düşer, kazanç cüzdana yatar.',
     blocks: [
       `### Masanın Şansı\n${core.pills([
         ['Kırmızı', `${sans('kirmizi')} · ${sayisal(config.rulet.renkler.kirmizi.odul)}x`],
@@ -226,7 +226,7 @@ function merdivenSekmesi(state) {
     ...state,
     tab: 'merdiven',
     title: 'Şans Merdiveni',
-    sub: 'Açgözlülüğün oyunu: potu çekene kadar sayılmaz. Düğmeye her basışta ya basamak atlayıp çarpanı büyütürsün ' +
+    sub: 'Açgözlülüğün oyunu: **potu çekene kadar sayılmaz**. Düğmeye her basışta ya basamak atlayıp çarpanı büyütürsün ' +
       'ya da düşüp bahsi kaybedersin. Erken çeken kazanır, son basamağı isteyen düşer.',
     blocks: [masada, `### Basamaklar\n${basamakSatirlari(merdiven?.adim ?? 0, merdiven?.bahis ?? bahis)}`, sicil(state.kumar)],
     rows: merdiven ? [eylem] : [bahisSatiri(bahis, 'merdiven'), eylem],

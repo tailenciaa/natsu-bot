@@ -100,11 +100,11 @@ function ticketPanel(ticket) {
   let status;
   let color;
   if (ticket.rejected) {
-    sub = 'Bu talep reddedildi. Kimin reddettiği ve red sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir. Gerçek bir sorunla karşılaştığında destek panelinden yeni bir talep açabilirsin.';
+    sub = 'Bu talep reddedildi. Kimin reddettiği ve red sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra **yalnızca okunabilir**. Gerçek bir sorunla karşılaştığında destek panelinden yeni bir talep açabilirsin.';
     status = '**Talebin reddedildi.**\nAlt başlık kilitlendi ve arşivlendi.';
     color = colors.danger;
   } else if (ticket.closedBy) {
-    sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra yalnızca okunabilir.';
+    sub = 'Bu talep sona erdi. Kimin kapattığı ve kapatma sebebi ayrı bir mesajda yer alır; konuşma bu noktadan sonra **yalnızca okunabilir**.';
     status = '**Talep kapatıldı.**\nAlt başlık kilitlendi ve arşivlendi.';
     color = colors.danger;
   } else if (ticket.claimedBy) {
