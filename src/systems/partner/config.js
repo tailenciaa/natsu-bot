@@ -35,7 +35,7 @@ module.exports = {
   // Anlatılan şey oyun listesi değil (o oyunlar her sunucuda var): bizdeki fark sunucunun kendi botunun
   // içinde yürüyen oda, evlilik, ekonomi ve sicil düzeni; bir de kurulduğundan beri tuttuğumuz söz.
   // Süs dili örnek ilanlardan alındı ve bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına
-  // yapıştırılıyor. Kanat/elmas/çizgi glifleri (U+029A, U+029E, U+2756, U+02D6, U+2500, U+231E, U+27A4)
+  // yapıştırılıyor. Kanat/elmas/çizgi glifleri (U+029A, U+029E, U+2756, U+02D6, U+2500, U+2192, U+27A4, U+2547)
   // gerçek emoji değil; bot metinlerindeki emoji yasağına takılmaz.
   ourAdText: [
     "**Kazuki Anime & Public**",
