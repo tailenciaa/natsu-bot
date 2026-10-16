@@ -51,7 +51,7 @@ module.exports = {
   },
 
   // Kartın altındaki not: ödülün kime ve nasıl yattığı üye aramadan okusun
-  ipucu: 'Karşılık veren düğmeye basar; ödül iki tarafa da yatar ve günlük oyun kazancı tavanına sayılır.',
+  ipucu: 'Karşılık veren düğmeye basar; ödül **iki tarafa da** yatar ve günlük oyun kazancı tavanına sayılır.',
 
   // Sonuç kartlarının başlıkları
   sonucBaslik: 'Karşılık Geldi',

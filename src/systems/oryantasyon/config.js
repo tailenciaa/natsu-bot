@@ -83,7 +83,7 @@ module.exports = {
         'Ses kanallarını ara ara gez; mikrofon spamı, bağırma ve ses efekti kötüye kullanımını takip et.\n' +
         'Rahatsızlık veren üyeyi önce uyar, devam ederse sustur ya da kanaldan çıkar.\n' +
         'Sesli ihlallerde mümkünse kayıt ya da tanık bilgisi al.\n' +
-        'Özel odalara izinsiz girme, sadece şikayet varsa müdahale et.',
+        'Özel odalara izinsiz girme, **yalnızca şikayet varsa** müdahale et.',
     },
     {
       id: 'etkinlik',
@@ -163,17 +163,17 @@ module.exports = {
       body:
         '**Ceza basamakları** (ihlalin ağırlığına göre)\n' +
         '1. Uyarı\n' +
-        '2. Susturma: Discord zaman aşımı, en fazla 28 gün\n' +
+        '2. Susturma: Discord zaman aşımı, **en fazla 28 gün**\n' +
         '3. Jail: roller alınır, jail rolü verilir\n' +
-        '4. Yasaklama: ağır ya da sürekli tekrarlanan ihlaller\n' +
+        '4. Yasaklama: **ağır ya da sürekli tekrarlanan** ihlaller\n' +
         '**Nasıl uygulanır**\n' +
         'Discord\'un kendi "Zaman Aşımı"/"At"/"Yasakla" menüleri değil, **botun kendi komutları** kullanılır: `/uyari`, `/mute`, `/jail`, `/ban`.\n' +
-        'Kaldırma: `/unmute`, `/unjail`, `/unban` ya da numarayla `/ceza-kaldir`; yanlış verilen ceza `/ceza-sil` ile sicilden silinir.\n' +
+        'Kaldırma: `/unmute`, `/unjail`, `/unban` ya da numarayla `/ceza-kaldir`; yanlış verilen ceza `/ceza-sil` ile sicilden **silinir**.\n' +
         'Bir kullanıcının sicilini ve aktif cezalarını `/sicil` ile görebilirsin, cezayı da oradaki **Ceza Ver** butonuyla verebilirsin.\n' +
         `Bu komutlar sadece <#${staffCommandChannel}> kanalında çalışır.\n` +
         '**Dikkat**\n' +
         'Her cezada sebebi açık yaz; "kural ihlali" gibi belirsiz sebepler yazma.\n' +
-        'Jail ve yasaklamadan önce mümkünse üst yetkiliye danış.\n' +
+        'Jail ve yasaklamadan önce **mümkünse üst yetkiliye** danış.\n' +
         'Seviyenin izin vermediği cezayı başka yoldan uygulamaya çalışma.\n' +
         'Kendi verdiğin cezanın itirazına sen bakmazsın.',
     },
