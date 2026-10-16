@@ -524,29 +524,8 @@ const besVBesBilgisi = {
       ],
     },
     {
-      title: 'Maç Günü',
-      sub: 'Saat, kanal, taraf: karışan şeyler değil, takipte geciken şeyler maçı uzatır. Odaya geç gelen yalnızca kendi sırasını değil, **iki takımın da maçını bekletir**.',
-      blocks: [
-        {
-          heading: 'Sıra',
-          items: [
-            'Duyurudan **10 dakika önce** <#1538543237940117586> kanalında toplanılır; sesli katılım beklenir.',
-            'Takımlar sesli odada kurulur: <@&1554240000529539083> ekibi karma yapar ve iki beşliyi dengeli tutar.',
-            'Geleceğin saatte belli olursa sıradan önce <@&1554240000529539083> ekibine yazılır; yerin boşa gitmez.',
-            'Takım odaları: mavi taraf <#1538938368141041664> ve <#1538942533319786546>, kırmızı taraf <#1538938411589566554> ve <#1538942550038282280>.',
-            'Maç bittikten sonra skor ekran görüntüsü yetkiliye gösterilir; sonuç kanalda ilan edilir.',
-          ],
-        },
-        {
-          heading: 'Yayın ve izleme',
-          text: 'Maç yayını açılabilir; yayında gösterdiğin her şey sunucu kurallarına tabidir. İzleme kısmı sohbet kanallarından yürür, maç sırasında takım odalarına sızma yapılmaz.',
-          note: 'Rakip takımın taktik sesini kendi yayınından duyurmak bilgi sızdırma sayılır.'
-        },
-      ],
-    },
-    {
       title: 'Hangi Oyunlar',
-      sub: 'Üç oyunla döner: **Valorant**, **Counter-Strike 2** ve **League of Legends**. Hangisinin oynanacağı, haritası ve formatı duyuruda yazılı gelir; aşağıdaki satırlar o oyunların bizde nasıl yürüdüğünü anlatır.',
+      sub: 'Üç oyunla döner: **Valorant**, **Counter-Strike 2** ve **League of Legends**. Hangisinin oynanacağı, haritası ve formatı duyuruda yazılı gelir; burada her oyunun bizde nasıl yürüdüğü anlatılır.',
       blocks: [
         {
           heading: 'Valorant',
@@ -574,6 +553,28 @@ const besVBesBilgisi = {
         },
         {
           note: 'Maçta uyulacak maddeler <#1538541309634285678> kanalında yazar.'
+        },
+      ],
+    },
+    {
+      title: 'Maç Günü',
+      sub: 'Saat, kanal, taraf: karışan şeyler değil, takipte geciken şeyler maçı uzatır. Odaya geç gelen yalnızca kendi sırasını değil, **iki takımın da maçını bekletir**.',
+      blocks: [
+        {
+          heading: 'Sıra',
+          items: [
+            'Duyurudan **10 dakika önce** <#1538543237940117586> kanalında toplanılır; sesli katılım beklenir.',
+            'Takımlar sesli odada kurulur: <@&1554240000529539083> ekibi karma yapar ve iki beşliyi dengeli tutar.',
+            'Geleceğin saatte belli olursa sıradan önce <@&1554240000529539083> ekibine yazılır; yerin boşa gitmez.',
+            'Saatte hazır olmayan üyenin yerine aynı odada yedek bulunur; yedek de çıkmazsa maçı yetkili erteler.',
+            'Takım odaları: mavi taraf <#1538938368141041664> ve <#1538942533319786546>, kırmızı taraf <#1538938411589566554> ve <#1538942550038282280>.',
+            'Maç bittikten sonra skor ekran görüntüsü yetkiliye gösterilir; sonuç kanalda ilan edilir.',
+          ],
+        },
+        {
+          heading: 'Yayın ve izleme',
+          text: 'Maç yayını açılabilir; yayında gösterdiğin her şey sunucu kurallarına tabidir. İzleme kısmı sohbet kanallarından yürür, maç sırasında takım odalarına sızma yapılmaz.',
+          note: 'Rakip takımın taktik sesini kendi yayınından duyurmak bilgi sızdırma sayılır.'
         },
       ],
     },
