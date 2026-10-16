@@ -369,7 +369,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'Çizim ve Kelime Oyunları',
-      sub: 'Gartic Phone ve Spyfall: tarayıcıdan girilen, indirme gerektirmeyen kalabalık grup oyunlarımız. İkisinde de rekabetten çok kahkaha hedeflenir; iyi çizmek ya da hızlı konuşmak şart değildir.',
+      sub: 'Gartic Phone ve Spyfall: tarayıcıdan girilen, indirme gerektirmeyen kalabalık grup oyunlarımız. İkisinde de rekabetten çok kahkaha hedeflenir; iyi çizmek ya da hızlı konuşmak **şart değildir**.',
       blocks: [
         {
           heading: 'Gartic Phone',
@@ -377,7 +377,7 @@ const etkinlikBilgisi = {
             'Klasik telefona yazmanın çizimlisi: bir cümle yazarsın, sıradaki onu **çizer**, sonraki çizimi **yorumlar**.',
             'Sonunda hepsi sırayla gösterilir; en komik bozulma kazanır.',
             'Altı kişiyle güzel, on iki kişiyle çok daha iyi gider.',
-            'Bağlantıyı etkinlik yetkilisi paylaşır, sadece katılanlar girer.',
+            'Bağlantıyı etkinlik yetkilisi paylaşır, **yalnızca katılanlar** girer.',
           ],
         },
         {
@@ -392,7 +392,7 @@ const etkinlikBilgisi = {
     },
     {
       title: 'İndirilmesi Gereken Oyunlar',
-      sub: 'Aynı etkinliklerin indirilen tarafı: Among Us, Goose Goose Duck, Crab Game ve Brawlhalla. Dördü de ücretsizdir ve tartışma kısmı yine bizim sesli kanallarımızda yürür.',
+      sub: 'Aynı etkinliklerin indirilen tarafı: Among Us, Goose Goose Duck, Crab Game ve Brawlhalla. **Dördü de ücretsizdir** ve tartışma kısmı yine bizim sesli kanallarımızda yürür.',
       blocks: [
         {
           items: [
@@ -439,9 +439,9 @@ const oyunKurallari = {
             'Hakaret, küfür, ayrımcılık ve tehdit **rakibe de takım arkadaşına da** yasaktır.',
             'Takım arkadaşını susturma ya da oyundan atma tehdidiyle sıkıştırmak tacizdir.',
             'Hesap, şifre, e-posta ve kişisel bilgi paylaşılmaz; "oynayıp hesap vereyim" teklifi kabul edilmez.',
-            'Gerçek para ile bahis, hesap satışı ve ödül takası yasaktır.',
-            'Hile, makro, izinsiz eklenti ve spoof yasaktır; tespit edilen ceza alır, etkinlikten çıkarılır.',
-            'Oyun içi iletişimimiz Discord\'tur: dış platforma çağırma, Discord etiketi vererek reklam yapma yasaktır.',
+            'Gerçek para ile bahis, hesap satışı ve ödül takası **yasaktır**.',
+            'Hile, makro, izinsiz eklenti ve spoof **yasaktır**; tespit edilen ceza alır, etkinlikten çıkarılır.',
+            'Oyun içi iletişimimiz Discord\'tur: dış platforma çağırma, Discord etiketi vererek reklam yapma **yasaktır**.',
           ],
           note: 'Oyun sırasında gösterdiğin her şey (yayın, isim, avatar, sohbet) sunucu kurallarına tabidir.',
         },
@@ -456,7 +456,7 @@ const oyunKurallari = {
             'Lobiye **çağrılmadan** girmek ve başkasının slotunu almak yasaktır.',
             'Sıran gelmeden oynamaya başlama, AFK kalma; gelmeyeceksen <@&1554240000529539083> ekibinden birine yaz.',
             'Takım arkadaşın hata yapınca bağırma, hakaret etme; düzeltmek istiyorsan oyun sonunda söyle.',
-            'Kasıtlı kaybetme, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama yasaktır.',
+            'Kasıtlı kaybetme, kendi takımının oyununu bozma ve başkalarını teslim olmaya zorlama **yasaktır**.',
             'Rapor butonunu misilleme için kullanmak kural ihlalidir; gerçek ihlalde ise kanıt senin oyun kaydındır.',
           ],
         },
@@ -471,14 +471,14 @@ const oyunKurallari = {
           items: [
             'Sıra ve ekonomi konuşulur, suçlama edilmez.',
             'Rakibin konumunu kanal dışına taşımak (info sızdırma) oyunun tadını bozar; şikayetini hakeme bildir.',
-            'Eklenti ve script: yalnızca oyunun izin verdikleri kullanılır.',
+            'Eklenti ve script: **yalnızca oyunun izin verdikleri** kullanılır.',
           ],
         },
         {
           heading: 'League of Legends',
           items: [
             'Draft ve sıra dışı kademeler için önceden anons yap; tanımadığın üyeyle özelden anlaşma yapma.',
-            'Kasıtlı ölme, AFK kalma ve "int" yasaktır; takımda biri yaparsa oyun sonunda yetkiliye bildir.',
+            'Kasıtlı ölme, AFK kalma ve "int" **yasaktır**; takımda biri yaparsa oyun sonunda yetkiliye bildir.',
             'Takım içi sesli iletişim bizim ses kanallarımızda kalır, orada da kurallar geçerlidir.',
           ],
         },
@@ -514,7 +514,7 @@ const oyunKurallari = {
           items: [
             'Klipte arkadaşının yüzünü, sesini ya da kişisel bilgisini izinsiz gösterme.',
             'Oyun tartışmasında rakip takımın üyelerini hedef gösterme, isim vererek suçlama.',
-            'OwO ve Mudae gibi topluluk botları yalnızca kendi kanallarında kullanılır.',
+            'OwO ve Mudae gibi topluluk botları **yalnızca kendi kanallarında** kullanılır.',
           ],
         },
       ],
@@ -549,7 +549,7 @@ const besVBesBilgisi = {
     },
     {
       title: 'Maç Günü',
-      sub: 'Saat, kanal, taraf: karışan şeyler değil, takipte geciken şeyler maçı uzatır. Odaya geç gelen yalnızca kendi sırasını değil, iki takımın da maçını bekletir.',
+      sub: 'Saat, kanal, taraf: karışan şeyler değil, takipte geciken şeyler maçı uzatır. Odaya geç gelen yalnızca kendi sırasını değil, **iki takımın da maçını bekletir**.',
       blocks: [
         {
           heading: 'Sıra',
@@ -570,11 +570,11 @@ const besVBesBilgisi = {
     },
     {
       title: 'Kurallar',
-      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi yalnızca yetkilidedir. Konu maçın içinde, sesli odada kapanır: skor ekran görüntüsü yetkilidedir ve tartışma uzatılmaz.',
+      sub: 'Oyun kuralları 5v5 için de geçerlidir; maç içinde durdurma yetkisi **yalnızca yetkilidedir**. Konu maçın içinde, sesli odada kapanır: skor ekran görüntüsü yetkilidedir ve tartışma uzatılmaz.',
       blocks: [
         {
           items: [
-            'Hile, makro ve izinsiz eklenti: anında maçtan ve etkinlikten çıkarılma.',
+            'Hile, makro ve izinsiz eklenti: **anında** maçtan ve etkinlikten çıkarılma.',
             'AFK kalma ve kasıtlı kaybetme: yetkili uyarır, tekrarında yerine yedek alınır.',
             'Saatte hazır olmayan üye yerine yedek bulunabilir; yedek de çıkmazsa maç ertelenir.',
             'Karar maçı yöneten yetkilinindir; itiraz odada, maçın içinde edilir, kanalda bağırarak sonuç değişmez.',
@@ -664,7 +664,7 @@ const partnerSartlari = {
             'Davet bağlantısı **kalıcı** olmalı ve gerçekten o sunucuya gitmeli.',
             'Metin okunabilir olsun: sunucunun adı, ne vaat ettiği ve davet bağlantısı tek mesajda.',
             'Karşı tarafta iletişime geçilebilir bir **yetkili** bulunsun; muhatapsız kayıtlar yenilenmez.',
-            'Sunucu ya da yetkilisi daha önce yasaklı listeye girmemiş olsun.',
+            'Sunucu ya da yetkilisi daha önce **yasaklı listeye girmemiş** olsun.',
           ],
           note: 'Üye sayısı gibi ölçütler sabit bir eşikle değil, kaydı inceleyen yetkilinin değerlendirmesiyle yürür.',
         },
@@ -738,7 +738,7 @@ const yonetimKurallari = {
       blocks: [
         {
           items: [
-            'Tek yol `/yetki-ver`: rütbe seçilir, bot yetki ve görev rollerini birlikte verir. Elle rol vermek yasaktır ve denetimde görünür.',
+            'Tek yol `/yetki-ver`: rütbe seçilir, bot yetki ve görev rollerini birlikte verir. Elle rol vermek **yasaktır** ve denetimde görünür.',
             'Yanlış ya da yetkisiz rol vermek, verilmiş bir yetkiyi geri almaktan ağır bir kusurdur; `/yetki-al` ile düzeltilir ama izi kalır.',
             'Oryantasyonu tamamlanmamış kimseye kademe verilmez; adayın mülakat ve oryantasyon kaydı <@&1553398951816863844> ekibindedir.',
             'Yetki verdiğin kişinin sonraki hataları senin de kaydına işler: kademe kararını verirken kimi önerdiysen denetimde o sorulur.',
@@ -806,7 +806,7 @@ const yonetimBilgisi = {
   sections: [
     {
       title: 'Kademe Sırası',
-      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; Yönetim Ekibi en üst dört rütbede durur. Kademe yalnızca ne yapabileceğini değil, kime danışacağını da belirler.',
+      sub: 'On bir rütbe alttan üste dizilir ve her biri alttakinin yetkisini de taşır; Yönetim Ekibi en üst dört rütbede durur. Kademe yalnızca ne yapabileceğini değil, **kime danışacağını da** belirler.',
       blocks: [
         {
           items: [
@@ -816,7 +816,7 @@ const yonetimBilgisi = {
             '**Genin, Kōhai, Chūrai**: deneme, yeni ve orta seviye yetkili. Uyarı en alttan, susturma Kōhai\'den, jail ve ses yönetimi Chūrai\'den geçer.',
             '**Kami, Shiro, Tenshu**: kıdemli yönetici, üst yönetici ve kurucu. Bu üç kademe botun yetki listesinde durmaz, elle verilir.',
           ],
-          note: 'Rütbe, yetki ve görev rolleri tek yerden verilir: `/yetki-ver`. Elle rol vermek kurallar gereği yasaktır.',
+          note: 'Rütbe, yetki ve görev rolleri tek yerden verilir: `/yetki-ver`. Elle rol vermek kurallar gereği **yasaktır**.',
         },
       ],
     },
@@ -826,8 +826,8 @@ const yonetimBilgisi = {
       blocks: [
         {
           items: [
-            'Ceza vermek kademeli açılır: uyarı en alt rütbeden, susturma Kōhai\'den, jail ve ses yönetimi Chūrai\'den, atma Shido\'dan, yasaklama Kyōrin\'den.',
-            '`/yetki-ver`, `/yetki-al`, `/log`, `/cekilis` ve `/vip-ver` yalnızca yönetici iznine açık komutlardır; yetkili kademesinde görünmez.',
+            'Ceza vermek **kademeli açılır**: uyarı en alt rütbeden, susturma Kōhai\'den, jail ve ses yönetimi Chūrai\'den, atma Shido\'dan, yasaklama Kyōrin\'den.',
+            '`/yetki-ver`, `/yetki-al`, `/log`, `/cekilis` ve `/vip-ver` **yalnızca yönetici iznine** açık komutlardır; yetkili kademesinde görünmez.',
             'Değerlendirmeyi kaldırma yetkisi <@&1553133497781325954> ve yöneticilerdedir; üyenin bıraktığı yıldız oradan silinir.',
             'Kendinden üst ya da aynı kademedeki birine ceza verilemez; bot işlemi baştan engeller.',
             'Kademe kararı, alım süreci ve kadro hareketi yönetimde kapanır; etkinlik ve partner kararları kendi liderlerinde yürür.',
@@ -861,7 +861,7 @@ const yonetimBilgisi = {
             '**Haftalık derece** `/haftalik`: pazartesi beklenmeden geçen haftanın ses, yazı ve yayın birincileriyle saygınlık lideri duyurulur.',
             '**Çekiliş** `/cekilis`: çekiliş buradan kurulur; katılım koşulu ve ödül duyuruda yazılı gelir.',
           ],
-          note: 'Discord\'un yerleşik "Zaman Aşımı / At / Yasakla" menüleri kullanılmaz; işlemin sicile işlemesi bot komutuna bağlıdır.',
+          note: 'Discord\'un yerleşik "Zaman Aşımı / At / Yasakla" menüleri **kullanılmaz**; işlemin sicile işlemesi **bot komutuna bağlıdır**.',
         },
       ],
     },
