@@ -112,7 +112,7 @@ function startPrompt(authorId) {
     .addTextDisplayComponents(
       head(
         'Partner Olmak mı İstiyorsun?',
-        'Bizim sunucuyla karşılıklı partner olmak istiyorsan **Oto Partner Yap** butonuyla oto partner talebi oluşturabilirsin. Yetkili onaylayınca metnin otomatik paylaşılır.',
+        'Bizim sunucuyla karşılıklı partner olmak istiyorsan **Oto Partner Yap** butonuyla talebi başlatabilirsin. Yetkili onaylayınca metnin otomatik paylaşılır.',
       ),
     )
     .addSeparatorComponents(divider())

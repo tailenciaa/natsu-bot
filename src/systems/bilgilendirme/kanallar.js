@@ -396,7 +396,7 @@ const etkinlikBilgisi = {
       blocks: [
         {
           items: [
-            '**Among Us** ve **Goose Goose Duck**: görev yap, haini bul; tartışma kısmı bizim sesli kanalımızda yürür. Goose Goose Duck ücretsizdir.',
+            '**Among Us** ve **Goose Goose Duck**: görev yap, haini bul; tartışma kısmı bizim sesli kanalımızda yürür. İkisi de ücretsizdir.',
             '**Crab Game**: yüz kişiye kadar eleme usulü mini oyunlar; ücretsizdir, tarayıcıdan da oynanır.',
             '**Brawlhalla**: ücretsiz dövüş oyunu; 1v1 ya da takım turnuvası olarak açılır.',
             'Bu oyunlar için sunucu hesabından başka bir kayıt ya da ödeme istenmez; isteyenler için <@&1555890043237826630> gibi oyun rolleri sohbeti kolaylaştırır.',
