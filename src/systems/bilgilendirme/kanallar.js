@@ -712,13 +712,14 @@ const partnerSartlari = {
   ],
 };
 
-// 9) Partner metnimiz: kanalın tamamı tek kart. Başlık sunucunun adı, gövde karşı tarafa giden sabit ilan;
-// Kopyala düğmesi ilanının tamamını (başlık satırı dahil) kod kutusu içinde gizli mesajla verir.
+// 9) Partner metnimiz: kanalın tamamı tek kart ve kartta yalnızca ilan metni durur — başlığın altına açıklama
+// yazılmaz. Başlık sunucunun adı, gövde karşı tarafa giden sabit ilan; Kopyala düğmesi ilanın tamamını (başlık
+// satırı dahil) kod kutusu içinde gizli mesajla verir.
 const partnerMetnimiz = {
   key: 'partner-metni',
   name: 'Partner Metni Paneli',
   title: 'Anime & Public',
-  intro: 'Partnerlere verdiğimiz **tek sabit ilan**; kopyala, paylaş, davet bağlantısı güncel kalsın.',
+  intro: '',
   channel: '1538943528225476810',
   sections: [
     {

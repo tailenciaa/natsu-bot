@@ -30,7 +30,8 @@ function messages(panel) {
   return panel.sections.map((section, index) => {
     const container = new ContainerBuilder();
     if (index === 0) {
-      container.addTextDisplayComponents(text(`${panelTitle(`${botName} ${panel.title}`)}\n${panel.intro}`));
+      const baslik = panelTitle(`${botName} ${panel.title}`);
+      container.addTextDisplayComponents(text(panel.intro ? `${baslik}\n${panel.intro}` : baslik));
       if (panel.banner) {
         container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(panel.banner)));
       }

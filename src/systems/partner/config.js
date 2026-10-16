@@ -33,6 +33,23 @@ module.exports = {
   // Partner yenileme onaylanınca karşı sunucuya gönderilen, bizim sunucumuzu tanıtan sabit metin.
   // İlk satır sunucunun adı: partner metni panelinde kartın başlığında durur, gövde ondan sonrasıdır.
   // Süslemeli ilan dili bilerek seçildi: bu metin kopyalanıp karşı tarafın ilan kanalına yapıştırılıyor.
+  // Kutu çizgileri (│ ╭ ╰) ve ✦ ・ ➤ gerçek emoji değil; bot metinlerindeki emoji yasağı bu yüzden bozulmuyor.
   ourAdText: '**Kazuki Anime & Public**\n' +
-    '﹒⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+    'Türkçe anime, oyun ve sohbet sunucusu: sessiz durulan değil, girince konuşulan bir yer.\n' +
+    '\n' +
+    '╭ ୧ ︰ʚ **Bizde neler var?**\n' +
+    '│ ✦ ・ **Sesli odanı** kendin açarsın; ismi, limiti ve devri senin\n' +
+    '│ ✦ ・ **Mesaj ve ses seviyesi** ayrı yürür, her 5 seviyede yeni rol\n' +
+    '│ ✦ ・ **Coin ekonomisi:** günlük giriş, görev kutuları, Keşif Yolu\n' +
+    '│ ✦ ・ **Profil kartı**, rozetler ve sıralama tabloları\n' +
+    '│ ✦ ・ **Vampir Köylü**, Kırmızı Koltuk, Gartic Phone, Among Us etkinlikleri\n' +
+    '│ ✦ ・ **5v5 maçları:** Valorant, Counter-Strike 2, League of Legends\n' +
+    '│ ✦ ・ **Oyun Salonu** ve Arka Sokaklar: rulet, şans merdiveni, soygun\n' +
+    '│ ✦ ・ **Çekilişler**, haftanın şampiyonları ve saygınlık ödülleri\n' +
+    '│ ✦ ・ **Yüzükle evlilik teklifi**, çift rolü ve açık yetkili alımı\n' +
+    '│\n' +
+    '╰ ୧ ︰ʚ **Kurallarımız net:** küfür, taciz, ayrımcılık ve +18 içerik yok.\n' +
+    '\n' +
+    '➤ **Davet:** https://discord.gg/kazuki\n' +
+    '➤ @everyone ┇ @here',
 };
