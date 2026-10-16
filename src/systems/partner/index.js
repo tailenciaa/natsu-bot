@@ -94,6 +94,20 @@ const requestsOfServer = (guildId_, key) =>
     .filter((r) => r.serverId === key || ui.inviteKey(r.text) === key)
     .sort((a, b) => a.createdAt - b.createdAt);
 
+// Sunucunun güvenilir kaydı: kaydın hangi talepten üretildiği değil, sunucunun kendisi eşleşir. Elle atılan
+// yeni ilan de aynı kayda bağlanır; bir sunucu listeye bir kez girdi mi kart tekrar "Listede değil" olmaz.
+// Sunucu ID'si davetten çözülemediyse davet kodu, o da yoksa kaynak talep ID'si kullanılır.
+function trustedForRequest(guildId_, request) {
+  const entries = store.trustedOf(guildId_);
+  const code = ui.inviteKey(request.text);
+  return (
+    (request.serverId && entries.find((e) => e.serverId === request.serverId)) ||
+    (code && entries.find((e) => ui.inviteKey(e.content) === code)) ||
+    entries.find((e) => e.sourceRequestId === request.id) ||
+    null
+  );
+}
+
 // Partner metninde Discord invite linki var mı kontrol et
 function hasDiscordInviteLink(text) {
   return /(discord\.gg\/|discord\.com\/invite\/|discordapp\.com\/invite\/)/i.test(text);
@@ -132,6 +146,8 @@ async function publishPost(channel, request, trusted, banned, files = []) {
     request.serverId ??= server?.id ?? null;
     store.updateRequest(request.id, { serverName: request.serverName, serverId: request.serverId });
   }
+  // Sunucu zaten güvenilir listedeyse (kayıt eski bir talepten üretilmiş olsa bile) kart o durumla çizilir
+  const status = trusted ?? trustedForRequest(request.guildId, request);
 
   const ad = await channel
     .send({ content: ui.postContent(request), files, allowedMentions: { parse: [] } })
@@ -141,7 +157,7 @@ async function publishPost(channel, request, trusted, banned, files = []) {
     });
   const card = await channel
     .send({
-      components: [ui.postCard(request, trusted, banned, statsOf(request))],
+      components: [ui.postCard(request, status, banned, statsOf(request))],
       flags: core.CV2,
       allowedMentions: { parse: [] },
     })
@@ -171,9 +187,7 @@ async function revokePartnership(interaction, request, { kind, reason = null }) 
   const requests = store
     .requestsOfGuild(interaction.guildId)
     .filter((r) => r.id === request.id || (serverId && r.serverId === serverId) || (code && inviteCode(r.text) === code));
-  const trusted =
-    (serverId ? store.trustedOf(interaction.guildId).find((p) => p.serverId === serverId) : null) ??
-    store.trustedBySource(interaction.guildId, request.id);
+  const trusted = trustedForRequest(interaction.guildId, request);
 
   if (trusted) {
     store.removeTrusted(trusted.id);
@@ -680,7 +694,7 @@ async function handleTrustedAdd(interaction) {
 
   const request = store.getRequest(requestId);
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
-  if (store.trustedBySource(interaction.guildId, requestId)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
+  if (trustedForRequest(interaction.guildId, request)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
 
   // Elle paylaşımda "Paylaşan" bizim yetkilimizdir, karşı tarafın yetkilisi olarak hazır seçilmez
   const defaults = request.source === 'manuel' ? [] : [request.requesterId];
@@ -797,7 +811,7 @@ async function handleTrustedAddSubmit(interaction, requestId, messageId) {
 
   const request = store.getRequest(requestId);
   if (!request) return replyError(interaction, 'Bu partner kaydı artık mevcut değil.');
-  if (store.trustedBySource(interaction.guildId, requestId)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
+  if (trustedForRequest(interaction.guildId, request)) return replyError(interaction, 'Bu partner zaten güvenilir listede.');
 
   const contactIds = selectedContacts(interaction);
   if (!contactIds.length) return replyError(interaction, 'En az bir partner yetkilisi seçmelisin.', 'Botlar partner yetkilisi olarak seçilemez.');
