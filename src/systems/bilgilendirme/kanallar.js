@@ -295,7 +295,7 @@ const etkinlikKurallari = {
     },
     {
       title: 'Ödüller',
-      sub: 'Ödül her etkinlikte olmak zorunda değildir: varsa listesi ve miktarı duyuruda yazan kadardır. Kural çiğneyen, oyunun ödülünü de kaybeder. Kazandığını sen değil, etkinliği yöneten yetkili ilan eder; ilan edilmemiş şey ödül sayılmaz.',
+      sub: 'Ödül her etkinlikte olmaz; varsa listesi duyuruda yazar. Kural çiğneyen ödülünü de kaybeder. Kazandığını etkinliği yöneten yetkili ilan eder, ilan edilmemiş şey ödül sayılmaz.',
       blocks: [
         {
           items: [
