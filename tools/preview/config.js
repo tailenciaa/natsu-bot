@@ -9,7 +9,9 @@ module.exports = {
   // "tekrar" uyarısından muaf tutulan satırlar (listelerde her kayıtta yinelenen kalıplar)
   REPEAT_IGNORE: [],
   // Bitişik yineleme uyarısından (kelime kelime) muaf ikilemeler: "ağır ağır", "adım adım" gibi doğru kalıplar
-  IKILEME: ['ağır', 'yavaş', 'bir', 'birer', 'ikişer', 'uzun', 'güneş', 'yeşil', 'adım', 'satır', 'kendi', 'ayrı', 'hafta', 'harfi', 'tekrar', 'kelime', 'göz', 'bak', 'dur', 'aşağı', 'öne', 'geri', 'tane', 'kez'],
+  IKILEME: ['ağır', 'yavaş', 'bir', 'birer', 'ikişer', 'uzun', 'güneş', 'yeşil', 'adım', 'satır', 'kendi', 'ayrı', 'hafta', 'harfi', 'tekrar', 'kelime', 'göz', 'bak', 'dur', 'aşağı', 'öne', 'geri', 'tane', 'kez', 'goose'],
+  // "noktalamadan sonra boşluk" uyarısından muaf kısaltmalar (küçük harfle yazılmış halleri)
+  ABBREVIATIONS_DIL: ['örn', 'ör', 'vb', 'vs', 'dr', 'prof', 'bk', 'sn', 'min', 'max', 'yy', 'tv', 'cd', 'st'],
   // Zaman damgalarının gösterileceği saat dilimi
   TIMEZONE: 'Europe/Istanbul',
   // Önizleme genişlikleri (px)

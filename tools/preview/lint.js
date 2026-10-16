@@ -298,19 +298,21 @@ function lint(norm) {
     if (bold % 2) warn('kalin-dengesiz', s.path, 'Kalın işareti (**) dengesiz');
 
     // Dil denetimleri: noktalamadan sonra boşluk, noktanın kalın işaretinin içinde kalması,
-    // yan yana iki kez yazılan aynı kelime (ikilemeler hariç)
-    const prose = noCode.replace(/<t:[^>]+>/g, '§').replace(/§/g, ' ');
-    for (const m of prose.matchAll(/(?<![\d\p{Lu}])([.,;:!?])(?=\p{Ll})/gu)) {
-      const at = m.index;
-      warn('noktalama-bosluk', s.path, `Noktalamadan sonra boşluk yok: "...${prose.slice(Math.max(0, at - 25), at + 15)}..."`);
+    // yan yana iki kez yazılan aynı kelime (ikilemeler hariç). Bağlantı/etiket kodu (§) kontrolden çıkarılır.
+    const prose = plain.replace(/§/g, 'x');
+    for (const m of prose.matchAll(/(?<=[\p{L}\d])([.,;:!?])(?=\p{L})(?!\p{Ll}{1,4}(?![\p{L}]))/gu)) {
+      const before = /[\p{L}]+$/u.exec(prose.slice(0, m.index))?.[0] ?? '';
+      if (config.ABBREVIATIONS_DIL.includes(lower(before))) continue; // "Örn:", "vb." gibi kısaltmalar
+      warn('noktalama-bosluk', s.path, `Noktalamadan sonra boşluk yok: "...${prose.slice(Math.max(0, m.index - 25), m.index + 15)}..."`);
     }
-    for (const m of prose.matchAll(/\*\*[^*\n]*[.!?]\*\*\s+\p{Ll}/gu))
+    for (const m of prose.matchAll(/\*\*[^*\n]*[.!?]\*\*[ \t]+\p{Ll}/gu))
       warn('kalin-nokta', s.path, `Nokta kalın işaretinin içinde kalmasın: "${m[0].trim().slice(0, 60)}"`);
     for (const line of prose.split('\n')) {
-      const words = lower(line).replace(/\*\*|[#_~]/g, ' ').split(/[^\p{L}]+/u).filter((w) => w.length >= 4);
-      for (let i = 1; i < words.length; i++)
-        if (words[i] === words[i - 1] && !config.IKILEME.includes(words[i]))
-          warn('kelime-bitisik', s.path, `Aynı kelime yan yana iki kez: "${words[i]}" — ${line.trim().slice(0, 70)}`);
+      const flat = line.replace(/\*\*|[#_~]/g, ' ');
+      for (const m of flat.matchAll(/(?<![\p{L}])(\p{L}{4,})[ \t]+\1(?![\p{L}])/gu)) {
+        if (config.IKILEME.includes(lower(m[1]))) continue;
+        warn('kelime-bitisik', s.path, `Aynı kelime yan yana iki kez: "${m[1]}" — ${flat.trim().slice(0, 70)}`);
+      }
     }
 
     const bangText = stripTokens(s.value);
